@@ -2,7 +2,7 @@ language: python
 sudo: false
 
 matrix:
-    include:
+    exclude:
         - os: linux
           sudo: required
           python: 2.7
