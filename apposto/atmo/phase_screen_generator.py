@@ -10,8 +10,8 @@ class PhaseScreenGenerator(object):
                  screenSizeInMeters,
                  outerScaleInMeters):
         self._screenSzInPx= screenSizeInPixels
-        self._screenSzInM= screenSizeInMeters
-        self._outerScaleInM= outerScaleInMeters
+        self._screenSzInM= float(screenSizeInMeters)
+        self._outerScaleInM= float(outerScaleInMeters)
         self._phaseScreens= None
         self._nSubHarmonicsToUse= 3
         self._seed= 0
@@ -69,9 +69,9 @@ class PhaseScreenGenerator(object):
         nSub= 3
         lowFreqScreen= np.zeros((self._screenSzInPx, self._screenSzInPx),
                                 dtype=np.complex)
-        freqX= bfft.frequenciesXMap(nSub, 1/ nSub)
-        freqY= bfft.frequenciesYMap(nSub, 1/ nSub)
-        freqMod= bfft.frequenciesNormMap(nSub, 1/ nSub)
+        freqX= bfft.frequenciesXMap(nSub, 1./ nSub)
+        freqY= bfft.frequenciesYMap(nSub, 1./ nSub)
+        freqMod= bfft.frequenciesNormMap(nSub, 1./ nSub)
         vv= np.arange(self._screenSzInPx) / self._screenSzInPx
         xx= np.tile(vv, (self._screenSzInPx, 1))
         yy= xx.T
@@ -89,7 +89,7 @@ class PhaseScreenGenerator(object):
                         (xx*freqX[ix, jx] + yy*freqY[ix, jx] + phase[ix, jx]))
                     sh0= sh.sum() / self._screenSzInPx**2
                     lowFreqScreen+= 1./ nSub**depth * modul[ix, jx]* (sh- sh0)
-        lowFreqScreen*= np.sqrt(0.0228) * self._screenSzInPx**(5 / 6)
+        lowFreqScreen*= np.sqrt(0.0228) * self._screenSzInPx**(5. / 6)
         return lowFreqScreen
 
 
