@@ -1,15 +1,65 @@
 language: python
-python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-  - "3.6"
-install: 
+sudo: false
+
+matrix:
+    exclude:
+        - os: linux
+          sudo: required
+          python: 2.7
+        - os: linux
+          sudo: required
+          python: 3.5
+        - os: linux
+          sudo: required
+          python: 3.6
+        - os: osx
+          language: generic
+          env: PYTHON=2.7
+        - os: osx
+          language: generic
+          env: PYTHON=3.5
+        - os: osx
+          language: generic
+          env: PYTHON=3.6
+
+before_install:
+    - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+        wget -q http://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+        chmod +x miniconda.sh;
+        ./miniconda.sh -b -p ~/anaconda;
+        export PATH=~/anaconda/bin:$PATH;
+        conda config --add channels conda-forge;
+        conda update --yes --quiet conda;
+      fi;
+
+
+install:
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+     conda create -n testenv --yes --quiet pip python=$PYTHON;
+     source activate testenv;
+     conda install --yes --quiet numpy pytest cython;
+    fi;
+  - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+     sudo apt-get update;
+     sudo apt-get -y install python3-pyqt5;
+    fi;
   - pip install .
   - pip install coveralls
+  
+  
+before_script:
+    # We need to create a (fake) display on Travis, let's use a funny resolution
+    # For OSX: https://github.com/travis-ci/travis-ci/issues/7313#issuecomment-279914149
+    export DISPLAY=:99.0;
+    if [ "${TRAVIS_OS_NAME}" = "osx" ]; then ( sudo Xvfb :99 -ac -screen 0 1400x900x24 +render +iglx; echo ok )& fi;
+    if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1400x900x24 -ac +extension GLX +render;
+    fi;
+    
 script:
   - pytest
   - coverage run --source=apposto setup.py test
   - coverage report -m
+
 after_success:
   - coveralls
