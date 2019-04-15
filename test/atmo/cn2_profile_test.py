@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.atmo.cn2_profile import Cn2Profile, MaoryProfiles
+from apposto.atmo.cn2_profile import Cn2Profile, \
+    MaoryProfiles, EsoEltProfiles
 from apposto.utils.constants import Constants
 
 
@@ -141,6 +142,26 @@ class Cn2ProfileTest(unittest.TestCase):
         wanted= (2.914/0.422727)**(-3./5) * pr.r0() / (
             wspd)
         self.assertAlmostEqual(wanted, pr.tau0())
+
+
+    def testEsoProfiles(self):
+        pr= EsoEltProfiles.Median()
+        self.assertEqual(35, pr.numberOfLayers())
+        self.assertAlmostEqual(0.644, pr.seeing(), delta=0.01)
+        self.assertAlmostEqual(5.786, pr.windSpeed()[0], delta=0.01)
+        self.assertAlmostEqual(0.00535, pr.tau0(), delta=0.0001)
+        pr= EsoEltProfiles.Q1()
+        self.assertAlmostEqual(0.234, pr.r0(), delta=0.001)
+        self.assertAlmostEqual(0.00808, pr.tau0(), delta=0.00001)
+        pr= EsoEltProfiles.Q2()
+        self.assertAlmostEqual(0.178, pr.r0(), delta=0.001)
+        self.assertAlmostEqual(0.00612, pr.tau0(), delta=0.00001)
+        pr= EsoEltProfiles.Q3()
+        self.assertAlmostEqual(0.139, pr.r0(), delta=0.001)
+        self.assertAlmostEqual(0.00478, pr.tau0(), delta=0.00001)
+        pr= EsoEltProfiles.Q4()
+        self.assertAlmostEqual(0.097, pr.r0(), delta=0.001)
+        self.assertAlmostEqual(0.00311, pr.tau0(), delta=0.00001)
 
 
 if __name__ == "__main__":

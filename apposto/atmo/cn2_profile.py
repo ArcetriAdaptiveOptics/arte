@@ -230,51 +230,76 @@ class MaoryProfiles():
         return fits.getdata(filename)
 
     @classmethod
-    def P10(cls):
+    def _profileMaker(cls, idxJ, idxW):
         rr= cls._retrieveMaoryP()
         h= rr[0]*1e3
-        js= rr[1]
+        js= rr[idxJ]
         L0= 30.
-        windSpeed= rr[6]
+        windSpeed= rr[idxW]
         windDirection= np.linspace(0, 360, len(js))
         return Cn2Profile(js, L0, h, windSpeed, windDirection)
+
+    @classmethod
+    def P10(cls):
+        return cls._profileMaker(1, 6)
 
     @classmethod
     def P25(cls):
-        rr= cls._retrieveMaoryP()
-        h= rr[0]*1e3
-        js= rr[2]
-        L0= 30.
-        windSpeed= rr[7]
-        windDirection= np.linspace(0, 360, len(js))
-        return Cn2Profile(js, L0, h, windSpeed, windDirection)
+        return cls._profileMaker(2, 7)
 
     @classmethod
     def P50(cls):
-        rr= cls._retrieveMaoryP()
-        h= rr[0]*1e3
-        js= rr[3]
-        L0= 30.
-        windSpeed= rr[8]
-        windDirection= np.linspace(0, 360, len(js))
-        return Cn2Profile(js, L0, h, windSpeed, windDirection)
+        return cls._profileMaker(3, 8)
 
     @classmethod
     def P75(cls):
-        rr= cls._retrieveMaoryP()
-        h= rr[0]*1e3
-        js= rr[4]
-        L0= 30.
-        windSpeed= rr[9]
-        windDirection= np.linspace(0, 360, len(js))
-        return Cn2Profile(js, L0, h, windSpeed, windDirection)
+        return cls._profileMaker(4, 9)
 
     @classmethod
     def P90(cls):
-        rr= cls._retrieveMaoryP()
-        h= rr[0]*1e3
-        js= rr[5]
-        L0= 30.
-        windSpeed= rr[10]
+        return cls._profileMaker(5, 10)
+
+
+class EsoEltProfiles():
+
+    L0= 25
+
+    @staticmethod
+    def _restoreProfiles():
+        rootDir= dataRootDir()
+        filename= os.path.join(rootDir,
+                               'cn2profiles',
+                               'cn2_eso_258292_2.fits')
+        return fits.getdata(filename, header=True)
+
+    @classmethod
+    def _profileMaker(cls, keyR0, idxJ, idxWind):
+        rr, hdr= cls._restoreProfiles()
+        r0= hdr[keyR0]
+        h= rr[0]
+        js= rr[idxJ]/100
+        windSpeed= rr[idxWind]
         windDirection= np.linspace(0, 360, len(js))
-        return Cn2Profile(js, L0, h, windSpeed, windDirection)
+        return Cn2Profile.fromFractionalJ(
+            r0, js, cls.L0, h, windSpeed, windDirection)
+
+    @classmethod
+    def Median(cls):
+        return cls._profileMaker('R0MEDIAN', 1, 6)
+
+    @classmethod
+    def Q1(cls):
+        return cls._profileMaker('R0Q1', 2, 7)
+
+    @classmethod
+    def Q2(cls):
+        return cls._profileMaker('R0Q2', 3, 8)
+
+    @classmethod
+    def Q3(cls):
+        return cls._profileMaker('R0Q3', 4, 9)
+
+    @classmethod
+    def Q4(cls):
+        return cls._profileMaker('R0Q4', 5, 10)
+
