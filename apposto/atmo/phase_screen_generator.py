@@ -56,6 +56,11 @@ class PhaseScreenGenerator(object):
             self._normalizationFactor * self._phaseScreens
 
 
+    def getInMeters(self):
+        return self._normalizationFactor * self._phaseScreens / \
+            (2 * np.pi) * 500e-9
+
+
     def _randomPhase(self):
         return np.random.rand(self._screenSzInPx, self._screenSzInPx)* 2* np.pi
 

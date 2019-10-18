@@ -86,7 +86,8 @@ setup(name=NAME,
       install_requires=["numpy",
                         "scipy",
                         "matplotlib",
-                        "astropy"
+                        "astropy",
+                        "synphot"
                         ],
       include_package_data=True,
       test_suite='test',
