@@ -6,7 +6,7 @@
 import numpy as np
 
 
-class GuideSource(object):
+class GuideSource():
     '''
     This class defines the geometry of the guide source of interest.
     

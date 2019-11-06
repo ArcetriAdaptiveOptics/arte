@@ -6,9 +6,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class VonKarmannPsd(object):
+class VonKarmannPsd():
     '''
-    What the class does
+    This class computes the spatial Power Spectral Density (PSD) of turbulent
+    phase assuming the Von Karmann spectrum.
+    The PSD is obtained from the following expression:
+        
+        PSD(f,h) = 0.023*r0(h)**(-5/3)**(f**2+1/L0**2)**(-11/6)
+        
     
     Parameters
     ----------

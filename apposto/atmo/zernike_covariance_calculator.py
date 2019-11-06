@@ -11,15 +11,32 @@ from apposto.utils import von_karmann_psd
 
 class ZernikeSpatioTemporalCovariance():
     '''
-    What this class does
+    This class computes the spatio-temporal covariance between Zernike 
+    coefficients which represent the turbulence induced phase aberrations
+    of two sources seen with two different circular apertures. 
+    
+    
+    References
+    ----------
+    Plantét et al. (2019) - "Spatio-temporal statistics of the turbulent
+        Zernike coefficients and piston-removed phase from two distinct beams".
+        
+    Whiteley et al. (1998) - "Temporal properties of the Zernike expansion
+        coefficients of turbulence-induced phase aberrations for aperture
+        and source motion".
+    
     
     Parameters
     ----------
     cn2_profile: cn2 profile as obtained from the Cn2Profile class
             (e.g. cn2_profile = apposto.atmo.cn2_profile.EsoEltProfiles.Q1())
-    source1:
+    
+    source1: 
+    
     source2:
+    
     aperture1:
+    
     aperture2:
     '''
     
@@ -48,10 +65,23 @@ class ZernikeSpatioTemporalCovariance():
     def setAperture2(self, ap2):
         self._ap2 = ap2
         
-    def _VonKarmannPsdOfAllLayers(self, freqs):
-        vk = von_karmann_psd.VonKarmannPsd(self._cn2)
-        psd = vk.getVonKarmannPsdOfAllLayers(freqs)
-        return psd
+    def source1Coords(self):
+        return self._source1.getSourceCartesianCoords()
+    
+    def source2Coords(self):
+        return self._source2.getSourceCartesianCoords()
+    
+    def aperture1Radius(self):
+        return self._ap1.getApertureRadius()
+    
+    def aperture2Radius(self):
+        return self._ap2.getApertureRadius()
+    
+    def aperture1Coords(self):
+        return self._ap1.getApertureCenterCartesianCoords()
+    
+    def aperture2Coords(self):
+        return self._ap2.getApertureCenterCartesianCoords() 
         
     @staticmethod
     def layerScalingFactor(z_layer, z_source, z_aperture):
@@ -61,6 +91,11 @@ class ZernikeSpatioTemporalCovariance():
 #         a1_l = self._layerScalingFactor(z_layer, z_source1, z_aperture1)
 #         a2_l = self._layerScalingFactor(z_layer, z_source2, z_aperture2)
         pass
+    
+    def _VonKarmannPsdOfAllLayers(self, freqs):
+        vk = von_karmann_psd.VonKarmannPsd(self._cn2)
+        psd = vk.getVonKarmannPsdOfAllLayers(freqs)
+        return psd
     
     @staticmethod
     def getOrdersFromZernikeIndex(zern_idx):
@@ -103,10 +138,8 @@ class ZernikeSpatioTemporalCovariance():
                    self.delta(self._mk, 0))) #* (
             #self._windSpeed*np.pi**2)
         pass
-    
-    
 
-     
+
 #     def _costant(self):
 #         c = (-1)**self._mk * np.sqrt((
 #             self._nj+1)*(self._nk+1)) * np.complex(0,1)**(
