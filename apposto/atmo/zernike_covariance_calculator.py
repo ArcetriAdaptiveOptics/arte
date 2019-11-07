@@ -83,8 +83,7 @@ class ZernikeSpatioTemporalCovariance():
     def aperture2Coords(self):
         return self._ap2.getApertureCenterCartesianCoords() 
         
-    @staticmethod
-    def layerScalingFactor(z_layer, z_source, z_aperture):
+    def _layerScalingFactor(self, z_layer, z_source, z_aperture):
         return (z_layer - z_aperture)/(z_source - z_aperture)
             
     def _layerProjectedAperturesSeparation(self, z_layer):
@@ -108,24 +107,6 @@ class ZernikeSpatioTemporalCovariance():
         radialOrder = n
         azimuthalOrder = m
         return radialOrder, azimuthalOrder
-    
-    @staticmethod
-    def delta(m, n):
-        '''
-        Return the Kronecker delta.
-        '''
-        if m==n:
-            delta = 1
-        else:
-            delta = 0 
-        return delta
-     
-    @staticmethod
-    def bessel(order, arg):
-        '''
-        Return the Bessel function of the first kind.
-        '''
-        return special.jv(order, arg)
     
     def covarianceMatrix(self, j, k):
         self._nj, self._mj = self.getOrdersFromZernikeIndex(j)

@@ -49,5 +49,5 @@ class VonKarmannPsd():
     def plotVonKarmannPsdVsFrequency(self, idx, freqs):
         psd = self.getVonKarmannPsdOfSingleLayer(idx, freqs)
         plt.loglog(freqs, psd)
-        plt.xlabel('Frequency')
-        plt.ylabel('PSD')
+        plt.xlabel('Frequency [m$^{-1}$]')
+        plt.ylabel('PSD [m$^{2}$]')
