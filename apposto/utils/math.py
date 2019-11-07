@@ -7,10 +7,10 @@ def round_up_to_even(f):
 
 
 def kroneckerDelta(m, n):
-    if m==n:
+    if m == n:
         delta = 1
     else:
-        delta = 0 
+        delta = 0
     return delta
 
 
