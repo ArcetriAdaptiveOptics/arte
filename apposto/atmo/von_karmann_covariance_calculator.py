@@ -113,12 +113,13 @@ class VonKarmannSpatioTemporalCovariance():
             (self.source1Coords() - self.aperture1Coords())
         return sep
 
-    def _VonKarmannPsdOfAllLayers(self, freqs):
+    def _VonKarmannPsdOneLayers(self, nLayer, freqs):
         vk = von_karmann_psd.VonKarmannPsd(self._cn2)
-        psd = vk.getVonKarmannPsdOfAllLayers(freqs)
+        psd = vk.getVonKarmannPsdOfSingleLayer(nLayer, freqs)
         return psd
 
     def _zernikeCovarianceMatrixOneLayer(self, j, k, nLayer, freqs):
+        i = np.complex(0, 1)
         print('Computing a1')
         a1 = self.layerScalingFactor1(nLayer)
         print('Computing a2')
@@ -129,6 +130,11 @@ class VonKarmannSpatioTemporalCovariance():
         R2 = self.aperture2Radius()
         print('Computing s')
         s = np.linalg.norm(self.layerProjectedAperturesSeparation(nLayer))
+
+        # TODO: check if thS expression is correct
+        self._thS = np.linalg.norm(self.source1Coords() - self.source2Coords())
+        print('Getting VonKarmann PSD')
+        self._psd = self._VonKarmannPsdOneLayers(nLayer, freqs)
 
         dummyNumb = 2
         zern = zernike_generator.ZernikeGenerator(dummyNumb)
@@ -165,7 +171,23 @@ class VonKarmannSpatioTemporalCovariance():
         print('Computing c2')
         self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1)**j - 1) -
                                 (1 - self._deltak) * ((-1)**k - 1))
-        pass
+
+        print('Computing covariance matrix')
+        self._matReal = np.real(self._c1 * 1 / (np.pi * R1 * R2 * (1 - a1) * (1 - a2)) *
+                                self._psd / freqs * self._b1 * self._b2 * (
+            np.cos((self._mj + self._mk) * self._thS + np.pi / 4 *
+                   self._c2) * i**(3 * (self._mj + self._mk)) * self._b3 +
+            np.cos((self._mj - self._mk) * self._thS + np.pi / 4 *
+                   self._c2) * i**(3 * np.abs(self._mj - self._mk)) *
+            self._b4))
+        self._matImag = np.imag(self._c1 * 1 / (np.pi * R1 * R2 * (1 - a1) * (1 - a2)) *
+                                self._psd / freqs * self._b1 * self._b2 * (
+            np.cos((self._mj + self._mk) * self._thS + np.pi / 4 *
+                   self._c2) * i**(3 * (self._mj + self._mk)) * self._b3 +
+            np.cos((self._mj - self._mk) * self._thS + np.pi / 4 *
+                   self._c2) * i**(3 * np.abs(self._mj - self._mk)) *
+            self._b4))
+        return self._matReal
 
 
 #     def _costant(self):
