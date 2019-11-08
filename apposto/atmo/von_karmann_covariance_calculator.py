@@ -16,10 +16,10 @@ class VonKarmannSpatioTemporalCovariance():
 
     References
     ----------
-    Plantét et al. (2019) - "Spatio-temporal statistics of the turbulent
+    Plantet et al. (2019) - "Spatio-temporal statistics of the turbulent
         Zernike coefficients and piston-removed phase from two distinct beams".
 
-    Plantét et al. (2018) - "LO WFS of MAORY: performance and sky coverage
+    Plantet et al. (2018) - "LO WFS of MAORY: performance and sky coverage
         assessment."
 
     Whiteley et al. (1998) - "Temporal properties of the Zernike expansion
@@ -136,6 +136,8 @@ class VonKarmannSpatioTemporalCovariance():
         return psd
 
     def _zernikeCovarianceOneLayer(self, j, k, nLayer):
+        print('\n LAYER #%d' % (nLayer))
+
         i = np.complex(0, 1)
         print('Computing a1')
         a1 = self.layerScalingFactor1(nLayer)
@@ -150,7 +152,6 @@ class VonKarmannSpatioTemporalCovariance():
         s = np.linalg.norm(sep)
 
         print('Computing theta_s')
-        # TODO: check if thS expression is correct
         self._thS = np.arctan(sep[0] / sep[1])
         print('Getting VonKarmann PSD')
         self._psd = self._VonKarmannPsdOneLayers(nLayer, self._freqs)
@@ -192,7 +193,7 @@ class VonKarmannSpatioTemporalCovariance():
                                 (1 - self._deltak) * ((-1)**k - 1))
 
         print('Computing covariance')
-        cov = self._c1 * 1 / (np.pi * R1 * R2 * (1 - a1) * (1 - a2)) * \
+        integFunc = self._c1 * 1 / (np.pi * R1 * R2 * (1 - a1) * (1 - a2)) * \
             self._psd / self._freqs * self._b1 * self._b2 * \
             (np.cos((self._mj + self._mk) * self._thS +
                     np.pi / 4 * self._c2) *
@@ -203,12 +204,12 @@ class VonKarmannSpatioTemporalCovariance():
              i**(3 * np.abs(self._mj - self._mk)) *
              self._b4)
 
-        self._covReal = np.real(cov)
-        self._covImag = i * np.imag(cov)
+        self._covOneLayer = np.trapz(np.real(integFunc)) + \
+            np.trapz(np.imag(integFunc))
 
     def _getZernikeCovarianceOneLayer(self, j, k, nLayer):
         self._zernikeCovarianceOneLayer(j, k, nLayer)
-        return (self._covReal + self._covImag).sum()
+        return self._covOneLayer
 
     def getZernikeCovariance(self, j, k):
         self._covAllLayers = np.array([
