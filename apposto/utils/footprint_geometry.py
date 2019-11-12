@@ -24,7 +24,7 @@ class FootprintGeometry():
         self._instrFoVInArcsec= instrFoVInArcsec
 
 
-    def setZenithAngle(self, zenithAngleInDeg):
+    def set_zenith_angle(self, zenithAngleInDeg):
         self._zenithAngleInDeg= zenithAngleInDeg
 
 
@@ -237,10 +237,10 @@ class FootprintGeometry():
 def mainFootprintGeometry(h=12000, lgsTh=15, lgsN=4, ngsTh=60, ngsN=3,
                           sciFov=20,
                           targets=[[0, 0], [60*1.414, 45]],
-                          rTel=4.1, zenithAngle=0):
+                          rTel=4.1, zenith_angle=0):
     fg= FootprintGeometry()
     fg.setTelescopeRadiusInMeter(rTel)
-    fg.setZenithAngle(zenithAngle)
+    fg.set_zenith_angle(zenith_angle)
     fg.setInstrumentFoV(sciFov)
     fg.setLayerAltitude(h)
     if lgsN > 0:

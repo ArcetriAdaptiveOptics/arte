@@ -5,6 +5,7 @@
 
 import numpy as np
 from apposto.utils import von_karmann_psd, math, zernike_generator
+import logging
 
 
 class VonKarmannSpatioTemporalCovariance():
@@ -54,17 +55,24 @@ class VonKarmannSpatioTemporalCovariance():
                                                     10, (1,90), 2)
     '''
 
-    def __init__(self, cn2_profile, source1, source2, aperture1, aperture2,
-                 freqs):
+    def __init__(self,
+                 cn2_profile,
+                 source1,
+                 source2,
+                 aperture1,
+                 aperture2,
+                 freqs,
+                 logger=logging.getLogger('VK_COVARIANCE')):
         self._cn2 = cn2_profile
         self._source1 = source1
         self._source2 = source2
         self._ap1 = aperture1
         self._ap2 = aperture2
         self._freqs = freqs
-        self._layersAlt = cn2_profile.layersDistance()
-        self._windSpeed = cn2_profile.windSpeed()
-        self._windDirection = cn2_profile.windDirection()
+        self._logger = logger
+        self._layersAlt = cn2_profile.layers_distance()
+        self._windSpeed = cn2_profile.wind_speed()
+        self._windDirection = cn2_profile.wind_direction()
 
     def setCn2Profile(self, cn2_profile):
         self._cn2 = cn2_profile
@@ -132,67 +140,67 @@ class VonKarmannSpatioTemporalCovariance():
 
     def _VonKarmannPsdOneLayers(self, nLayer, freqs):
         vk = von_karmann_psd.VonKarmannPsd(self._cn2)
-        psd = vk.getVonKarmannPsdOfSingleLayer(nLayer, freqs)
+        psd = vk.spatial_psd_of_single_layer(nLayer, freqs)
         return psd
 
     def _zernikeCovarianceOneLayer(self, j, k, nLayer):
-        print('\n LAYER #%d' % (nLayer))
+        self._logger.debug('\n LAYER #%d' % (nLayer))
 
         i = np.complex(0, 1)
-        print('Computing a1')
+        self._logger.debug('Computing a1')
         a1 = self.layerScalingFactor1(nLayer)
-        print('Computing a2')
+        self._logger.debug('Computing a2')
         a2 = self.layerScalingFactor2(nLayer)
-        print('Getting R1')
+        self._logger.debug('Getting R1')
         R1 = self.aperture1Radius()
-        print('Getting R2')
+        self._logger.debug('Getting R2')
         R2 = self.aperture2Radius()
-        print('Computing s')
+        self._logger.debug('Computing s')
         sep = self.layerProjectedAperturesSeparation(nLayer)
         s = np.linalg.norm(sep)
 
-        print('Computing theta_s')
+        self._logger.debug('Computing theta_s')
         self._thS = np.arctan(sep[0] / sep[1])
-        print('Getting VonKarmann PSD')
+        self._logger.debug('Getting VonKarmann PSD')
         self._psd = self._VonKarmannPsdOneLayers(nLayer, self._freqs)
 
         dummyNumb = 2
         zern = zernike_generator.ZernikeGenerator(dummyNumb)
-        print('Computing zernike orders')
-        self._nj, self._mj = zern._degree(j)
-        self._nk, self._mk = zern._degree(k)
+        self._logger.debug('Computing zernike orders')
+        self._nj, self._mj = zern.degree(j)
+        self._nk, self._mk = zern.degree(k)
 
-        print('Getting deltas')
+        self._logger.debug('Getting deltas')
         self._deltaj = math.kroneckerDelta(0, self._mj)
         self._deltak = math.kroneckerDelta(0, self._mk)
 
-        print('Computing bessel1')
+        self._logger.debug('Computing bessel1')
         self._b1 = np.array([math.besselFirstKind(
             self._nj + 1,
             2 * np.pi * f * R1 * (1 - a1)) for f in self._freqs])
-        print('Computing bessel2')
+        self._logger.debug('Computing bessel2')
         self._b2 = np.array([math.besselFirstKind(
             self._nk + 1,
             2 * np.pi * f * R2 * (1 - a2)) for f in self._freqs])
-        print('Computing bessel3')
+        self._logger.debug('Computing bessel3')
         self._b3 = np.array([math.besselFirstKind(
             self._mj + self._mk,
             s * 2 * np.pi * f) for f in self._freqs])
-        print('Computing bessel4')
+        self._logger.debug('Computing bessel4')
         self._b4 = np.array([math.besselFirstKind(
             np.abs(self._mj - self._mk),
             s * 2 * np.pi * f) for f in self._freqs])
 
-        print('Computing c1')
+        self._logger.debug('Computing c1')
         self._c1 = (-1)**self._mk * np.sqrt((
             self._nj + 1) * (self._nk + 1)) * np.complex(0, 1)**(
             self._nj + self._nk) * 2**(
             1 - 0.5 * (self._deltaj + self._deltak))
-        print('Computing c2')
+        self._logger.debug('Computing c2')
         self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1)**j - 1) -
                                 (1 - self._deltak) * ((-1)**k - 1))
 
-        print('Computing covariance')
+        self._logger.debug('Computing covariance')
         integFunc = self._c1 * 1 / (np.pi * R1 * R2 * (1 - a1) * (1 - a2)) * \
             self._psd / self._freqs * self._b1 * self._b2 * \
             (np.cos((self._mj + self._mk) * self._thS +
