@@ -136,7 +136,7 @@ class VonKarmannSpatioTemporalCovariance():
         return psd
 
     def _zernikeCovarianceOneLayer(self, j, k, nLayer):
-        print('\n LAYER #%d' % (nLayer))
+        print('\n LAYER #%d' % (nLayer + 1))
 
         i = np.complex(0, 1)
         print('Computing a1')
@@ -152,7 +152,7 @@ class VonKarmannSpatioTemporalCovariance():
         s = np.linalg.norm(sep)
 
         print('Computing theta_s')
-        self._thS = np.arctan(sep[0] / sep[1])
+        self._thS = np.arctan(sep[1] / sep[0])
         print('Getting VonKarmann PSD')
         self._psd = self._VonKarmannPsdOneLayers(nLayer, self._freqs)
 
@@ -216,3 +216,7 @@ class VonKarmannSpatioTemporalCovariance():
             self._getZernikeCovarianceOneLayer(j, k, nLayer) for nLayer
             in range(self._layersAlt.shape[0])])
         return self._covAllLayers.sum()
+
+    def getZernikeCovarianceMatrix(self, j_vector, k_vector):
+
+        pass

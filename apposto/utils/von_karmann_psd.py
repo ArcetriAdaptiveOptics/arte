@@ -17,38 +17,48 @@ class VonKarmannPsd():
 
     Parameters
     ----------
-    cn2_profile: cn2 profile as obtained from the Cn2Profile class
-            (e.g. cn2_profile = apposto.atmo.cn2_profile.EsoEltProfiles.Q1())
+    fried_param:
+    outer_scale:
     '''
 
-    def __init__(self, cn2_profile):
-        self._cn2 = cn2_profile
+    def __init__(self, fried_param, outer_scale):
+        self._r0 = fried_param
+        self._L0 = outer_scale
 
-    def _getOuterScaleInMeters(self):
-        return self._cn2._layersL0
+    # TODO: testare la funzione in qualche applicazione (ES:
+    #      L0 infinito -> Kolmogorov. Integrale sulle frequenze
+    #      mi deve dare la potenza (esistono formuline sulla turbolenza
+    #      di Kolomogorov.
 
-    def _getFriedParametersInMeters(self):
-        return self._cn2._jsToR0(self._cn2._layersJs,
-                                 self._cn2.airmass(),
-                                 self._cn2.wavelength())
+#     def _getOuterScaleInMeters(self):
+#         return self._cn2._layersL0
+#
+#     def _getFriedParametersInMeters(self):
+#         return self._cn2._jsToR0(self._cn2._layersJs,
+#                                  self._cn2.airmass(),
+#                                  self._cn2.wavelength())
+#
+#     def _getLayersAltitudeInMeters(self):
+#         return self._cn2.layersDistance()
 
-    def _getLayersAltitudeInMeters(self):
-        return self._cn2.layersDistance()
+    def _computeVonKarmannPsd(self, freqs):
+        if type(self._r0) == np.ndarray:
+            self._psd = np.array([0.023 * self._r0[i]**(-5. / 3) *
+                                  (freqs**2 + 1 / self._L0**2)**(-11. / 6)
+                                  for i in range(self._r0.shape[0])])
+        else:
+            self._psd = 0.023 * self._r0**(-5. / 3) * \
+                (freqs**2 + 1 / self._L0**2)**(-11. / 6)
 
-    def getVonKarmannPsdOfSingleLayer(self, layer_idx, freqs):
-        L0 = self._getOuterScaleInMeters()
-        r0s = self._getFriedParametersInMeters()
-        return 0.023 * r0s[layer_idx]**(-5. / 3) * \
-            (freqs**2 + 1 / L0**2)**(-11. / 6)
+    def getVonKarmannPsd(self, freqs):
+        self._computeVonKarmannPsd(freqs)
+        return self._psd
 
-    def getVonKarmannPsdOfAllLayers(self, freqs):
-        numberOfLayers = self._getLayersAltitudeInMeters().shape[0]
-        return np.array([
-            self.getVonKarmannPsdOfSingleLayer(i, freqs)
-            for i in range(numberOfLayers)])
-
-    def plotVonKarmannPsdVsFrequency(self, idx, freqs):
-        psd = self.getVonKarmannPsdOfSingleLayer(idx, freqs)
-        plt.loglog(freqs, psd)
+    def plotVonKarmannPsdVsFrequency(self, freqs, idx=None):
+        psd = self.getVonKarmannPsd(freqs)
+        if idx is None:
+            plt.loglog(freqs, psd)
+        else:
+            plt.loglog(freqs, psd[idx])
         plt.xlabel('Frequency [m$^{-1}$]')
         plt.ylabel('PSD [m$^{2}$]')
