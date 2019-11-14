@@ -2,9 +2,6 @@ import numpy as np
 from scipy.special.basic import factorial
 
 
-__version__ = "$Id: zernike_generator.py 239 2017-02-07 09:51:49Z lbusoni $"
-
-
 class ZernikeGenerator(object):
 
     def __init__(self, nPixelOnDiameter):
@@ -29,7 +26,7 @@ class ZernikeGenerator(object):
             self._dy = self._computeDerivativeCoeffY(index)
         return self._dy[0:index, 0:index]
 
-    def _degree(self, index):
+    def degree(self, index):
         n = int(0.5 * (np.sqrt(8 * index - 7) - 3)) + 1
         cn = n * (n + 1) / 2 + 1
         if n % 2 == 0:
@@ -65,7 +62,7 @@ class ZernikeGenerator(object):
         return np.ma.masked_array(data=Rnm, mask=mask)
 
     def _polar(self, index, rhoArray, thetaArray):
-        n, m = self._degree(index)
+        n, m = self.degree(index)
         rho = rhoArray
         theta = thetaArray
 
@@ -107,8 +104,8 @@ class ZernikeGenerator(object):
         G_mat = np.zeros((jmax, jmax))
         for i in range(1, jmax + 1):
             for j in range(1, jmax + 1):
-                ni, mi = self._degree(i)
-                nj, mj = self._degree(j)
+                ni, mi = self.degree(i)
+                nj, mj = self.degree(j)
                 if (
                     (
                         (
@@ -144,8 +141,8 @@ class ZernikeGenerator(object):
         G_mat = np.zeros((jmax, jmax))
         for i in range(1, jmax + 1):
             for j in range(1, jmax + 1):
-                ni, mi = self._degree(i)
-                nj, mj = self._degree(j)
+                ni, mi = self.degree(i)
+                nj, mj = self.degree(j)
                 if (
                     (
                         (
