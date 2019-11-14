@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 import unittest
-from apposto.phot.spectral_types import PickelsLibrary
-from apposto.phot.spectral_types import O5V, F5I
-
+from apposto.photometry.spectral_types import PickelsLibrary
+from apposto.photometry.spectral_types import O5V, F5I
 
 
 class PickelsLibraryTest(unittest.TestCase):
-
 
     def testFilename(self):
         self.assertEqual(
             'http://ssb.stsci.edu/cdbs/grid/pickles/dat_uvk/pickles_uk_27.fits',
             PickelsLibrary.filename('G5V'))
-
 
     def testDirectImport(self):
         self.assertEqual(
