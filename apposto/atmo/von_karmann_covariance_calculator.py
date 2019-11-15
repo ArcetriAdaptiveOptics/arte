@@ -140,7 +140,7 @@ class VonKarmannSpatioTemporalCovariance():
 
     def _VonKarmannPsdOneLayers(self, nLayer, freqs):
         r0 = self._cn2.r0s()[nLayer]
-        L0 = self._cn2.outer_scale()[nLayer]
+        L0 = self._cn2.outer_scale()
         vk = von_karmann_psd.VonKarmannPsd(r0, L0)
         psd = vk.spatial_psd(freqs)
         return psd
@@ -199,7 +199,9 @@ class VonKarmannSpatioTemporalCovariance():
             self._nj + self._nk) * 2**(
             1 - 0.5 * (self._deltaj + self._deltak))
         self._logger.debug('Computing c2')
-        self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1)**j - 1) -
+        self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1)**j - 1) +
+                                (1 - self._deltak) * ((-1)**k - 1))
+        self._c3 = np.pi / 4 * ((1 - self._deltaj) * ((-1)**j - 1) -
                                 (1 - self._deltak) * ((-1)**k - 1))
 
         self._logger.debug('Computing covariance')
@@ -210,7 +212,7 @@ class VonKarmannSpatioTemporalCovariance():
              i**(3 * (self._mj + self._mk)) *
              self._b3 +
              np.cos((self._mj - self._mk) * self._thS +
-                    np.pi / 4 * self._c2) *
+                    np.pi / 4 * self._c3) *
              i**(3 * np.abs(self._mj - self._mk)) *
              self._b4)
 
@@ -228,5 +230,8 @@ class VonKarmannSpatioTemporalCovariance():
         return self._covAllLayers.sum()
 
     def getZernikeCovarianceMatrix(self, j_vector, k_vector):
-
-        pass
+        matr = np.matrix([
+            np.array([self.getZernikeCovariance(j_vector[j], k_vector[i])
+                      for i in range(k_vector.shape[0])])
+            for j in range(j_vector.shape[0])])
+        return matr
