@@ -8,7 +8,7 @@ import numpy as np
 class VonKarmannPsd():
     '''
     This class computes the spatial Power Spectral Density (PSD) of turbulent
-    phase assuming the Von Karmann spectrum.
+    phase assuming the Von Karman spectrum.
     The PSD is obtained from the following expression:
 
         PSD(f,h) = 0.0229 * r0(h)**(-5/3) * (f**2+1/L0**2)**(-11/6)
