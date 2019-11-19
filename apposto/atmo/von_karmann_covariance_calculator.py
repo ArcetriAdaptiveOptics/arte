@@ -236,19 +236,18 @@ class VonKarmannSpatioTemporalCovariance():
                                 (1 - self._deltak) * ((-1)**k - 1))
 
         self._logger.debug('Computing covariance')
-        integFunc = self._c1 * 1 / (np.pi * R1 * R2 * (1 - a1) * (1 - a2)) * \
+        self._integFunc = self._c1 * 1 / (
+            np.pi * R1 * R2 * (1 - a1) * (1 - a2)) * \
             self._psd / self._freqs * self._b1 * self._b2 * \
-            (np.cos((self._mj + self._mk) * self._thS +
-                    np.pi / 4 * self._c2) *
+            (np.cos((self._mj + self._mk) * self._thS + self._c2) *
              i**(3 * (self._mj + self._mk)) *
              self._b3 +
-             np.cos((self._mj - self._mk) * self._thS +
-                    np.pi / 4 * self._c3) *
+             np.cos((self._mj - self._mk) * self._thS + self._c3) *
              i**(3 * np.abs(self._mj - self._mk)) *
              self._b4)
 
-        self._covOneLayer = np.trapz(np.real(integFunc)) + \
-            np.trapz(np.imag(integFunc))
+        self._covOneLayer = np.trapz(np.real(self._integFunc), self._freqs) + \
+            np.trapz(np.imag(self._integFunc), self._freqs)
 
     def _getZernikeCovarianceOneLayer(self, j, k, nLayer):
         self._zernikeCovarianceOneLayer(j, k, nLayer)
