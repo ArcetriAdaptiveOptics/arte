@@ -117,6 +117,12 @@ class VonKarmannSpatioTemporalCovariance():
             self.aperture1Coords()[2])
         return a1
 
+#     def layerScalingFactor1(self, nLayer):
+#         a1 = self._layerScalingFactor(self.source1Coords(),
+#                                       self.aperture1Coords(),
+#                                       nLayer)
+#         return a1
+
     def layerScalingFactor2(self, nLayer):
         a2 = self._layerScalingFactor(
             self._layersAlt[nLayer],
@@ -124,18 +130,43 @@ class VonKarmannSpatioTemporalCovariance():
             self.aperture2Coords()[2])
         return a2
 
+#     def layerScalingFactor2(self, nLayer):
+#         a2 = self._layerScalingFactor(self.source2Coords(),
+#                                       self.aperture2Coords(),
+#                                       nLayer)
+#        return a2
+
     def _layerScalingFactor(self, zLayer, zSource, zAperture):
         scalFact = (zLayer - zAperture) / (zSource - zAperture)
         return scalFact
 
+#     def _layerScalingFactor(self, source_coord, aperture_coord, n_layer):
+#         dist_versor = (source_coord - aperture_coord) / np.linalg.norm(
+#             source_coord - aperture_coord)
+#         scalFact = (self._layersAlt[n_layer] - aperture_coord[2]) * \
+#             dist_versor / dist_versor[2]
+#         return scalFact
+
     def layerProjectedAperturesSeparation(self, nLayer):
-        sCoords1 = self.source1Coords()[0:2]
-        sCoords2 = self.source2Coords()[0:2]
-        aCoords1 = self.aperture1Coords()[0:2]
-        aCoords2 = self.aperture2Coords()[0:2]
-        sep = aCoords2 - aCoords1 + self.layerScalingFactor2(nLayer) * \
-            (sCoords2 - aCoords2) - self.layerScalingFactor1(nLayer) * \
-            (sCoords1 - aCoords1)
+        #         sCoords1 = self.source1Coords()[0:2]
+        #         sCoords2 = self.source2Coords()[0:2]
+        aCoord1 = self.aperture1Coords()  # [0:2]
+        aCoord2 = self.aperture2Coords()  # [0:2]
+        sCoord1 = self._source1.getSourcePolarCoords()
+        sCoord2 = self._source2.getSourcePolarCoords()
+        sCoord1New = np.array([np.sin(sCoord1[0]) * np.cos(sCoord1[1]),
+                               np.sin(sCoord1[0]) * np.sin(sCoord1[1]),
+                               np.cos(sCoord1[0])])
+        sCoord2New = np.array([np.sin(sCoord2[0]) * np.cos(sCoord2[1]),
+                               np.sin(sCoord2[0]) * np.sin(sCoord2[1]),
+                               np.cos(sCoord2[0])])
+#         sep = aCoords2 - aCoords1 + self.layerScalingFactor2(nLayer) * \
+#             (sCoords2 - aCoords2) - self.layerScalingFactor1(nLayer) * \
+#             (sCoords1 - aCoords1)
+        sep = aCoord2 - aCoord1 + (self._layersAlt[nLayer] - aCoord2[2]) * \
+            sCoord2New / sCoord2New[2] - \
+            (self._layersAlt[nLayer] - aCoord1[2]) * \
+            sCoord1New / sCoord1New[2]
         return sep
 
     def _VonKarmannPsdOneLayers(self, nLayer, freqs):
