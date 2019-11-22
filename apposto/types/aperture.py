@@ -23,29 +23,38 @@ class CircularOpticalAperture():
         Height of the aperture center in [meters].
     '''
 
-    def __init__(self, aperture_radius, polar_coords, height):
+    def __init__(self, aperture_radius, cartes_coords):
         self._r = aperture_radius
-        self._rho = polar_coords[0]
-        self._theta = polar_coords[1]
-        self._z = height
+        self._x = cartes_coords[0]
+        self._y = cartes_coords[1]
+        self._z = cartes_coords[2]
 
-    @staticmethod
-    def fromDegToRad(angle_deg):
-        return angle_deg * np.pi / 180
-
-    @staticmethod
-    def fromPolarToCartesian(rho, thetaRad):
-        x = rho * np.cos(thetaRad)
-        y = rho * np.sin(thetaRad)
-        return x, y
+    def getCartesianCoords(self):
+        return np.array([self._x, self._y, self._z])
 
     def getApertureRadius(self):
         return self._r
 
-    def getApertureCenterCartesianCoords(self):
-        x, y = self.fromPolarToCartesian(self._rho,
-                                         self.fromDegToRad(self._theta))
-        return np.array([x, y, self._z])
-
-    def getApertureCenterPolarCoords(self):
-        return np.array([self._rho, self._theta, self._z])
+#     def __init__(self, aperture_radius, polar_coords, height):
+#         self._r = aperture_radius
+#         self._rho = polar_coords[0]
+#         self._theta = polar_coords[1]
+#         self._z = height
+#
+#     @staticmethod
+#     def fromDegToRad(angle_deg):
+#         return angle_deg * np.pi / 180
+#
+#     @staticmethod
+#     def fromPolarToCartesian(rho, thetaRad):
+#         x = rho * np.cos(thetaRad)
+#         y = rho * np.sin(thetaRad)
+#         return x, y
+#
+#     def getApertureCenterCartesianCoords(self):
+#         x, y = self.fromPolarToCartesian(self._rho,
+#                                          self.fromDegToRad(self._theta))
+#         return np.array([x, y, self._z])
+#
+#     def getApertureCenterPolarCoords(self):
+#         return np.array([self._rho, self._theta, self._z])
