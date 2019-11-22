@@ -93,10 +93,10 @@ class VonKarmannSpatioTemporalCovariance():
         self._freqs = freqs
 
     def source1Coords(self):
-        return self._source1.getSourceCartesianCoords()
+        return self._source1.getSourcePolarCoords()
 
     def source2Coords(self):
-        return self._source2.getSourceCartesianCoords()
+        return self._source2.getSourcePolarCoords()
 
     def aperture1Radius(self):
         return self._ap1.getApertureRadius()
@@ -105,10 +105,26 @@ class VonKarmannSpatioTemporalCovariance():
         return self._ap2.getApertureRadius()
 
     def aperture1Coords(self):
-        return self._ap1.getApertureCenterCartesianCoords()
+        #         polar1 = self._ap1.getApertureCenterPolarCoords()
+        #         cartes1 = np.array([
+        #             polar1[2] * np.cos(np.deg2rad(polar1[1])) /
+        #             np.cos(np.deg2rad(polar1[0])),
+        #             polar1[2] * np.sin(np.deg2rad(polar1[1])) /
+        #             np.cos(np.deg2rad(polar1[0])),
+        #             polar1[2]])
+        #         return cartes1
+        return self._ap1.getCartesianCoords()
 
     def aperture2Coords(self):
-        return self._ap2.getApertureCenterCartesianCoords()
+        #         polar2 = self._ap2.getApertureCenterPolarCoords()
+        #         cartes2 = np.array([
+        #             polar2[2] * np.cos(np.deg2rad(polar2[1])) /
+        #             np.cos(np.deg2rad(polar2[0])),
+        #             polar2[2] * np.sin(np.deg2rad(polar2[1])) /
+        #             np.cos(np.deg2rad(polar2[0])),
+        #             polar2[2]])
+        #         return cartes2
+        return self._ap2.getCartesianCoords()
 
     def layerScalingFactor1(self, nLayer):
         a1 = self._layerScalingFactor(
@@ -147,26 +163,32 @@ class VonKarmannSpatioTemporalCovariance():
 #             dist_versor / dist_versor[2]
 #         return scalFact
 
+    def _getCleverVersorCoords(self, s_coord):
+        return np.array([
+            np.sin(np.deg2rad(s_coord[0])) * np.cos(np.deg2rad(s_coord[1])),
+            np.sin(np.deg2rad(s_coord[0])) * np.sin(np.deg2rad(s_coord[1])),
+            np.cos(np.deg2rad(s_coord[0]))])
+
+    def cleverVersor1Coords(self):
+        return self._getCleverVersorCoords(self.source1Coords())
+
+    def cleverVersor2Coords(self):
+        return self._getCleverVersorCoords(self.source2Coords())
+
     def layerProjectedAperturesSeparation(self, nLayer):
         #         sCoords1 = self.source1Coords()[0:2]
         #         sCoords2 = self.source2Coords()[0:2]
         aCoord1 = self.aperture1Coords()  # [0:2]
         aCoord2 = self.aperture2Coords()  # [0:2]
-        sCoord1 = self._source1.getSourcePolarCoords()
-        sCoord2 = self._source2.getSourcePolarCoords()
-        sCoord1New = np.array([np.sin(sCoord1[0]) * np.cos(sCoord1[1]),
-                               np.sin(sCoord1[0]) * np.sin(sCoord1[1]),
-                               np.cos(sCoord1[0])])
-        sCoord2New = np.array([np.sin(sCoord2[0]) * np.cos(sCoord2[1]),
-                               np.sin(sCoord2[0]) * np.sin(sCoord2[1]),
-                               np.cos(sCoord2[0])])
 #         sep = aCoords2 - aCoords1 + self.layerScalingFactor2(nLayer) * \
 #             (sCoords2 - aCoords2) - self.layerScalingFactor1(nLayer) * \
 #             (sCoords1 - aCoords1)
+        vCoord1 = self.cleverVersor1Coords()
+        vCoord2 = self.cleverVersor2Coords()
         sep = aCoord2 - aCoord1 + (self._layersAlt[nLayer] - aCoord2[2]) * \
-            sCoord2New / sCoord2New[2] - \
+            vCoord2 / vCoord2[2] - \
             (self._layersAlt[nLayer] - aCoord1[2]) * \
-            sCoord1New / sCoord1New[2]
+            vCoord1 / vCoord1[2]
         return sep
 
     def _VonKarmannPsdOneLayers(self, nLayer, freqs):
