@@ -25,9 +25,9 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         rho, theta = (0, 0)
         source = GuideSource((rho, theta), np.inf)
         radius = 10
-        center = [0, 0]
-        height = 0
-        aperture = CircularOpticalAperture(radius, center, height)
+        center = [0, 0, 0]
+#         height = 0
+        aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-2, 2, 100)
 
         vk_cov = VonKarmannSpatioTemporalCovariance(
