@@ -3,6 +3,7 @@
 '''
 
 import numpy as np
+from scipy.special import gamma
 
 
 class VonKarmannPsd():
@@ -11,7 +12,9 @@ class VonKarmannPsd():
     phase assuming the Von Karman spectrum.
     The PSD is obtained from the following expression:
 
-        PSD(f,h) = 0.0229 * r0(h)**(-5/3) * (f**2+1/L0**2)**(-11/6)
+        PSD(f,h) = (24/5 * gamma(6/5))**(5/6) *
+            gamma(11/6)**2 / (2 * np.pi ** (11 / 3)) *
+            r0(h)**(-5/3) * (f**2+1/L0**2)**(-11/6)
 
     Parameters
     ----------
@@ -29,8 +32,10 @@ class VonKarmannPsd():
     #      di Kolomogorov.
 
     def _computeVonKarmannPsd(self, freqs):
+        c = (24. / 5 * gamma(6. / 5))**(5. / 6) * \
+            gamma(11. / 6)**2 / (2 * np.pi ** (11 / 3))
         if type(self._r0) == np.ndarray:
-            self._psd = np.array([0.023 * self._r0[i]**(-5. / 3) *
+            self._psd = np.array([c * self._r0[i]**(-5. / 3) *
                                   (freqs**2 + 1 / self._L0**2)**(-11. / 6)
                                   for i in range(self._r0.shape[0])])
         else:
