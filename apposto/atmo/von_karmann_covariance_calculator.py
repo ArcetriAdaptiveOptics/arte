@@ -6,6 +6,7 @@
 import numpy as np
 from apposto.utils import von_karmann_psd, math, zernike_generator
 import logging
+from pandas.tests.indexes.timedeltas.test_arithmetic import freq
 
 
 class VonKarmannSpatioTemporalCovariance():
@@ -73,9 +74,17 @@ class VonKarmannSpatioTemporalCovariance():
         self._layersAlt = cn2_profile.layers_distance()
         self._windSpeed = cn2_profile.wind_speed()
         self._windDirection = cn2_profile.wind_direction()
+        self._r0 = None
+        self._L0 = None
 
     def setCn2Profile(self, cn2_profile):
         self._cn2 = cn2_profile
+
+    def setFriedParam(self, r0):
+        self._r0 = r0
+
+    def setOuterScale(self, L0):
+        self._L0 = L0
 
     def setSource1(self, s1):
         self._source1 = s1
@@ -105,25 +114,9 @@ class VonKarmannSpatioTemporalCovariance():
         return self._ap2.getApertureRadius()
 
     def aperture1Coords(self):
-        #         polar1 = self._ap1.getApertureCenterPolarCoords()
-        #         cartes1 = np.array([
-        #             polar1[2] * np.cos(np.deg2rad(polar1[1])) /
-        #             np.cos(np.deg2rad(polar1[0])),
-        #             polar1[2] * np.sin(np.deg2rad(polar1[1])) /
-        #             np.cos(np.deg2rad(polar1[0])),
-        #             polar1[2]])
-        #         return cartes1
         return self._ap1.getCartesianCoords()
 
     def aperture2Coords(self):
-        #         polar2 = self._ap2.getApertureCenterPolarCoords()
-        #         cartes2 = np.array([
-        #             polar2[2] * np.cos(np.deg2rad(polar2[1])) /
-        #             np.cos(np.deg2rad(polar2[0])),
-        #             polar2[2] * np.sin(np.deg2rad(polar2[1])) /
-        #             np.cos(np.deg2rad(polar2[0])),
-        #             polar2[2]])
-        #         return cartes2
         return self._ap2.getCartesianCoords()
 
     def layerScalingFactor1(self, nLayer):
@@ -133,12 +126,6 @@ class VonKarmannSpatioTemporalCovariance():
             self.aperture1Coords()[2])
         return a1
 
-#     def layerScalingFactor1(self, nLayer):
-#         a1 = self._layerScalingFactor(self.source1Coords(),
-#                                       self.aperture1Coords(),
-#                                       nLayer)
-#         return a1
-
     def layerScalingFactor2(self, nLayer):
         a2 = self._layerScalingFactor(
             self._layersAlt[nLayer],
@@ -146,22 +133,9 @@ class VonKarmannSpatioTemporalCovariance():
             self.aperture2Coords()[2])
         return a2
 
-#     def layerScalingFactor2(self, nLayer):
-#         a2 = self._layerScalingFactor(self.source2Coords(),
-#                                       self.aperture2Coords(),
-#                                       nLayer)
-#        return a2
-
     def _layerScalingFactor(self, zLayer, zSource, zAperture):
         scalFact = (zLayer - zAperture) / (zSource - zAperture)
         return scalFact
-
-#     def _layerScalingFactor(self, source_coord, aperture_coord, n_layer):
-#         dist_versor = (source_coord - aperture_coord) / np.linalg.norm(
-#             source_coord - aperture_coord)
-#         scalFact = (self._layersAlt[n_layer] - aperture_coord[2]) * \
-#             dist_versor / dist_versor[2]
-#         return scalFact
 
     def _getCleverVersorCoords(self, s_coord):
         return np.array([
@@ -178,29 +152,32 @@ class VonKarmannSpatioTemporalCovariance():
         return self._getCleverVersorCoords(self.source2Coords())
 
     def layerProjectedAperturesSeparation(self, nLayer):
-        #         sCoords1 = self.source1Coords()[0:2]
-        #         sCoords2 = self.source2Coords()[0:2]
-        aCoord1 = self.aperture1Coords()  # [0:2]
-        aCoord2 = self.aperture2Coords()  # [0:2]
-#         sep = aCoords2 - aCoords1 + self.layerScalingFactor2(nLayer) * \
-#             (sCoords2 - aCoords2) - self.layerScalingFactor1(nLayer) * \
-#             (sCoords1 - aCoords1)
+        aCoord1 = self.aperture1Coords()
+        aCoord2 = self.aperture2Coords()
+
         vCoord1 = self.cleverVersor1Coords()
         vCoord2 = self.cleverVersor2Coords()
+
         sep = aCoord2 - aCoord1 + (self._layersAlt[nLayer] - aCoord2[2]) * \
             vCoord2 / vCoord2[2] - \
             (self._layersAlt[nLayer] - aCoord1[2]) * \
             vCoord1 / vCoord1[2]
         return sep
 
-    def _VonKarmannPsdOneLayers(self, nLayer, freqs):
-        r0 = self._cn2.r0s()[nLayer]
-        L0 = self._cn2.outer_scale()
+    def _VonKarmanPSDOneLayer(self, nLayer, freqs):
+        if self._r0 is None:
+            r0 = self._cn2.r0s()[nLayer]
+        else:
+            r0 = self._r0
+        if self._L0 is None:
+            L0 = self._cn2.outer_scale()
+        else:
+            L0 = self._L0
         vk = von_karmann_psd.VonKarmannPsd(r0, L0)
         psd = vk.spatial_psd(freqs)
         return psd
 
-    def _initializeParams(self, j, k, nLayer):
+    def _initializeParams(self, j, k, nLayer, freqs):
         self._a1 = self.layerScalingFactor1(nLayer)
         self._a2 = self.layerScalingFactor2(nLayer)
         self._R1 = self.aperture1Radius()
@@ -209,7 +186,7 @@ class VonKarmannSpatioTemporalCovariance():
         self._sepMod = np.linalg.norm(self._sep)
         self._thS = np.arctan2(self._sep[1], self._sep[0])
 
-        self._psd = self._VonKarmannPsdOneLayers(nLayer, self._freqs)
+        self._psd = self._VonKarmanPSDOneLayer(nLayer, freqs)
 
         dummyNumb = 2
         zern = zernike_generator.ZernikeGenerator(dummyNumb)
@@ -221,10 +198,10 @@ class VonKarmannSpatioTemporalCovariance():
 
         self._b1 = np.array([math.besselFirstKind(
             self._nj + 1,
-            2 * np.pi * f * self._R1 * (1 - self._a1)) for f in self._freqs])
+            2 * np.pi * f * self._R1 * (1 - self._a1)) for f in freqs])
         self._b2 = np.array([math.besselFirstKind(
             self._nk + 1,
-            2 * np.pi * f * self._R2 * (1 - self._a2)) for f in self._freqs])
+            2 * np.pi * f * self._R2 * (1 - self._a2)) for f in freqs])
 
         self._c0 = (-1)**self._mk * np.sqrt((
             self._nj + 1) * (self._nk + 1)) * np.complex(0, 1)**(
@@ -233,8 +210,8 @@ class VonKarmannSpatioTemporalCovariance():
         self._c1 = 1. / (
             np.pi * self._R1 * self._R2 * (1 - self._a1) * (1 - self._a2))
 
-    def _zernikeCovarianceOneLayer(self, j, k, nLayer):
-        self._initializeParams(j, k, nLayer)
+    def _computeZernikeCovarianceOneLayer(self, j, k, nLayer):
+        self._initializeParams(j, k, nLayer, self._freqs)
         i = np.complex(0, 1)
 
         self._b3 = np.array([math.besselFirstKind(
@@ -258,11 +235,11 @@ class VonKarmannSpatioTemporalCovariance():
              self._b4)
 
         self._covOneLayer = np.trapz(np.real(self._integCovFunc),
-                                     self._freqs)  # + \
-        #np.trapz(np.imag(self._integCovFunc), self._freqs)
+                                     self._freqs) + \
+            i * np.trapz(np.imag(self._integCovFunc), self._freqs)
 
     def _getZernikeCovarianceOneLayer(self, j, k, nLayer):
-        self._zernikeCovarianceOneLayer(j, k, nLayer)
+        self._computeZernikeCovarianceOneLayer(j, k, nLayer)
         return self._covOneLayer
 
 #     def getZernikeCovarianceMatrixOneLayer(self, j_vector, k_vector, nLayer):
@@ -280,6 +257,9 @@ class VonKarmannSpatioTemporalCovariance():
 #             in range(self._layersAlt.shape[0])])
 #         return self._covAllLayers.sum()
 
+
+# TODO: merge getZernikeCovariance and getZernikeCovarianceMatrix in
+# a single function.
     def getZernikeCovariance(self, j, k, nLayer=None):
         if nLayer is None:
             cov = np.array([
@@ -298,15 +278,23 @@ class VonKarmannSpatioTemporalCovariance():
             for j in range(j_vector.shape[0])])
         return matr
 
-    def _zernikeCPSD(self, j, k, nLayer, temp_freq):
-        vl = self._windSpeed[nLayer]
+    def _computeZernikeCPSD(self, j, k, nLayer, temp_freq, wind, th_wind):
+        i = np.complex(0, 1)
+        if wind is None:
+            vl = self._windSpeed[nLayer]
+        else:
+            vl = wind
+
         fPerp = self._freqs
         f = np.sqrt(fPerp**2 + (temp_freq / vl)**2)
-        self.setSpatialFrequencies(f)
+#        self.setSpatialFrequencies(f)
 
-        self._initializeParams(j, k, nLayer)
+        self._initializeParams(j, k, nLayer, f)
 
-        thWind = np.deg2rad(self._windDirection[nLayer])
+        if th_wind is None:
+            thWind = np.deg2rad(self._windDirection[nLayer])
+        else:
+            thWind = np.deg2rad(th_wind)
         self._th0 = np.array([np.arccos(- temp_freq / (sp_freq * vl))
                               for sp_freq in f])
         self._th1 = self._th0 + thWind
@@ -315,26 +303,49 @@ class VonKarmannSpatioTemporalCovariance():
         self._c4 = np.pi / 4 * (1 - self._deltaj) * ((-1)**j - 1)
         self._c5 = np.pi / 4 * (1 - self._deltak) * ((-1)**k - 1)
 
-        self._integCPSDFunc = 2 * self._c0 * self._c1 / (vl * np.pi) * \
-            self._psd / self._freqs**2 * self._b1 * self._b2 * \
-            (np.cos(2 * np.pi * self._freqs *
-                    self._sepMod * np.cos(self._th1 - self._thS)) *
+#         self._integCPSDFunc = 2 * self._c0 * self._c1 / (vl * np.pi) * \
+#             self._psd / self._freqs**2 * self._b1 * self._b2 * \
+#             (np.cos(2 * np.pi * self._freqs *
+#                     self._sepMod * np.cos(self._th1 - self._thS)) *
+#              np.cos(self._mj * self._th1 + self._c4) *
+#              np.cos(self._mk * self._th1 + self._c5) +
+#              np.cos(2 * np.pi * self._freqs *
+#                     self._sepMod * np.cos(self._th2 - self._thS)) *
+#              np.cos(self._mj * self._th2 + self._c4) *
+#              np.cos(self._mk * self._th2 + self._c5))
+
+        self._integCPSDFunc = self._c0 * self._c1 / (vl * np.pi) * \
+            self._psd / f**2 * self._b1 * self._b2 * \
+            (np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
+                self._th1 - self._thS)) *
              np.cos(self._mj * self._th1 + self._c4) *
              np.cos(self._mk * self._th1 + self._c5) +
-             np.cos(2 * np.pi * self._freqs *
-                    self._sepMod * np.cos(self._th2 - self._thS)) *
+             np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
+                 self._th2 - self._thS)) *
              np.cos(self._mj * self._th2 + self._c4) *
              np.cos(self._mk * self._th2 + self._c5))
 
         self._cpsd = np.trapz(np.real(self._integCPSDFunc),
-                              self._freqs)  # + \
-#            np.trapz(np.imag(self._integCPSDFunc), self._freqs)
+                              fPerp) + \
+            i * np.trapz(np.imag(self._integCPSDFunc), fPerp)
 
-    def _getZernikeCPSDOneTempFreq(self, j, k, nLayer, t_freq):
-        self._zernikeCPSD(j, k, nLayer, t_freq)
+    def _getZernikeCPSDOneTempFreq(self, j, k, nLayer, t_freq, wind, th_wind):
+        self._computeZernikeCPSD(j, k, nLayer, t_freq, wind, th_wind)
         return self._cpsd
 
-    def getZernikeCPSD(self, j, k, nLayer, temp_freqs):
-        return np.array([
-            self._getZernikeCPSDOneTempFreq(j, k, nLayer, t_freq) for t_freq
+    def getZernikeCPSD(self, j, k, nLayer, temp_freqs,
+                       wind=None, th_wind=None):
+        self._zernCPSD = np.array([self._getZernikeCPSDOneTempFreq(
+            j, k, nLayer, t_freq, wind, th_wind) for t_freq
             in temp_freqs])
+        return self._zernCPSD
+
+    def plotZernikeCPSD(self, temp_freqs, func_part):
+        import matplotlib.pyplot as plt
+        if func_part == 'real':
+            plt.loglog(temp_freqs, np.abs(np.real(self._zernCPSD)), '-')
+        elif func_part == 'imag':
+            plt.loglog(temp_freqs, np.abs(np.imag(self._zernCPSD)), '-')
+
+# TODO: _zern.CPSD * 1e18 * (5e-7/2*np.pi)**2 to convert from rad**2/Hz to
+# nm**2/Hz
