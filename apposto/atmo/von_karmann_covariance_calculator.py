@@ -303,17 +303,6 @@ class VonKarmannSpatioTemporalCovariance():
         self._c4 = np.pi / 4 * (1 - self._deltaj) * ((-1)**j - 1)
         self._c5 = np.pi / 4 * (1 - self._deltak) * ((-1)**k - 1)
 
-#         self._integCPSDFunc = 2 * self._c0 * self._c1 / (vl * np.pi) * \
-#             self._psd / self._freqs**2 * self._b1 * self._b2 * \
-#             (np.cos(2 * np.pi * self._freqs *
-#                     self._sepMod * np.cos(self._th1 - self._thS)) *
-#              np.cos(self._mj * self._th1 + self._c4) *
-#              np.cos(self._mk * self._th1 + self._c5) +
-#              np.cos(2 * np.pi * self._freqs *
-#                     self._sepMod * np.cos(self._th2 - self._thS)) *
-#              np.cos(self._mj * self._th2 + self._c4) *
-#              np.cos(self._mk * self._th2 + self._c5))
-
         self._integCPSDFunc = self._c0 * self._c1 / (vl * np.pi) * \
             self._psd / f**2 * self._b1 * self._b2 * \
             (np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
@@ -340,12 +329,36 @@ class VonKarmannSpatioTemporalCovariance():
             in temp_freqs])
         return self._zernCPSD
 
-    def plotZernikeCPSD(self, temp_freqs, func_part):
+    def plotZernikeCPSD(self, cpsd, temp_freqs, func_part, scale):
         import matplotlib.pyplot as plt
+        lam = self._cn2.DEFAULT_LAMBDA
+        m_to_nm = 1e18
         if func_part == 'real':
-            plt.loglog(temp_freqs, np.abs(np.real(self._zernCPSD)), '-')
+            if scale == 'log':
+                plt.loglog(
+                    temp_freqs,
+                    np.abs(np.real(cpsd)) *
+                    (lam / (2 * np.pi))**2 * m_to_nm,
+                    '-', label='Real')
+            elif scale == 'linear':
+                plt.semilogx(
+                    temp_freqs,
+                    np.real(cpsd) *
+                    (lam / (2 * np.pi))**2 * m_to_nm,
+                    '-', label='Real')
         elif func_part == 'imag':
-            plt.loglog(temp_freqs, np.abs(np.imag(self._zernCPSD)), '-')
-
-# TODO: _zern.CPSD * 1e18 * (5e-7/2*np.pi)**2 to convert from rad**2/Hz to
-# nm**2/Hz
+            if scale == 'log':
+                plt.loglog(
+                    temp_freqs,
+                    np.abs(np.imag(cpsd)) *
+                    (lam / (2 * np.pi))**2 * m_to_nm,
+                    '-', label='Imaginary')
+            elif scale == 'linear':
+                plt.semilogx(
+                    temp_freqs,
+                    np.imag(cpsd) *
+                    (lam / (2 * np.pi))**2 * m_to_nm,
+                    '-', label='Imaginary')
+        plt.legend()
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('PSD [nm$^{2}$/Hz]')
