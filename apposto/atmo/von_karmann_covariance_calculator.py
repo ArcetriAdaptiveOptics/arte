@@ -6,7 +6,6 @@
 import numpy as np
 from apposto.utils import von_karmann_psd, math, zernike_generator
 import logging
-from pandas.tests.indexes.timedeltas.test_arithmetic import freq
 
 
 class VonKarmannSpatioTemporalCovariance():
@@ -31,29 +30,27 @@ class VonKarmannSpatioTemporalCovariance():
 
     Parameters
     ----------
-    cn2_profile: type?
-        cn2 profile as obtained from the Cn2Profile class
+    cn2_profile: Cn2Profile object
+        cn2 profile as obtained from the Cn2Profile class.
         (e.g. cn2_profile = apposto.atmo.cn2_profile.EsoEltProfiles.Q1())
 
-    source1: type?
-        source geometry as obtained from GuideSource class
+    source1: GuideSource object
+        Source geometry as obtained from GuideSource class.
+        Here we consider rho as the angle with respect to the z-axis.
+            theta is always the angle with respect to the x-axis.
         (e.g. source1 = apposto.types.guide_source.GuideSource((1,90), 9e3)
 
-    source2: type?
-        source geometry as obtained from GuideSource class
-        (e.g. source2 = apposto.types.guide_source.GuideSource((1,90), 9e3)
+    source2: GuideSource object
+        Same as source1.
 
-    aperture1: type?
-        optical aperture geometry as obtained from
-            CircularOpticalAperture class
+    aperture1: CircularOpticalAperture object
+        Optical aperture geometry as obtained from CircularOpticalAperture
+            class.
         (e.g. aperture1 = apposto.types.aperture.CircularOpticalAperture(
                                                     10, (0, 0, 0)))
 
-    aperture2: type?
-        optical aperture geometry as obtained from
-            CircularOpticalAperture class
-        (e.g. aperture2 = apposto.types.aperture.CircularOpticalAperture(
-                                                    10, (5, 5, 5)))
+    aperture2: CircularOpticalAperture object
+        Same as aperture1.
     '''
 
     def __init__(self,
@@ -74,8 +71,8 @@ class VonKarmannSpatioTemporalCovariance():
         self._layersAlt = cn2_profile.layers_distance()
         self._windSpeed = cn2_profile.wind_speed()
         self._windDirection = cn2_profile.wind_direction()
-        self._r0 = None
-        self._L0 = None
+        self._r0 = cn2_profile.r0s()
+        self._L0 = cn2_profile.outer_scale()
 
     def setCn2Profile(self, cn2_profile):
         self._cn2 = cn2_profile
@@ -83,8 +80,17 @@ class VonKarmannSpatioTemporalCovariance():
     def setFriedParam(self, r0):
         self._r0 = r0
 
-    def setOuterScale(self, L0):
+    def setOuterScale(self, L0=None):
         self._L0 = L0
+
+    def setLayersAltitude(self, layer_alt):
+        '''
+        Parameters
+        ----------
+        layer_alt: altitude [m] of the turbulent layer to be considered.
+                    It must be a numpy array.
+        '''
+        self._layersAlt = layer_alt
 
     def setSource1(self, s1):
         self._source1 = s1
@@ -165,15 +171,7 @@ class VonKarmannSpatioTemporalCovariance():
         return sep
 
     def _VonKarmanPSDOneLayer(self, nLayer, freqs):
-        if self._r0 is None:
-            r0 = self._cn2.r0s()[nLayer]
-        else:
-            r0 = self._r0
-        if self._L0 is None:
-            L0 = self._cn2.outer_scale()
-        else:
-            L0 = self._L0
-        vk = von_karmann_psd.VonKarmannPsd(r0, L0)
+        vk = von_karmann_psd.VonKarmannPsd(self._r0[nLayer], self._L0)
         psd = vk.spatial_psd(freqs)
         return psd
 
@@ -259,7 +257,7 @@ class VonKarmannSpatioTemporalCovariance():
 
 
 # TODO: merge getZernikeCovariance and getZernikeCovarianceMatrix in
-# a single function.
+# a single function?
     def getZernikeCovariance(self, j, k, nLayer=None):
         if nLayer is None:
             cov = np.array([
@@ -333,6 +331,7 @@ class VonKarmannSpatioTemporalCovariance():
         import matplotlib.pyplot as plt
         lam = self._cn2.DEFAULT_LAMBDA
         m_to_nm = 1e18
+        plt.figure()
         if func_part == 'real':
             if scale == 'log':
                 plt.loglog(
@@ -361,4 +360,4 @@ class VonKarmannSpatioTemporalCovariance():
                     '-', label='Imaginary')
         plt.legend()
         plt.xlabel('Frequency [Hz]')
-        plt.ylabel('PSD [nm$^{2}$/Hz]')
+        plt.ylabel('CPSD [nm$^{2}$/Hz]')
