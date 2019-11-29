@@ -18,18 +18,29 @@ class VonKarmannPsd():
 
     Parameters
     ----------
-    fried_param:
-    outer_scale:
+    fried_param: float
+        Fried parameter characterizing the atmospheric turbulence [m].
+    outer_scale: float
+        Outer scale of the atmospheric turbulence [m].
+
+    Example
+    -------
+    Compute the total variance of Kolmogorov over a 10m telescope:
+    R = 5
+    r0 = 0.1
+    L0 = np.inf
+    psd = von_karmann_psd.VonKarmannPsd(r0, L0)
+    freqs = np.logspace(-5, 4, 1000)
+    bess = scipy.special.jv(1, 2*np.pi*R*freqs)
+    psdPistonRem = psd.spatial_psd(freqs) * (1 - (bess/(np.pi*R*freqs))**2)
+    varInSquareRad = np.trapz(psdPistonRem*2*np.pi*freqs, freqs)
+
+    Compare varInSquareRad with Noll('76): delta1 = 1.029*(2*R/r0)**(5./3)
     '''
 
     def __init__(self, fried_param, outer_scale):
         self._r0 = fried_param
         self._L0 = outer_scale
-
-    # TODO: testare la funzione in qualche applicazione (ES:
-    #      L0 infinito -> Kolmogorov. Integrale sulle frequenze
-    #      mi deve dare la potenza (esistono formuline sulla turbolenza
-    #      di Kolomogorov.
 
     def _computeVonKarmannPsd(self, freqs):
         c = (24. / 5 * gamma(6. / 5))**(5. / 6) * \
