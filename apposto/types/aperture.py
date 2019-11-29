@@ -13,7 +13,7 @@ class CircularOpticalAperture():
     Parameters
     ----------
     aperture_radius: float
-        Radius of the optical aperture in [meters].
+        Radius of the optical aperture in [m].
 
     cartes_coords: tuple of three floats
         Cartesian coordinates (x, y, z) of the aperture center
