@@ -36,8 +36,9 @@ class VonKarmannSpatioTemporalCovariance():
 
     source1: GuideSource object
         Source geometry as obtained from GuideSource class.
-        Here we consider rho as the angle with respect to the z-axis.
-            theta is always the angle with respect to the x-axis.
+        Here we consider rho as the angle (in arcsec) with respect to the
+            z-axis.
+        theta is always the angle (in degrees) with respect to the x-axis.
         (e.g. source1 = apposto.types.guide_source.GuideSource((1,90), 9e3)
 
     source2: GuideSource object
@@ -175,7 +176,7 @@ class VonKarmannSpatioTemporalCovariance():
         psd = vk.spatial_psd(freqs)
         return psd
 
-    def _initializeParams(self, j, k, nLayer, freqs):
+    def _initializeParams(self, j, k, nLayer, spat_freqs):
         self._a1 = self.layerScalingFactor1(nLayer)
         self._a2 = self.layerScalingFactor2(nLayer)
         self._R1 = self.aperture1Radius()
@@ -184,7 +185,7 @@ class VonKarmannSpatioTemporalCovariance():
         self._sepMod = np.linalg.norm(self._sep)
         self._thS = np.arctan2(self._sep[1], self._sep[0])
 
-        self._psd = self._VonKarmanPSDOneLayer(nLayer, freqs)
+        self._psd = self._VonKarmanPSDOneLayer(nLayer, spat_freqs)
 
         dummyNumb = 2
         zern = zernike_generator.ZernikeGenerator(dummyNumb)
@@ -196,10 +197,10 @@ class VonKarmannSpatioTemporalCovariance():
 
         self._b1 = np.array([math.besselFirstKind(
             self._nj + 1,
-            2 * np.pi * f * self._R1 * (1 - self._a1)) for f in freqs])
+            2 * np.pi * f * self._R1 * (1 - self._a1)) for f in spat_freqs])
         self._b2 = np.array([math.besselFirstKind(
             self._nk + 1,
-            2 * np.pi * f * self._R2 * (1 - self._a2)) for f in freqs])
+            2 * np.pi * f * self._R2 * (1 - self._a2)) for f in spat_freqs])
 
         self._c0 = (-1)**self._mk * np.sqrt((
             self._nj + 1) * (self._nk + 1)) * np.complex(0, 1)**(
