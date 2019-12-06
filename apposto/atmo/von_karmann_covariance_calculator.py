@@ -338,13 +338,15 @@ class VonKarmannSpatioTemporalCovariance():
 
         k = (1 - self._a2) * self._R2 / ((1 - self._a1) * self._R1)
 
-        arg1 = np.pi * self._R1 * (1 - self._a1) * (k - 1)
-        arg2 = np.pi * self._R2 * (1 - self._a2) * (k - 1)
+        arg1 = np.pi * self._R1 * (1 - self._a1)  # * (k - 1)
+        arg2 = np.pi * self._R2 * (1 - self._a2)  # * (k - 1)
+        b0 = np.array([math.besselFirstKind(1, 2 * arg1 * (k - 1) * freq)
+                       for freq in f])
         b1 = np.array([math.besselFirstKind(1, 2 * arg1 * freq) for freq in f])
         b2 = np.array([math.besselFirstKind(1, 2 * arg2 * freq) for freq in f])
 
         intFunc = 1. / vl * self._psd * (
-            b1 / (arg1 * f) - b1 / (arg1 * f) * b2 / (arg2 * f)) * (
+            b0 / (arg1 * (k - 1) * f) - b1 / (arg1 * f) * b2 / (arg2 * f)) * (
                 np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
                     th1 - self._thS)) +
             np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
