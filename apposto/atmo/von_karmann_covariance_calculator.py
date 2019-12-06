@@ -176,7 +176,7 @@ class VonKarmannSpatioTemporalCovariance():
         psd = vk.spatial_psd(freqs)
         return psd
 
-    def _initializeParams(self, j, k, nLayer, spat_freqs):
+    def _initializeParams1(self, nLayer, spat_freqs):
         self._a1 = self.layerScalingFactor1(nLayer)
         self._a2 = self.layerScalingFactor2(nLayer)
         self._R1 = self.aperture1Radius()
@@ -187,6 +187,7 @@ class VonKarmannSpatioTemporalCovariance():
 
         self._psd = self._VonKarmanPSDOneLayer(nLayer, spat_freqs)
 
+    def _initializeParams2(self, j, k, spat_freqs):
         dummyNumb = 2
         zern = zernike_generator.ZernikeGenerator(dummyNumb)
         self._nj, self._mj = zern.degree(j)
@@ -210,7 +211,8 @@ class VonKarmannSpatioTemporalCovariance():
             np.pi * self._R1 * self._R2 * (1 - self._a1) * (1 - self._a2))
 
     def _computeZernikeCovarianceOneLayer(self, j, k, nLayer):
-        self._initializeParams(j, k, nLayer, self._freqs)
+        self._initializeParams1(nLayer, self._freqs)
+        self._initializeParams2(j, k, self._freqs)
         i = np.complex(0, 1)
 
         self._b3 = np.array([math.besselFirstKind(
@@ -240,22 +242,6 @@ class VonKarmannSpatioTemporalCovariance():
     def _getZernikeCovarianceOneLayer(self, j, k, nLayer):
         self._computeZernikeCovarianceOneLayer(j, k, nLayer)
         return self._covOneLayer
-
-#     def getZernikeCovarianceMatrixOneLayer(self, j_vector, k_vector, nLayer):
-#         matr = np.matrix([
-#             np.array([
-#                 self.getZernikeCovarianceOneLayer(
-#                     j_vector[j], k_vector[i], nLayer)
-#                 for i in range(k_vector.shape[0])])
-#             for j in range(j_vector.shape[0])])
-#         return matr
-
-#     def getZernikeCovariance(self, j, k):
-#         self._covAllLayers = np.array([
-#             self.getZernikeCovarianceOneLayer(j, k, nLayer) for nLayer
-#             in range(self._layersAlt.shape[0])])
-#         return self._covAllLayers.sum()
-
 
 # TODO: merge getZernikeCovariance and getZernikeCovarianceMatrix in
 # a single function?
@@ -288,16 +274,17 @@ class VonKarmannSpatioTemporalCovariance():
         f = np.sqrt(fPerp**2 + (temp_freq / vl)**2)
 #        self.setSpatialFrequencies(f)
 
-        self._initializeParams(j, k, nLayer, f)
+        self._initializeParams1(nLayer, f)
+        self._initializeParams2(j, k, f)
 
         if th_wind is None:
             thWind = np.deg2rad(self._windDirection[nLayer])
         else:
             thWind = np.deg2rad(th_wind)
-        self._th0 = np.array([np.arccos(- temp_freq / (sp_freq * vl))
-                              for sp_freq in f])
-        self._th1 = self._th0 + thWind
-        self._th2 = - self._th0 + thWind
+        th0 = np.array([np.arccos(- temp_freq / (sp_freq * vl))
+                        for sp_freq in f])
+        th1 = th0 + thWind
+        th2 = -th0 + thWind
 
         self._c4 = np.pi / 4 * (1 - self._deltaj) * ((-1)**j - 1)
         self._c5 = np.pi / 4 * (1 - self._deltak) * ((-1)**k - 1)
@@ -305,13 +292,13 @@ class VonKarmannSpatioTemporalCovariance():
         self._integCPSDFunc = self._c0 * self._c1 / (vl * np.pi) * \
             self._psd / f**2 * self._b1 * self._b2 * \
             (np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
-                self._th1 - self._thS)) *
-             np.cos(self._mj * self._th1 + self._c4) *
-             np.cos(self._mk * self._th1 + self._c5) +
+                th1 - self._thS)) *
+             np.cos(self._mj * th1 + self._c4) *
+             np.cos(self._mk * th1 + self._c5) +
              np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
-                 self._th2 - self._thS)) *
-             np.cos(self._mj * self._th2 + self._c4) *
-             np.cos(self._mk * self._th2 + self._c5))
+                 th2 - self._thS)) *
+             np.cos(self._mj * th2 + self._c4) *
+             np.cos(self._mk * th2 + self._c5))
 
         self._cpsd = np.trapz(np.real(self._integCPSDFunc),
                               fPerp) + \
@@ -328,7 +315,55 @@ class VonKarmannSpatioTemporalCovariance():
             in temp_freqs])
         return self._zernCPSD
 
-    def plotZernikeCPSD(self, cpsd, temp_freqs, func_part, scale):
+    def _computePhaseCPSD(self, nLayer, temp_freq, wind, th_wind):
+        i = np.complex(0, 1)
+        if wind is None:
+            vl = self._windSpeed[nLayer]
+        else:
+            vl = wind
+
+        fPerp = self._freqs
+        f = np.sqrt(fPerp**2 + (temp_freq / vl)**2)
+
+        self._initializeParams1(nLayer, f)
+
+        if th_wind is None:
+            thWind = np.deg2rad(self._windDirection[nLayer])
+        else:
+            thWind = np.deg2rad(th_wind)
+        th0 = np.array([np.arccos(- temp_freq / (sp_freq * vl))
+                        for sp_freq in f])
+        th1 = th0 + thWind
+        th2 = -th0 + thWind
+
+        k = (1 - self._a2) * self._R2 / ((1 - self._a1) * self._R1)
+
+        arg1 = np.pi * self._R1 * (1 - self._a1) * (k - 1)
+        arg2 = np.pi * self._R2 * (1 - self._a2) * (k - 1)
+        b1 = np.array([math.besselFirstKind(1, 2 * arg1 * freq) for freq in f])
+        b2 = np.array([math.besselFirstKind(1, 2 * arg2 * freq) for freq in f])
+
+        intFunc = 1. / vl * self._psd * (
+            b1 / (arg1 * f) - b1 / (arg1 * f) * b2 / (arg2 * f)) * (
+                np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
+                    th1 - self._thS)) +
+            np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
+                th2 - self._thS)))
+
+        self._phasecpsd = np.trapz(np.real(intFunc), fPerp) + \
+            i * np.trapz(np.imag(intFunc), fPerp)
+
+    def _getPhaseCPSDOneTempFreq(self, nLayer, t_freq, wind, th_wind):
+        self._computePhaseCPSD(nLayer, t_freq, wind, th_wind)
+        return self._phasecpsd
+
+    def getPhaseCPSD(self, nLayer, temp_freqs,
+                     wind=None, th_wind=None):
+        phaseCPSD = np.array([self._getPhaseCPSDOneTempFreq(
+            nLayer, t_freq, wind, th_wind) for t_freq in temp_freqs])
+        return phaseCPSD
+
+    def plotCPSD(self, cpsd, temp_freqs, func_part, scale):
         import matplotlib.pyplot as plt
         lam = self._cn2.DEFAULT_LAMBDA
         m_to_nm = 1e18
