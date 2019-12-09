@@ -55,25 +55,36 @@ class VonKarmannSpatioTemporalCovariance():
     '''
 
     def __init__(self,
-                 cn2_profile,
                  source1,
                  source2,
                  aperture1,
                  aperture2,
                  spat_freqs,
+                 cn2_profile=None,
+                 r0=None,
+                 L0=None,
+                 layer_altitude=None,
                  logger=logging.getLogger('VK_COVARIANCE')):
-        self._cn2 = cn2_profile
         self._source1 = source1
         self._source2 = source2
         self._ap1 = aperture1
         self._ap2 = aperture2
         self._freqs = spat_freqs
+        self._cn2 = cn2_profile
+        if cn2_profile is None:
+            self._r0 = r0
+            self._L0 = L0
+            self._layersAlt = layer_altitude
+            if (r0 and L0 and layer_altitude) is None:
+                raise ValueError("If cn2_profile is None, you must specify"
+                                 " r0, L0 and the layer's altitude.")
+        else:
+            self._r0 = cn2_profile.r0s()
+            self._L0 = cn2_profile.outer_scale()
+            self._layersAlt = cn2_profile.layers_distance()
+            self._windSpeed = cn2_profile.wind_speed()
+            self._windDirection = cn2_profile.wind_direction()
         self._logger = logger
-        self._layersAlt = cn2_profile.layers_distance()
-        self._windSpeed = cn2_profile.wind_speed()
-        self._windDirection = cn2_profile.wind_direction()
-        self._r0 = cn2_profile.r0s()
-        self._L0 = cn2_profile.outer_scale()
 
     def setCn2Profile(self, cn2_profile):
         self._cn2 = cn2_profile
@@ -81,7 +92,7 @@ class VonKarmannSpatioTemporalCovariance():
     def setFriedParam(self, r0):
         self._r0 = r0
 
-    def setOuterScale(self, L0=None):
+    def setOuterScale(self, L0):
         self._L0 = L0
 
     def setLayersAltitude(self, layer_alt):
@@ -210,6 +221,11 @@ class VonKarmannSpatioTemporalCovariance():
         self._c1 = 1. / (
             np.pi * self._R1 * self._R2 * (1 - self._a1) * (1 - self._a2))
 
+    def _integrate(self, int_func, int_var):
+        i = np.complex(0, 1)
+        return np.trapz(np.real(int_func), int_var) + \
+            i * np.trapz(np.imag(int_func), int_var)
+
     def _computeZernikeCovarianceOneLayer(self, j, k, nLayer):
         self._initializeParams1(nLayer, self._freqs)
         self._initializeParams2(j, k, self._freqs)
@@ -226,7 +242,7 @@ class VonKarmannSpatioTemporalCovariance():
         self._c3 = np.pi / 4 * ((1 - self._deltaj) * ((-1)**j - 1) -
                                 (1 - self._deltak) * ((-1)**k - 1))
 
-        self._integCovFunc = self._c0 * self._c1 * \
+        integFunc = self._c0 * self._c1 * \
             self._psd / self._freqs * self._b1 * self._b2 * \
             (np.cos((self._mj + self._mk) * self._thS + self._c2) *
              i**(3 * (self._mj + self._mk)) *
@@ -234,14 +250,11 @@ class VonKarmannSpatioTemporalCovariance():
              np.cos((self._mj - self._mk) * self._thS + self._c3) *
              i**(3 * np.abs(self._mj - self._mk)) *
              self._b4)
-
-        self._covOneLayer = np.trapz(np.real(self._integCovFunc),
-                                     self._freqs) + \
-            i * np.trapz(np.imag(self._integCovFunc), self._freqs)
+        return integFunc
 
     def _getZernikeCovarianceOneLayer(self, j, k, nLayer):
-        self._computeZernikeCovarianceOneLayer(j, k, nLayer)
-        return self._covOneLayer
+        func = self._computeZernikeCovarianceOneLayer(j, k, nLayer)
+        return self._integrate(func, self._freqs)
 
 # TODO: merge getZernikeCovariance and getZernikeCovarianceMatrix in
 # a single function?
@@ -289,7 +302,7 @@ class VonKarmannSpatioTemporalCovariance():
         self._c4 = np.pi / 4 * (1 - self._deltaj) * ((-1)**j - 1)
         self._c5 = np.pi / 4 * (1 - self._deltak) * ((-1)**k - 1)
 
-        self._integCPSDFunc = self._c0 * self._c1 / (vl * np.pi) * \
+        integFunc = self._c0 * self._c1 / (vl * np.pi) * \
             self._psd / f**2 * self._b1 * self._b2 * \
             (np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
                 th1 - self._thS)) *
@@ -299,14 +312,12 @@ class VonKarmannSpatioTemporalCovariance():
                  th2 - self._thS)) *
              np.cos(self._mj * th2 + self._c4) *
              np.cos(self._mk * th2 + self._c5))
-
-        self._cpsd = np.trapz(np.real(self._integCPSDFunc),
-                              fPerp) + \
-            i * np.trapz(np.imag(self._integCPSDFunc), fPerp)
+        return integFunc, fPerp
 
     def _getZernikeCPSDOneTempFreq(self, j, k, nLayer, t_freq, wind, th_wind):
-        self._computeZernikeCPSD(j, k, nLayer, t_freq, wind, th_wind)
-        return self._cpsd
+        func, fPerp = self._computeZernikeCPSD(j, k, nLayer, t_freq, wind,
+                                               th_wind)
+        return self._integrate(func, fPerp)
 
     def getZernikeCPSD(self, j, k, nLayer, temp_freqs,
                        wind=None, th_wind=None):
@@ -351,13 +362,11 @@ class VonKarmannSpatioTemporalCovariance():
                     th1 - self._thS)) +
             np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
                 th2 - self._thS)))
-
-        self._phasecpsd = np.trapz(np.real(intFunc), fPerp) + \
-            i * np.trapz(np.imag(intFunc), fPerp)
+        return intFunc, fPerp
 
     def _getPhaseCPSDOneTempFreq(self, nLayer, t_freq, wind, th_wind):
-        self._computePhaseCPSD(nLayer, t_freq, wind, th_wind)
-        return self._phasecpsd
+        func, fPerp = self._computePhaseCPSD(nLayer, t_freq, wind, th_wind)
+        return self._integrate(func, fPerp)
 
     def getPhaseCPSD(self, nLayer, temp_freqs,
                      wind=None, th_wind=None):
@@ -365,11 +374,13 @@ class VonKarmannSpatioTemporalCovariance():
             nLayer, t_freq, wind, th_wind) for t_freq in temp_freqs])
         return phaseCPSD
 
-    def plotCPSD(self, cpsd, temp_freqs, func_part, scale):
+    def plotCPSD(self, cpsd, temp_freqs, func_part, scale, wavelenght=None):
         import matplotlib.pyplot as plt
-        lam = self._cn2.DEFAULT_LAMBDA
+        if wavelenght is None:
+            lam = self._cn2.DEFAULT_LAMBDA
+        else:
+            lam = wavelenght
         m_to_nm = 1e18
-        plt.figure()
         if func_part == 'real':
             if scale == 'log':
                 plt.loglog(
