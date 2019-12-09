@@ -48,7 +48,17 @@ class Cn2Profile(object):
         self._zenithInDeg = 0
         self._airmass = 1.0
         self._lambda = 500e-9
-        assert True
+        self._checkSameShape(self._layersL0, self._layersJs, 'L0', 'Js')
+        self._checkSameShape(self._layersAltitudeInMeterAtZenith,
+                             self._layersJs, 'Altitude', 'Js')
+        self._checkSameShape(self._layersWindSpeed, self._layersJs,
+                             'WindSpeed', 'Js')
+        self._checkSameShape(self._layersWindDirection, self._layersJs,
+                             'WindDirection', 'Js')
+
+    def _checkSameShape(self, a, b, nameA, nameB):
+        assert a.shape == b.shape, '%s shape %s != %s shape %s' % (
+            nameA, a.shape, nameB, b.shape)
 
     @classmethod
     def from_r0s(cls,
@@ -99,7 +109,7 @@ class Cn2Profile(object):
         assert (np.abs(sumJ - 1.0) < 0.01), \
             "Total of J values must be 1.0, got %g" % sumJ
         totalJ = r0AtZenith ** (-5. / 3) / (
-            0.422727 * (2 * np.pi / cls.DEFAULT_LAMBDA)**2 *
+            0.422727 * (2 * np.pi / cls.DEFAULT_LAMBDA) ** 2 * 
             cls.DEFAULT_AIRMASS)
         js = np.array(layersFractionalJ) * totalJ
         return Cn2Profile(js,
@@ -111,12 +121,12 @@ class Cn2Profile(object):
     @staticmethod
     def _r02js(r0s, airmass, wavelength):
         js = np.array(r0s) ** (-5. / 3) / (
-            0.422727 * airmass * (2 * np.pi / wavelength)**2)
+            0.422727 * airmass * (2 * np.pi / wavelength) ** 2)
         return js
 
     @staticmethod
     def _js2r0(Js, airmass, wavelength):
-        r0s = (0.422727 * airmass * (2 * np.pi / wavelength)**2 *
+        r0s = (0.422727 * airmass * (2 * np.pi / wavelength) ** 2 * 
                np.array(Js)) ** (-3. / 5)
         return r0s
 
@@ -174,9 +184,9 @@ class Cn2Profile(object):
         Returns:
             r0 (float): Fried parameter at specified lambda and zenith angle
         '''
-        return (0.422727 * self.airmass() *
-                (2 * np.pi / self.wavelength())**2 *
-                np.sum(self._layersJs))**(-3. / 5)
+        return (0.422727 * self.airmass() * 
+                (2 * np.pi / self.wavelength()) ** 2 * 
+                np.sum(self._layersJs)) ** (-3. / 5)
 
     def r0s(self):
         '''
@@ -193,22 +203,22 @@ class Cn2Profile(object):
         Returns:
             theta0 (float): isoplanatic angle at specified lambda and zenith angle [arcsec]
         '''
-        return (2.914 * self.airmass()**(8. / 3) *
-                (2 * np.pi / self.wavelength())**2 *
-                np.sum(self._layersJs *
-                       self._layersAltitudeInMeterAtZenith**(5. / 3))
-                )**(-3. / 5) * Constants.RAD2ARCSEC
+        return (2.914 * self.airmass() ** (8. / 3) * 
+                (2 * np.pi / self.wavelength()) ** 2 * 
+                np.sum(self._layersJs * 
+                       self._layersAltitudeInMeterAtZenith ** (5. / 3))
+                ) ** (-3. / 5) * Constants.RAD2ARCSEC
 
     def tau0(self):
         '''
         Returns:
             tau0 (float): tau0 at specified lambda and zenith angle [sec]
         '''
-        return (2.914 * self.airmass() *
-                (2 * np.pi / self.wavelength())**2 *
-                np.sum(self._layersJs *
-                       self._layersWindSpeed**(5. / 3))
-                )**(-3. / 5)
+        return (2.914 * self.airmass() * 
+                (2 * np.pi / self.wavelength()) ** 2 * 
+                np.sum(self._layersJs * 
+                       self._layersWindSpeed ** (5. / 3))
+                ) ** (-3. / 5)
 
     def outer_scale(self):
         return self._layersL0
@@ -232,10 +242,10 @@ class MaoryProfiles():
         rr = cls._retrieveMaoryP()
         h = rr[0] * 1e3
         js = rr[idxJ]
-        L0 = 30.
+        L0s = np.ones(len(js)) * 30.
         windSpeed = rr[idxW]
         windDirection = np.linspace(0, 360, len(js))
-        return Cn2Profile(js, L0, h, windSpeed, windDirection)
+        return Cn2Profile(js, L0s, h, windSpeed, windDirection)
 
     @classmethod
     def P10(cls):
@@ -278,8 +288,9 @@ class EsoEltProfiles():
         js = rr[idxJ] / 100
         windSpeed = rr[idxWind]
         windDirection = np.linspace(0, 360, len(js))
+        L0s = np.ones(len(js)) * cls.L0
         return Cn2Profile.from_fractional_j(
-            r0, js, cls.L0, h, windSpeed, windDirection)
+            r0, js, L0s, h, windSpeed, windDirection)
 
     @classmethod
     def Median(cls):
