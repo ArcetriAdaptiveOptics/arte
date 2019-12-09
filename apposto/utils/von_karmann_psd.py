@@ -41,17 +41,26 @@ class VonKarmannPsd():
     def __init__(self, fried_param, outer_scale):
         self._r0 = fried_param
         self._L0 = outer_scale
+        self._checkInput()
+
+    def _checkInput(self):
+        if np.isscalar(self._r0):
+            assert np.isscalar(self._L0), 'L0 must be scalar like r0'
+        else:
+            assert len(self._r0) == len(self._L0), \
+                'len of L0 and r0 differ: %d vs %d' % (
+                    len(self._L0), len(self._r0))
 
     def _computeVonKarmannPsd(self, freqs):
-        c = (24. / 5 * gamma(6. / 5))**(5. / 6) * \
-            gamma(11. / 6)**2 / (2 * np.pi ** (11 / 3))
+        c = (24. / 5 * gamma(6. / 5)) ** (5. / 6) * \
+            gamma(11. / 6) ** 2 / (2 * np.pi ** (11 / 3))
         if type(self._r0) == np.ndarray:
-            self._psd = np.array([c * self._r0[i]**(-5. / 3) *
-                                  (freqs**2 + 1 / self._L0**2)**(-11. / 6)
+            self._psd = np.array([c * self._r0[i] ** (-5. / 3) * 
+                                  (freqs ** 2 + 1 / self._L0 ** 2) ** (-11. / 6)
                                   for i in range(self._r0.shape[0])])
         else:
-            self._psd = 0.0229 * self._r0**(-5. / 3) * \
-                (freqs**2 + 1 / self._L0**2)**(-11. / 6)
+            self._psd = 0.0229 * self._r0 ** (-5. / 3) * \
+                (freqs ** 2 + 1 / self._L0 ** 2) ** (-11. / 6)
 
     def spatial_psd(self, freqs):
         self._computeVonKarmannPsd(freqs)
