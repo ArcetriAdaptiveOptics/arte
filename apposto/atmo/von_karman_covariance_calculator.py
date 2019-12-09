@@ -3,8 +3,9 @@
 '''
 
 import numpy as np
-from apposto.utils import von_karmann_psd, math, zernike_generator
+from apposto.utils import von_karmann_psd, math
 import logging
+from apposto.utils.zernike_generator import ZernikeGenerator
 
 
 class VonKarmanSpatioTemporalCovariance():
@@ -168,10 +169,8 @@ class VonKarmanSpatioTemporalCovariance():
         self._psd = self._VonKarmanPSDOneLayer(nLayer, spat_freqs)
 
     def _initializeParams2(self, j, k, spat_freqs):
-        dummyNumb = 2
-        zern = zernike_generator.ZernikeGenerator(dummyNumb)
-        self._nj, self._mj = zern.degree(j)
-        self._nk, self._mk = zern.degree(k)
+        self._nj, self._mj = ZernikeGenerator.degree(j)
+        self._nk, self._mk = ZernikeGenerator.degree(k)
 
         self._deltaj = math.kroneckerDelta(0, self._mj)
         self._deltak = math.kroneckerDelta(0, self._mk)

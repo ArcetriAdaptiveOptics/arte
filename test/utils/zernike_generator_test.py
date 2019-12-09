@@ -32,16 +32,16 @@ class TestZernikeGenerator(unittest.TestCase):
                                     int(nPx / 2.)], 0.)
 
     def testDegree(self):
-        m, n = self.generator.degree(1)
+        m, n = ZernikeGenerator.degree(1)
         self.assertEqual(m, 0)
         self.assertEqual(n, 0)
-        m, n = self.generator.degree(2)
+        m, n = ZernikeGenerator.degree(2)
         self.assertEqual(m, 1)
         self.assertEqual(n, 1)
-        m, n = self.generator.degree(3)
+        m, n = ZernikeGenerator.degree(3)
         self.assertEqual(m, 1)
         self.assertEqual(n, 1)
-        m, n = self.generator.degree(4)
+        m, n = ZernikeGenerator.degree(4)
         self.assertEqual(m, 2)
         self.assertEqual(n, 0)
         m, n = self.generator.degree(2000000)
@@ -139,7 +139,6 @@ class TestZernikeGenerator(unittest.TestCase):
         wanted = 2. * np.ones((self._nPixels, self._nPixels))
         self.assertTrue(np.allclose(wanted, got),
                         "got %s, wanted %s" % (str(got), str(wanted)))
-
 
 #     def testGetDerivativeOfFocus(self):
 #         got= self.generator.getDerivativeX(4)

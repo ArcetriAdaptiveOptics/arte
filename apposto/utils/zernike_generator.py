@@ -26,7 +26,8 @@ class ZernikeGenerator(object):
             self._dy = self._computeDerivativeCoeffY(index)
         return self._dy[0:index, 0:index]
 
-    def degree(self, index):
+    @staticmethod
+    def degree(index):
         n = int(0.5 * (np.sqrt(8 * index - 7) - 3)) + 1
         cn = n * (n + 1) / 2 + 1
         if n % 2 == 0:
@@ -44,7 +45,7 @@ class ZernikeGenerator(object):
         if (n - m) % 2 != 0:
             raise Exception("n-m must be even. Got %d-%d" % (n, m))
         if abs(m) > n:
-            raise Exception("The following must be true |m|<=n. Got %d, %d" %
+            raise Exception("The following must be true |m|<=n. Got %d, %d" % 
                             (n, m))
         mask = np.where(rho <= 1, False, True)
 
@@ -55,14 +56,14 @@ class ZernikeGenerator(object):
         S = (n - abs(m)) // 2
         for s in range(0, S + 1):
             CR = pow(-1, s) * factorial(n - s) / \
-                (factorial(s) * factorial(-s + (n + abs(m)) / 2) *
+                (factorial(s) * factorial(-s + (n + abs(m)) / 2) * 
                  factorial(-s + (n - abs(m)) / 2))
             p = CR * pow(rho, n - 2 * s)
             Rnm = Rnm + p
         return np.ma.masked_array(data=Rnm, mask=mask)
 
     def _polar(self, index, rhoArray, thetaArray):
-        n, m = self.degree(index)
+        n, m = ZernikeGenerator.degree(index)
         rho = rhoArray
         theta = thetaArray
 
@@ -78,7 +79,7 @@ class ZernikeGenerator(object):
     def _polar_array(self, nPixel):
         X, Y = np.mgrid[-1 + 1. / nPixel: 1 - 1. / nPixel: nPixel * 1j,
                         -1 + 1. / nPixel: 1 - 1. / nPixel: nPixel * 1j]
-        r = np.sqrt(X**2 + Y**2)
+        r = np.sqrt(X ** 2 + Y ** 2)
         th = np.arccos(np.transpose(X * 1. / r))
         th = np.where(th < 2. * np.pi, th, 0)
         th = np.where(X < 0, 2. * np.pi - th, th)
@@ -104,8 +105,8 @@ class ZernikeGenerator(object):
         G_mat = np.zeros((jmax, jmax))
         for i in range(1, jmax + 1):
             for j in range(1, jmax + 1):
-                ni, mi = self.degree(i)
-                nj, mj = self.degree(j)
+                ni, mi = ZernikeGenerator.degree(i)
+                nj, mj = ZernikeGenerator.degree(j)
                 if (
                     (
                         (
@@ -141,8 +142,8 @@ class ZernikeGenerator(object):
         G_mat = np.zeros((jmax, jmax))
         for i in range(1, jmax + 1):
             for j in range(1, jmax + 1):
-                ni, mi = self.degree(i)
-                nj, mj = self.degree(j)
+                ni, mi = ZernikeGenerator.degree(i)
+                nj, mj = ZernikeGenerator.degree(j)
                 if (
                     (
                         (
