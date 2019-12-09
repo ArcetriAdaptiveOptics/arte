@@ -7,7 +7,7 @@ from apposto.utils import von_karmann_psd, math, zernike_generator
 import logging
 
 
-class VonKarmannSpatioTemporalCovariance():
+class VonKarmanSpatioTemporalCovariance():
     '''
     This class computes the spatio-temporal covariance between Zernike
     coefficients which represent the turbulence induced phase aberrations

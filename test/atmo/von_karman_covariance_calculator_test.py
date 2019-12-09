@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.atmo.von_karmann_covariance_calculator import \
-    VonKarmannSpatioTemporalCovariance
+from apposto.atmo.von_karman_covariance_calculator import \
+    VonKarmanSpatioTemporalCovariance
 from apposto.atmo.cn2_profile import Cn2Profile, EsoEltProfiles
 from apposto.types.guide_source import GuideSource
 from apposto.types.aperture import CircularOpticalAperture
@@ -30,7 +30,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-2, 2, 100)
 
-        vk_cov = VonKarmannSpatioTemporalCovariance(
+        vk_cov = VonKarmanSpatioTemporalCovariance(
             source, source, aperture, aperture, cn2, spatial_freqs)
         wanted = 0
         got = vk_cov.getZernikeCovariance(2, 3)
@@ -50,7 +50,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         modes_j = [2, 3, 4]
         modes_k = [3, 4]
 
-        vk_cov = VonKarmannSpatioTemporalCovariance(
+        vk_cov = VonKarmanSpatioTemporalCovariance(
             source, source, aperture, aperture, cn2, spatial_freqs)
 
         got = vk_cov.getZernikeCovarianceMatrix(modes_j, modes_k)
@@ -70,7 +70,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture = CircularOpticalAperture(10, [0, 0, 0])
         spatial_freqs = np.logspace(-2, 2, 100)
 
-        vk_cov = VonKarmannSpatioTemporalCovariance(
+        vk_cov = VonKarmanSpatioTemporalCovariance(
             source1, source2, aperture, aperture, cn2, spatial_freqs)
 
         zCoordOfLayersSeparations = np.array([
@@ -90,7 +90,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-2, 2, 100)
 
-        vk_cov = VonKarmannSpatioTemporalCovariance(
+        vk_cov = VonKarmanSpatioTemporalCovariance(
             source, source, aperture, aperture, cn2, spatial_freqs)
 
         nLayer = 0
