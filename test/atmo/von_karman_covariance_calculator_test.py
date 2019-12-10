@@ -8,7 +8,7 @@ from apposto.types.guide_source import GuideSource
 from apposto.types.aperture import CircularOpticalAperture
 from test.test_helper import setUpLogger
 import logging
-from numpy.testing.nose_tools.utils import assert_allclose
+from numpy.testing import assert_allclose
 
 
 class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
@@ -53,7 +53,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         vk_cov = VonKarmanSpatioTemporalCovariance(
             source, source, aperture, aperture, cn2, spatial_freqs)
 
-        got = vk_cov.getZernikeCovarianceMatrix(modes_j, modes_k)
+        got = vk_cov.getZernikeCovariance(modes_j, modes_k)
 
         self.assertAlmostEqual(vk_cov.getZernikeCovariance(2, 3),
                                got[0, 0])
@@ -82,23 +82,55 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         assert_allclose(want, zCoordOfLayersSeparations, atol=1e-14)
 
     def testZernikeCPSD(self):
-        cn2 = EsoEltProfiles.Median()
-        rho, theta = (0, 0)
-        source = GuideSource((rho, theta), np.inf)
-        radius = 10
+        i = np.complex(0, 1)
+        cn2 = Cn2Profile.from_r0s([0.16], [25], [10e3], [10], [-20])
+        rho1, theta1 = (0, 0)
+        rho2, theta2 = (50, 30)
+        source1 = GuideSource((rho1, theta1), np.inf)
+        source2 = GuideSource((rho2, theta2), 100e3)
+        radius = 5
         center = [0, 0, 0]
         aperture = CircularOpticalAperture(radius, center)
-        spatial_freqs = np.logspace(-2, 2, 100)
+        spatial_freqs = np.logspace(-3, 3, 100)
 
         vk_cov = VonKarmanSpatioTemporalCovariance(
-            source, source, aperture, aperture, cn2, spatial_freqs)
+            source1, source2, aperture, aperture, cn2, spatial_freqs)
 
-        nLayer = 0
         modoJ = 2
-        modoK = 3
-        temp_freqs = np.linspace(3.14, 42, 10)
-        vk_cov.getZernikeCPSD(modoJ, modoK, nLayer, temp_freqs)
+        modoK = 5
+        temp_freqs = [0.05, 130, 250]
+
+        got = vk_cov.getZernikeCPSD(modoJ, modoK, temp_freqs)
+
+        want = np.array([-2.7537494192458656 + 1.4469454298642168 * i,
+                         5.860371984070442e-13 - 6.118996011218766e-13 * i,
+                         -4.7421202823319255e-15 + 4.0902856472182244e-15 * i])
+
+        assert_allclose(want, got)
 # TODO: FIXME TEST SOMETHING
+
+    def testPhaseCPSD(self):
+        i = np.complex(0, 1)
+        cn2 = Cn2Profile.from_r0s([0.16], [25], [10e3], [10], [-20])
+        rho1, theta1 = (0, 0)
+        rho2, theta2 = (50, 30)
+        source1 = GuideSource((rho1, theta1), np.inf)
+        source2 = GuideSource((rho2, theta2), 100e3)
+        radius = 5
+        center = [0, 0, 0]
+        aperture = CircularOpticalAperture(radius, center)
+        spatial_freqs = np.logspace(-3, 3, 1000)
+
+        vk_cov = VonKarmanSpatioTemporalCovariance(
+            source1, source2, aperture, aperture, cn2, spatial_freqs)
+
+        temp_freqs = [0.05, 130, 250]
+
+        got = vk_cov.getPhaseCPSD(temp_freqs)
+        want = np.array([55.33279564624362 + 2.7107654578823674 * i,
+                         7.929228930453956e-12 - 2.0694414093390505e-10 * i,
+                         -1.1429392989780903e-10 + 3.3962839307091425e-11 * i])
+        assert_allclose(want, got)
 
 
 if __name__ == "__main__":
