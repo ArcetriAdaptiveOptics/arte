@@ -66,8 +66,8 @@ class VonKarmanSpatioTemporalCovariance():
         self._source2 = source2
         self._ap1 = aperture1
         self._ap2 = aperture2
-        self._freqs = spat_freqs
         self._cn2 = cn2_profile
+        self._freqs = spat_freqs
         self._logger = logger
 
     def setCn2Profile(self, cn2_profile):
@@ -88,36 +88,30 @@ class VonKarmanSpatioTemporalCovariance():
     def setSpatialFrequencies(self, freqs):
         self._freqs = freqs
 
-    def source1Coords(self):
-        return self._source1.getSourcePolarCoords()
+    def source1(self):
+        return self._source1
 
-    def source2Coords(self):
-        return self._source2.getSourcePolarCoords()
+    def source2(self):
+        return self._source2
 
-    def aperture1Radius(self):
-        return self._ap1.getApertureRadius()
+    def aperture1(self):
+        return self._ap1
 
-    def aperture2Radius(self):
-        return self._ap2.getApertureRadius()
-
-    def aperture1Coords(self):
-        return self._ap1.getCartesianCoords()
-
-    def aperture2Coords(self):
-        return self._ap2.getCartesianCoords()
+    def aperture2(self):
+        return self._ap2
 
     def _layerScalingFactor1(self, nLayer):
         a1 = self._layerScalingFactor(
             self._cn2.layers_distance()[nLayer],
-            self.source1Coords()[2],
-            self.aperture1Coords()[2])
+            self.source1().getSourcePolarCoords()[2],
+            self.aperture1().getCartesianCoords()[2])
         return a1
 
     def _layerScalingFactor2(self, nLayer):
         a2 = self._layerScalingFactor(
             self._cn2.layers_distance()[nLayer],
-            self.source2Coords()[2],
-            self.aperture2Coords()[2])
+            self.source2().getSourcePolarCoords()[2],
+            self.aperture2().getCartesianCoords()[2])
         return a2
 
     def _layerScalingFactor(self, zLayer, zSource, zAperture):
@@ -126,21 +120,23 @@ class VonKarmanSpatioTemporalCovariance():
 
     def _getCleverVersorCoords(self, s_coord):
         return np.array([
-            np.sin(np.deg2rad(s_coord[0] / 3600)) * 
+            np.sin(np.deg2rad(s_coord[0] / 3600)) *
             np.cos(np.deg2rad(s_coord[1])),
-            np.sin(np.deg2rad(s_coord[0] / 3600)) * 
+            np.sin(np.deg2rad(s_coord[0] / 3600)) *
             np.sin(np.deg2rad(s_coord[1])),
             np.cos(np.deg2rad(s_coord[0] / 3600))])
 
     def _cleverVersor1Coords(self):
-        return self._getCleverVersorCoords(self.source1Coords())
+        return self._getCleverVersorCoords(
+            self.source1().getSourcePolarCoords())
 
     def _cleverVersor2Coords(self):
-        return self._getCleverVersorCoords(self.source2Coords())
+        return self._getCleverVersorCoords(
+            self.source2().getSourcePolarCoords())
 
     def layerProjectedAperturesSeparation(self, nLayer):
-        aCoord1 = self.aperture1Coords()
-        aCoord2 = self.aperture2Coords()
+        aCoord1 = self.aperture1().getCartesianCoords()
+        aCoord2 = self.aperture2().getCartesianCoords()
 
         vCoord1 = self._cleverVersor1Coords()
         vCoord2 = self._cleverVersor2Coords()
@@ -161,8 +157,8 @@ class VonKarmanSpatioTemporalCovariance():
     def _initializeParams1(self, nLayer, spat_freqs):
         self._a1 = self._layerScalingFactor1(nLayer)
         self._a2 = self._layerScalingFactor2(nLayer)
-        self._R1 = self.aperture1Radius()
-        self._R2 = self.aperture2Radius()
+        self._R1 = self.aperture1().getApertureRadius()
+        self._R2 = self.aperture2().getApertureRadius()
         sep = self.layerProjectedAperturesSeparation(nLayer)
         self._sepMod = np.linalg.norm(sep)
         self._thS = np.arctan2(sep[1], sep[0])
@@ -205,18 +201,18 @@ class VonKarmanSpatioTemporalCovariance():
         self._b4 = np.array([math.besselFirstKind(
             np.abs(self._mj - self._mk),
             self._sepMod * 2 * np.pi * f) for f in self._freqs])
-        self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) + 
+        self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) +
                                 (1 - self._deltak) * ((-1) ** k - 1))
-        self._c3 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) - 
+        self._c3 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) -
                                 (1 - self._deltak) * ((-1) ** k - 1))
 
         integFunc = self._c0 * self._c1 * \
             self._psd / self._freqs * self._b1 * self._b2 * \
-            (np.cos((self._mj + self._mk) * self._thS + self._c2) * 
-             i ** (3 * (self._mj + self._mk)) * 
-             self._b3 + 
-             np.cos((self._mj - self._mk) * self._thS + self._c3) * 
-             i ** (3 * np.abs(self._mj - self._mk)) * 
+            (np.cos((self._mj + self._mk) * self._thS + self._c2) *
+             i ** (3 * (self._mj + self._mk)) *
+             self._b3 +
+             np.cos((self._mj - self._mk) * self._thS + self._c3) *
+             i ** (3 * np.abs(self._mj - self._mk)) *
              self._b4)
         return integFunc
 
@@ -267,12 +263,12 @@ class VonKarmanSpatioTemporalCovariance():
         integFunc = self._c0 * self._c1 / (vl * np.pi) * \
             self._psd / f ** 2 * self._b1 * self._b2 * \
             (np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
-                th1 - self._thS)) * 
-             np.cos(self._mj * th1 + self._c4) * 
-             np.cos(self._mk * th1 + self._c5) + 
+                th1 - self._thS)) *
+             np.cos(self._mj * th1 + self._c4) *
+             np.cos(self._mk * th1 + self._c5) +
              np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
-                 th2 - self._thS)) * 
-             np.cos(self._mj * th2 + self._c4) * 
+                 th2 - self._thS)) *
+             np.cos(self._mj * th2 + self._c4) *
              np.cos(self._mk * th2 + self._c5))
         return integFunc, fPerp
 
@@ -312,7 +308,7 @@ class VonKarmanSpatioTemporalCovariance():
         intFunc = 1. / vl * self._psd * (
             b0 / (arg1 * (k - 1) * f) - b1 / (arg1 * f) * b2 / (arg2 * f)) * (
                 np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
-                    th1 - self._thS)) + 
+                    th1 - self._thS)) +
             np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
                 th2 - self._thS)))
         return intFunc, fPerp
@@ -337,26 +333,26 @@ class VonKarmanSpatioTemporalCovariance():
             if scale == 'log':
                 plt.loglog(
                     temp_freqs,
-                    np.abs(np.real(cpsd)) * 
+                    np.abs(np.real(cpsd)) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
                     '-', label='Real')
             elif scale == 'linear':
                 plt.semilogx(
                     temp_freqs,
-                    np.real(cpsd) * 
+                    np.real(cpsd) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
                     '-', label='Real')
         elif func_part == 'imag':
             if scale == 'log':
                 plt.loglog(
                     temp_freqs,
-                    np.abs(np.imag(cpsd)) * 
+                    np.abs(np.imag(cpsd)) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
                     '-', label='Imaginary')
             elif scale == 'linear':
                 plt.semilogx(
                     temp_freqs,
-                    np.imag(cpsd) * 
+                    np.imag(cpsd) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
                     '-', label='Imaginary')
         plt.legend()
