@@ -2,7 +2,7 @@
 import unittest
 import numpy as np
 from apposto.atmo.cn2_profile import Cn2Profile
-from apposto.utils.von_karmann_psd import VonKarmannPsd
+from apposto.utils.von_karmann_psd import VonKarmanPsd
 
 
 class VonKarmannPsdTest(unittest.TestCase):
@@ -17,7 +17,7 @@ class VonKarmannPsdTest(unittest.TestCase):
         # TODO: I don't like this method
         r0 = 0.1
         L0 = 10
-        vk_psd = VonKarmannPsd(r0, L0)
+        vk_psd = VonKarmanPsd(r0, L0)
         freqs = np.array([0.1, 1])
         want = 0.0229 * r0 ** (-5 / 3) * (freqs ** 2 + 1 / L0 ** 2) ** (-11 / 6)
         psd = vk_psd.spatial_psd(freqs)
@@ -28,7 +28,7 @@ class VonKarmannPsdTest(unittest.TestCase):
     def testWrongParameters(self):
         r0 = 0.1
         L0 = 10
-        self.failUnlessRaises(Exception, VonKarmannPsd, (r0, L0))
+        self.failUnlessRaises(Exception, VonKarmanPsd, (r0, L0))
 
 
 if __name__ == "__main__":

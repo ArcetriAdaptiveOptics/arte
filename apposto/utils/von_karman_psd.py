@@ -6,7 +6,7 @@ import numpy as np
 from scipy.special import gamma
 
 
-class VonKarmannPsd():
+class VonKarmanPsd():
     '''
     This class computes the spatial Power Spectral Density (PSD) of turbulent
     phase assuming the Von Karman spectrum.
@@ -29,7 +29,7 @@ class VonKarmannPsd():
     R = 5
     r0 = 0.1
     L0 = np.inf
-    psd = von_karmann_psd.VonKarmannPsd(r0, L0)
+    psd = von_karmann_psd.VonKarmanPsd(r0, L0)
     freqs = np.logspace(-5, 4, 1000)
     bess = scipy.special.jv(1, 2*np.pi*R*freqs)
     psdPistonRem = psd.spatial_psd(freqs) * (1 - (bess/(np.pi*R*freqs))**2)
@@ -51,22 +51,23 @@ class VonKarmannPsd():
                 'len of L0 and r0 differ: %d vs %d' % (
                     len(self._L0), len(self._r0))
 
-    def _computeVonKarmannPsd(self, freqs):
+    def _computeVonKarmanPsd(self, freqs):
         c = (24. / 5 * gamma(6. / 5)) ** (5. / 6) * \
             gamma(11. / 6) ** 2 / (2 * np.pi ** (11 / 3))
         if type(self._r0) == np.ndarray:
-            self._psd = np.array([c * self._r0[i] ** (-5. / 3) * 
-                                  (freqs ** 2 + 1 / self._L0 ** 2) ** (-11. / 6)
-                                  for i in range(self._r0.shape[0])])
+            self._psd = np.array([
+                c * self._r0[i] ** (-5. / 3) *
+                (freqs ** 2 + 1 / self._L0 ** 2) ** (-11. / 6)
+                for i in range(self._r0.shape[0])])
         else:
             self._psd = 0.0229 * self._r0 ** (-5. / 3) * \
                 (freqs ** 2 + 1 / self._L0 ** 2) ** (-11. / 6)
 
     def spatial_psd(self, freqs):
-        self._computeVonKarmannPsd(freqs)
+        self._computeVonKarmanPsd(freqs)
         return self._psd
 
-    def plot_von_karmann_psd_vs_frequency(self, freqs, idx=None):
+    def plot_von_karman_psd_vs_frequency(self, freqs, idx=None):
         import matplotlib.pyplot as plt
         psd = self.spatial_psd(freqs)
         if idx is None:
