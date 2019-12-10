@@ -237,21 +237,12 @@ class VonKarmanSpatioTemporalCovariance():
                 for j_mode in j])
             return matr
 
-#     def getZernikeCovarianceMatrix(self, j_vector, k_vector):
-#         matr = np.matrix([
-#             np.array([
-#                 self.getZernikeCovariance(j, k)
-#                 for k in k_vector])
-#             for j in j_vector])
-#         return matr
-
-    def _computeZernikeCPSD(self, j, k, nLayer, temp_freq):
+    def integrandOfZernikeCPSD(self, j, k, nLayer, temp_freq):
         i = np.complex(0, 1)
         vl = self._cn2.wind_speed()[nLayer]
 
         fPerp = self._freqs
         f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
-#        self.setSpatialFrequencies(f)
 
         self._initializeParams1(nLayer, f)
         self._initializeParams2(j, k, f)
@@ -277,14 +268,23 @@ class VonKarmanSpatioTemporalCovariance():
              np.cos(self._mk * th2 + self._c5))
         return integFunc, fPerp
 
-    def _getZernikeCPSDOneTempFreq(self, j, k, nLayer, t_freq):
-        func, fPerp = self._computeZernikeCPSD(j, k, nLayer, t_freq)
+    def _getZernikeCPSDOneTemporalFrequency(self, j, k, nLayer, t_freq):
+        func, fPerp = self.integrandOfZernikeCPSD(j, k, nLayer, t_freq)
         return self._integrate(func, fPerp)
 
-    def getZernikeCPSD(self, j, k, nLayer, temp_freqs):
-        self._zernCPSD = np.array([self._getZernikeCPSDOneTempFreq(
-            j, k, nLayer, t_freq) for t_freq in temp_freqs])
-        return self._zernCPSD
+    def _getZernikeCPSDAllTemporalFrequenciesOneLayer(self, j, k, nLayer,
+                                                      temp_freqs):
+        return np.array([
+            self._getZernikeCPSDOneTemporalFrequency(
+                j, k, nLayer, t_freq) for t_freq in temp_freqs
+        ])
+
+    def getZernikeCPSD(self, j, k, temp_freqs):
+        cpsd = np.array([
+            self._getZernikeCPSDAllTemporalFrequenciesOneLayer(
+                j, k, nLayer, temp_freqs) for nLayer
+            in range(self._cn2.number_of_layers())])
+        return cpsd.sum(axis=0)
 
     def integrandOfPhaseCPSD(self, nLayer, temp_freq):
         i = np.complex(0, 1)
@@ -318,14 +318,23 @@ class VonKarmanSpatioTemporalCovariance():
                 th2 - self._thS)))
         return intFunc, fPerp
 
-    def _getPhaseCPSDOneTempFreq(self, nLayer, t_freq):
+    def _getPhaseCPSDOneTemporalFrequency(self, nLayer, t_freq):
         func, fPerp = self.integrandOfPhaseCPSD(nLayer, t_freq)
         return self._integrate(func, fPerp)
 
-    def getPhaseCPSD(self, nLayer, temp_freqs):
-        phaseCPSD = np.array([self._getPhaseCPSDOneTempFreq(
-            nLayer, t_freq) for t_freq in temp_freqs])
-        return phaseCPSD
+    def _getPhaseCPSDAllTemporalFrequenciesOneLayer(self, nLayer,
+                                                    temp_freqs):
+        return np.array([
+            self._getPhaseCPSDOneTemporalFrequency(nLayer, t_freq)
+            for t_freq in temp_freqs
+        ])
+
+    def getPhaseCPSD(self, temp_freqs):
+        phaseCPSD = np.array([
+            self._getPhaseCPSDAllTemporalFrequenciesOneLayer(
+                nLayer, temp_freqs)
+            for nLayer in range(self._cn2.number_of_layers())])
+        return phaseCPSD.sum(axis=0)
 
     def plotCPSD(self, cpsd, temp_freqs, func_part, scale, wavelenght=None):
         import matplotlib.pyplot as plt
