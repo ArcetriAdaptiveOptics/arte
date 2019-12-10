@@ -3,7 +3,7 @@
 '''
 
 import numpy as np
-from apposto.utils import von_karmann_psd, math
+from apposto.utils import von_karman_psd, math
 import logging
 from apposto.utils.zernike_generator import ZernikeGenerator
 
@@ -149,7 +149,7 @@ class VonKarmanSpatioTemporalCovariance():
         return sep
 
     def _VonKarmanPSDOneLayer(self, nLayer, freqs):
-        vk = von_karmann_psd.VonKarmannPsd(
+        vk = von_karman_psd.VonKarmanPsd(
             self._cn2.r0s()[nLayer], self._cn2.outer_scale()[nLayer])
         psd = vk.spatial_psd(freqs)
         return psd
@@ -220,25 +220,30 @@ class VonKarmanSpatioTemporalCovariance():
         func = self._computeZernikeCovarianceOneLayer(j, k, nLayer)
         return self._integrate(func, self._freqs)
 
-# TODO: merge getZernikeCovariance and getZernikeCovarianceMatrix in
-# a single function?
-    def getZernikeCovariance(self, j, k, nLayer=None):
-        if nLayer is None:
-            cov = np.array([
-                self._getZernikeCovarianceOneLayer(j, k, nLayer) for nLayer
-                in range(self._cn2.number_of_layers())])
-            return cov.sum()
-        else:
-            cov = self._getZernikeCovarianceOneLayer(j, k, nLayer)
-            return cov
+    def _getZernikeCovarianceAllLayers(self, j, k):
+        cov = np.array([
+            self._getZernikeCovarianceOneLayer(j, k, nLayer) for nLayer
+            in range(self._cn2.number_of_layers())])
+        return cov.sum()
 
-    def getZernikeCovarianceMatrix(self, j_vector, k_vector, nLayer=None):
-        matr = np.matrix([
-            np.array([
-                self.getZernikeCovariance(j, k, nLayer)
-                for k in k_vector])
-            for j in j_vector])
-        return matr
+    def getZernikeCovariance(self, j, k):
+        if (np.isscalar(j) and np.isscalar(k)):
+            return self._getZernikeCovarianceAllLayers(j, k)
+        else:
+            matr = np.matrix([
+                np.array([
+                    self._getZernikeCovarianceAllLayers(j_mode, k_mode)
+                    for k_mode in k])
+                for j_mode in j])
+            return matr
+
+#     def getZernikeCovarianceMatrix(self, j_vector, k_vector):
+#         matr = np.matrix([
+#             np.array([
+#                 self.getZernikeCovariance(j, k)
+#                 for k in k_vector])
+#             for j in j_vector])
+#         return matr
 
     def _computeZernikeCPSD(self, j, k, nLayer, temp_freq):
         i = np.complex(0, 1)
