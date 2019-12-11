@@ -35,9 +35,11 @@ class Cn2Profile(object):
         Parameters:
             layersJs (ndarray): array of layers Js in meters**(1/3)
             layersL0 (ndarray): array of layers outer-scale L0 in meters
-            layersAltitude (ndarry): array of layers altitude at Zenith in meters
+            layersAltitude (ndarry): array of layers altitude at Zenith in
+                meters
 
-        Every array must be 1D and have the same size, defining the number of layers of the profile
+        Every array must be 1D and have the same size, defining the number of
+            layers of the profile
         All parameters defined at zenith
         """
         self._layersJs = np.array(layersJs)
@@ -73,9 +75,11 @@ class Cn2Profile(object):
         Parameters:
             layersR0 (ndarray): array of layers r0 in meters at 500nm
             layersL0 (ndarray): array of layers outer-scale L0 in meters
-            layersAltitude (ndarry): array of layers altitude at Zenith in meters
+            layersAltitude (ndarry): array of layers altitude at Zenith in
+                meters
 
-        Every array must be 1D and have the same size, defining the number of layers of the profile
+        Every array must be 1D and have the same size, defining the number of
+            layers of the profile
         All parameters defined at zenith
         """
         js = cls._r02js(layersR0, cls.DEFAULT_AIRMASS, cls.DEFAULT_LAMBDA)
@@ -94,22 +98,26 @@ class Cn2Profile(object):
                           layersWindSpeed,
                           layersWindDirection):
         """
-        Cn2 profile constructor from total r0 at zenith and fractional J of each layer
+        Cn2 profile constructor from total r0 at zenith and fractional J of
+            each layer
 
         Parameters:
             r0AtZenith (float): overall r0 at zenith [m]
-            layersFractionalJ (ndarray): array of J values for each layer. Array must sum up to 1
+            layersFractionalJ (ndarray): array of J values for each layer.
+                Array must sum up to 1
             layersL0 (ndarray): array of layers outer-scale L0 in meters
-            layersAltitude (ndarry): array of layers altitude at Zenith in meters
+            layersAltitude (ndarry): array of layers altitude at Zenith in
+                meters
 
-        Every array must be 1D and have the same size, defining the number of layers of the profile
+        Every array must be 1D and have the same size, defining the number of
+            layers of the profile
         All parameters defined at zenith
         """
         sumJ = np.array(layersFractionalJ).sum()
         assert (np.abs(sumJ - 1.0) < 0.01), \
             "Total of J values must be 1.0, got %g" % sumJ
         totalJ = r0AtZenith ** (-5. / 3) / (
-            0.422727 * (2 * np.pi / cls.DEFAULT_LAMBDA) ** 2 * 
+            0.422727 * (2 * np.pi / cls.DEFAULT_LAMBDA) ** 2 *
             cls.DEFAULT_AIRMASS)
         js = np.array(layersFractionalJ) * totalJ
         return Cn2Profile(js,
@@ -126,7 +134,7 @@ class Cn2Profile(object):
 
     @staticmethod
     def _js2r0(Js, airmass, wavelength):
-        r0s = (0.422727 * airmass * (2 * np.pi / wavelength) ** 2 * 
+        r0s = (0.422727 * airmass * (2 * np.pi / wavelength) ** 2 *
                np.array(Js)) ** (-3. / 5)
         return r0s
 
@@ -184,14 +192,14 @@ class Cn2Profile(object):
         Returns:
             r0 (float): Fried parameter at specified lambda and zenith angle
         '''
-        return (0.422727 * self.airmass() * 
-                (2 * np.pi / self.wavelength()) ** 2 * 
+        return (0.422727 * self.airmass() *
+                (2 * np.pi / self.wavelength()) ** 2 *
                 np.sum(self._layersJs)) ** (-3. / 5)
 
     def r0s(self):
         '''
         Returns:
-            r0s (numpy array): Fried parameter at specified lambda 
+            r0s (numpy array): Fried parameter at specified lambda
             and zenith angle for each layer
         '''
         return self._js2r0(self._layersJs,
@@ -201,11 +209,12 @@ class Cn2Profile(object):
     def theta0(self):
         '''
         Returns:
-            theta0 (float): isoplanatic angle at specified lambda and zenith angle [arcsec]
+            theta0 (float): isoplanatic angle at specified lambda and zenith
+                angle [arcsec]
         '''
-        return (2.914 * self.airmass() ** (8. / 3) * 
-                (2 * np.pi / self.wavelength()) ** 2 * 
-                np.sum(self._layersJs * 
+        return (2.914 * self.airmass() ** (8. / 3) *
+                (2 * np.pi / self.wavelength()) ** 2 *
+                np.sum(self._layersJs *
                        self._layersAltitudeInMeterAtZenith ** (5. / 3))
                 ) ** (-3. / 5) * Constants.RAD2ARCSEC
 
@@ -214,9 +223,9 @@ class Cn2Profile(object):
         Returns:
             tau0 (float): tau0 at specified lambda and zenith angle [sec]
         '''
-        return (2.914 * self.airmass() * 
-                (2 * np.pi / self.wavelength()) ** 2 * 
-                np.sum(self._layersJs * 
+        return (2.914 * self.airmass() *
+                (2 * np.pi / self.wavelength()) ** 2 *
+                np.sum(self._layersJs *
                        self._layersWindSpeed ** (5. / 3))
                 ) ** (-3. / 5)
 

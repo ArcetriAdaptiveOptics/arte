@@ -1,10 +1,10 @@
 import numpy as np
-from apposto.misc.fourier_adaptive_optics import TurbulentPhase, FourierAdaptiveOptics
-from apposto.utils.discrete_fourier_transform import BidimensionalFourierTransform \
-    as bfft
+from apposto.misc.fourier_adaptive_optics import TurbulentPhase, \
+    FourierAdaptiveOptics
+from apposto.utils.discrete_fourier_transform import \
+    BidimensionalFourierTransform as bfft
 from apposto.atmo.phase_screen_generator import PhaseScreenGenerator
 from apposto.types.mask import CircularMask
-from apposto.utils.zernike_generator import ZernikeGenerator
 
 
 def r0AtLambda(r0At500, wavelenghtInMeters):
