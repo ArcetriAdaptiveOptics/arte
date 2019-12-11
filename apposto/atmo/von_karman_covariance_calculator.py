@@ -227,15 +227,45 @@ class VonKarmanSpatioTemporalCovariance():
         return cov.sum()
 
     def getZernikeCovariance(self, j, k):
+        '''
+        Parameters
+        ----------
+        j: int (scalar or list, numpy array, tuple...)
+            Index of the Zernike coefficient (related to source1 on
+            aperture1).
+
+        k: int (scalar or list, numpy array, tuple...)
+            Index of the Zernike coefficient (related to source2 on
+            aperture2).
+
+        Returns
+        -------
+        cov: Zernike covariance or covariance matrix (n x m matrix if
+            n and m are, respectively, the dimension of j and k).
+        '''
         if (np.isscalar(j) and np.isscalar(k)):
-            return self._getZernikeCovarianceAllLayers(j, k)
+            cov = self._getZernikeCovarianceAllLayers(j, k)
+            return cov
+
+        elif (np.isscalar(j) and np.isscalar(k) is False):
+            cov = np.array([
+                self._getZernikeCovarianceAllLayers(j, k_mode)
+                for k_mode in k])
+            return cov
+
+        elif (np.isscalar(j) is False and np.isscalar(k)):
+            cov = np.array([
+                self._getZernikeCovarianceAllLayers(j_mode, k)
+                for j_mode in j])
+            return cov
+
         else:
-            matr = np.matrix([
+            cov = np.matrix([
                 np.array([
                     self._getZernikeCovarianceAllLayers(j_mode, k_mode)
                     for k_mode in k])
                 for j_mode in j])
-            return matr
+            return cov
 
     def integrandOfZernikeCPSD(self, j, k, nLayer, temp_freq):
         i = np.complex(0, 1)
@@ -280,11 +310,33 @@ class VonKarmanSpatioTemporalCovariance():
         ])
 
     def getZernikeCPSD(self, j, k, temp_freqs):
+        '''
+        Return the Cross Power Spectral Density (CPSD) of the Zernike
+        coefficients with index j and k describing the phase seen,
+        respectively, on aperture1 from source1 and on aperture2
+        from source2.
+        The CPSD is a function of temporal frequency.
+
+        Parameters
+        ----------
+        j: int
+            Index of the Zernike coefficient (related to source1 on aperture1).
+        k: int
+            Index of the Zernike coefficient (related to source2 on aperture2).
+        temp_freqs: numpy ndarray
+            Temporal frequencies array.
+
+        Returns
+        -------
+        cpsdTotal: numpy ndarray
+            Total Zernike CPSD, that is the sum of all the layers' CPSD.
+        '''
         cpsd = np.array([
             self._getZernikeCPSDAllTemporalFrequenciesOneLayer(
                 j, k, nLayer, temp_freqs) for nLayer
             in range(self._cn2.number_of_layers())])
-        return cpsd.sum(axis=0)
+        cpsdTotal = cpsd.sum(axis=0)
+        return cpsdTotal
 
     def integrandOfPhaseCPSD(self, nLayer, temp_freq):
         i = np.complex(0, 1)
