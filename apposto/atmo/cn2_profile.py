@@ -6,6 +6,7 @@ from apposto.utils.constants import Constants
 from apposto.utils.package_data import dataRootDir
 import os
 from astropy.io import fits
+import astropy.units as u
 
 """
 
@@ -143,7 +144,7 @@ class Cn2Profile(object):
         self._airmass = self.zenith_angle_to_airmass(zenithAngleInDeg)
 
     def zenith_angle(self):
-        return self._zenithInDeg
+        return self._zenithInDeg * u.deg
 
     @staticmethod
     def zenith_angle_to_airmass(zenithAngleInDeg):
@@ -154,7 +155,7 @@ class Cn2Profile(object):
         return self._airmass
 
     def layers_distance(self):
-        return self._layersAltitudeInMeterAtZenith * self._airmass
+        return self._layersAltitudeInMeterAtZenith * self._airmass * u.m
 
     def set_wavelength(self, wavelengthInMeters):
         self._lambda = wavelengthInMeters
@@ -170,14 +171,14 @@ class Cn2Profile(object):
         Returns:
             (array): windspeed of each layer in m/s
         """
-        return self._layersWindSpeed
+        return self._layersWindSpeed * u.m / u.s
 
     def wind_direction(self):
         """
         Returns:
             (array): wind direction of each layer [deg, clockwise from N]
         """
-        return self._layersWindDirection
+        return self._layersWindDirection * u.deg
 
     def seeing(self):
         """
@@ -185,7 +186,8 @@ class Cn2Profile(object):
             seeing value in arcsec at specified lambda and zenith angle
             defined as 0.98 * lambda / r0
         """
-        return 0.98 * self._lambda / self.r0() * Constants.RAD2ARCSEC
+        return 0.98 * self._lambda / self.r0() * Constants.RAD2ARCSEC * \
+            u.arcsec
 
     def r0(self):
         '''
@@ -194,7 +196,7 @@ class Cn2Profile(object):
         '''
         return (0.422727 * self.airmass() *
                 (2 * np.pi / self.wavelength()) ** 2 *
-                np.sum(self._layersJs)) ** (-3. / 5)
+                np.sum(self._layersJs)) ** (-3. / 5) * u.m
 
     def r0s(self):
         '''
@@ -204,7 +206,7 @@ class Cn2Profile(object):
         '''
         return self._js2r0(self._layersJs,
                            self.airmass(),
-                           self.wavelength())
+                           self.wavelength()) * u.m
 
     def theta0(self):
         '''
@@ -216,7 +218,7 @@ class Cn2Profile(object):
                 (2 * np.pi / self.wavelength()) ** 2 *
                 np.sum(self._layersJs *
                        self._layersAltitudeInMeterAtZenith ** (5. / 3))
-                ) ** (-3. / 5) * Constants.RAD2ARCSEC
+                ) ** (-3. / 5) * Constants.RAD2ARCSEC * u.arcsec
 
     def tau0(self):
         '''
@@ -227,10 +229,10 @@ class Cn2Profile(object):
                 (2 * np.pi / self.wavelength()) ** 2 *
                 np.sum(self._layersJs *
                        self._layersWindSpeed ** (5. / 3))
-                ) ** (-3. / 5)
+                ) ** (-3. / 5) * u.s
 
     def outer_scale(self):
-        return self._layersL0
+        return self._layersL0 * u.m
 
 
 class MaoryProfiles():
