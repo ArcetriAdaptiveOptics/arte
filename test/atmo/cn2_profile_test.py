@@ -41,10 +41,10 @@ class Cn2ProfileTest(unittest.TestCase):
         pr = Cn2Profile.from_r0s([0.1], [30], [100], [10], [0.3])
         pr.set_zenith_angle(0)
         self.assertAlmostEqual(0, pr.zenith_angle().value)
-        self.assertAlmostEqual(1, pr.airmass())
+        self.assertAlmostEqual(1, pr.airmass().value)
         pr.set_zenith_angle(60)
         self.assertAlmostEqual(60, pr.zenith_angle().value)
-        self.assertAlmostEqual(2, pr.airmass())
+        self.assertAlmostEqual(2, pr.airmass().value)
 
     def testBuildFromFractionalJ(self):
         pr = Cn2Profile.from_fractional_j(0.1, 1.0, 30, 100, 10, 0.3)
