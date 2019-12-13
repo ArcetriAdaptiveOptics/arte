@@ -4,6 +4,7 @@
 
 
 import numpy as np
+import astropy.units as u
 
 
 class GuideSource():
@@ -26,19 +27,14 @@ class GuideSource():
         self._z = height
 
     @staticmethod
-    def fromDegToRad(angle_deg):
-        return angle_deg * np.pi / 180
-
-    @staticmethod
-    def fromPolarToCartesian(rho, thetaRad):
-        x = rho * np.cos(thetaRad)
-        y = rho * np.sin(thetaRad)
+    def fromPolarToCartesian(rho, theta):
+        x = rho * np.cos(theta)
+        y = rho * np.sin(theta)
         return x, y
 
     def getSourceCartesianCoords(self):
-        x, y = self.fromPolarToCartesian(self._rho,
-                                         self.fromDegToRad(self._theta))
-        return np.array([x, y, self._z])
+        x, y = self.fromPolarToCartesian(self._rho, np.deg2rad(self._theta))
+        return [x * u.arcsec, y * u.arcsec, self._z * u.m]
 
     def getSourcePolarCoords(self):
-        return np.array([self._rho, self._theta, self._z])
+        return [self._rho * u.arcsec, self._theta * u.deg, self._z * u.m]

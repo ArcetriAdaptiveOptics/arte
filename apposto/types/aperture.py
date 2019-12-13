@@ -3,7 +3,7 @@
 '''
 
 
-import numpy as np
+import astropy.units as u
 
 
 class CircularOpticalAperture():
@@ -27,7 +27,7 @@ class CircularOpticalAperture():
         self._z = cartes_coords[2]
 
     def getCartesianCoords(self):
-        return np.array([self._x, self._y, self._z])
+        return [self._x * u.m, self._y * u.m, self._z * u.m]
 
     def getApertureRadius(self):
-        return self._r
+        return self._r * u.m
