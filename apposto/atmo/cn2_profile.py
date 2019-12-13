@@ -152,7 +152,7 @@ class Cn2Profile(object):
         return 1. / np.cos(zenithInRad)
 
     def airmass(self):
-        return self._airmass
+        return self._airmass * u.dimensionless_unscaled
 
     def layers_distance(self):
         return self._layersAltitudeInMeterAtZenith * self._airmass * u.m
@@ -161,10 +161,10 @@ class Cn2Profile(object):
         self._lambda = wavelengthInMeters
 
     def wavelength(self):
-        return self._lambda
+        return self._lambda * u.m
 
     def number_of_layers(self):
-        return len(self._layersJs)
+        return len(self._layersJs) * u.dimensionless_unscaled
 
     def wind_speed(self):
         """
@@ -194,8 +194,8 @@ class Cn2Profile(object):
         Returns:
             r0 (float): Fried parameter at specified lambda and zenith angle
         '''
-        return (0.422727 * self.airmass() *
-                (2 * np.pi / self.wavelength()) ** 2 *
+        return (0.422727 * self._airmass *
+                (2 * np.pi / self._lambda) ** 2 *
                 np.sum(self._layersJs)) ** (-3. / 5) * u.m
 
     def r0s(self):
@@ -205,8 +205,8 @@ class Cn2Profile(object):
             and zenith angle for each layer
         '''
         return self._js2r0(self._layersJs,
-                           self.airmass(),
-                           self.wavelength()) * u.m
+                           self._airmass,
+                           self._lambda) * u.m
 
     def theta0(self):
         '''
@@ -214,8 +214,8 @@ class Cn2Profile(object):
             theta0 (float): isoplanatic angle at specified lambda and zenith
                 angle [arcsec]
         '''
-        return (2.914 * self.airmass() ** (8. / 3) *
-                (2 * np.pi / self.wavelength()) ** 2 *
+        return (2.914 * self._airmass ** (8. / 3) *
+                (2 * np.pi / self._lambda) ** 2 *
                 np.sum(self._layersJs *
                        self._layersAltitudeInMeterAtZenith ** (5. / 3))
                 ) ** (-3. / 5) * Constants.RAD2ARCSEC * u.arcsec
@@ -225,8 +225,8 @@ class Cn2Profile(object):
         Returns:
             tau0 (float): tau0 at specified lambda and zenith angle [sec]
         '''
-        return (2.914 * self.airmass() *
-                (2 * np.pi / self.wavelength()) ** 2 *
+        return (2.914 * self._airmass *
+                (2 * np.pi / self._lambda) ** 2 *
                 np.sum(self._layersJs *
                        self._layersWindSpeed ** (5. / 3))
                 ) ** (-3. / 5) * u.s
