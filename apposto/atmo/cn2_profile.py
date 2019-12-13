@@ -7,6 +7,7 @@ from apposto.utils.package_data import dataRootDir
 import os
 from astropy.io import fits
 import astropy.units as u
+from astropy.units.quantity import Quantity
 
 """
 
@@ -164,7 +165,7 @@ class Cn2Profile(object):
         return self._lambda * u.m
 
     def number_of_layers(self):
-        return len(self._layersJs) * u.dimensionless_unscaled
+        return Quantity(len(self._layersJs), dtype=int)
 
     def wind_speed(self):
         """
