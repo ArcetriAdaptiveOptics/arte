@@ -53,7 +53,9 @@ class VonKarmanSpatioTemporalCovariance():
 
     cn2_profile: Cn2Profile object
         cn2 profile as obtained from the Cn2Profile class.
-        (e.g. cn2_profile = apposto.atmo.cn2_profile.EsoEltProfiles.Q1())
+        (e.g. cn2_eso = apposto.atmo.cn2_profile.EsoEltProfiles.Q1()
+         e.g. cn2_invented = apposto.atmo.cn2_profile.Cn2Profile.from_r0s(
+            [0.16], [25], [10e3], [0.1], [0]))
 
     spat_freqs: numpy.ndarray
         Range of spatial frequencies that are used in the Zernike covariance,
