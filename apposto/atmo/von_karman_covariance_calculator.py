@@ -11,9 +11,10 @@ from apposto.utils.zernike_generator import ZernikeGenerator
 
 class VonKarmanSpatioTemporalCovariance():
     '''
-    This class computes the spatio-temporal covariance between Zernike
-    coefficients which represent the turbulence induced phase aberrations
-    of two sources seen with two different circular apertures.
+    This class computes the covariance and its Fourier transform, the Cross
+    Power Spectral Density (CPSD), between Zernike coefficients describing
+    the turbulence induced phase aberrations of two sources seen by two
+    different circular apertures. The CPSD of the phase is also computed.
 
 
     References
@@ -31,10 +32,6 @@ class VonKarmanSpatioTemporalCovariance():
 
     Parameters
     ----------
-    cn2_profile: Cn2Profile object
-        cn2 profile as obtained from the Cn2Profile class.
-        (e.g. cn2_profile = apposto.atmo.cn2_profile.EsoEltProfiles.Q1())
-
     source1: GuideSource object
         Source geometry as obtained from GuideSource class.
         Here we consider rho as the angle (in arcsec) with respect to the
@@ -53,6 +50,15 @@ class VonKarmanSpatioTemporalCovariance():
 
     aperture2: CircularOpticalAperture object
         Same as aperture1.
+
+    cn2_profile: Cn2Profile object
+        cn2 profile as obtained from the Cn2Profile class.
+        (e.g. cn2_profile = apposto.atmo.cn2_profile.EsoEltProfiles.Q1())
+
+    spat_freqs: numpy.ndarray
+        Range of spatial frequencies that are used in the Zernike covariance,
+        Zernike CPSD and phase CPSD computation.
+
     '''
 
     def __init__(self,
@@ -185,7 +191,7 @@ class VonKarmanSpatioTemporalCovariance():
         return self._getCleverVersorCoords(
             self._source2Coords)
 
-    def layerProjectedAperturesSeparation(self, nLayer):
+    def _layerProjectedAperturesSeparation(self, nLayer):
         aCoord1 = self._ap1Coords
         aCoord2 = self._ap2Coords
 
@@ -205,17 +211,17 @@ class VonKarmanSpatioTemporalCovariance():
         psd = vk.spatial_psd(freqs)
         return psd
 
-    def _initializeParams1(self, nLayer, spat_freqs):
+    def _initializeGeometry(self, nLayer, spat_freqs):
         self._a1 = self._layerScalingFactor1(nLayer)
         self._a2 = self._layerScalingFactor2(nLayer)
         self._R1 = self._ap1Radius
         self._R2 = self._ap2Radius
-        sep = self.layerProjectedAperturesSeparation(nLayer)
+        sep = self._layerProjectedAperturesSeparation(nLayer)
         self._sepMod = np.linalg.norm(sep)
         self._thS = np.arctan2(sep[1], sep[0])
         self._psd = self._VonKarmanPSDOneLayer(nLayer, spat_freqs)
 
-    def _initializeParams2(self, j, k, spat_freqs):
+    def _initializeFunctionsForIntegration(self, j, k, spat_freqs):
         self._nj, self._mj = ZernikeGenerator.degree(j)
         self._nk, self._mk = ZernikeGenerator.degree(k)
 
@@ -242,8 +248,8 @@ class VonKarmanSpatioTemporalCovariance():
             i * np.trapz(np.imag(int_func), int_var)
 
     def _computeZernikeCovarianceOneLayer(self, j, k, nLayer):
-        self._initializeParams1(nLayer, self._freqs)
-        self._initializeParams2(j, k, self._freqs)
+        self._initializeGeometry(nLayer, self._freqs)
+        self._initializeFunctionsForIntegration(j, k, self._freqs)
         i = np.complex(0, 1)
 
         self._b3 = np.array([math.besselFirstKind(
@@ -279,6 +285,10 @@ class VonKarmanSpatioTemporalCovariance():
 
     def getZernikeCovariance(self, j, k):
         '''
+        Return the covariance between two Zernike coefficients with index j
+        and k describing the phase seen, respectively, on aperture1 from
+        source1 and on aperture2 from source2.
+
         Parameters
         ----------
         j: int (scalar or list, numpy array, tuple...)
@@ -294,6 +304,7 @@ class VonKarmanSpatioTemporalCovariance():
         cov: Zernike covariance or covariance matrix (n x m matrix if
             n and m are, respectively, the dimension of j and k).
         '''
+
         if (np.isscalar(j) and np.isscalar(k)):
             cov = self._getZernikeCovarianceAllLayers(j, k)
 
@@ -323,8 +334,8 @@ class VonKarmanSpatioTemporalCovariance():
         fPerp = self._freqs
         f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
 
-        self._initializeParams1(nLayer, f)
-        self._initializeParams2(j, k, f)
+        self._initializeGeometry(nLayer, f)
+        self._initializeFunctionsForIntegration(j, k, f)
 
         thWind = np.deg2rad(self._windDirection[nLayer])
         th0 = np.array([np.arccos(-temp_freq / (sp_freq * vl))
@@ -361,9 +372,8 @@ class VonKarmanSpatioTemporalCovariance():
     def getZernikeCPSD(self, j, k, temp_freqs):
         '''
         Return the Cross Power Spectral Density (CPSD) of the Zernike
-        coefficients with index j and k describing the phase seen,
-        respectively, on aperture1 from source1 and on aperture2
-        from source2.
+        coefficients with index j and k describing the phase seen by aperture1
+        and aperture2 observing, respectively, source1 and source2.
         The CPSD is a function of temporal frequency.
 
         Parameters
@@ -372,20 +382,23 @@ class VonKarmanSpatioTemporalCovariance():
             Index of the Zernike coefficient (related to source1 on aperture1).
         k: int
             Index of the Zernike coefficient (related to source2 on aperture2).
-        temp_freqs: numpy ndarray
+        temp_freqs: numpy.ndarray
             Temporal frequencies array.
 
         Returns
         -------
-        cpsdTotal: numpy ndarray
-            Total Zernike CPSD, that is the sum of all the layers' CPSD.
+        cpsdTotal: astropy.units.quantity.Quantity
+            Total Zernike CPSD, that is the sum of all the layers' Zernike
+            CPSD.
+            It is returned as a Quantity with units [rad**2/Hz].
         '''
+
         cpsd = np.array([
             self._getZernikeCPSDAllTemporalFrequenciesOneLayer(
                 j, k, nLayer, temp_freqs) for nLayer
             in range(self._numberOfLayers)])
-        cpsdTotal = cpsd.sum(axis=0)
-        return cpsdTotal * u.rad**2 / u.Hz
+        cpsdTotal = cpsd.sum(axis=0) * u.rad**2 / u.Hz
+        return cpsdTotal
 
     def integrandOfPhaseCPSD(self, nLayer, temp_freq):
         i = np.complex(0, 1)
@@ -394,7 +407,7 @@ class VonKarmanSpatioTemporalCovariance():
         fPerp = self._freqs
         f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
 
-        self._initializeParams1(nLayer, f)
+        self._initializeGeometry(nLayer, f)
 
         thWind = np.deg2rad(self._windDirection[nLayer])
         th0 = np.array([np.arccos(-temp_freq / (sp_freq * vl))
@@ -431,11 +444,30 @@ class VonKarmanSpatioTemporalCovariance():
         ])
 
     def getPhaseCPSD(self, temp_freqs):
+        '''
+        Return the Cross Power Spectral Density (CPSD) of the turbulent phase
+        seen by aperture1 and aperture2 observing, respectively, source1 and
+        source2.
+        The CPSD is a function of temporal frequency.
+
+        Parameters
+        ----------
+        temp_freqs: numpy.ndarray
+            Temporal frequencies array.
+
+        Returns
+        -------
+        phaseCPSDTotal: astropy.units.quantity.Quantity
+            Total phase CPSD, that is the sum of all the layers' phase CPSD.
+            It is returned as a Quantity with units [rad**2/Hz].
+        '''
+
         phaseCPSD = np.array([
             self._getPhaseCPSDAllTemporalFrequenciesOneLayer(
                 nLayer, temp_freqs)
             for nLayer in range(self._numberOfLayers)])
-        return phaseCPSD.sum(axis=0) * u.rad**2 / u.Hz
+        phaseCPSDTotal = phaseCPSD.sum(axis=0) * u.rad**2 / u.Hz
+        return phaseCPSDTotal
 
     def plotCPSD(self, cpsd, temp_freqs, func_part, scale, legend='',
                  wavelenght=None):
