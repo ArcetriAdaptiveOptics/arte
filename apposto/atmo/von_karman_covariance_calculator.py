@@ -95,18 +95,39 @@ class VonKarmanSpatioTemporalCovariance():
 
     def setCn2Profile(self, cn2_profile):
         self._cn2 = cn2_profile
+        self._layersDistance = self._quantitiesToValue(
+            cn2_profile.layers_distance())
+        self._r0s = self._quantitiesToValue(cn2_profile.r0s())
+        self._outerScale = self._quantitiesToValue(cn2_profile.outer_scale())
+        self._numberOfLayers = self._quantitiesToValue(
+            cn2_profile.number_of_layers())
+        self._windSpeed = self._quantitiesToValue(cn2_profile.wind_speed())
+        self._windDirection = self._quantitiesToValue(
+            cn2_profile.wind_direction())
 
     def setSource1(self, s1):
         self._source1 = s1
+        self._source1Coords = self._quantitiesToValue(
+            s1.getSourcePolarCoords())
 
     def setSource2(self, s2):
         self._source2 = s2
+        self._source2Coords = self._quantitiesToValue(
+            s2.getSourcePolarCoords())
 
     def setAperture1(self, ap1):
         self._ap1 = ap1
+        self._ap1Coords = self._quantitiesToValue(
+            ap1.getCartesianCoords())
+        self._ap1Radius = self._quantitiesToValue(
+            ap1.getApertureRadius())
 
     def setAperture2(self, ap2):
         self._ap2 = ap2
+        self._ap2Coords = self._quantitiesToValue(
+            ap2.getCartesianCoords())
+        self._ap2Radius = self._quantitiesToValue(
+            ap2.getApertureRadius())
 
     def setSpatialFrequencies(self, freqs):
         self._freqs = freqs
@@ -416,7 +437,8 @@ class VonKarmanSpatioTemporalCovariance():
             for nLayer in range(self._numberOfLayers)])
         return phaseCPSD.sum(axis=0) * u.rad**2 / u.Hz
 
-    def plotCPSD(self, cpsd, temp_freqs, func_part, scale, wavelenght=None):
+    def plotCPSD(self, cpsd, temp_freqs, func_part, scale, legend='',
+                 wavelenght=None):
         import matplotlib.pyplot as plt
         if wavelenght is None:
             lam = self._cn2.DEFAULT_LAMBDA
@@ -429,26 +451,26 @@ class VonKarmanSpatioTemporalCovariance():
                     temp_freqs,
                     np.abs(np.real(cpsd)) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='Real')
+                    '-', label='Real' + legend)
             elif scale == 'linear':
                 plt.semilogx(
                     temp_freqs,
                     np.real(cpsd) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='Real')
+                    '-', label='Real' + legend)
         elif func_part == 'imag':
             if scale == 'log':
                 plt.loglog(
                     temp_freqs,
                     np.abs(np.imag(cpsd)) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='Imaginary')
+                    '-', label='Imaginary' + legend)
             elif scale == 'linear':
                 plt.semilogx(
                     temp_freqs,
                     np.imag(cpsd) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='Imaginary')
+                    '-', label='Imaginary' + legend)
         plt.legend()
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('CPSD [nm$^{2}$/Hz]')
