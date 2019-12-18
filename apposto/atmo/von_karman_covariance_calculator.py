@@ -179,9 +179,9 @@ class VonKarmanSpatioTemporalCovariance():
 
     def _getCleverVersorCoords(self, s_coord):
         return np.array([
-            np.sin(np.deg2rad(s_coord[0] / 3600)) *
+            np.sin(np.deg2rad(s_coord[0] / 3600)) * 
             np.cos(np.deg2rad(s_coord[1])),
-            np.sin(np.deg2rad(s_coord[0] / 3600)) *
+            np.sin(np.deg2rad(s_coord[0] / 3600)) * 
             np.sin(np.deg2rad(s_coord[1])),
             np.cos(np.deg2rad(s_coord[0] / 3600))])
 
@@ -260,18 +260,18 @@ class VonKarmanSpatioTemporalCovariance():
         self._b4 = np.array([math.besselFirstKind(
             np.abs(self._mj - self._mk),
             self._sepMod * 2 * np.pi * f) for f in self._freqs])
-        self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) +
+        self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) + 
                                 (1 - self._deltak) * ((-1) ** k - 1))
-        self._c3 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) -
+        self._c3 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) - 
                                 (1 - self._deltak) * ((-1) ** k - 1))
 
         integFunc = self._c0 * self._c1 * \
             self._psd / self._freqs * self._b1 * self._b2 * \
-            (np.cos((self._mj + self._mk) * self._thS + self._c2) *
-             i ** (3 * (self._mj + self._mk)) *
-             self._b3 +
-             np.cos((self._mj - self._mk) * self._thS + self._c3) *
-             i ** (3 * np.abs(self._mj - self._mk)) *
+            (np.cos((self._mj + self._mk) * self._thS + self._c2) * 
+             i ** (3 * (self._mj + self._mk)) * 
+             self._b3 + 
+             np.cos((self._mj - self._mk) * self._thS + self._c3) * 
+             i ** (3 * np.abs(self._mj - self._mk)) * 
              self._b4)
         return integFunc
 
@@ -327,7 +327,7 @@ class VonKarmanSpatioTemporalCovariance():
                     for k_mode in k])
                 for j_mode in j])
 
-        return cov * u.rad**2
+        return cov * u.rad ** 2
 
     def integrandOfZernikeCPSD(self, j, k, nLayer, temp_freq):
         i = np.complex(0, 1)
@@ -351,12 +351,12 @@ class VonKarmanSpatioTemporalCovariance():
         integFunc = self._c0 * self._c1 / (vl * np.pi) * \
             self._psd / f ** 2 * self._b1 * self._b2 * \
             (np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
-                th1 - self._thS)) *
-             np.cos(self._mj * th1 + self._c4) *
-             np.cos(self._mk * th1 + self._c5) +
+                th1 - self._thS)) * 
+             np.cos(self._mj * th1 + self._c4) * 
+             np.cos(self._mk * th1 + self._c5) + 
              np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
-                 th2 - self._thS)) *
-             np.cos(self._mj * th2 + self._c4) *
+                 th2 - self._thS)) * 
+             np.cos(self._mj * th2 + self._c4) * 
              np.cos(self._mk * th2 + self._c5))
         return integFunc, fPerp
 
@@ -399,7 +399,7 @@ class VonKarmanSpatioTemporalCovariance():
             self._getZernikeCPSDAllTemporalFrequenciesOneLayer(
                 j, k, nLayer, temp_freqs) for nLayer
             in range(self._numberOfLayers)])
-        cpsdTotal = cpsd.sum(axis=0) * u.rad**2 / u.Hz
+        cpsdTotal = cpsd.sum(axis=0) * u.rad ** 2 / u.Hz
         return cpsdTotal
 
     def integrandOfPhaseCPSD(self, nLayer, temp_freq):
@@ -429,7 +429,7 @@ class VonKarmanSpatioTemporalCovariance():
         intFunc = 1. / vl * self._psd * (
             b0 / (arg1 * (k - 1) * f) - b1 / (arg1 * f) * b2 / (arg2 * f)) * (
                 np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
-                    th1 - self._thS)) +
+                    th1 - self._thS)) + 
             np.exp(-2 * i * np.pi * f * self._sepMod * np.cos(
                 th2 - self._thS)))
         return intFunc, fPerp
@@ -468,43 +468,43 @@ class VonKarmanSpatioTemporalCovariance():
             self._getPhaseCPSDAllTemporalFrequenciesOneLayer(
                 nLayer, temp_freqs)
             for nLayer in range(self._numberOfLayers)])
-        phaseCPSDTotal = phaseCPSD.sum(axis=0) * u.rad**2 / u.Hz
+        phaseCPSDTotal = phaseCPSD.sum(axis=0) * u.rad ** 2 / u.Hz
         return phaseCPSDTotal
 
     def plotCPSD(self, cpsd, temp_freqs, func_part, scale, legend='',
-                 wavelenght=None):
+                 wavelength=None):
         import matplotlib.pyplot as plt
-        if wavelenght is None:
+        if wavelength is None:
             lam = self._cn2.DEFAULT_LAMBDA
         else:
-            lam = wavelenght
+            lam = wavelength
         m_to_nm = 1e18
         if func_part == 'real':
             if scale == 'log':
                 plt.loglog(
                     temp_freqs,
-                    np.abs(np.real(cpsd)) *
+                    np.abs(np.real(cpsd)) * 
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='Real' + legend)
+                    '-', label='(real) ' + legend)
             elif scale == 'linear':
                 plt.semilogx(
                     temp_freqs,
-                    np.real(cpsd) *
+                    np.real(cpsd) * 
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='Real' + legend)
+                    '-', label='(real) ' + legend)
         elif func_part == 'imag':
             if scale == 'log':
                 plt.loglog(
                     temp_freqs,
-                    np.abs(np.imag(cpsd)) *
+                    np.abs(np.imag(cpsd)) * 
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='Imaginary' + legend)
+                    '-', label='(imag) ' + legend)
             elif scale == 'linear':
                 plt.semilogx(
                     temp_freqs,
-                    np.imag(cpsd) *
+                    np.imag(cpsd) * 
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='Imaginary' + legend)
+                    '-', label='(imag) ' + legend)
         plt.legend()
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('CPSD [nm$^{2}$/Hz]')
