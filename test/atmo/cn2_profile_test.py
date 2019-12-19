@@ -4,6 +4,8 @@ import numpy as np
 from apposto.atmo.cn2_profile import Cn2Profile, \
     MaoryProfiles, EsoEltProfiles
 from apposto.utils.constants import Constants
+import astropy.units as u
+from astropy.tests.helper import assert_quantity_allclose
 
 
 class Cn2ProfileTest(unittest.TestCase):
@@ -151,6 +153,23 @@ class Cn2ProfileTest(unittest.TestCase):
         pr = EsoEltProfiles.Q4()
         self.assertAlmostEqual(0.097, pr.r0().value, delta=0.001)
         self.assertAlmostEqual(0.00311, pr.tau0().value, delta=0.00001)
+
+    def testScalarQuantityAsArgument(self):
+        pr = Cn2Profile.from_r0s(100 * u.mm, 30 * u.m,
+                                 0.1 * u.km,
+                                 10 * u.m / u.s,
+                                 0.3 * u.deg)
+        assert_quantity_allclose(100 * u.m, pr.layers_distance())
+        assert_quantity_allclose(0.1 * u.m, pr.r0())
+
+    def testQuantityAsArgument(self):
+        pr = Cn2Profile.from_r0s([100 * u.mm, 0.2],
+                                 np.array([30, 50]) * u.m,
+                                 [0.1 * u.km, 10000 * u.m],
+                                 [10, 10] * u.m / u.s,
+                                 [0.3, 45] * u.deg)
+        assert_quantity_allclose([100, 10000] * u.m, pr.layers_distance())
+        self.assertEqual([0.1, 0.2] * u.m, pr.r0s())
 
 
 if __name__ == "__main__":
