@@ -2,12 +2,14 @@
 @author: lbusoni
 '''
 import numpy as np
+from astropy.units.quantity import Quantity
 from apposto.utils.constants import Constants
 from apposto.utils.package_data import dataRootDir
 import os
 from astropy.io import fits
 import astropy.units as u
-from astropy.units.quantity import Quantity
+from collections.abc import Iterable
+
 
 """
 
@@ -84,6 +86,11 @@ class Cn2Profile(object):
             layers of the profile
         All parameters defined at zenith
         """
+        layersR0 = cls._quantitiesToValue(layersR0)
+        layersL0 = cls._quantitiesToValue(layersL0)
+        layersAltitude = cls._quantitiesToValue(layersAltitude)
+        layersWindSpeed = cls._quantitiesToValue(layersWindSpeed)
+        layersWindDirection = cls._quantitiesToValue(layersWindDirection)
         js = cls._r02js(layersR0, cls.DEFAULT_AIRMASS, cls.DEFAULT_LAMBDA)
         return Cn2Profile(js,
                           layersL0,
@@ -115,6 +122,12 @@ class Cn2Profile(object):
             layers of the profile
         All parameters defined at zenith
         """
+        r0AtZenith = cls._quantitiesToValue(r0AtZenith)
+        layersFractionalJ = cls._quantitiesToValue(layersFractionalJ)
+        layersL0 = cls._quantitiesToValue(layersL0)
+        layersAltitude = cls._quantitiesToValue(layersAltitude)
+        layersWindSpeed = cls._quantitiesToValue(layersWindSpeed)
+        layersWindDirection = cls._quantitiesToValue(layersWindDirection)
         sumJ = np.array(layersFractionalJ).sum()
         assert (np.abs(sumJ - 1.0) < 0.01), \
             "Total of J values must be 1.0, got %g" % sumJ
@@ -127,6 +140,22 @@ class Cn2Profile(object):
                           layersAltitude,
                           layersWindSpeed,
                           layersWindDirection)
+
+    @staticmethod
+    def _quantitiesToValue(quantity):
+        if isinstance(quantity, Iterable):
+            if isinstance(quantity[0], Quantity):
+                value = np.array(
+                    [quantity[i].si.value for i in range(len(quantity))])
+            else:
+                value = value = np.array(
+                    [quantity[i] for i in range(len(quantity))])
+        else:
+            if isinstance(quantity, Quantity):
+                value = quantity.si.value
+            else:
+                value = quantity
+        return value
 
     @staticmethod
     def _r02js(r0s, airmass, wavelength):
@@ -179,7 +208,10 @@ class Cn2Profile(object):
         Returns:
             (array): wind direction of each layer [deg, clockwise from N]
         """
-        return self._layersWindDirection * u.deg
+        # TODO: check the unit. layersWindDirection is converted in SI, so
+        # in radiants. I think that I must return np.rad2deg(layersWindDir) *
+        # u.deg
+        return np.rad2deg(self._layersWindDirection) * u.deg
 
     def seeing(self):
         """
