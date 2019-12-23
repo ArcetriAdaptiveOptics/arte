@@ -4,6 +4,7 @@
 
 
 import astropy.units as u
+from astropy.units.quantity import Quantity
 
 
 class CircularOpticalAperture():
@@ -27,7 +28,13 @@ class CircularOpticalAperture():
         self._z = cartes_coords[2]
 
     def getCartesianCoords(self):
+        if (isinstance(self._x, Quantity) and (self._y, Quantity)
+                and (self._z, Quantity)):
+            return [self._x, self._y, self._z]
         return [self._x * u.m, self._y * u.m, self._z * u.m]
 
     def getApertureRadius(self):
-        return self._r * u.m
+        if (isinstance(self._r, Quantity)):
+            return self._r
+        else:
+            return self._r * u.m
