@@ -5,6 +5,7 @@
 
 import numpy as np
 import astropy.units as u
+from astropy.units.quantity import Quantity
 
 
 class GuideSource():
@@ -27,14 +28,30 @@ class GuideSource():
         self._z = height
 
     @staticmethod
-    def fromPolarToCartesian(rho, theta):
+    def _quantitiesToValue(quantity):
+        if isinstance(quantity, Quantity):
+            value = quantity.value
+        else:
+            value = quantity
+        return value
+
+    @staticmethod
+    def fromPolarToCartesian(rho, theta, z):
         x = rho * np.cos(theta)
         y = rho * np.sin(theta)
-        return x, y
+        return x, y, z
 
     def getSourceCartesianCoords(self):
-        x, y = self.fromPolarToCartesian(self._rho, np.deg2rad(self._theta))
-        return [x * u.arcsec, y * u.arcsec, self._z * u.m]
+        x, y, z = self.fromPolarToCartesian(self._quantitiesToValue(self._rho),
+                                            np.deg2rad(
+            self._quantitiesToValue(
+                self._theta)),
+            self._quantitiesToValue(self._z))
+        return [x * u.arcsec, y * u.arcsec, z * u.m]
 
     def getSourcePolarCoords(self):
-        return [self._rho * u.arcsec, self._theta * u.deg, self._z * u.m]
+        if (isinstance(self._rho, Quantity) and (self._theta, Quantity)
+                and (self._z, Quantity)):
+            return [self._rho, self._theta, self._z]
+        else:
+            return [self._rho * u.arcsec, self._theta * u.deg, self._z * u.m]

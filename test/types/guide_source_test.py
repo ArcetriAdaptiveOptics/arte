@@ -33,3 +33,25 @@ class GuideSourceTest(unittest.TestCase):
         assert_quantity_allclose(got[0], want[0], atol=1e-14 * u.arcsec)
         assert_quantity_allclose(got[1], want[1])
         assert_quantity_allclose(got[2], want[2])
+
+    def testQuantiyAsArgumentInPolarCoords(self):
+        rho, theta = (50 * u.arcsec, 90 * u.deg)
+        z = 100e3 * u.m
+        source = GuideSource((rho, theta), z)
+
+        want = [50 * u.arcsec, 90 * u.deg, 100e3 * u.m]
+        got = source.getSourcePolarCoords()
+        assert_quantity_allclose(got[0], want[0])
+        assert_quantity_allclose(got[1], want[1])
+        assert_quantity_allclose(got[2], want[2])
+
+    def testQuantityAsArgumentInCartesianCoords(self):
+        rho, theta = (50 * u.arcsec, 90 * u.deg)
+        z = 100e3 * u.m
+        source = GuideSource((rho, theta), z)
+
+        want = [0 * u.arcsec, 50 * u.arcsec, 100e3 * u.m]
+        got = source.getSourceCartesianCoords()
+        assert_quantity_allclose(got[0], want[0], atol=1e-14 * u.arcsec)
+        assert_quantity_allclose(got[1], want[1])
+        assert_quantity_allclose(got[2], want[2])
