@@ -110,3 +110,41 @@ class TestLongExposure():
         matplotlib.pyplot.plot(le[1][64, :], le[0][64, :])
         print(ImageMoments(le[0]).semiAxes() * le[1][64, 64:66][1])
         print(tle.seeingLimitedFWHMInArcsec())
+
+
+class ResidualVarianceUsingOneOffAxisNGS():
+
+    def __init__(self, rejection_TF, noise_TF, turbulence_PSD,
+                 turbulence_CrossPSD, noise_PSD):
+        self._RTF = rejection_TF
+        self._NTF = noise_TF
+        self._turbPSD = turbulence_PSD
+        self._turbCrossPSD = turbulence_CrossPSD
+        self._noisePSD = noise_PSD
+
+    def _getIntegrand(self):
+        return self._RTF**2 * self._turbPSD + self._NTF**2 * self._noisePSD + \
+            2 * np.real(self._NTF * (self._turbCrossPSD - self._turbPSD))
+
+    def _computeIntegral(self, freqs):
+        return np.trapz(self._getIntegrand(), freqs)
+
+    def getResidualVariance(self, temporal_frequencies):
+        return self._computeIntegral(temporal_frequencies)
+
+
+class TransferFunction():
+
+    def __init__(self, temporal_frequencies, gain, temporal_delay):
+        self._freqs = temporal_frequencies
+        self._gain = gain
+        self._delay = temporal_delay
+        self._z = np.exp(1j * 2 * np.pi * temporal_frequencies)
+
+    def rejectionTransferFunction(self):
+        return (1 - self._z**(-1)) / (1 - self._z**(-1) +
+                                      self._gain * self._z**(-self._delay))
+
+    def noiseTransferFunction(self):
+        return - (self._gain * self._z**(-self._delay)) / (
+            1 - self._z**(-1) + self._gain * self._z**(-self._delay))
