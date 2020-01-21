@@ -179,9 +179,9 @@ class VonKarmanSpatioTemporalCovariance():
 
     def _getCleverVersorCoords(self, s_coord):
         return np.array([
-            np.sin(np.deg2rad(s_coord[0] / 3600)) *
+            np.sin(np.deg2rad(s_coord[0] / 3600)) * 
             np.cos(np.deg2rad(s_coord[1])),
-            np.sin(np.deg2rad(s_coord[0] / 3600)) *
+            np.sin(np.deg2rad(s_coord[0] / 3600)) * 
             np.sin(np.deg2rad(s_coord[1])),
             np.cos(np.deg2rad(s_coord[0] / 3600))])
 
@@ -230,12 +230,12 @@ class VonKarmanSpatioTemporalCovariance():
         self._deltaj = math.kroneckerDelta(0, self._mj)
         self._deltak = math.kroneckerDelta(0, self._mk)
 
-        self._b1 = np.array([math.besselFirstKind(
+        self._b1 = math.besselFirstKind(
             self._nj + 1,
-            2 * np.pi * f * self._R1 * (1 - self._a1)) for f in spat_freqs])
-        self._b2 = np.array([math.besselFirstKind(
+            2 * np.pi * spat_freqs * self._R1 * (1 - self._a1))
+        self._b2 = math.besselFirstKind(
             self._nk + 1,
-            2 * np.pi * f * self._R2 * (1 - self._a2)) for f in spat_freqs])
+            2 * np.pi * spat_freqs * self._R2 * (1 - self._a2))
 
         self._c0 = (-1) ** self._mk * np.sqrt((
             self._nj + 1) * (self._nk + 1)) * 1j ** (
@@ -252,24 +252,24 @@ class VonKarmanSpatioTemporalCovariance():
         self._initializeGeometry(nLayer, self._freqs)
         self._initializeFunctionsForIntegration(j, k, self._freqs)
 
-        self._b3 = np.array([math.besselFirstKind(
+        self._b3 = math.besselFirstKind(
             self._mj + self._mk,
-            self._sepMod * 2 * np.pi * f) for f in self._freqs])
-        self._b4 = np.array([math.besselFirstKind(
+            self._sepMod * 2 * np.pi * self._freqs)
+        self._b4 = math.besselFirstKind(
             np.abs(self._mj - self._mk),
-            self._sepMod * 2 * np.pi * f) for f in self._freqs])
-        self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) +
+            self._sepMod * 2 * np.pi * self._freqs)
+        self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) + 
                                 (1 - self._deltak) * ((-1) ** k - 1))
-        self._c3 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) -
+        self._c3 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) - 
                                 (1 - self._deltak) * ((-1) ** k - 1))
 
         integFunc = self._c0 * self._c1 * \
             self._psd / self._freqs * self._b1 * self._b2 * \
-            (np.cos((self._mj + self._mk) * self._thS + self._c2) *
-             1j ** (3 * (self._mj + self._mk)) *
-             self._b3 +
-             np.cos((self._mj - self._mk) * self._thS + self._c3) *
-             1j ** (3 * np.abs(self._mj - self._mk)) *
+            (np.cos((self._mj + self._mk) * self._thS + self._c2) * 
+             1j ** (3 * (self._mj + self._mk)) * 
+             self._b3 + 
+             np.cos((self._mj - self._mk) * self._thS + self._c3) * 
+             1j ** (3 * np.abs(self._mj - self._mk)) * 
              self._b4)
         return integFunc
 
@@ -337,8 +337,7 @@ class VonKarmanSpatioTemporalCovariance():
         self._initializeFunctionsForIntegration(j, k, f)
 
         thWind = np.deg2rad(self._windDirection[nLayer])
-        th0 = np.array([np.arccos(-temp_freq / (sp_freq * vl))
-                        for sp_freq in f])
+        th0 = np.arccos(-temp_freq / (f * vl))
         th1 = th0 + thWind
         th2 = -th0 + thWind
 
@@ -348,12 +347,12 @@ class VonKarmanSpatioTemporalCovariance():
         integFunc = self._c0 * self._c1 / (vl * np.pi) * \
             self._psd / f ** 2 * self._b1 * self._b2 * \
             (np.exp(-2 * 1j * np.pi * f * self._sepMod * np.cos(
-                th1 - self._thS)) *
-             np.cos(self._mj * th1 + self._c4) *
-             np.cos(self._mk * th1 + self._c5) +
+                th1 - self._thS)) * 
+             np.cos(self._mj * th1 + self._c4) * 
+             np.cos(self._mk * th1 + self._c5) + 
              np.exp(-2 * 1j * np.pi * f * self._sepMod * np.cos(
-                 th2 - self._thS)) *
-             np.cos(self._mj * th2 + self._c4) *
+                 th2 - self._thS)) * 
+             np.cos(self._mj * th2 + self._c4) * 
              np.cos(self._mk * th2 + self._c5))
         return integFunc, fPerp
 
@@ -408,8 +407,7 @@ class VonKarmanSpatioTemporalCovariance():
         self._initializeGeometry(nLayer, f)
 
         thWind = np.deg2rad(self._windDirection[nLayer])
-        th0 = np.array([np.arccos(-temp_freq / (sp_freq * vl))
-                        for sp_freq in f])
+        th0 = np.arccos(-temp_freq / (f * vl))
         th1 = th0 + thWind
         th2 = -th0 + thWind
 
@@ -417,10 +415,9 @@ class VonKarmanSpatioTemporalCovariance():
 
         arg1 = np.pi * self._R1 * (1 - self._a1)  # * (k - 1)
         arg2 = np.pi * self._R2 * (1 - self._a2)  # * (k - 1)
-        b0 = np.array([math.besselFirstKind(1, 2 * arg1 * (k - 1) * freq)
-                       for freq in f])
-        b1 = np.array([math.besselFirstKind(1, 2 * arg1 * freq) for freq in f])
-        b2 = np.array([math.besselFirstKind(1, 2 * arg2 * freq) for freq in f])
+        b0 = math.besselFirstKind(1, 2 * arg1 * (k - 1) * f)
+        b1 = math.besselFirstKind(1, 2 * arg1 * f)
+        b2 = math.besselFirstKind(1, 2 * arg2 * f)
 
         if k == 1:
             q1 = 1
@@ -440,7 +437,7 @@ class VonKarmanSpatioTemporalCovariance():
         intFunc = 1. / vl * self._psd * (
             q1 - q2 * q3) * (
                 np.exp(-2 * 1j * np.pi * f * self._sepMod * np.cos(
-                    th1 - self._thS)) +
+                    th1 - self._thS)) + 
             np.exp(-2 * 1j * np.pi * f * self._sepMod * np.cos(
                 th2 - self._thS)))
         return intFunc, fPerp
@@ -494,26 +491,26 @@ class VonKarmanSpatioTemporalCovariance():
             if scale == 'log':
                 plt.loglog(
                     temp_freqs,
-                    np.abs(np.real(cpsd)) *
+                    np.abs(np.real(cpsd)) * 
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
                     '-', label='(real) ' + legend)
             elif scale == 'linear':
                 plt.semilogx(
                     temp_freqs,
-                    np.real(cpsd) *
+                    np.real(cpsd) * 
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
                     '-', label='(real) ' + legend)
         elif func_part == 'imag':
             if scale == 'log':
                 plt.loglog(
                     temp_freqs,
-                    np.abs(np.imag(cpsd)) *
+                    np.abs(np.imag(cpsd)) * 
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
                     '-', label='(imag) ' + legend)
             elif scale == 'linear':
                 plt.semilogx(
                     temp_freqs,
-                    np.imag(cpsd) *
+                    np.imag(cpsd) * 
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
                     '-', label='(imag) ' + legend)
         plt.legend()
