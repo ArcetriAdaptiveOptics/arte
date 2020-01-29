@@ -132,6 +132,25 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
                          -1.1429392989780903e-10 + 3.3962839307091425e-11 * i])
         assert_allclose(want, got)
 
+    def testIntegrationOfPhaseCPSDWithPhaseCovariance(self):
+        cn2 = Cn2Profile.from_r0s(
+            [0.16], [25], [10e3], [10], [-20])
+        rho, theta = (0, 0)
+        source = GuideSource((rho, theta), np.inf)
+        radius = 5
+        center = [0, 0, 0]
+        aperture = CircularOpticalAperture(radius, center)
+        spatial_freqs = np.logspace(-3, 3, 100)
+        temporal_freqs = np.linspace(0.05, 250, 5000)
+
+        vk = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+
+        phaseCov = vk.getPhaseCovariance().value
+        phaseCPSD = vk.getPhaseCPSD(temporal_freqs).value
+        phaseCovFromCPSD = np.trapz(2 * np.real(phaseCPSD), temporal_freqs)
+        self.assertAlmostEqual(phaseCovFromCPSD, phaseCov)
+
 
 if __name__ == "__main__":
     unittest.main()
