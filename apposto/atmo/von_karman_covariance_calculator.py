@@ -365,7 +365,7 @@ class VonKarmanSpatioTemporalCovariance():
         self._c4 = np.pi / 4 * (1 - self._deltaj) * ((-1) ** j - 1)
         self._c5 = np.pi / 4 * (1 - self._deltak) * ((-1) ** k - 1)
 
-        integFunc = self._c0 * self._c1 * 1j**(0.5 * ((-1)**(
+        integFunc = 2 * self._c0 * self._c1 * 1j**(0.5 * ((-1)**(
             self._nj + self._nk) - 1)) / (vl * np.pi) * \
             self._psd / f ** 2 * self._b1 * self._b2 * \
             (np.cos(2 * np.pi * f * self._sl * np.cos(th1 - self._thS) +

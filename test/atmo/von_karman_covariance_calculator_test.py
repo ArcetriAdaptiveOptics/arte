@@ -167,7 +167,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
 
         zernikeCov = vk.getZernikeCovariance(2, 2).value
         zernikeCPSD = vk.getGeneralZernikeCPSD(2, 2, temporal_freqs).value
-        zernikeCovFromCPSD = np.trapz(2 * np.real(zernikeCPSD), temporal_freqs)
+        zernikeCovFromCPSD = np.trapz(zernikeCPSD, temporal_freqs)
         self.assertAlmostEqual(zernikeCovFromCPSD, zernikeCov)
 
 
