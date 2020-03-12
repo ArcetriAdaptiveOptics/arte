@@ -112,7 +112,7 @@ class TestLongExposure():
         print(tle.seeingLimitedFWHMInArcsec())
 
 
-class ResidualVarianceUsingOneOffAxisNGS():
+class ResidualSCAOVarianceUsingOffAxisNGS():
 
     def __init__(self, rejection_TF, noise_TF, turbulence_PSD,
                  turbulence_CrossPSD, noise_PSD):
@@ -150,95 +150,77 @@ class TransferFunction():
             1 - self._z**(-1) + self._gain * self._z**(-self._delay))
 
 
-# def getOffAxisErrorVsDistance(distances, j, k):
-#     from apposto.types.guide_source import GuideSource
-#     from apposto.types.aperture import CircularOpticalAperture
-#     from apposto.atmo.cn2_profile import Cn2Profile
-#     from apposto.atmo.von_karman_covariance_calculator import \
-#         VonKarmanSpatioTemporalCovariance
-#
-#     ngs = GuideSource((0, 0), np.inf)
-#     aperture = CircularOpticalAperture(5, [0, 0, 0])
-#     cn2 = Cn2Profile.from_r0s([0.16], [25], [10e3], [10], [-20])
-#     freqs = np.logspace(-3, 3, 100)
-#
-#     vk = VonKarmanSpatioTemporalCovariance(source1=ngs, source2=ngs,
-#                                            aperture1=aperture,
-#                                            aperture2=aperture,
-#                                            cn2_profile=cn2,
-#                                            spat_freqs=freqs)
-#     covOnOn = (vk.getZernikeCovariance(j, k).value).real
-#
-#     def computeOffAxisError(covOnOn, covOnOff):
-#         return 2 * (covOnOn - covOnOff)
-#
-#     residuals = []
-#     for pos in distances:
-#         source = GuideSource(pos, np.inf)
-#         vk.setSource2(source)
-#         cov = (vk.getZernikeCovariance(j, k).value).real
-#         res = computeOffAxisError(covOnOn, cov)
-#         residuals.append(res)
-#     return residuals
-#
-#
-# def ellipsePlot(distances_xy, width, height, angle,
-#                 x_max, x_min, y_max, y_min):
-#     import matplotlib.pyplot as plt
-#     from matplotlib.patches import Ellipse
-#     ellipse = [Ellipse((distances_xy[i, 0], distances_xy[i, 1]),
-#                        width[i], height[i], angle=angle[i]) for i in range(
-#         len(width))]
-#     fig, ax = plt.subplots(subplot_kw={'aspect': 'equal'})
-#     for e in ellipse:
-#         ax.add_artist(e)
-#         e.set_clip_box(ax.bbox)
-#         ax.set_xlim(x_min, x_max)
-#         ax.set_ylim(y_min, y_max)
-#         plt.show()
-#
-#
-# def tipTiltMapExample():
-#     import matplotlib.pyplot as plt
-#
-#     def getCartesianPositions(rho, theta):
-#         x = rho * np.cos(np.deg2rad(theta))
-#         y = rho * np.sin(np.deg2rad(theta))
-#         return x, y
-#
-#     def computeEllipseParameters(res22, res33, res23):
-#         covMatrix = np.array([[res22, res23], [res23, res33]])
-#         lam, v = np.linalg.eigh(covMatrix)
-#         order = lam.argsort()[::-1]
-#         lamSort, vSort = lam[order], v[:, order]
-#         theta = np.rad2deg(np.arctan2(vSort[:, 0][1], vSort[:, 0][0]))
-#         width, height = 2 * np.sqrt(lamSort)
-#         return width, height, theta
-#
-#     rhos = np.random.randint(-50, 50, size=(500))
-#     thetas = np.random.randint(360, size=(500))
-#     positionsInPolar = np.stack((rhos, thetas), axis=-1)
-#
-#     res22 = getOffAxisErrorVsDistance(positionsInPolar, 2, 2)
-#     res33 = getOffAxisErrorVsDistance(positionsInPolar, 3, 3)
-#     res23 = getOffAxisErrorVsDistance(positionsInPolar, 2, 3)
-#
-#     positionsInXY = np.array([getCartesianPositions(rhos[i], thetas[i])
-#                               for i in range(rhos.shape[0])])
-#
-#     widths = []
-#     heights = []
-#     ths = []
-#     for i in range(len(res22)):
-#         w, h, t = computeEllipseParameters(res22[i], res33[i], res23[i])
-#         widths.append(w / 2)
-#         heights.append(h / 2)
-#         ths.append(t)
-#
-#     ellipsePlot(distances_xy=positionsInXY, width=widths,
-#                 height=heights, angle=ths,
-#                 x_max=50, x_min=-50, y_max=50, y_min=-50)
-#
-#     plt.scatter(0, 0, marker='*', s=100, color='y')
-#     plt.xlabel('arcsec')
-#     plt.ylabel('arcsec')
+class SimulationOfResidualPhase():
+
+    def __init__(self, phase_screen,
+                 layer_altitude,
+                 wind_xy,
+                 source1,
+                 source2,
+                 time_delay,
+                 gain):
+        self._phaseScreen = phase_screen
+        self._layerAlt = layer_altitude
+        self._wind = wind_xy
+        self._source1 = source1
+        self._source2 = source2
+        self._d = time_delay
+        self._g = gain
+        self._source1Coords = self._quantitiesToValue(
+            source1.getSourcePolarCoords())
+        self._source2Coords = self._quantitiesToValue(
+            source2.getSourcePolarCoords())
+
+    def _getPhaseScreenOnAxisAtOneStep(self, step):
+        shift_x = self._wind[step][1]
+        shift_y = self._wind[step][0]
+        ps_x = np.roll(self._phaseScreen, shift_x, axis=1)
+        ps_xy = np.roll(ps_x, shift_y, axis=0)
+        return ps_xy
+
+    def _getPhaseScreenOffAxisAtOneStep(self, step):
+        shift_x = self._layerProjectedAperturesSeparation()[0]
+        shift_y = self._layerProjectedAperturesSeparation()[1]
+        ps_on = self._getPhaseScreenOnAxisAtOneStep(step)
+        ps_off_x = np.roll(ps_on, shift_x, axis=1)
+        ps_off_xy = np.roll(ps_off_x, shift_y, axis=0)
+        return ps_off_xy
+
+    def getPhaseScreenOnAxis(self, n_step):
+        phase_screen_list = []
+        for t in range(n_step):
+            ps = self._getPhaseScreenOnAxisAtOneStep(t)
+            phase_screen_list.append(ps)
+        return phase_screen_list
+
+    def getPhaseScreenOffAxis(self, n_step):
+        phase_screen_list = []
+        for t in range(n_step):
+            ps = self._getPhaseScreenOffAxisAtOneStep(t)
+            phase_screen_list.append(ps)
+        return phase_screen_list
+
+    def _quantitiesToValue(self, quantity):
+        if type(quantity) == list:
+            value = np.array([quantity[i].value for i in range(len(quantity))])
+        else:
+            value = quantity.value
+        return value
+
+    def _getCleverVersorCoords(self, s_coord):
+        return np.array([
+            np.sin(np.deg2rad(s_coord[0] / 3600)) *
+            np.cos(np.deg2rad(s_coord[1])),
+            np.sin(np.deg2rad(s_coord[0] / 3600)) *
+            np.sin(np.deg2rad(s_coord[1])),
+            np.cos(np.deg2rad(s_coord[0] / 3600))])
+
+    def _layerProjectedAperturesSeparation(self):
+        vCoord1 = self._getCleverVersorCoords(self._source1Coords)
+        vCoord2 = self._getCleverVersorCoords(self._source2Coords)
+        sep = self._layerAlt * vCoord2 / vCoord2[2] - \
+            self._layerAlt * vCoord1 / vCoord1[2]
+        return sep
+
+    def _getPhaseOfDMUntilStepN(self, ):
+        pass
