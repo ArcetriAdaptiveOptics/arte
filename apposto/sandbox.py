@@ -122,15 +122,34 @@ class ResidualSCAOVarianceUsingOffAxisNGS():
         self._turbCrossPSD = turbulence_CrossPSD
         self._noisePSD = noise_PSD
 
-    def _getIntegrand(self):
-        return self._RTF**2 * self._turbPSD + self._NTF**2 * self._noisePSD + \
+    def _computeIntegrand(self):
+        self._integrand = self._RTF**2 * self._turbPSD + \
+            self._NTF**2 * self._noisePSD + \
             2 * np.real(self._NTF * (self._turbCrossPSD - self._turbPSD))
 
     def _computeIntegral(self, freqs):
-        return np.trapz(self._getIntegrand(), freqs)
+        self._computeIntegrand()
+        self._var = np.trapz(self._integrand, freqs)
 
     def getResidualVariance(self, temporal_frequencies):
-        return self._computeIntegral(temporal_frequencies)
+        self._computeIntegral(temporal_frequencies)
+        return self._var
+
+
+class ResidualMCAO():
+    # TODO: 'integrator' object in input instead of 'gain' and 'delay'
+    def __init__(self, gain, delay, projection_on, projection_off,
+                 reconstructor, cpsd_onon, cpsd_onoff):
+        self._g = gain
+        self._d = delay
+        self._Pon = projection_on
+        self._Poff = projection_off
+        self._w = reconstructor
+        self._CPSDon = cpsd_onon
+        self._CPSDoff = cpsd_onoff
+
+    def _computeIntegrand(self):
+        pass
 
 
 class TransferFunction():
