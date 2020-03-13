@@ -18,8 +18,8 @@ class ResidualCalculator():
         self._psd_noise = psd_noise
         self._integrator = integrator
 
-    def getSCAOResidual(self, temporal_freq):
-        scao_res = np.trapz(self._computeSCAOIntegrand(), temporal_freq)
+    def getSCAOResidual(self, temporal_freqs):
+        scao_res = np.trapz(self._computeSCAOIntegrand(), temporal_freqs)
         return scao_res
 
     def getMCAOResidual(self, proj_matrix_on, proj_matrix_off,
