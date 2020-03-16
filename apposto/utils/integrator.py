@@ -4,14 +4,14 @@ Created on 13 mar 2020
 @author: giuliacarla
 '''
 
+import numpy as np
 
-class Integrator():
+
+class SimpleIntegrator():
 
     def __init__(self):
         self.delay = None
         self.gain = None
-        self.rtf = None
-        self.ntf = None
 
     def setDelay(self, d):
         self.delay = d
@@ -19,26 +19,34 @@ class Integrator():
     def setGain(self, g):
         self.gain = g
 
-    def setRejectionTransferFunction(self, rtf):
-        self._rtf = rtf
+    def setTemporalFrequencies(self, f):
+        self.z = np.exp(2j * np.pi * f)
 
-    def setNoiseTransferFunction(self, ntf):
-        self._ntf = ntf
-
-    def getRejectionTransferFunction(self, temporal_freqs=None):
-        if self._rtf is None:
-            self._computeRTF()
+    def getRejectionTransferFunction(self):
+        self._computeRTF()
         return self._rtf
 
-    def getNoiseTransferFunction(self, temporal_freqs=None):
-        if self._ntf is None:
-            self._computeNTF()
+    def getNoiseTransferFunction(self):
+        self._computeNTF()
         return self._ntf
 
     def _computeRTF(self):
-        self._rtf
-        pass
+        self._rtf = (1 - self.z**(-1)) / (
+            1 - self.z**(-1) + self.gain * self.z**(-self.delay))
 
     def _computeNTF(self):
-        self._ntf
-        pass
+        self._ntf = - (self.gain * self.z**(-self.delay)) / (
+            1 - self.z**(-1) + self.gain * self.z**(-self.delay))
+
+
+class IdealIntegrator():
+
+    def __init__(self, rtf=0, ntf=-1):
+        self._rtf = rtf
+        self._ntf = ntf
+
+    def getRejectionTransferFunction(self):
+        return self._rtf
+
+    def getNoiseTransferFunction(self):
+        return self._ntf
