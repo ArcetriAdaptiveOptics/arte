@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from numpy.testing import assert_allclose
 from apposto.atmo.von_karman_covariance_calculator import \
     VonKarmanSpatioTemporalCovariance
 from apposto.atmo.cn2_profile import Cn2Profile
@@ -106,7 +105,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
                          5.860371984070442e-13 - 6.118996011218766e-13 * i,
                          -4.7421202823319255e-15 + 4.0902856472182244e-15 * i])
 
-        assert_allclose(want, got)
+        np.testing.assert_allclose(want, got)
 # TODO: FIXME TEST SOMETHING
 
     def testPhaseCPSD(self):
@@ -130,7 +129,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         want = np.array([55.33279564624362 + 2.7107654578823674 * i,
                          7.929228930453956e-12 - 2.0694414093390505e-10 * i,
                          -1.1429392989780903e-10 + 3.3962839307091425e-11 * i])
-        assert_allclose(want, got)
+        np.testing.assert_allclose(want, got)
 
     def testIntegrationOfPhaseCPSDWithPhaseCovariance(self):
         cn2 = Cn2Profile.from_r0s(
@@ -141,7 +140,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         center = [0, 0, 0]
         aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-3, 3, 100)
-        temporal_freqs = np.linspace(0.05, 250, 5000)
+        temporal_freqs = np.logspace(-4, 4, 1000)
 
         vk = VonKarmanSpatioTemporalCovariance(
             source, source, aperture, aperture, cn2, spatial_freqs)
@@ -160,7 +159,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         center = [0, 0, 0]
         aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-3, 3, 100)
-        temporal_freqs = np.linspace(0.05, 250, 5000)
+        temporal_freqs = np.logspace(-4, 4, 1000)
 
         vk = VonKarmanSpatioTemporalCovariance(
             source, source, aperture, aperture, cn2, spatial_freqs)
