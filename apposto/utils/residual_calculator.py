@@ -51,5 +51,4 @@ class ResidualCalculator():
             2 * np.real(a_on * self._cpsd_offon) + \
             np.linalg.norm(g * z**(-d) / (1 - z**(-1)) * p_on * w * (
                 id_matrix - a_off))**2 * self._psd_noise
-# TODO: check the expression
         return integrand

@@ -8,6 +8,8 @@ import numpy as np
 
 
 class SimpleIntegrator():
+    """
+    """
 
     def __init__(self):
         self.delay = None
@@ -40,8 +42,10 @@ class SimpleIntegrator():
 
 
 class IdealIntegrator():
+    """
+    """
 
-    def __init__(self, rtf=0, ntf=-1):
+    def __init__(self, rtf=0., ntf=-1.):
         self._rtf = rtf
         self._ntf = ntf
 
