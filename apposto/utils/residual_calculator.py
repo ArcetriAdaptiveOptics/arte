@@ -16,6 +16,8 @@ class ResidualCalculator():
         self._cpsd_onon = cpsd_onon
         self._cpsd_offon = cpsd_offon
         self._psd_noise = psd_noise
+        # ATTENTION: you are assuming that the integrator has already been set
+        # (delay, gain, temporal frequencies...)
         self._integrator = integrator
 
     def getSCAOResidual(self, temporal_freqs):
@@ -26,8 +28,10 @@ class ResidualCalculator():
                         reconstructor, temporal_freq):
         mcao_res = np.trapz(self._computeMCAOIntegrand(proj_matrix_on,
                                                        proj_matrix_off,
-                                                       reconstructor),
-                            temporal_freq)
+                                                       reconstructor,
+                                                       temporal_freq),
+                            temporal_freq,
+                            axis=2)
         return mcao_res
 
     def _computeSCAOIntegrand(self):
@@ -41,14 +45,24 @@ class ResidualCalculator():
         d = self._integrator.delay
         g = self._integrator.gain
         z = np.exp(2j * np.pi * f)
-        a_on = (g * z**(-d) * p_on * w) / (
-            1 - z**(-1) + g * z**(-d) * p_off * w)
-        a_off = (g * z**(-d) * p_off * w) / (
-            1 - z**(-1) + g * z**(-d) * p_off * w)
-        id_matrix = np.identity(a_off.shape[0])
+        m_on = np.dot(p_on, w)
+        m_off = np.dot(p_off, w)
+        id_1 = np.identity(m_off.shape[0])
 
-        integrand = (1 + np.linalg.norm(a_on)**2) * self._cpsd_onon - \
-            2 * np.real(a_on * self._cpsd_offon) + \
-            np.linalg.norm(g * z**(-d) / (1 - z**(-1)) * p_on * w * (
-                id_matrix - a_off))**2 * self._psd_noise
-        return integrand
+        integ_list = []
+        for i in range(f.shape[0]):
+            a_on = np.dot((g * z[i]**(-d) * m_on), np.linalg.inv(
+                (1 - z[i]**(-1)) * id_1 + g * z[i]**(-d) * m_off))
+            a_off = np.dot((g * z[i]**(-d) * m_off), np.linalg.inv(
+                (1 - z[i]**(-1)) * id_1 + g * z[i]**(-d) * m_off))
+            id_2 = np.identity(a_off.shape[0])
+
+            integrand = (1 + np.linalg.norm(a_on)**2) * \
+                self._cpsd_onon[:, :, i] - \
+                2 * np.real(np.dot(a_on, self._cpsd_offon[:, :, i])) + \
+                np.linalg.norm(
+                    g * z[i]**(-d) / (1 - z[i]**(-1)) * np.dot(
+                        m_on, (id_2 - a_off)
+                    ))**2 * self._psd_noise[:, :, i]
+            integ_list.append(integrand)
+        return np.dstack(integ_list)
