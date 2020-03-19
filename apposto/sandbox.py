@@ -111,135 +111,77 @@ class TestLongExposure():
         print(ImageMoments(le[0]).semiAxes() * le[1][64, 64:66][1])
         print(tle.seeingLimitedFWHMInArcsec())
 
-
-class ResidualSCAOVarianceUsingOffAxisNGS():
-
-    def __init__(self, rejection_TF, noise_TF, turbulence_PSD,
-                 turbulence_CrossPSD, noise_PSD):
-        self._RTF = rejection_TF
-        self._NTF = noise_TF
-        self._turbPSD = turbulence_PSD
-        self._turbCrossPSD = turbulence_CrossPSD
-        self._noisePSD = noise_PSD
-
-    def _computeIntegrand(self):
-        self._integrand = self._RTF**2 * self._turbPSD + \
-            self._NTF**2 * self._noisePSD + \
-            2 * np.real(self._NTF * (self._turbCrossPSD - self._turbPSD))
-
-    def _computeIntegral(self, freqs):
-        self._computeIntegrand()
-        self._var = np.trapz(self._integrand, freqs)
-
-    def getResidualVariance(self, temporal_frequencies):
-        self._computeIntegral(temporal_frequencies)
-        return self._var
-
-
-class ResidualMCAO():
-    # TODO: 'integrator' object in input instead of 'gain' and 'delay'
-    def __init__(self, gain, delay, projection_on, projection_off,
-                 reconstructor, cpsd_onon, cpsd_onoff):
-        self._g = gain
-        self._d = delay
-        self._Pon = projection_on
-        self._Poff = projection_off
-        self._w = reconstructor
-        self._CPSDon = cpsd_onon
-        self._CPSDoff = cpsd_onoff
-
-    def _computeIntegrand(self):
-        pass
-
-
-class TransferFunction():
-
-    def __init__(self, temporal_frequencies, gain, temporal_delay):
-        self._freqs = temporal_frequencies
-        self._gain = gain
-        self._delay = temporal_delay
-        self._z = np.exp(1j * 2 * np.pi * temporal_frequencies)
-
-    def rejectionTransferFunction(self):
-        return (1 - self._z**(-1)) / (1 - self._z**(-1) +
-                                      self._gain * self._z**(-self._delay))
-
-    def noiseTransferFunction(self):
-        return - (self._gain * self._z**(-self._delay)) / (
-            1 - self._z**(-1) + self._gain * self._z**(-self._delay))
-
-
-class SimulationOfResidualPhase():
-
-    def __init__(self, phase_screen,
-                 layer_altitude,
-                 wind_xy,
-                 source1,
-                 source2,
-                 time_delay,
-                 gain):
-        self._phaseScreen = phase_screen
-        self._layerAlt = layer_altitude
-        self._wind = wind_xy
-        self._source1 = source1
-        self._source2 = source2
-        self._d = time_delay
-        self._g = gain
-        self._source1Coords = self._quantitiesToValue(
-            source1.getSourcePolarCoords())
-        self._source2Coords = self._quantitiesToValue(
-            source2.getSourcePolarCoords())
-
-    def _getPhaseScreenOnAxisAtOneStep(self, step):
-        shift_x = self._wind[step][1]
-        shift_y = self._wind[step][0]
-        ps_x = np.roll(self._phaseScreen, shift_x, axis=1)
-        ps_xy = np.roll(ps_x, shift_y, axis=0)
-        return ps_xy
-
-    def _getPhaseScreenOffAxisAtOneStep(self, step):
-        shift_x = self._layerProjectedAperturesSeparation()[0]
-        shift_y = self._layerProjectedAperturesSeparation()[1]
-        ps_on = self._getPhaseScreenOnAxisAtOneStep(step)
-        ps_off_x = np.roll(ps_on, shift_x, axis=1)
-        ps_off_xy = np.roll(ps_off_x, shift_y, axis=0)
-        return ps_off_xy
-
-    def getPhaseScreenOnAxis(self, n_step):
-        phase_screen_list = []
-        for t in range(n_step):
-            ps = self._getPhaseScreenOnAxisAtOneStep(t)
-            phase_screen_list.append(ps)
-        return phase_screen_list
-
-    def getPhaseScreenOffAxis(self, n_step):
-        phase_screen_list = []
-        for t in range(n_step):
-            ps = self._getPhaseScreenOffAxisAtOneStep(t)
-            phase_screen_list.append(ps)
-        return phase_screen_list
-
-    def _quantitiesToValue(self, quantity):
-        if type(quantity) == list:
-            value = np.array([quantity[i].value for i in range(len(quantity))])
-        else:
-            value = quantity.value
-        return value
-
-    def _getCleverVersorCoords(self, s_coord):
-        return np.array([
-            np.sin(np.deg2rad(s_coord[0] / 3600)) *
-            np.cos(np.deg2rad(s_coord[1])),
-            np.sin(np.deg2rad(s_coord[0] / 3600)) *
-            np.sin(np.deg2rad(s_coord[1])),
-            np.cos(np.deg2rad(s_coord[0] / 3600))])
-
-    def _layerProjectedAperturesSeparation(self):
-        vCoord1 = self._getCleverVersorCoords(self._source1Coords)
-        vCoord2 = self._getCleverVersorCoords(self._source2Coords)
-        sep = self._layerAlt * vCoord2 / vCoord2[2] - \
-            self._layerAlt * vCoord1 / vCoord1[2]
-        return sep
-
-    def _getPhaseOfDMUntilStepN(self, ):
-        pass
+# class SimulationOfResidualPhase():
+#
+#     def __init__(self, phase_screen,
+#                  layer_altitude,
+#                  wind_xy,
+#                  source1,
+#                  source2,
+#                  time_delay,
+#                  gain):
+#         self._phaseScreen = phase_screen
+#         self._layerAlt = layer_altitude
+#         self._wind = wind_xy
+#         self._source1 = source1
+#         self._source2 = source2
+#         self._d = time_delay
+#         self._g = gain
+#         self._source1Coords = self._quantitiesToValue(
+#             source1.getSourcePolarCoords())
+#         self._source2Coords = self._quantitiesToValue(
+#             source2.getSourcePolarCoords())
+#
+#     def _getPhaseScreenOnAxisAtOneStep(self, step):
+#         shift_x = self._wind[step][1]
+#         shift_y = self._wind[step][0]
+#         ps_x = np.roll(self._phaseScreen, shift_x, axis=1)
+#         ps_xy = np.roll(ps_x, shift_y, axis=0)
+#         return ps_xy
+#
+#     def _getPhaseScreenOffAxisAtOneStep(self, step):
+#         shift_x = self._layerProjectedAperturesSeparation()[0]
+#         shift_y = self._layerProjectedAperturesSeparation()[1]
+#         ps_on = self._getPhaseScreenOnAxisAtOneStep(step)
+#         ps_off_x = np.roll(ps_on, shift_x, axis=1)
+#         ps_off_xy = np.roll(ps_off_x, shift_y, axis=0)
+#         return ps_off_xy
+#
+#     def getPhaseScreenOnAxis(self, n_step):
+#         phase_screen_list = []
+#         for t in range(n_step):
+#             ps = self._getPhaseScreenOnAxisAtOneStep(t)
+#             phase_screen_list.append(ps)
+#         return phase_screen_list
+#
+#     def getPhaseScreenOffAxis(self, n_step):
+#         phase_screen_list = []
+#         for t in range(n_step):
+#             ps = self._getPhaseScreenOffAxisAtOneStep(t)
+#             phase_screen_list.append(ps)
+#         return phase_screen_list
+#
+#     def _quantitiesToValue(self, quantity):
+#         if type(quantity) == list:
+#             value = np.array([quantity[i].value for i in range(len(quantity))])
+#         else:
+#             value = quantity.value
+#         return value
+#
+#     def _getCleverVersorCoords(self, s_coord):
+#         return np.array([
+#             np.sin(np.deg2rad(s_coord[0] / 3600)) *
+#             np.cos(np.deg2rad(s_coord[1])),
+#             np.sin(np.deg2rad(s_coord[0] / 3600)) *
+#             np.sin(np.deg2rad(s_coord[1])),
+#             np.cos(np.deg2rad(s_coord[0] / 3600))])
+#
+#     def _layerProjectedAperturesSeparation(self):
+#         vCoord1 = self._getCleverVersorCoords(self._source1Coords)
+#         vCoord2 = self._getCleverVersorCoords(self._source2Coords)
+#         sep = self._layerAlt * vCoord2 / vCoord2[2] - \
+#             self._layerAlt * vCoord1 / vCoord1[2]
+#         return sep
+#
+#     def _getPhaseOfDMUntilStepN(self, ):
+#         pass

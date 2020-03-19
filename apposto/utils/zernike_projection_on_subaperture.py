@@ -27,6 +27,7 @@ class ZernikeProjectionOnSubaperture(object):
         self._S = self._computeMatrix()
 
     def computeZernikeDecomponsitionOnSubap(self, zernikeCoeffFrom2To11):
+        # return np.dot(self._S, zernikeCoeffFrom2To11)
         return np.dot(zernikeCoeffFrom2To11, self._S)
 
     def getProjectionMatrix(self):
@@ -85,4 +86,6 @@ class ZernikeProjectionOnSubaperture(object):
                         2 * np.sqrt(10) * hoR * roR**3 * sa,
                         2 * np.sqrt(10) * hoR * roR**3 * ca,
                         0, 0, roR**4])
+        # CHECK: switch z5 and z6 (and the same for z7,z8 and z9, z10)?
+        # return np.stack((z2, z3, z4, z5, z6, z7, z8, z9, z10, z11), axis=1)
         return np.vstack((z2, z3, z4, z5, z6, z7, z8, z9, z10, z11))
