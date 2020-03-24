@@ -13,11 +13,9 @@ class ResidualCalculator():
 
     def __init__(self, cpsd_onon, cpsd_offon, psd_noise,
                  integrator):
-        self._cpsd_onon = cpsd_onon.value
-        self._cpsd_offon = cpsd_offon.value
+        self._cpsd_onon = cpsd_onon
+        self._cpsd_offon = cpsd_offon
         self._psd_noise = psd_noise
-        # ATTENTION: you are assuming that the integrator has already been set
-        # (delay, gain, temporal frequencies...)
         self._integrator = integrator
 
     def getSCAOResidual(self, temporal_freqs):

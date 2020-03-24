@@ -111,6 +111,23 @@ class TestLongExposure():
         print(ImageMoments(le[0]).semiAxes() * le[1][64, 64:66][1])
         print(tle.seeingLimitedFWHMInArcsec())
 
+
+def interactionMatrix(fp_shift=(300, 300)):
+    from apposto.utils.zernike_generator import ZernikeGenerator
+    zg1 = ZernikeGenerator(1024)
+    zg2 = ZernikeGenerator(128)
+    ima1 = zg1.getZernike(2) + zg1.getZernike(3) + zg1.getZernike(4)
+    ima2 = zg2.getZernike(2)
+
+    dy = fp_shift[1]
+    dx = fp_shift[0]
+    yy2, xx2 = np.mgrid[dy:(ima2.shape[0] + dy), dx:(ima2.shape[0] + dx)]
+
+    imaFinal = np.ma.masked_array(np.zeros((1024, 1024)), mask=True)
+    imaFinal[yy2, xx2] = ima2
+
+    return ima1, imaFinal
+
 # class SimulationOfResidualPhase():
 #
 #     def __init__(self, phase_screen,
