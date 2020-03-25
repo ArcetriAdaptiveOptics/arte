@@ -5,6 +5,7 @@ from apposto.utils.zernike_generator import ZernikeGenerator
 from apposto.types.zernike_coefficients import ZernikeCoefficients
 from apposto.types.mask import CircularMask
 from apposto.types.wavefront import Wavefront
+from apposto.types.slopes import Slopes
 
 
 class ModalDecomposer(object):
