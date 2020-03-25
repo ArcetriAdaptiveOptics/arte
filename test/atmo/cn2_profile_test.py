@@ -2,7 +2,7 @@
 import unittest
 import numpy as np
 from apposto.atmo.cn2_profile import Cn2Profile, \
-    MaoryProfiles, EsoEltProfiles
+    MaorySteroScidarProfiles, EsoEltProfiles
 from apposto.utils.constants import Constants
 import astropy.units as u
 from astropy.tests.helper import assert_quantity_allclose
@@ -92,32 +92,32 @@ class Cn2ProfileTest(unittest.TestCase):
                                Cn2Profile.zenith_angle_to_airmass(45))
 
     def testMaoryPercentileProfiles(self):
-        pr = MaoryProfiles.P10()
+        pr = MaorySteroScidarProfiles.P10()
         self.assertEqual(35, pr.number_of_layers())
         self.assertAlmostEqual(0.48, pr.seeing().value, delta=0.01)
         self.assertAlmostEqual(2.7, pr.theta0().value, delta=0.1)
         self.assertAlmostEqual(5.18, pr.wind_speed()[0].value, delta=0.1)
         self.assertAlmostEqual(0, pr.wind_direction()[0].value)
 
-        pr = MaoryProfiles.P25()
+        pr = MaorySteroScidarProfiles.P25()
         self.assertEqual(35, pr.number_of_layers())
         self.assertAlmostEqual(0.55, pr.seeing().value, delta=0.01)
         self.assertAlmostEqual(2.2, pr.theta0().value, delta=0.1)
         self.assertAlmostEqual(5.3, pr.wind_speed()[0].value, delta=0.1)
 
-        pr = MaoryProfiles.P50()
+        pr = MaorySteroScidarProfiles.P50()
         self.assertEqual(35, pr.number_of_layers())
         self.assertAlmostEqual(0.66, pr.seeing().value, delta=0.01)
         self.assertAlmostEqual(1.74, pr.theta0().value, delta=0.1)
         self.assertAlmostEqual(5.7, pr.wind_speed()[0].value, delta=0.1)
 
-        pr = MaoryProfiles.P75()
+        pr = MaorySteroScidarProfiles.P75()
         self.assertEqual(35, pr.number_of_layers())
         self.assertAlmostEqual(0.78, pr.seeing().value, delta=0.01)
         self.assertAlmostEqual(1.32, pr.theta0().value, delta=0.1)
         self.assertAlmostEqual(6.2, pr.wind_speed()[0].value, delta=0.1)
 
-        pr = MaoryProfiles.P90()
+        pr = MaorySteroScidarProfiles.P90()
         self.assertEqual(35, pr.number_of_layers())
         self.assertAlmostEqual(0.92, pr.seeing().value, delta=0.01)
         self.assertAlmostEqual(1.04, pr.theta0().value, delta=0.1)
