@@ -78,7 +78,7 @@ class ModalDecomposer(object):
             mask.__class__.__name__
 
         reconstructor = self._synthZernikeRecFromWavefront(nModes,
-                                                          mask.radius())
+                                                           mask.radius())
         wavefrontInMaskVector = \
             np.ma.masked_array(wavefront.toNumpyArray(),
                                mask.mask()).compressed()
@@ -86,4 +86,3 @@ class ModalDecomposer(object):
             wavefrontInMaskVector.mean()
         return ZernikeCoefficients.fromNumpyArray(
             np.dot(wavefrontInMaskVectorNoPiston, reconstructor))
-
