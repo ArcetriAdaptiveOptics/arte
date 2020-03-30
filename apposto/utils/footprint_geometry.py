@@ -62,24 +62,22 @@ class FootprintGeometry():
             cc = self._centerOffset(l['skyTheta'], l['skyAz'],
                                     self._layerAltitudeInMeter)
             ra = self._lgsRadius()
-            self._lgsL.append(
-                np.array([ll[0] + cc[0], ll[1] + cc[1], ra]))
+            self._lgsL.append(FootprintXYRadius(
+                ll[0] + cc[0], ll[1] + cc[1], ra))
 
         self._ngsL = []
         for l in self._ngs:
             cc = self._centerOffset(l['skyTheta'], l['skyAz'],
                                     self._layerAltitudeInMeter)
             ra = self._telescopeRadiusInMeter
-            self._ngsL.append(
-                np.array([cc[0], cc[1], ra]))
+            self._ngsL.append(FootprintXYRadius(cc[0], cc[1], ra))
 
         self._targetsL = []
         for l in self._targets:
             cc = self._centerOffset(l['skyTheta'], l['skyAz'],
                                     self._layerAltitudeInMeter)
             ra = self._telescopeRadiusInMeter
-            self._targetsL.append(
-                np.array([cc[0], cc[1], ra]))
+            self._targetsL.append(FootprintXYRadius(cc[0], cc[1], ra))
 
         self._sciL = []
         if self._instrFoVInArcsec:
@@ -93,29 +91,38 @@ class FootprintGeometry():
                     np.array([cc[0], cc[1], ra, sciFovCornerDeg]))
 
         self._metapupilL = []
-        raLgs = np.max([np.linalg.norm(l[0:2]) + l[2]
-                        for l in np.array(self._lgsL)[:]])
-        raNgs = np.max([np.linalg.norm(l[0:2]) + l[2]
-                        for l in np.array(self._ngsL)[:]])
-        raTargets = np.max([np.linalg.norm(l[0:2]) + l[2]
-                            for l in np.array(self._targetsL)[:]])
+        raLgs = np.max([np.linalg.norm((l.x, l.y)) + l.r
+                        for l in self._lgsL])
+        raNgs = np.max([np.linalg.norm((l.x, l.y)) + l.r
+                        for l in self._ngsL])
+        raTargets = np.max([np.linalg.norm((l.x, l.y)) + l.r
+                            for l in self._targetsL])
         ra = np.max([raLgs, raNgs, raTargets])
-        self._metapupilL.append(np.array([0, 0, ra]))
+        self._metapupilL.append(FootprintXYRadius(0, 0, ra))
 
         self._computePatches()
+
+    def getNgsFootprint(self):
+        return self._ngsL
+
+    def getLgsFootprint(self):
+        return self._lgsL
+
+    def getTargetFootprint(self):
+        return self._targetsL
 
     def _computePatches(self):
         self._patches = []
         self._xlim = 0
         for l in self._lgsL:
             self._addAnnularFootprint(
-                l[0], l[1], l[2], 0. * l[2], color='y', alpha=0.4)
+                l.x, l.y, l.r, 0. * l.r, color='y', alpha=0.4)
         for l in self._ngsL:
             self._addAnnularFootprint(
-                l[0], l[1], l[2], 0.99 * l[2], color='r', alpha=0.1)
+                l.x, l.y, l.r, 0.99 * l.r, color='r', alpha=0.1)
         for l in self._targetsL:
             self._addAnnularFootprint(
-                l[0], l[1], l[2], 0.99 * l[2], color='b', alpha=0.5)
+                l.x, l.y, l.r, 0.99 * l.r, color='b', alpha=0.5)
         for l in self._sciL:
             self._addAnnularFootprint(
                 l[0], l[1], l[2], 0.99 * l[2],
@@ -123,7 +130,7 @@ class FootprintGeometry():
         if self._drawMetapupil:
             for l in self._metapupilL:
                 self._addAnnularFootprint(
-                    l[0], l[1], l[2], 0.99 * l[2], color='k')
+                    l.x, l.y, l.r, 0.99 * l.r, color='k')
 
     def scienceFieldRadius(self, rTel, fovInArcsec, hInMeter):
         return rTel + fovInArcsec / 2 * 4.848e-6 * hInMeter
@@ -206,15 +213,15 @@ class FootprintGeometry():
 
     def report(self):
         for l in self._lgsL:
-            print("LGS (x,y,r): %f, %f - %f" % (l[0], l[1], l[2]))
+            print("LGS (x,y,r): %f, %f - %f" % (l.x, l.y, l.r))
         for l in self._ngsL:
-            print("NGS (x,y,r): %f, %f - %f" % (l[0], l[1], l[2]))
+            print("NGS (x,y,r): %f, %f - %f" % (l.x, l.y, l.r))
         for l in self._targetsL:
-            print("Targets (x,y,r): %f, %f - %f" % (l[0], l[1], l[2]))
+            print("Targets (x,y,r): %f, %f - %f" % (l.x, l.y, l.r))
         for l in self._sciL:
             print("Science (x,y,r): %f, %f - %f" % (l[0], l[1], l[2]))
         for l in self._metapupilL:
-            print("Metapupil (x,y,r): %f, %f - %f" % (l[0], l[1], l[2]))
+            print("Metapupil (x,y,r): %f, %f - %f" % (l.x, l.y, l.r))
 
 
 def mainFootprintGeometry(h=12000, lgsTh=15, lgsN=4, ngsTh=60, ngsN=3,
@@ -238,3 +245,11 @@ def mainFootprintGeometry(h=12000, lgsTh=15, lgsN=4, ngsTh=60, ngsN=3,
     fg.plot()
     fg.report()
     return fg
+
+
+class FootprintXYRadius():
+
+    def __init__(self, x, y, r):
+        self.x = x
+        self.y = y
+        self.r = r
