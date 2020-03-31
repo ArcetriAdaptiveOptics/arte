@@ -111,6 +111,9 @@ class FootprintGeometry():
     def getTargetFootprint(self):
         return self._targetsL
 
+    def getMetapupilFootprint(self):
+        return self._metapupilL
+
     def _computePatches(self):
         self._patches = []
         self._xlim = 0
