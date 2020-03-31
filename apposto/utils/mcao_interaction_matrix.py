@@ -34,40 +34,59 @@ class MCAOInteractionMatrix():
     idx_corrected_modes: list
         List of `numpy.ndarray`. Each element of the list must be an array
         containing the indices of the modes to be corrected on each layer.
+
+    meters_to_pixels: int
+        It is the meter-pixel conversion factor, whose value generally depends
+        on the scale of the atmospheric turbulence (r0).
+        Default is 20, that is obtained if we decide to sample a turbulence
+        with r0=10cm using 1 pixel every 5cm.
     """
 
     def __init__(self, footprints, DMs, n_sensed_modes, idx_corrected_modes,
-                 metersToPixels):
+                 meters_to_pixels=20):
         self._fp = footprints
         self._dm = DMs
         self._n = n_sensed_modes
         self._ml = idx_corrected_modes
-        # Separate function "checkInput"?
-        assert len(self._fp) == len(self._dm) == len(self._ml), \
-            'Length of footprints, DMs and idx_corrected_modes must be the same.'
+        self._metersToPixels = meters_to_pixels
+        self._checkInput()
         self._numberOfLayers = len(footprints)
-        # tira fuori dal footprintgeometry
-        self._numberOfNgs = len(footprints[0]._ngsL)
-        self._numberOfLgs = len(footprints[0]._lgsL)
-        self._numberOfGuideStars = self._numberOfNgs + self._numberOfLgs
-        self._metersToPixels = metersToPixels
-# Deve diventare una conversione specifica per i vari layer
+        self._numberOfNgs = len(footprints[0].getNgsFootprint())
+        self._numberOfLgs = len(footprints[0].getLgsFootprint())
+        #self._numberOfGuideStars = self._numberOfNgs + self._numberOfLgs
+
+    def getInteractionMatrixOffTarget(self):
+        im_off = self._computeNgsInteractionMatrix()
+        return im_off
+
+    def getInteractionMatrixOnTarget(self):
+        pass
+
+    def _checkInput(self):
+        assert len(self._fp) == len(self._dm) == len(self._ml), \
+            'Len of footprints, DMs and idx_corrected_modes must be the same'
+        assert len(set(
+            np.array([len(fp.getNgsFootprint()) for fp in self._fp]))) == 1, \
+            'Number of NGS must be the same on each layer'
+        assert len(set(
+            np.array([len(fp.getLgsFootprint()) for fp in self._fp]))) == 1, \
+            'Number of LGS must be the same on each layer'
 
     def _fromMetersToPixels(self, inMeters):
         return inMeters * self._metersToPixels
 
-    def _computeInteractionMatrixOneLayerOneNGS(self, n_layer, n_ngs):
+    def _computeInteractionMatrixOneLayerOneNgs(self, n_layer, n_ngs):
         dm_radius = self._dm[n_layer].getApertureRadius().value
-        dm_diameter_pixel = 2 * round(self.fromMetersToPixels(dm_radius))
+        dm_diameter_pixel = 2 * round(self._fromMetersToPixels(dm_radius))
 
         shape_frame = (dm_diameter_pixel, dm_diameter_pixel)
         fp = self._fp[n_layer]
         fp_ngs = fp.getNgsFootprint()[n_ngs]
-        fp_center_pixel = (round(self.fromMetersToPixels(fp_ngs.y) +
+        fp_center_pixel = (round(self._fromMetersToPixels(fp_ngs.y) +
                                  shape_frame[1] / 2),
-                           round(self.fromMetersToPixels(fp_ngs.x) +
+                           round(self._fromMetersToPixels(fp_ngs.x) +
                                  shape_frame[0] / 2))
-        fp_radius_pixel = round(self.fromMetersToPixels(fp_ngs.r))
+        fp_radius_pixel = round(self._fromMetersToPixels(fp_ngs.r))
         fp_mask = CircularMask(shape_frame, fp_radius_pixel,
                                fp_center_pixel)
         n_sense = self._n
@@ -84,3 +103,51 @@ class MCAOInteractionMatrix():
             int_mat[:, i] = a
 
         return int_mat
+
+    def _computeNgsInteractionMatrixOneLayer(self, n_layer):
+        im_list = []
+        for ngs in range(self._numberOfNgs):
+            im_ngs = self._computeInteractionMatrixOneLayerOneNgs(
+                n_layer, ngs)
+            im_list.append(im_ngs)
+        return np.vstack(im_list)
+
+    def _computeNgsInteractionMatrix(self):
+        im_list = []
+        for n in range(self._numberOfLayers):
+            im_ngs = self._computeNgsInteractionMatrixOneLayer(n)
+            im_list.append(im_ngs)
+        return np.hstack(im_list)
+
+#     def _computeInteractionMatrixOneLayerOneLgs(self, n_layer, n_lgs):
+#         dm_radius = self._dm[n_layer].getApertureRadius().value
+#         dm_diameter_pixel = 2 * round(self._fromMetersToPixels(dm_radius))
+#
+#         shape_frame = (dm_diameter_pixel, dm_diameter_pixel)
+#         fp = self._fp[n_layer]
+#         fp_lgs = fp.getLgsFootprint()[n_lgs]
+#         fp_center_pixel = (round(self._fromMetersToPixels(fp_lgs.y) +
+#                                  shape_frame[1] / 2),
+#                            round(self._fromMetersToPixels(fp_lgs.x) +
+#                                  shape_frame[0] / 2))
+#         fp_radius_pixel = round(self._fromMetersToPixels(fp_lgs.r))
+#         fp_mask = CircularMask(shape_frame, fp_radius_pixel,
+#                                fp_center_pixel)
+#         n_sense = self._n
+#         m_correct = self._ml[n_layer]
+#
+#         zg = ZernikeGenerator(dm_diameter_pixel)
+#         md = ModalDecomposer(n_zernike_modes=self._n)
+#         int_mat = np.zeros((n_sense, m_correct.size))
+#
+#         for i in range(m_correct.size):
+#             wf = Wavefront(zg.getZernike(m_correct[i]))
+#             a = md.measureZernikeCoefficientsFromWavefront(
+#                 wf, fp_mask).toNumpyArray()
+#             int_mat[:, i] = a
+#
+#         return int_mat
+
+
+#     def _computeLgsInteractionMatrixOneLayer(self, n_layer):
+#         pass
