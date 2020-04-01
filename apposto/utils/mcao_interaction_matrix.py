@@ -53,14 +53,14 @@ class MCAOInteractionMatrix():
         self._numberOfLayers = len(footprints)
         self._numberOfNgs = len(footprints[0].getNgsFootprint())
         self._numberOfLgs = len(footprints[0].getLgsFootprint())
-        #self._numberOfGuideStars = self._numberOfNgs + self._numberOfLgs
 
     def getInteractionMatrixOffTarget(self):
         im_off = self._computeNgsInteractionMatrix()
         return im_off
 
     def getInteractionMatrixOnTarget(self):
-        pass
+        im_on = self._computeTargetInteractionMatrix()
+        return im_on
 
     def _checkInput(self):
         assert len(self._fp) == len(self._dm) == len(self._ml), \
@@ -75,7 +75,43 @@ class MCAOInteractionMatrix():
     def _fromMetersToPixels(self, inMeters):
         return inMeters * self._metersToPixels
 
-    def _computeInteractionMatrixOneLayerOneNgs(self, n_layer, n_ngs):
+    def _computeTargetInteractionMatrixOneLayer(self, n_layer):
+        dm_radius = self._dm[n_layer].getApertureRadius().value
+        dm_diameter_pixel = 2 * round(self._fromMetersToPixels(dm_radius))
+
+        shape_frame = (dm_diameter_pixel, dm_diameter_pixel)
+        fp = self._fp[n_layer]
+        fp_target = fp.getTargetFootprint()[0]
+        fp_center_pixel = (round(self._fromMetersToPixels(fp_target.y) +
+                                 shape_frame[1] / 2),
+                           round(self._fromMetersToPixels(fp_target.x) +
+                                 shape_frame[0] / 2))
+        fp_radius_pixel = round(self._fromMetersToPixels(fp_target.r))
+        fp_mask = CircularMask(shape_frame, fp_radius_pixel,
+                               fp_center_pixel)
+        n_sense = self._n
+        m_correct = self._ml[n_layer]
+
+        zg = ZernikeGenerator(dm_diameter_pixel)
+        md = ModalDecomposer(n_zernike_modes=self._n)
+        int_mat = np.zeros((n_sense, m_correct.size))
+
+        for i in range(m_correct.size):
+            wf = Wavefront(zg.getZernike(m_correct[i]))
+            a = md.measureZernikeCoefficientsFromWavefront(
+                wf, fp_mask).toNumpyArray()
+            int_mat[:, i] = a
+
+        return int_mat
+
+    def _computeTargetInteractionMatrix(self):
+        im_list = []
+        for n in range(self._numberOfLayers):
+            im_target = self._computeTargetInteractionMatrixOneLayer(n)
+            im_list.append(im_target)
+        return np.hstack(im_list)
+
+    def _computeNgsInteractionMatrixOneLayerOneStar(self, n_layer, n_ngs):
         dm_radius = self._dm[n_layer].getApertureRadius().value
         dm_diameter_pixel = 2 * round(self._fromMetersToPixels(dm_radius))
 
@@ -107,7 +143,7 @@ class MCAOInteractionMatrix():
     def _computeNgsInteractionMatrixOneLayer(self, n_layer):
         im_list = []
         for ngs in range(self._numberOfNgs):
-            im_ngs = self._computeInteractionMatrixOneLayerOneNgs(
+            im_ngs = self._computeNgsInteractionMatrixOneLayerOneStar(
                 n_layer, ngs)
             im_list.append(im_ngs)
         return np.vstack(im_list)
