@@ -66,6 +66,17 @@ class ThisClassCanHelp(object):
         for name, obj in sorted(hlp_members.items()):
             obj.help(search=search, prefix='%s.%s' % (prefix, name))
 
+
+# Static classes (ones that only define classmethods)
+# should use this version
+
+class ThisStaticClassCanHelp(ThisClassCanHelp):
+
+    @classmethod
+    def help(cls):
+        ThisClassCanHelp.help(cls())
+
+
 def _format_docstring(obj, default=None):
 
     hlp = obj.__doc__ or default or 'No docstring defined'
