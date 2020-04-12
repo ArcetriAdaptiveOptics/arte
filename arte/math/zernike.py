@@ -5,11 +5,69 @@
 # who       when        what
 # --------  ----------  ---------------------------------
 # avaz      2019-09-20  Translated from Arcetri's oaa_lib
+# apuglisi  2020-04-10  Added Zernike class
 #
 #########################################################
 
 import numpy as np
 from scipy.special import jacobi
+
+
+class Zernike():
+    '''
+    Holds a geometrical Zernike definition.
+
+    After being initialized or resized with a (N,m,n) shape, the *get()*
+    method will return a 3d numpy array with the first N zernikes
+    (in Noll ordering, first element is piston) with *m*x*n* sampling.
+    Data is not actually calculated until the first invocation of the
+    *get()* method, which might take a while if the array is big.
+    '''
+    
+    def __init__(self, shape, dtype=np.float32):
+        self._data = np.zeros(shape, dtype=dtype)
+        self._valid = False
+
+    def resize(self, new_shape):
+        '''
+        After resizing, Zernike polynomials
+        will be recalculated.
+        '''
+        if new_shape != self._data.shape:
+            self._data.resize(new_shape)
+            self._valid = False
+
+    def get(self):
+        if not self._valid:
+            self._recalc()
+        return self._data
+
+    def __getitem__(self, idx):
+        '''
+        Implements self[idx] to return a single
+        Zernike polynomials. Following the reference data model:
+        https://docs.python.org/3/reference/datamodel.html#object.__getitem__
+        TypeError is raised if idx is not an integer number, and
+        IndexError is raised if idx is out of bounds.
+        '''
+        if not isinstance(idx, int):
+            raise TypeError
+
+        if idx < 0 or idx >= self._data.shape[0]:
+            raise IndexError
+
+        if not self._valid:
+            self._recalc()
+
+        return self._data[idx]
+
+    def _recalc(self):
+        
+        nZern, m, n = self._data.shape
+        grid = np.mgrid[0:m,0:n]
+        for z in range(nZern):
+            self._data[z,:,:] = zern(z+1, (grid[0]+0.5-m/2)/(m/2), (grid[1]+0.5-n/2)/(n/2))
+            
 
 def zern(j, x, y, polar=False):
     '''
