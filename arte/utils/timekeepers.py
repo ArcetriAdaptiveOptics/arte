@@ -1,10 +1,49 @@
 
 import time
 
+class TimeKeeper:
+    '''
+    Class to give information about iterative loops.
+
+    Every time the inc() method is called, an internal counter is
+    incremented, and other members keep track of the increment rate
+    and average interval between increments.
+
+    The inc() method returns True if at least *interval* seconds
+    have passed since the class was initialized or since the last time
+    True was returned, otherwise it will return False. When True
+    is returned, the internal counter and rate calculations are resetted.
+
+    Example:
+
+    timekeep = TimeKeeper()
+    while True:
+        time.sleep(0.1)
+        if timekeep.inc():
+            print('%d iterations (%5.2f Hz) - average time: %5.2f ms' %
+                      (timekeep.count, timekeep.rate, timekeep.ms))
+    '''
+    def __init__(self, interval=1.0):
+       self.interval = interval
+       self.t0  = time.time()
+       self.cnt = 0
+
+    def inc(self):
+       self.cnt +=1
+       t1 = time.time()
+       if (t1-self.t0)>=self.interval:
+          tdiff = t1-self.t0
+          self.rate = self.cnt / tdiff
+          self.count = self.cnt
+          self.ms = 1.0/self.rate*1e3
+          self.cnt=0
+          self.t0=t1
+          return True
+       return False
 
 class CyclePrinter():
     '''
-    Small class to give information about iterative loops
+    Class to give information about iterative loops
 
     Initialize with a name (that will appear as the first word in the
     output message), an optional minimum period between messages
