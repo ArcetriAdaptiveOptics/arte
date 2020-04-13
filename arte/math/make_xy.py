@@ -5,7 +5,6 @@ import numpy as np
 def make_xy( sampling, ratio, dtype=None, polar=False, vector=False,
              zero_sampled=False, quarter=False, fft=False):
     '''
- 
  NAME: 
        MAKE_XY 
  
@@ -18,8 +17,6 @@ def make_xy( sampling, ratio, dtype=None, polar=False, vector=False,
        Optics. 
  
  CALLING SEQUENCE: 
- 
- 
        x,y = make_xy( sampling, ratio)
        r, theta = make_xy( sampling, ratio, polar=True)
  
@@ -33,17 +30,11 @@ def make_xy( sampling, ratio, dtype=None, polar=False, vector=False,
 
        polar:  if True, return domain sampling in polar coordinates.
 
-
- 
-
-
  Notes:
  
        Output type (np.float32, np.float64, etc) will correspond
-       to the highest precision of the input arguments sampling and ratio.
-
-
-
+       to the highest precision of the input arguments sampling and ratio,
+       unless specified with the dtype parameter.
 
        POLAR:  set it to have domain sampling in polar coordinates.
 
@@ -80,6 +71,7 @@ def make_xy( sampling, ratio, dtype=None, polar=False, vector=False,
                      Azimuthal angle Theta values (in radians) if POLAR is set. If VECTOR
                      is set and Y is specified as input, a column vector of Y values is
                      returned.
+
  HOW THE DOMAIN IS SAMPLED:
 
    The concept is the following: considering an array of Sample x Sample pixels, the
@@ -108,8 +100,6 @@ def make_xy( sampling, ratio, dtype=None, polar=False, vector=False,
                     |     |     |     |     |
                     *     *     *     *          Sampling points
                    -1   -0.5    0    0.5         Returned vector
-
-
 
            -Sampling is odd (ZERO_SAMPLING is ignored)-
            the zero is always sampled.
