@@ -73,8 +73,8 @@ class ThisClassCanHelp(object):
 class ThisStaticClassCanHelp(ThisClassCanHelp):
 
     @classmethod
-    def help(cls):
-        ThisClassCanHelp.help(cls())
+    def help(cls, search='', prefix=''):
+        ThisClassCanHelp.help(cls(), search, prefix)
 
 
 def _format_docstring(obj, default=None):
