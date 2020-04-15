@@ -10,7 +10,7 @@ from apposto.utils.zernike_generator import ZernikeGenerator
 
 
 class VonKarmanSpatioTemporalCovariance():
-    '''
+    """
     This class computes the covariance and its Fourier transform, the Cross
     Power Spectral Density (CPSD), between Zernike coefficients describing
     the turbulence induced phase aberrations of two sources seen by two
@@ -32,36 +32,34 @@ class VonKarmanSpatioTemporalCovariance():
 
     Parameters
     ----------
-    source1: GuideSource object
-        Source geometry as obtained from GuideSource class.
-        Here we consider rho as the angle (in arcsec) with respect to the
-            z-axis.
-        theta is always the angle (in degrees) with respect to the x-axis.
+    source1: `~apposto.types.guide_source.GuideSource`
+        Geometry of the first source.
+        We consider rho as the angle in arcsec wrt the z-axis and
+        theta as the angle in degrees wrt the x-axis.
         (e.g. source1 = apposto.types.guide_source.GuideSource((1,90), 9e3)
 
-    source2: GuideSource object
-        Same as source1.
+    source2: `~apposto.types.guide_source.GuideSource`
+        Geometry of the second source. Same conventions as source1.
 
-    aperture1: CircularOpticalAperture object
-        Optical aperture geometry as obtained from CircularOpticalAperture
-            class.
+    aperture1: `~apposto.types.aperture.CircularOpticalAperture`
+        Geometry of the first optical aperture.
         (e.g. aperture1 = apposto.types.aperture.CircularOpticalAperture(
                                                     10, (0, 0, 0)))
 
-    aperture2: CircularOpticalAperture object
-        Same as aperture1.
+    aperture2: `~apposto.types.aperture.CircularOpticalAperture`
+        Geometry of the second optical aperture.
 
-    cn2_profile: Cn2Profile object
-        cn2 profile as obtained from the Cn2Profile class.
+    cn2_profile: `~apposto.atmo.cn2_profile`
+        Cn2 profile.
         (e.g. cn2_eso = apposto.atmo.cn2_profile.EsoEltProfiles.Q1()
          e.g. cn2_invented = apposto.atmo.cn2_profile.Cn2Profile.from_r0s(
             [0.16], [25], [10e3], [0.1], [0]))
 
-    spat_freqs: numpy.ndarray
-        Range of spatial frequencies that are used in the Zernike covariance,
+    spat_freqs: `numpy.ndarray`
+        Range of spatial frequencies that are used in Zernike covariance,
         Zernike CPSD and phase CPSD computation.
 
-    '''
+    """
 
     def __init__(self,
                  source1,
@@ -454,7 +452,7 @@ class VonKarmanSpatioTemporalCovariance():
         return intFunc, fPerp
 
     def getZernikeCovariance(self, j, k):
-        '''
+        """
         Return the covariance between two Zernike coefficients with index j
         and k describing the phase seen, respectively, on aperture1 from
         source1 and on aperture2 from source2.
@@ -469,10 +467,10 @@ class VonKarmanSpatioTemporalCovariance():
 
         Returns
         -------
-        zernikeCovariance: Zernike covariance or covariance matrix (matrix of
-        shape nxm if n and m are, respectively, the dimension of j and k).
-        It is returned as a Quantity with units [rad**2].
-        '''
+        zernikeCovariance: `~astropy.units.quantity.Quantity`
+            Zernike covariance or covariance matrix (matrix of shape nxm if n
+            and m are, respectively, the dimension of j and k) in [rad**2].
+        """
 
         if (np.isscalar(j) and np.isscalar(k)):
             zernikeCovariance = self._computeZernikeCovarianceAllLayers(j, k)
@@ -496,7 +494,7 @@ class VonKarmanSpatioTemporalCovariance():
         return zernikeCovariance * u.rad ** 2
 
     def getPhaseCovariance(self):
-        '''
+        """
         Return the covariance between the phase seen from source1 with
         aperture1 and the phase seen from source2 with aperture2.
 
@@ -504,7 +502,7 @@ class VonKarmanSpatioTemporalCovariance():
         -------
         phaseCovariance: `~astropy.units.quantity.Quantity`
             Covariance between phase1 and phase2 in [rad**2].
-        '''
+        """
         phaseCovAllLayers = np.array([
             self._computePhaseCovarianceOneLayer(nLayer) for nLayer
             in range(self._numberOfLayers)])
@@ -512,7 +510,7 @@ class VonKarmanSpatioTemporalCovariance():
         return phaseCovariance * u.rad ** 2
 
     def getZernikeCPSD(self, j, k, temp_freqs):
-        '''
+        """
         Return the Cross Power Spectral Density (CPSD) of the Zernike
         coefficients with index j and k describing the phase seen by aperture1
         and aperture2 observing, respectively, source1 and source2.
@@ -531,7 +529,7 @@ class VonKarmanSpatioTemporalCovariance():
         -------
         zernikeCPSD: `~astropy.units.quantity.Quantity`
             Zernike CPSD or matrix of Zernike CPSDs in [rad**2/Hz].
-        '''
+        """
 
         if (np.isscalar(j) and np.isscalar(k)):
             zernikeCPSD = self._getZernikeCPSDAllLayers(j, k, temp_freqs
@@ -558,7 +556,7 @@ class VonKarmanSpatioTemporalCovariance():
     def getGeneralZernikeCPSD(self, j, k, temp_freqs):
         # TODO: Is this function necessary? We can get the same result
         # computing 2 * np.real(getZernikeCPSD).
-        '''
+        """
         Return the generalized expression of Zernike CPSD that we get
         from 'getZernikeCPSD' function.
         This expression is needed when we have to integrate the Zernike CPSD
@@ -582,7 +580,7 @@ class VonKarmanSpatioTemporalCovariance():
         -------
         cpsdTotal: `~astropy.units.quantity.Quantity`
             General Zernike CPSD in [rad**2/Hz].
-        '''
+        """
 
         if (np.isscalar(j) and np.isscalar(k)):
             zernikeCPSD = self._getGeneralZernikeCPSDAllLayers(
@@ -608,7 +606,7 @@ class VonKarmanSpatioTemporalCovariance():
         return zernikeCPSD
 
     def getPhaseCPSD(self, temp_freqs):
-        '''
+        """
         Return the Cross Power Spectral Density (CPSD) of the turbulent phase
         seen by aperture1 and aperture2 observing, respectively, source1 and
         source2.
@@ -623,7 +621,7 @@ class VonKarmanSpatioTemporalCovariance():
         -------
         phaseCPSD: `~astropy.units.quantity.Quantity`
             Phase CPSD in [rad**2/Hz].
-        '''
+        """
 
         phaseCPSD = self._getPhaseCPSDAllLayers(temp_freqs) * u.rad ** 2 / u.Hz
         return phaseCPSD
