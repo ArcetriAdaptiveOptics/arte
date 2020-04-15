@@ -1,6 +1,5 @@
 from astropy import units
-from apposto.utils.constants import Constants
-
+from arte.utils.constants import Constants
 
 
 class Seeing(object):

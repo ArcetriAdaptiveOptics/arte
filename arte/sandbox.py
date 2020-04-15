@@ -1,10 +1,10 @@
 import numpy as np
-from apposto.misc.fourier_adaptive_optics import TurbulentPhase, \
+from arte.misc.fourier_adaptive_optics import TurbulentPhase, \
     FourierAdaptiveOptics
-from apposto.utils.discrete_fourier_transform import \
+from arte.utils.discrete_fourier_transform import \
     BidimensionalFourierTransform as bfft
-from apposto.atmo.phase_screen_generator import PhaseScreenGenerator
-from apposto.types.mask import CircularMask
+from arte.atmo.phase_screen_generator import PhaseScreenGenerator
+from arte.types.mask import CircularMask
 
 
 def r0AtLambda(r0At500, wavelenghtInMeters):
@@ -102,7 +102,7 @@ class TestLongExposure():
 
     @staticmethod
     def run():
-        from apposto.utils.image_moments import ImageMoments
+        from arte.utils.image_moments import ImageMoments
         import matplotlib
         tle = TestLongExposure(8.0, howMany=1000, dPupInPixels=128,
                                outerScaleInMeters=1e6)

@@ -1,5 +1,5 @@
 import numpy as np
-from apposto.utils.discrete_fourier_transform \
+from arte.utils.discrete_fourier_transform \
     import BidimensionalFourierTransform as bfft
 
 

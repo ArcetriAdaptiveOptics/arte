@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.utils.radial_profile import computeRadialProfile
+from arte.utils.radial_profile import computeRadialProfile
 
 __version__ = "$Id:$"
 

@@ -1,11 +1,10 @@
 import numpy as np
-from apposto.types.scalar_bidimensional_function import \
+from arte.types.scalar_bidimensional_function import \
     ScalarBidimensionalFunction
-from apposto.utils.coordinates import xCoordinatesMap
+from arte.utils.coordinates import xCoordinatesMap
 
 
 __version__= "$Id: $"
-
 
 
 class BidimensionalFourierTransform(object):

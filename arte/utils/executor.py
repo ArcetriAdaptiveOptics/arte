@@ -7,9 +7,8 @@ import traceback
 
 from concurrent import futures
 
-from apposto.utils.decorator import override, synchronized
-from apposto.utils.logger import Logger
-
+from arte.utils.decorator import override, synchronized
+from arte.utils.logger import Logger
 
 
 class Task(object, metaclass=abc.ABCMeta):

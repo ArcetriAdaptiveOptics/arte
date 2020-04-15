@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.atmo.cn2_profile import Cn2Profile, \
+from arte.atmo.cn2_profile import Cn2Profile, \
     MaorySteroScidarProfiles, EsoEltProfiles
-from apposto.utils.constants import Constants
+from arte.utils.constants import Constants
 import astropy.units as u
 from astropy.tests.helper import assert_quantity_allclose
 

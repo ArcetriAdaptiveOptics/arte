@@ -6,27 +6,24 @@ class Timestamp(object):
     def __init__(self):
         self._now = datetime.datetime.now()
 
-    def now_string(self):
+    def asNowString(self):
         return self._now.strftime("%Y%m%d_%H%M%S")
 
-    def today_string(self):
+    def asTodayString(self):
         return self._now.strftime("%Y%m%d")
-
-    def timestamp(self):
-        return self._now
 
     @staticmethod
     def now():
-        return Timestamp().now_string()
+        return Timestamp().asNowString()
 
     @staticmethod
     def today():
-        return Timestamp().today_string()
+        return Timestamp().asTodayString()
 
     @staticmethod
-    def now_usec():
+    def nowUSec():
         ss = datetime.datetime.now()
-        return ss.strftime('%Y%m%d_%H%M%S.%f')
+        return ss.strftime('%Y%m%d_%H%M%S')
 
     def __str__(self):
-        return self.now_string()
+        return self.asNowString()

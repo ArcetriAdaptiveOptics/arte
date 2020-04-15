@@ -10,8 +10,8 @@ from synphot import SourceSpectrum
 from synphot.models import Box1D
 from synphot.spectrum import SpectralElement
 from synphot.observation import Observation
-from apposto.phot.spectral_types import PickelsLibrary
-from apposto.phot import spectral_types
+from arte.phot.spectral_types import PickelsLibrary
+from arte.phot import spectral_types
 
 
 def getNormalizedSpectrum(spectralType, magnitude, filter_name):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.types.zernike_coefficients import ZernikeCoefficients
+from arte.types.zernike_coefficients import ZernikeCoefficients
 
 __version__ = "$Id: zernike_coefficients_test.py 168 2016-12-06 21:33:24Z lbusoni $"
 

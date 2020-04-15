@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import unittest
-from apposto.utils.math import round_up_to_even
+from arte.utils.math import round_up_to_even
 
 
 class RoundToEvenTest(unittest.TestCase):

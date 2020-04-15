@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.utils.zernike_generator import ZernikeGenerator
-from apposto.types.mask import CircularMask
-from apposto.utils.modal_decomposer import ModalDecomposer
-from apposto.types.wavefront import Wavefront
-from apposto.types.slopes import Slopes
+from arte.utils.zernike_generator import ZernikeGenerator
+from arte.types.mask import CircularMask
+from arte.utils.modal_decomposer import ModalDecomposer
+from arte.types.wavefront import Wavefront
+from arte.types.slopes import Slopes
 
 
 class ModalDecomposerTest(unittest.TestCase):

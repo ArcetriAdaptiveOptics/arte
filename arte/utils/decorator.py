@@ -4,8 +4,7 @@ import traceback
 import inspect
 import threading
 import types
-from apposto.utils.logger import LoggerException
-
+from arte.utils.logger import LoggerException
 
 
 class ReturnTypeMismatchError(Exception):

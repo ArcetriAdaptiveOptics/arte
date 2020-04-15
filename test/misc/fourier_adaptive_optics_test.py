@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import unittest
-from apposto.misc.fourier_adaptive_optics import FourierAdaptiveOptics
+from arte.misc.fourier_adaptive_optics import FourierAdaptiveOptics
 
 __version__ = "$Id:$"
 

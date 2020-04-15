@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.types.wavefront import Wavefront
+from arte.types.wavefront import Wavefront
 
 
 class WavefrontTest(unittest.TestCase):

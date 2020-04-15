@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.types.scalar_bidimensional_function import \
+from arte.types.scalar_bidimensional_function import \
     ScalarBidimensionalFunction
 
 __version__ = "$Id:$"

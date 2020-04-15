@@ -1,8 +1,7 @@
 import numpy as np
-from apposto.utils.constants import Constants
+from arte.utils.constants import Constants
 
 __version__= "$Id: $"
-
 
 
 class GeneralizedFittingError(object):

@@ -2,7 +2,7 @@
 
 import unittest
 import numpy as np
-from apposto.utils.zernike_generator import ZernikeGenerator
+from arte.utils.zernike_generator import ZernikeGenerator
 
 
 class TestZernikeGenerator(unittest.TestCase):

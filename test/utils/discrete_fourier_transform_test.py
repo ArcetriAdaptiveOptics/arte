@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.utils.discrete_fourier_transform import \
+from arte.utils.discrete_fourier_transform import \
     BidimensionalFourierTransform as bfft
 
 __version__ = "$Id:$"

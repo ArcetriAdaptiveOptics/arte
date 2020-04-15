@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.types.slopes import Slopes
+from arte.types.slopes import Slopes
 
 
 class SlopesTest(unittest.TestCase):

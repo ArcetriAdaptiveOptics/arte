@@ -1,5 +1,5 @@
 import numpy as np
-from apposto.utils.radial_profile import computeRadialProfile
+from arte.utils.radial_profile import computeRadialProfile
 from scipy import interpolate
 
 

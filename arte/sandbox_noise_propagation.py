@@ -1,6 +1,6 @@
 import numpy as np
-from apposto.utils.zernike_generator import ZernikeGenerator
-from apposto.utils.noise_propagation import NoisePropagation
+from arte.utils.zernike_generator import ZernikeGenerator
+from arte.utils.noise_propagation import NoisePropagation
 
 class TestNoisePropagation(object):
 
@@ -53,7 +53,7 @@ class TestNoisePropagation(object):
 
     def plotRigautAndGendronNoisePropagation(self, noiseProp):
         import matplotlib.pyplot as plt
-        from apposto.utils import zernike_generator as zg
+        from arte.utils import zernike_generator as zg
 
         modesV= noiseProp.modesVector
         pi= np.diag(noiseProp.noisePropagationMatrix)

@@ -6,7 +6,7 @@ Created on 16 mar 2020
 
 import unittest
 import numpy as np
-from apposto.utils.integrator import SimpleIntegrator, IdealIntegrator
+from arte.utils.integrator import SimpleIntegrator, IdealIntegrator
 
 
 class TestIntegrator(unittest.TestCase):

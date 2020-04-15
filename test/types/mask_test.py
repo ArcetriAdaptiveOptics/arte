@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.types.mask import CircularMask
+from arte.types.mask import CircularMask
 
 
 __version__ = "$Id: $"

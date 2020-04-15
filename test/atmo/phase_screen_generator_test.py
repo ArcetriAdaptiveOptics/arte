@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import unittest
-from apposto.atmo.phase_screen_generator import PhaseScreenGenerator
+from arte.atmo.phase_screen_generator import PhaseScreenGenerator
 
 
 class PhaseScreenGeneratorTest(unittest.TestCase):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
-from apposto.photometry.spectral_types import PickelsLibrary
-from apposto.photometry.spectral_types import O5V, F5I
+from arte.photometry.spectral_types import PickelsLibrary
+from arte.photometry.spectral_types import O5V, F5I
 
 
 class PickelsLibraryTest(unittest.TestCase):

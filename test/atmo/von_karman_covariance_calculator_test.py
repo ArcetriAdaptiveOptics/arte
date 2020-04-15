@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from apposto.atmo.von_karman_covariance_calculator import \
+from arte.atmo.von_karman_covariance_calculator import \
     VonKarmanSpatioTemporalCovariance
-from apposto.atmo.cn2_profile import Cn2Profile
-from apposto.types.guide_source import GuideSource
-from apposto.types.aperture import CircularOpticalAperture
+from arte.atmo.cn2_profile import Cn2Profile
+from arte.types.guide_source import GuideSource
+from arte.types.aperture import CircularOpticalAperture
 from test.test_helper import setUpLogger
 import logging
 

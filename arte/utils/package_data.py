@@ -3,6 +3,6 @@ def dataRootDir():
     import pkg_resources
 
     dataroot = pkg_resources.resource_filename(
-        'apposto',
+        'arte',
         'data')
     return dataroot

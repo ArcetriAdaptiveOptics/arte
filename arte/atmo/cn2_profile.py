@@ -3,8 +3,8 @@
 '''
 import numpy as np
 from astropy.units.quantity import Quantity
-from apposto.utils.constants import Constants
-from apposto.utils.package_data import dataRootDir
+from arte.utils.constants import Constants
+from arte.utils.package_data import dataRootDir
 import os
 from astropy.io import fits
 import astropy.units as u

@@ -1,5 +1,5 @@
 import numpy as np
-from apposto.types.region_of_interest import RegionOfInterest
+from arte.types.region_of_interest import RegionOfInterest
 
 
 class CircularMask():

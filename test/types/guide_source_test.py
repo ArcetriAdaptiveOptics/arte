@@ -7,7 +7,7 @@ Created on 13 dic 2019
 import unittest
 import astropy.units as u
 from astropy.tests.helper import assert_quantity_allclose
-from apposto.types.guide_source import GuideSource
+from arte.types.guide_source import GuideSource
 
 
 class GuideSourceTest(unittest.TestCase):

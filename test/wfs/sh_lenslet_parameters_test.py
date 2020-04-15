@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import unittest
 from astropy import units as u
-from apposto.wfs.sh_lenslet_parameters import ShackHartmannLensletParameters
-
+from arte.wfs.sh_lenslet_parameters import ShackHartmannLensletParameters
 
 
 class Test(unittest.TestCase):
@@ -22,7 +21,6 @@ class Test(unittest.TestCase):
         self.assertEqual(
             ccdPixelSize*nSub*shp.n_pixel_per_subaperture(),
             shp.pupil_size_on_lenslet_array())
-
 
 
 if __name__ == "__main__":

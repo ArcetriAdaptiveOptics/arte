@@ -1,5 +1,5 @@
 from astropy import units as u
-from apposto.utils.math import round_up_to_even
+from arte.utils.math import round_up_to_even
 
 
 class ShackHartmannLensletParameters(object):

@@ -4,9 +4,9 @@
 
 import numpy as np
 import astropy.units as u
-from apposto.utils import von_karman_psd, math
+from arte.utils import von_karman_psd, math
 import logging
-from apposto.utils.zernike_generator import ZernikeGenerator
+from arte.utils.zernike_generator import ZernikeGenerator
 
 
 class VonKarmanSpatioTemporalCovariance():
@@ -32,27 +32,27 @@ class VonKarmanSpatioTemporalCovariance():
 
     Parameters
     ----------
-    source1: `~apposto.types.guide_source.GuideSource`
+    source1: `~arte.types.guide_source.GuideSource`
         Geometry of the first source.
         We consider rho as the angle in arcsec wrt the z-axis and
         theta as the angle in degrees wrt the x-axis.
-        (e.g. source1 = apposto.types.guide_source.GuideSource((1,90), 9e3)
+        (e.g. source1 = arte.types.guide_source.GuideSource((1,90), 9e3)
 
-    source2: `~apposto.types.guide_source.GuideSource`
+    source2: `~arte.types.guide_source.GuideSource`
         Geometry of the second source. Same conventions as source1.
 
-    aperture1: `~apposto.types.aperture.CircularOpticalAperture`
+    aperture1: `~arte.types.aperture.CircularOpticalAperture`
         Geometry of the first optical aperture.
-        (e.g. aperture1 = apposto.types.aperture.CircularOpticalAperture(
+        (e.g. aperture1 = arte.types.aperture.CircularOpticalAperture(
                                                     10, (0, 0, 0)))
 
-    aperture2: `~apposto.types.aperture.CircularOpticalAperture`
+    aperture2: `~arte.types.aperture.CircularOpticalAperture`
         Geometry of the second optical aperture.
 
-    cn2_profile: `~apposto.atmo.cn2_profile`
+    cn2_profile: `~arte.atmo.cn2_profile`
         Cn2 profile.
-        (e.g. cn2_eso = apposto.atmo.cn2_profile.EsoEltProfiles.Q1()
-         e.g. cn2_invented = apposto.atmo.cn2_profile.Cn2Profile.from_r0s(
+        (e.g. cn2_eso = arte.atmo.cn2_profile.EsoEltProfiles.Q1()
+         e.g. cn2_invented = arte.atmo.cn2_profile.Cn2Profile.from_r0s(
             [0.16], [25], [10e3], [0.1], [0]))
 
     spat_freqs: `numpy.ndarray`

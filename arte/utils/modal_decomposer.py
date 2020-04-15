@@ -1,11 +1,11 @@
 import numpy as np
 from scipy.linalg.basic import pinv2
-from apposto.utils.decorator import cacheResult, returns
-from apposto.utils.zernike_generator import ZernikeGenerator
-from apposto.types.zernike_coefficients import ZernikeCoefficients
-from apposto.types.mask import CircularMask
-from apposto.types.wavefront import Wavefront
-from apposto.types.slopes import Slopes
+from arte.utils.decorator import cacheResult, returns
+from arte.utils.zernike_generator import ZernikeGenerator
+from arte.types.zernike_coefficients import ZernikeCoefficients
+from arte.types.mask import CircularMask
+from arte.types.wavefront import Wavefront
+from arte.types.slopes import Slopes
 
 
 class ModalDecomposer(object):

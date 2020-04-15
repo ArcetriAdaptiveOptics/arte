@@ -11,10 +11,10 @@ from astropy.visualization import imshow_norm, SqrtStretch
 from astropy.visualization.interval import PercentileInterval
 from astropy.io import fits
 from photutils import DAOStarFinder
-from apposto.types.scalar_bidimensional_function import \
+from arte.types.scalar_bidimensional_function import \
     ScalarBidimensionalFunction
-from apposto.utils.coordinates import xCoordinatesMap
-from apposto.utils.discrete_fourier_transform import \
+from arte.utils.coordinates import xCoordinatesMap
+from arte.utils.discrete_fourier_transform import \
     BidimensionalFourierTransform
 import matplotlib.pyplot as plt
 from astropy.visualization.stretch import SquaredStretch

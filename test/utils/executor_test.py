@@ -7,12 +7,12 @@ import threading
 import time
 import unittest
 
-from apposto.utils.decorator import override, synchronized
-from apposto.utils.executor import Task, SingleThreadExecutor, Executor, \
+from arte.utils.decorator import override, synchronized
+from arte.utils.executor import Task, SingleThreadExecutor, Executor, \
     SingleThreadImmediateExecutor, BusyExecutorException, FunctionTask,\
     MultiThreadExecutor, TaskTimeoutError, DoneTaskControl, logTaskFailure,\
     TaskDelayingExecutor, FunctionTaskException
-from apposto.utils.logger import ObservableLogger, DummyLogger,\
+from arte.utils.logger import ObservableLogger, DummyLogger,\
     LoggerListener
 from test.test_helper import Poller, Probe, TestHelper, ExecutionProbe
 

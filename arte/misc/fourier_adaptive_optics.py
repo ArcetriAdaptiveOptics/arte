@@ -1,9 +1,9 @@
 import numpy as np
-from apposto.utils.discrete_fourier_transform import \
+from arte.utils.discrete_fourier_transform import \
     BidimensionalFourierTransform as bfft
-from apposto.types.scalar_bidimensional_function import \
+from arte.types.scalar_bidimensional_function import \
     ScalarBidimensionalFunction as S2DF
-from apposto.utils.coordinates import xCoordinatesMap
+from arte.utils.coordinates import xCoordinatesMap
 
 
 
@@ -183,7 +183,7 @@ class FourierAdaptiveOptics(object):
 
 
     def _createCircularMask(self):
-        from apposto.types.mask import CircularMask
+        from arte.types.mask import CircularMask
         radiusInPx= 0.5 * self._pupilDiameterInMeters / \
             self.pupilPlanePixelSizeInMeters()
         centerInPx= [self._pupilDiameterInPixels / 2,
