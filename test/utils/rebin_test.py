@@ -39,10 +39,10 @@ class RebinTest(unittest.TestCase):
         a = np.arange(4).reshape((2,2))
 
         with self.assertRaises(ValueError):
-            b = rebin(a, [4,6,8])
+            _ = rebin(a, [4,6,8])
 
         with self.assertRaises(ValueError):
-            b = rebin(a, ['4.0',6])
+            _ = rebin(a, ['4.0',6])
 
     def test_up_sample(self):
 

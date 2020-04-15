@@ -1,8 +1,4 @@
 import numpy as np
-try:
-    import itertoolsmodule
-except ImportError:
-    import itertools as itertoolsmodule
 
 
 class Indexer(object):

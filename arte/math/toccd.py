@@ -8,7 +8,7 @@
 
 
 from arte.math.factors import lcm
-from arte.math.rebin import rebin2d
+from arte.utils.rebin import rebin
 
 
 def toccd(a, newshape, set_total=None):
@@ -31,10 +31,10 @@ def toccd(a, newshape, set_total=None):
     mcmx = lcm(a.shape[0], newshape[0])
     mcmy = lcm(a.shape[1], newshape[1])
 
-    temp = rebin2d(a, (mcmx, a.shape[1]), sample=True)
-    temp = rebin2d(temp, (newshape[0], a.shape[1]))
-    temp = rebin2d(temp, (newshape[0], mcmy), sample=True)
-    rebinned = rebin2d(temp, newshape)
+    temp = rebin(a, (mcmx, a.shape[1]), sample=True)
+    temp = rebin(temp, (newshape[0], a.shape[1]))
+    temp = rebin(temp, (newshape[0], mcmy), sample=True)
+    rebinned = rebin(temp, newshape)
 
     return rebinned / rebinned.sum() * set_total
 

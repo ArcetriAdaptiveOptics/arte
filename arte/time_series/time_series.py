@@ -229,7 +229,7 @@ class TimeSeriesWithInterpolation(TimeSeries):
         if self._counter is None:
             filename = self._file_name_walker.slopesFrameCounters()
             counter = fits.getdata(filename)
-            if counter.size is 0:
+            if counter.size != 0:
                 self._counter = NotAvailable()
             else:
                 if counter[0] > counter[-1]:

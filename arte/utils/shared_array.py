@@ -4,6 +4,7 @@ import ctypes
 import numpy as np
 import multiprocessing as mp
 import multiprocessing.sharedctypes
+from functools import reduce
 
 class SharedArray:
     '''

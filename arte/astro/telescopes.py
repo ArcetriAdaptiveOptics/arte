@@ -13,7 +13,7 @@ class Telescope(ThisStaticClassCanHelp):
 
     @classmethod
     @add_to_help
-    def obstruction(self):
+    def obstruction(cls):
         '''Returns the telescope obstruction, in percentage [0..1]'''
         return cls._obstruction
 
