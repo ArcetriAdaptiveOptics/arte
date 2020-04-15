@@ -148,7 +148,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         phaseCov = vk.getPhaseCovariance().value
         phaseCPSD = vk.getPhaseCPSD(temporal_freqs).value
         phaseCovFromCPSD = np.trapz(2 * np.real(phaseCPSD), temporal_freqs)
-        np.testing.assert_almost_equal(phaseCovFromCPSD, phaseCov)
+        np.testing.assert_allclose(phaseCovFromCPSD, phaseCov, rtol=0.01)
 
     def testIntegrationOfZernikeCPSDWithZernikeCovariance(self):
         cn2 = Cn2Profile.from_r0s(
@@ -170,7 +170,8 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         cpsdMatrix = 2 * np.real(vk.getZernikeCPSD(j, k, temporal_freqs).value)
         covarianceMatrix = vk.getZernikeCovariance(j, k).value
         covFromCPSD = np.trapz(cpsdMatrix, temporal_freqs)
-        np.testing.assert_allclose(covFromCPSD, covarianceMatrix)
+        np.testing.assert_allclose(
+            covFromCPSD, covarianceMatrix, rtol=0.01, atol=1e-3)
 
     def testZernikeCPSDMatrixShape(self):
         cn2 = Cn2Profile.from_r0s(

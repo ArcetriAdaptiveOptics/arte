@@ -3,7 +3,10 @@
 A collection of routines and utilities
 developed by the Arcetri Astrophysical Observatory's AO group.
 
-[![Build Status][travis]][travislink]  [![Coverage Status][coveralls]][coverallslink]  [![PyPI version][pypiversion]][pypiversionlink]
+![Python package](https://github.com/ArcetriAdaptiveOptics/arte/workflows/Python%20package/badge.svg)
+[![Build Status][travis]][travislink]  
+[![Coverage Status][coveralls]][coverallslink]
+[![PyPI version][pypiversion]][pypiversionlink]
 
 
 [travis]: https://travis-ci.com/lbusoni/apposto.svg?branch=master "go to travis"
