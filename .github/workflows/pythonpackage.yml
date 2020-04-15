@@ -37,7 +37,7 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest
+        pytest --cov=.
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
