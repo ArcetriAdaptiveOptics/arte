@@ -1,4 +1,6 @@
 
+import logging
+
 def if_(condition, warning=None):
     '''
     Decorator to turn a function into a NO-OP
@@ -17,7 +19,7 @@ def if_(condition, warning=None):
     def neutered_function(func):
         def neutered(*args, **kw):
             if warning:
-                log.warn(warning)
+                logging.warn(warning)
             return None
         return neutered
 
