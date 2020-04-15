@@ -58,7 +58,7 @@ before_script:
     
 script:
   - pytest
-  - coverage run --source=apposto setup.py test
+  - coverage run --source=arte setup.py test
   - coverage report -m
 
 after_success:
