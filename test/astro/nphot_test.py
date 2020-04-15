@@ -53,11 +53,11 @@ class NPhotTest(unittest.TestCase):
 
     def test_model(self):
 
-        model = n_phot.get_model()
-        model = n_phot.get_model('MAORY-1')
+        _ = n_phot.get_model()
+        _ = n_phot.get_model('MAORY-1')
 
         with self.assertRaises(Exception):
-            model = n_phot.get_model('foo')
+            _ = n_phot.get_model('foo')
 
 
 

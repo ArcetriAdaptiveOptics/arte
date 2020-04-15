@@ -17,6 +17,14 @@ References:
    1) Advanced Programming in the Unix Environment: W. Richard Stevens
    2) Unix Programming Frequently Asked Questions:
          http://www.erlenstar.demon.co.uk/unix/faq_toc.html
+
+who                when        what
+-----------------  ----------  ----------
+Chad J. Schroeder  2008-10-01  Created
+Alfio Puglisi      2015        Changed WORKDIR and REDIRECT_TO
+                               to be parameters of createDeamon()
+Alfio Puglisi      2019-04-15  Converted to Python3
+
 """
 
 __author__ = "Chad J. Schroeder"
@@ -36,7 +44,6 @@ UMASK = 0
 # Default maximum for the number of available file descriptors.
 MAXFD = 1024
 
-#def createDaemon():
 def createDaemon( WORKDIR, REDIRECT_TO = "/dev/null"):
 
    """Detach a process from the controlling terminal and run it in the
@@ -50,8 +57,8 @@ def createDaemon( WORKDIR, REDIRECT_TO = "/dev/null"):
       # and inherits the parent's process group ID.  This step is required
       # to insure that the next call to os.setsid is successful.
       pid = os.fork()
-   except OSError, e:
-      raise Exception, "%s [%d]" % (e.strerror, e.errno)
+   except OSError as e:
+      raise Exception("%s [%d]" % (e.strerror, e.errno))
 
    if (pid == 0):   # The first child.
       # To become the session leader of this new session and the process group
@@ -98,8 +105,8 @@ def createDaemon( WORKDIR, REDIRECT_TO = "/dev/null"):
          # longer a session leader, preventing the daemon from ever acquiring
          # a controlling terminal.
          pid = os.fork()    # Fork a second child.
-      except OSError, e:
-         raise Exception, "%s [%d]" % (e.strerror, e.errno)
+      except OSError as e:
+         raise Exception("%s [%d]" % (e.strerror, e.errno))
 
       if (pid == 0):    # The second child.
          # Since the current working directory may be a mounted filesystem, we
