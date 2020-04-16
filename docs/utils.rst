@@ -4,178 +4,178 @@ utils
 Submodules
 ----------
 
-apposto.utils.constants module
+arte.utils.constants module
 ------------------------------
 
-.. automodule:: apposto.utils.constants
+.. automodule:: arte.utils.constants
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.coordinates module
+arte.utils.coordinates module
 --------------------------------
 
-.. automodule:: apposto.utils.coordinates
+.. automodule:: arte.utils.coordinates
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.decorator module
+arte.utils.decorator module
 ------------------------------
 
-.. automodule:: apposto.utils.decorator
+.. automodule:: arte.utils.decorator
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.discrete\_fourier\_transform module
+arte.utils.discrete\_fourier\_transform module
 -------------------------------------------------
 
-.. automodule:: apposto.utils.discrete_fourier_transform
+.. automodule:: arte.utils.discrete_fourier_transform
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.executor module
+arte.utils.executor module
 -----------------------------
 
-.. automodule:: apposto.utils.executor
+.. automodule:: arte.utils.executor
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.footprint\_geometry module
+arte.utils.footprint\_geometry module
 ----------------------------------------
 
-.. automodule:: apposto.utils.footprint_geometry
+.. automodule:: arte.utils.footprint_geometry
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.generalized\_fitting\_error module
+arte.utils.generalized\_fitting\_error module
 ------------------------------------------------
 
-.. automodule:: apposto.utils.generalized_fitting_error
+.. automodule:: arte.utils.generalized_fitting_error
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.image\_moments module
+arte.utils.image\_moments module
 -----------------------------------
 
-.. automodule:: apposto.utils.image_moments
+.. automodule:: arte.utils.image_moments
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.integrator module
+arte.utils.integrator module
 -------------------------------
 
-.. automodule:: apposto.utils.integrator
+.. automodule:: arte.utils.integrator
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.logger module
+arte.utils.logger module
 ---------------------------
 
-.. automodule:: apposto.utils.logger
+.. automodule:: arte.utils.logger
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.math module
+arte.utils.math module
 -------------------------
 
-.. automodule:: apposto.utils.math
+.. automodule:: arte.utils.math
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.modal\_decomposer module
+arte.utils.modal\_decomposer module
 --------------------------------------
 
-.. automodule:: apposto.utils.modal_decomposer
+.. automodule:: arte.utils.modal_decomposer
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.noise\_propagation module
+arte.utils.noise\_propagation module
 ---------------------------------------
 
-.. automodule:: apposto.utils.noise_propagation
+.. automodule:: arte.utils.noise_propagation
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.package\_data module
+arte.utils.package\_data module
 ----------------------------------
 
-.. automodule:: apposto.utils.package_data
+.. automodule:: arte.utils.package_data
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.quadratic\_sum module
+arte.utils.quadratic\_sum module
 -----------------------------------
 
-.. automodule:: apposto.utils.quadratic_sum
+.. automodule:: arte.utils.quadratic_sum
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.radial\_profile module
+arte.utils.radial\_profile module
 ------------------------------------
 
-.. automodule:: apposto.utils.radial_profile
+.. automodule:: arte.utils.radial_profile
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.rebin module
+arte.utils.rebin module
 --------------------------
 
-.. automodule:: apposto.utils.rebin
+.. automodule:: arte.utils.rebin
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.strehl\_ratio module
+arte.utils.strehl\_ratio module
 ----------------------------------
 
-.. automodule:: apposto.utils.strehl_ratio
+.. automodule:: arte.utils.strehl_ratio
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.timestamp module
+arte.utils.timestamp module
 ------------------------------
 
-.. automodule:: apposto.utils.timestamp
+.. automodule:: arte.utils.timestamp
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.von\_karman\_psd module
+arte.utils.von\_karman\_psd module
 -------------------------------------
 
-.. automodule:: apposto.utils.von_karman_psd
+.. automodule:: arte.utils.von_karman_psd
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.zernike\_generator module
+arte.utils.zernike\_generator module
 ---------------------------------------
 
-.. automodule:: apposto.utils.zernike_generator
+.. automodule:: arte.utils.zernike_generator
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.utils.zernike\_projection\_on\_subaperture module
+arte.utils.zernike\_projection\_on\_subaperture module
 ---------------------------------------------------------
 
-.. automodule:: apposto.utils.zernike_projection_on_subaperture
+.. automodule:: arte.utils.zernike_projection_on_subaperture
    :members:
    :undoc-members:
    :show-inheritance:
@@ -184,7 +184,7 @@ apposto.utils.zernike\_projection\_on\_subaperture module
 Module contents
 ---------------
 
-.. automodule:: apposto.utils
+.. automodule:: arte.utils
    :members:
    :undoc-members:
    :show-inheritance:

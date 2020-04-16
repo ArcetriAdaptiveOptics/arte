@@ -42,7 +42,7 @@ If you're interested in contributing to arte, start here:
    development
 
 
-.. module:: apposto
+.. module:: arte
 
 API Reference
 -------------

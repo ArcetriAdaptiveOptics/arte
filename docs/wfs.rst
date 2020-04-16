@@ -4,10 +4,10 @@ wfs
 Submodules
 ----------
 
-apposto.wfs.sh\_lenslet\_parameters module
+arte.wfs.sh\_lenslet\_parameters module
 ------------------------------------------
 
-.. automodule:: apposto.wfs.sh_lenslet_parameters
+.. automodule:: arte.wfs.sh_lenslet_parameters
    :members:
    :undoc-members:
    :show-inheritance:
@@ -16,7 +16,7 @@ apposto.wfs.sh\_lenslet\_parameters module
 Module contents
 ---------------
 
-.. automodule:: apposto.wfs
+.. automodule:: arte.wfs
    :members:
    :undoc-members:
    :show-inheritance:

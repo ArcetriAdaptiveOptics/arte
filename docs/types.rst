@@ -4,74 +4,74 @@ types
 Submodules
 ----------
 
-apposto.types.aperture module
+arte.types.aperture module
 -----------------------------
 
-.. automodule:: apposto.types.aperture
+.. automodule:: arte.types.aperture
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.types.fisba\_measure module
+arte.types.fisba\_measure module
 -----------------------------------
 
-.. automodule:: apposto.types.fisba_measure
+.. automodule:: arte.types.fisba_measure
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.types.guide\_source module
+arte.types.guide\_source module
 ----------------------------------
 
-.. automodule:: apposto.types.guide_source
+.. automodule:: arte.types.guide_source
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.types.mask module
+arte.types.mask module
 -------------------------
 
-.. automodule:: apposto.types.mask
+.. automodule:: arte.types.mask
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.types.region\_of\_interest module
+arte.types.region\_of\_interest module
 -----------------------------------------
 
-.. automodule:: apposto.types.region_of_interest
+.. automodule:: arte.types.region_of_interest
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.types.scalar\_bidimensional\_function module
+arte.types.scalar\_bidimensional\_function module
 ----------------------------------------------------
 
-.. automodule:: apposto.types.scalar_bidimensional_function
+.. automodule:: arte.types.scalar_bidimensional_function
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.types.slopes module
+arte.types.slopes module
 ---------------------------
 
-.. automodule:: apposto.types.slopes
+.. automodule:: arte.types.slopes
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.types.wavefront module
+arte.types.wavefront module
 ------------------------------
 
-.. automodule:: apposto.types.wavefront
+.. automodule:: arte.types.wavefront
    :members:
    :undoc-members:
    :show-inheritance:
 
-apposto.types.zernike\_coefficients module
+arte.types.zernike\_coefficients module
 ------------------------------------------
 
-.. automodule:: apposto.types.zernike_coefficients
+.. automodule:: arte.types.zernike_coefficients
    :members:
    :undoc-members:
    :show-inheritance:
@@ -80,7 +80,7 @@ apposto.types.zernike\_coefficients module
 Module contents
 ---------------
 
-.. automodule:: apposto.types
+.. automodule:: arte.types
    :members:
    :undoc-members:
    :show-inheritance:

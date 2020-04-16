@@ -4,10 +4,10 @@ photometry
 Submodules
 ----------
 
-apposto.photometry.spectral\_types module
+arte.photometry.spectral\_types module
 -----------------------------------------
 
-.. automodule:: apposto.photometry.spectral_types
+.. automodule:: arte.photometry.spectral_types
    :members:
    :undoc-members:
    :show-inheritance:
@@ -16,7 +16,7 @@ apposto.photometry.spectral\_types module
 Module contents
 ---------------
 
-.. automodule:: apposto.photometry
+.. automodule:: arte.photometry
    :members:
    :undoc-members:
    :show-inheritance:
