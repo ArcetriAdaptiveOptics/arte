@@ -5,7 +5,7 @@ Submodules
 ----------
 
 arte.utils.capture_output module
-------------------------------
+--------------------------------
 
 .. automodule:: arte.utils.capture_output
    :members:
