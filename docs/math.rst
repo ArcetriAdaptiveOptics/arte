@@ -4,6 +4,14 @@ math
 Submodules
 ----------
 
+arte.math.make_xy module
+------------------------
+
+.. automodule:: arte.math.make_xy
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 arte.math.zernike module
 ------------------------
 

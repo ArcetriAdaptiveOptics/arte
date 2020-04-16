@@ -17,7 +17,7 @@ class MaskTest(unittest.TestCase):
 
     def testNullRadiusMakeNullMask(self):
         mask= CircularMask((10, 20), maskRadius=0)
-        self.assertTrue(np.all(mask.mask() == True))
+        self.assertTrue(np.all(mask.mask()))
 
 
     def testPassingRadiusNone(self):

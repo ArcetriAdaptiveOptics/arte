@@ -48,7 +48,6 @@ class SharedArray:
         self.np(refresh=True)
 
 
-
 class SharedCircularBuffer(SharedArray):
     '''
     Implements a circular buffer on top of a SharedArray.

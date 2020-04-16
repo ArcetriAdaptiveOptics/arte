@@ -89,7 +89,7 @@ class ThisClassCanHelp():
         '''
         try:
             return self._arte_hlp_overrides[method_name]
-        except:
+        except Exception:
             return ''
 
     def help(self, search='', prefix=''):

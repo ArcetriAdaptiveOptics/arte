@@ -157,6 +157,14 @@ arte.utils.rebin module
    :undoc-members:
    :show-inheritance:
 
+arte.utils.shared_array module
+------------------------------
+
+.. automodule:: arte.utils.shared_array
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 arte.utils.strehl\_ratio module
 ----------------------------------
 

@@ -19,7 +19,7 @@ class MultiTimeSeries(TimeSeries):
             self._series.append(v)
 
     def _get_not_indexed_data(self):
-        return np.hstack([v._get_not_indexed_data() \
+        return np.hstack([v._get_not_indexed_data()
                           for v in self._series])
         
     def get_series(self, n):
@@ -43,8 +43,8 @@ class MultiTimeSeries(TimeSeries):
         # Known astropy bug: units are lost when using hstack 
         # We remove them before stacking, and add them later
         dt = np.hstack( \
-              [np.repeat(x.delta_time.to('s').value, x.ensemble_size()) \
-              for x in self._series])
+              [np.repeat(x.delta_time.to('s').value, x.ensemble_size())
+               for x in self._series])
 
         dt = dt * u.s
 
@@ -80,7 +80,7 @@ class MultiTimeSeries(TimeSeries):
 
         if self.is_homogenous(*args, **kwargs):
             self.__impersonateDeltaTime(*args, **kwargs) 
-            return super().power(from_freq, to_freq, segment_factor, \
+            return super().power(from_freq, to_freq, segment_factor,
                                  window, *args, **kwargs)
         else:
             raise Exception('Data series cannot be combined')

@@ -58,6 +58,7 @@ parameters available for the algorithms.
    math
    misc
    photometry
+   time_series
    types
    utils
    wfs
