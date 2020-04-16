@@ -4,6 +4,14 @@ utils
 Submodules
 ----------
 
+arte.utils.capture_output module
+------------------------------
+
+.. automodule:: arte.utils.capture_output
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 arte.utils.constants module
 ------------------------------
 
@@ -59,6 +67,15 @@ arte.utils.generalized\_fitting\_error module
    :members:
    :undoc-members:
    :show-inheritance:
+
+arte.utils.help module
+----------------------
+
+.. automodule:: arte.utils.help
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 arte.utils.image\_moments module
 -----------------------------------
