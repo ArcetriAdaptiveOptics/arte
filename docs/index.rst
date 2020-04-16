@@ -55,6 +55,7 @@ parameters available for the algorithms.
    :maxdepth: 1
 
    atmo
+   math
    misc
    photometry
    types
