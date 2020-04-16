@@ -11,11 +11,11 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import sphinx_rtd_theme
-from arte.__version__ import __version__
 import os
 import sys
 import re
 sys.path.insert(0, os.path.abspath('..'))
+from arte.__version__ import __version__
 
 # -- Project information -----------------------------------------------------
 
