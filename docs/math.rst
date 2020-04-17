@@ -12,15 +12,6 @@ arte.math.make_xy module
    :undoc-members:
    :show-inheritance:
 
-arte.math.zernike module
-------------------------
-
-.. automodule:: arte.math.zernike
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
 Module contents
 ---------------
 
