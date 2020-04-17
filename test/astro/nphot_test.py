@@ -37,7 +37,7 @@ class NPhotTest(unittest.TestCase):
 
 
     def test_nphot3(self):
-        ''' 
+        '''
         compute the same stuff but with a user-defined band of
         central wavelength 0.54um and a narrow bandwidth of 0.01um:
         '''
@@ -59,5 +59,4 @@ class NPhotTest(unittest.TestCase):
         with self.assertRaises(Exception):
             _ = n_phot.get_model('foo')
 
-
-
+# ___oOo___

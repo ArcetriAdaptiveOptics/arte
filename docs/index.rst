@@ -55,8 +55,10 @@ parameters available for the algorithms.
    :maxdepth: 1
 
    atmo
+   math
    misc
    photometry
+   time_series
    types
    utils
    wfs

@@ -4,6 +4,7 @@ import numpy as np
 
 from arte.math.zernike import Zernike
 
+
 class ZernikeTest(unittest.TestCase):
 
     def test_resize(self):
@@ -18,10 +19,9 @@ class ZernikeTest(unittest.TestCase):
     def test_getitem(self):
 
         z1 = Zernike((2,10,10))
-        
+
         np.testing.assert_array_equal(z1.get()[1], z1[1])
 
 
 if __name__ == "__main__":
     unittest.main()
-

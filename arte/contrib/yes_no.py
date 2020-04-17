@@ -17,7 +17,7 @@ def yes_no(question, default="yes"):
     """
     valid = {"yes":"yes",   "y":"yes",  "ye":"yes",
              "no":"no",     "n":"no"}
-    if default == None:
+    if default is None:
         prompt = " [y/n] "
     elif default == "yes":
         prompt = " [Y/n] "

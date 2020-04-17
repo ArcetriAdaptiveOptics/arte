@@ -6,14 +6,18 @@ from contextlib import contextmanager
 @contextmanager
 def capture_output():
     '''
-    Use this context manager to capture stdout and stderr
-    from a Python code section. Example:
+    Context manager to capture stdout and stderr
+    from a Python code section, using two StringIO objects.
+    Example::
 
-    with capture_output() as (out, err):
-        routines_that_prints_lots()
+      with capture_output() as (out, err):
+          routine_that_prints_lots()
 
-    out.getvalue() will be the stdout
-    err.getvalue() will be the stderr
+    *out.getvalue()* will return as string with whatever
+    was printed on stdout. *err.getvalue()* will return
+    the same for stderr.
+    Nothing will appear on screen.
+
     '''
     new_out, new_err = StringIO(), StringIO()
     old_out, old_err = sys.stdout, sys.stderr

@@ -100,9 +100,6 @@ def zern(j, x, y, polar=False):
     else:
         return zern_jpolar(j, np.sqrt(x*x+y*y), np.arctan2(y,x))
 
-   
-
-
 def zern_noll(j):
     """
     Given a Noll index j, returns n and m

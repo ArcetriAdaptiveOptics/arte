@@ -1,4 +1,58 @@
+'''
+Provides tools to build an interactive, searchable help based on docstrings.
 
+Any class to which :class:`ThisClassCanHelp` is added as a base class
+gets a :meth:`help` method that provides an interactive and searchable help
+based on the method docstrings. All the methods decorated with
+:func:`add_to_help` are added, together with all such methods in all the class members.
+
+Example::
+
+  from arte.utils.help import ThisClassCanHelp, add_to_help
+
+  class InnerClass(ThisClassCanHelp):
+      """An inner class"""
+
+      @add_to_help
+      def a_method(self):
+          """This is a method"""
+          pass
+
+  class MyClass(ThisClassCanHelp):
+      """This is my class"""
+      b = InnerClass()
+
+      @add_to_help
+      def a_method(self):
+          """This is a method"""
+          pass
+
+      @add_to_help
+      def another_method(self):
+          """This is another method"""
+          pass
+
+Interactive session::
+
+  >>> a  = MyClass()
+  >>> a.help()
+  ---------
+                      This is my class
+  .a_method()         This is a method
+  .another_method()   This is another method
+  ---------
+  .b              An inner class
+  .b.a_method()   This is a method
+
+  >>> a.help('other')
+  ---------
+  .another_method()   This is another method
+
+  >>> a.help('inner')
+  ---------
+  .b              An inner class
+
+'''
 from arte.utils.not_available import NotAvailable
 
 def _has_hlp(obj):
@@ -9,8 +63,11 @@ def _is_hlp_class(name, obj):
     return isinstance(obj, ThisClassCanHelp) and \
            name[0] != '_'
 
-class ThisClassCanHelp(object):
 
+class ThisClassCanHelp():
+    '''
+    Add this class as a base class to get a help() method.
+    '''
     def override_help(self, method_name, help_str):
         '''
         Overrides the help defined statically for method_name
@@ -24,18 +81,27 @@ class ThisClassCanHelp(object):
 
         self._arte_hlp_overrides[method_name] = help_str
 
-    def check_overrides(self, method_name):
+    def _check_overrides(self, method_name):
         '''
-        Returns an empty string or, for the class that CanBeIncomplete,
-        a NotAvailable instance, that evaluates to False.
+        If the override is not found returns an empty string or,
+        for the class that CanBeIncomplete, a NotAvailable instance,
+        that evaluates to False.
         '''
         try:
             return self._arte_hlp_overrides[method_name]
-        except:
+        except Exception:
             return ''
 
     def help(self, search='', prefix=''):
+        '''
+        Prints on stdout a list of methods that match the *search* substring
+        or all of them if *search* is left to the default value of an empty
+        string, together with a one-line help taken from the first line
+        of their docstring, if any.
 
+        The *prefix* argument is prepended to the method name and is used
+        for recursive help of every class member.
+        '''
         methods = {k:getattr(self,k) for k in dir(self) if callable(getattr(self, k))}
         members = {k:getattr(self,k) for k in dir(self) if not callable(getattr(self, k))}
 
@@ -46,7 +112,7 @@ class ThisClassCanHelp(object):
 
         for method in hlp_methods.values():
             name, docstring = method._arte_hlp
-            help_string = self.check_overrides(name) or docstring
+            help_string = self._check_overrides(name) or docstring
             hlp[prefix+'.'+name] = help_string
 
         maxlen = max(map(len, hlp.keys()))
@@ -67,15 +133,14 @@ class ThisClassCanHelp(object):
             obj.help(search=search, prefix='%s.%s' % (prefix, name))
 
 
-# Static classes (ones that only define classmethods)
-# should use this version
 
 class ThisStaticClassCanHelp(ThisClassCanHelp):
-
+    '''Static classes (that only define classmethods)
+       should use this version
+    '''
     @classmethod
     def help(cls, search='', prefix=''):
         ThisClassCanHelp.help(cls(), search, prefix)
-
 
 def _format_docstring(obj, default=None):
 
@@ -99,32 +164,34 @@ def _wrap_with(f, call=None, arg_str=None, doc_str=None):
     
 def add_to_help(call=None, arg_str=None, doc_str=None):
     '''
-    Decorator to add a method to the help system. Can be used
-    in several ways:
+    Decorator to add a method to the help system.
 
     With no argument, it will take the first docstring line
-    and generate a default help string.
+    and generate a default help string, but other options
+    are available::
 
-    @add_to_help
-    def mymethod1(self, ....)
-        """This method is very cool"""
+      @add_to_help
+      def mymethod1(self, ....)
+          """This method is very cool"""
 
-    @add_to_help(call='mymethod2(foo)')
-    def mymethod2(self, ....)
-        """Also this one"""
+      @add_to_help(call='mymethod2(foo)')
+      def mymethod2(self, ....)
+          """Also this one"""
 
-    @add_to_help(arg_str='idx1, idx2')
-    def mymethod3(self, ....)
-        """Now you see it"""
+      @add_to_help(arg_str='idx1, idx2')
+      def mymethod3(self, ....)
+          """Now you see it"""
 
-    @add_to_help(doc_str='Surprise!')
-    def mymethod4(self, ....)
-        """And now you don't"""
+      @add_to_help(doc_str='Surprise!')
+      def mymethod4(self, ....)
+          """And now you don't"""
 
-    .mymethod1()           : This method is very cool
-    .mymethod2(foo)        : Also this one
-    .mymethod3(idx1, idx2) : Now you see it
-    .mymethod4()           : Surprise!
+    Resulting help::
+
+      .mymethod1()           : This method is very cool
+      .mymethod2(foo)        : Also this one
+      .mymethod3(idx1, idx2) : Now you see it
+      .mymethod4()           : Surprise!
     '''
     if callable(call):
         # No arguments, 'call' is actually our method.
@@ -135,7 +202,4 @@ def add_to_help(call=None, arg_str=None, doc_str=None):
             _wrap_with(f, call, arg_str, doc_str)
             return f
         return wrap
-
-             
-               
 
