@@ -181,6 +181,14 @@ arte.utils.timestamp module
    :undoc-members:
    :show-inheritance:
 
+arte.utils.tabular_report module
+--------------------------------
+
+.. automodule:: arte.utils.tabular_report
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 arte.utils.von\_karman\_psd module
 -------------------------------------
 
