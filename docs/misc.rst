@@ -12,13 +12,6 @@ arte.misc.fourier\_adaptive\_optics module
    :undoc-members:
    :show-inheritance:
 
-arte.misc.main\_lenslet\_array\_eris module
-----------------------------------------------
-
-.. automodule:: arte.misc.main_lenslet_array_eris
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 
 Module contents
