@@ -10,6 +10,7 @@ Comments should be complete sentences in English.
 Modules use short, all-lowercase names with underscores (snake_case).
 Class names use the UpperCamelCase convention.
 Method names use all-lowercase with underscore (snake_case) convention.
+Docstrings use the numpydoc convention: https://numpydoc.readthedocs.io/
 
 
 Eclipse Support
@@ -25,7 +26,7 @@ import os
 
 class NiceWriter:
     """
-    A nice writer .
+    A nice writer.
 
     This class is an example of code styling conventions.
     """
@@ -38,7 +39,20 @@ class NiceWriter:
 
     def public_work(self, an_argument):
         """
-        add example docstring here
+        One-liner description here.
+        
+        More detailed description here, using reStructuredText if needed.
+        
+        Parameters
+        ----------
+        an_argument: string
+           argument description here.
+           
+        Returns
+        -------
+        k: int
+           whatever.
+            
         """
         if self._path.startswith(an_argument):
             os.chdir(self.A_CLASS_CONSTANT)
@@ -46,7 +60,7 @@ class NiceWriter:
             os.remove(self._path)
 
         for i in range(0, 3):
-            self._say(i)
+            self._say_something_private(i)
 
         j = 5
         k = 3
@@ -54,6 +68,8 @@ class NiceWriter:
         while k < 9:
             a_container.append(j + k)
             k = k + 1
+        
+        return sum(a_container)
 
     def _say_something_private(self, x):
         """
