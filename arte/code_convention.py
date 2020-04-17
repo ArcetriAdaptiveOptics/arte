@@ -8,7 +8,7 @@ Line indentation is 4 spaces. No Tabs!
 Maximum line length is 80 characters.
 Comments should be complete sentences in English.
 Modules use short, all-lowercase names with underscores (snake_case).
-Class names use the CapWords (medial capitals) convention.
+Class names use the UpperCamelCase convention.
 Method names use all-lowercase with underscore (snake_case) convention.
 
 
