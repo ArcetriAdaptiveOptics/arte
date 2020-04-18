@@ -12,6 +12,14 @@ arte.utils.capture_output module
    :undoc-members:
    :show-inheritance:
 
+arte.utils.compareIDL module
+------------------------------
+
+.. automodule:: arte.utils.compareIDL
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 arte.utils.constants module
 ------------------------------
 
@@ -89,6 +97,14 @@ arte.utils.integrator module
 -------------------------------
 
 .. automodule:: arte.utils.integrator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+arte.utils.locate module
+------------------------------
+
+.. automodule:: arte.utils.locate
    :members:
    :undoc-members:
    :show-inheritance:

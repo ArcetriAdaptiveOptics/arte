@@ -30,9 +30,11 @@ def compareIDL(idlscript, pythonscript, vars_to_compare,
     Parameters
     ----------
     idlscript: string or list of strings
-        IDL statements. If in single string, they must be separated by newlines
+        IDL statements. If in a single string,
+        they must be separated by newlines
     pythonscript: string or list of strings
-        Python statements. If in single string, they must be separated by newlines
+        Python statements. If in a single string,
+        they must be separated by newlines
     vars_to_compare: list of strings
         variable names to compare
     precision: float, optional
@@ -40,7 +42,7 @@ def compareIDL(idlscript, pythonscript, vars_to_compare,
     verbose: int, optional
         verbose level: if greater than zero, will print on stdout the list
         of variables for which the comparison fails; If greater than one,
-         will also print the variable values.
+        will also print the variable values.
     tmpfile: string, optional
         filename for the temporary file used to save IDL variables.
         If None, a default filename in the system's temporary
@@ -92,3 +94,4 @@ def compareIDL(idlscript, pythonscript, vars_to_compare,
 
     return all(good)
 
+# ___oOo___
