@@ -167,12 +167,13 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
         else:
            x = np.roll(x, -(sampling-1)/2)
 
-    y = None
-    if polar or (not vector):
-        x = np.tile(x, (size,1))
-        y = np.transpose(x).copy()
-        if polar:
-           x,y = _xy_to_polar(x,y)
+    if vector:
+        return x
+
+    x = np.tile(x, (size,1))
+    y = np.transpose(x).copy()
+    if polar:
+       x,y = _xy_to_polar(x,y)
 
     return x,y
 

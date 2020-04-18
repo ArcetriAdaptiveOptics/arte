@@ -30,6 +30,24 @@ class ToCcdTest(unittest.TestCase):
 
         assert np.allclose(b,c)
 
+    def test_same(self):
+        
+        a = np.arange(16).reshape((4, 4))
+        b = toccd(a, (4, 4))
+        assert a is b
+
+    def test_wrong_input_dims(self):
+        
+        a = np.arange(8).reshape((2, 2, 2))
+        with self.assertRaises(ValueError):
+            _ = toccd(a, (4, 4))
+
+    def test_wrong_output_dims(self):
+        
+        a = np.arange(4).reshape((2, 2))
+        with self.assertRaises(ValueError):
+            _ = toccd(a, (2, 2, 2))
+
 if __name__ == "__main__":
     unittest.main()
 

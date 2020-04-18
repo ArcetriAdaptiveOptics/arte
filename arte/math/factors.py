@@ -1,11 +1,11 @@
 
 def factors(n):
     '''
-    Returns a list of prime factors of *n*.
+    Returns a list of factors of *n*.
     No attempt at performance optimisation, use sparingly.
     '''
     factors=[]
-    for i in range(1,n+1):
+    for i in range(2,n//2+1):
         if n % i==0:
            factors.append(i)
     return factors
