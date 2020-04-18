@@ -1,5 +1,6 @@
 import abc
 import numpy as np
+import functools
 from astropy.io import fits
 from scipy.signal.spectral import welch
 from arte.utils.not_available import NotAvailable
@@ -13,9 +14,9 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
     The derived class must implement a get_data() method that returns a 
     numpy array of shape (n_time_elements, n_ensemble_elements)
 
-    The derived class can implement a get_index_of() method to add 
-    ensemble-indexing capabilities (e.g. returning of partial subset
-    based on names).
+    The derived class must implement a get_index_of() method to add 
+    ensemble indexing with arbitrary \*args and \*\*kwargs parameters
+    (e.g. returning of partial subset based on indxes or names).
 
     Originally implemented as part of the ARGOS codebase.
     '''
@@ -75,30 +76,17 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
         not_indexed_data = self._get_not_indexed_data()
         return not_indexed_data.shape[1]
 
-    @add_to_help(arg_str='[time_idx]')
-    def ensemble_average(self, *args, **kwargs):
-        ''' Average across series at each sampling time '''
-        data = self.get_data(*args, **kwargs)
-        return np.mean(data, axis=1)
-
-    @add_to_help(arg_str='[time_idx]')
-    def ensemble_std(self, *args, **kwargs):
-        ''' Standard deviation across series at each sampling time '''
-        data = self.get_data(*args, **kwargs)
-        return np.std(data, axis=1)
-
-    @add_to_help(arg_str='[series_idx]')
-    def time_average(self, times=None, *args, **kwargs):
-        '''Average value over time for each series'''
+    def _apply(self, func, times=None, *args, **kwargs):
+        '''Extract data and apply the passed function'''
         data = self.get_data(*args, **kwargs)
         if times is None:
-            timeAverage = np.mean(data, axis=0)
+            result = func(data)
         else:
             idxs = np.array(np.arange(times[0], times[1]) / self.__deltaTime,
                             dtype='int32')
-            timeAverage = np.mean(data[idxs], axis=0)
-        return timeAverage
-
+            result = func(data[idxs])
+        return result
+        
     @add_to_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, from_freq=None, to_freq=None,
               segment_factor=None, window='boxcar', *args, **kwargs):
@@ -144,34 +132,49 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
         df = np.diff(self._frequency)[0]
         return x.T * df
 
-    @add_to_help(arg_str='[time_idx]')
+    @add_to_help(arg_str='[series_idx]')
     def time_median(self, times=None, *args, **kwargs):
         '''Median over time for each series'''
-        data = self.get_data(*args, **kwargs)
-        if times is None:
-            timeMedian = np.median(data, axis=0)
-        else:
-            idxs = np.array(np.arange(times[0], times[1]) / self.__deltaTime,
-                            dtype='int32')
-            timeMedian = np.median(data[idxs], axis=0)
-        return timeMedian
-
-    @add_to_help(doc_str='Standard deviation in time for each series', arg_str='series_idx')
+        func = functools.partial(np.median, axis=0)
+        return self._apply(func, times, *args, **kwargs)
+    
+    @add_to_help(doc_str='[series_idx]')
     def time_std(self, times=None, *args, **kwargs):
-        data = self.get_data(*args, **kwargs)
-        if times is None:
-            timeStd = np.std(data, axis=0)
-        else:
-            idxs = np.array(np.arange(times[0], times[1]) / self.__deltaTime,
-                            dtype='int32')
-            timeStd = np.std(data[idxs], axis=0)
-        return timeStd
+        '''Standard deviation over time for each series'''
+        func = functools.partial(np.std, axis=0)
+        return self._apply(func, times, *args, **kwargs)
 
+    @add_to_help(arg_str='[series_idx]')
+    def time_average(self, times=None, *args, **kwargs):
+        '''Average value over time for each series'''
+        func = functools.partial(np.mean, axis=0)
+        return self._apply(func, times, *args, **kwargs)
+
+    @add_to_help(arg_str='[time_idx]')
+    def ensemble_average(self, times=None, *args, **kwargs):
+        '''Average across series at each sampling time '''
+        func = functools.partial(np.mean, axis=1)
+        return self._apply(func, times, *args, **kwargs)
+
+    @add_to_help(arg_str='[time_idx]')
+    def ensemble_std(self, times=None, *args, **kwargs):
+        '''Standard deviation across series at each sampling time '''
+        func = functools.partial(np.std, axis=1)
+        return self._apply(func, times, *args, **kwargs)
+
+    @add_to_help(arg_str='[time_idx]')
+    def ensemble_median(self, times=None, *args, **kwargs):
+        '''Median across series at each sampling time '''
+        func = functools.partial(np.median, axis=1)
+        return self._apply(func, times, *args, **kwargs)
+
+    @add_to_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def plot_spectra(self, from_freq=None, to_freq=None,
                      segment_factor=None,
                      overplot=False,
                      label=None,
                      *args, **kwargs):
+        '''Plot the PSD across specified series'''
         power = self.power(from_freq, to_freq,
                            segment_factor,
                            *args, **kwargs)
@@ -189,9 +192,11 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
             plt.legend()
         return plt
 
+    @add_to_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def plot_cumulative_spectra(self, from_freq=None, to_freq=None,
                                 segment_factor=None,
                                 overplot=False, *args, **kwargs):
+        '''Plot the cumulative PSD across specified series'''
         power = self.power(from_freq, to_freq,
                            segment_factor,
                            *args, **kwargs)
