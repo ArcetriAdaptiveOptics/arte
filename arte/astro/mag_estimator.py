@@ -1,5 +1,14 @@
+# -*- coding: utf-8 -*-
+#########################################################
+#
+# who       when        what
+# --------  ----------  ---------------------------------
+# apuglisi  2020-02-01  Created
+#
+#########################################################
 
 import numpy as np
+from collections import namedtuple
 import astropy.units as u
 
 from arte.utils.help import ThisClassCanHelp, add_to_help
@@ -56,9 +65,14 @@ class MagEstimator(ThisClassCanHelp):
          N     N0 = 1.23e-13
          Q     Q0 = 6.8e-15
 
-    Written by: A. Puglisi, Feb. 2020  alfio.puglisi@inaf.it
     '''
-
+    _Band = namedtuple('Band', 'wl ergs')
+    _bands = {
+        'R': _Band(650e-9*u.m, 2.28665e-9*u.erg/u.s/u.cm**2/u.angstrom),
+        'I': _Band(900e-9*u.m, 1.22603e-9*u.erg/u.s/u.cm**2/u.angstrom),
+        'V': _Band(532e-9*u.m, 3.60994e-9*u.erg/u.s/u.cm**2/u.angstrom),
+        }
+    
     def __init__(self, total_adus,
                        telescope,
                        detector_bandname,
@@ -69,6 +83,9 @@ class MagEstimator(ThisClassCanHelp):
                        detector_nsubaps = 1,
                        wfs_transmission = 1.0,
                        detector_qe = 1.0 * u.electron/u.ph):
+
+        if detector_bandname not in self._bands:
+            raise ValueError('Unsupported band: '+detector_bandname)
 
         self._total_adus = total_adus
         self._detector_gain = detector_gain
@@ -81,31 +98,21 @@ class MagEstimator(ThisClassCanHelp):
         self._detector_qe = detector_qe
         self._telescope = telescope
 
-        self._bandnames=['R','I','V']
-
-    @property
     @add_to_help
     def bandname(self):
         ''' Name of the band used for magnitude estimation'''
         return self._bandname
 
-    @property
+    @add_to_help
     def bandnames(self):
         '''List of supported bandnames'''
-        return self._bandnames
+        return self._bands.keys()
 
     @add_to_help
     def flux_zero(self):
         '''Zero point in photons/sec'''
 
-        if self._bandname == 'R':
-            ergs, wl = 2.28665e-9*u.erg/u.s/u.cm**2/u.angstrom, 650e-9*u.m
-        elif self._bandname == 'I':
-            ergs, wl = 1.22603e-9*u.erg/u.s/u.cm**2/u.angstrom, 900e-9*u.m
-        elif self._bandname == 'V':
-            ergs, wl = 3.60994e-9*u.erg/u.s/u.cm**2/u.angstrom, 532e-9*u.m
-        else:
-            raise Exception('Unsupported band '+self._bandname)
+        wl, ergs = self._bands[self._bandname]
 
         photons = self._ergs_to_photons(ergs, wl)
 
