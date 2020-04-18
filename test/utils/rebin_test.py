@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import doctest
 import unittest
 import numpy as np
 from arte.utils.rebin import rebin
@@ -11,16 +12,9 @@ class RebinTest(unittest.TestCase):
                              [0, 0, 0, 1, 1, 1],
                              [2, 2, 2, 3, 3, 3],
                              [2, 2, 2, 3, 3, 3]])
-        self.downsample_ref1 = np.array([[0., 0.5, 1.],
-                                         [2., 2.5, 3.]])
-        self.downsample_ref2 = np.array([[0, 0, 1],
-                                         [2, 2, 3]])
 
-    def test_up(self):
-
-        a = np.arange(4).reshape((2,2))
-        b = rebin(a, (4,6))
-        np.testing.assert_array_equal(b, self.ref)
+    def test_docstring(self):
+        doctest.run_docstring_examples(rebin, locals())
 
     def test_newshape_types(self):
 
@@ -49,16 +43,6 @@ class RebinTest(unittest.TestCase):
         a = np.arange(4).reshape((2,2))
         b = rebin(a, (4,6), sample=True)
         np.testing.assert_array_equal(b, self.ref)
-
-    def test_down(self):
-
-        c = rebin(self.ref, (2, 3))
-        np.testing.assert_array_equal(c, self.downsample_ref1)
-
-    def test_down_sample(self):
-
-        d = rebin(self.ref, (2, 3), sample=True)
-        np.testing.assert_array_equal(d, self.downsample_ref2)
 
     def test_exceptions(self):
 

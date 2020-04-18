@@ -11,31 +11,29 @@ have_idl = (shutil.which('idl') != None)
 def strip_all(lst):
     return [x.strip() for x in lst]
 
-class CompareIDLTest(unittest.TestCase):
-
-    def setUp(self):
+idlscript = '''
+a=!pi
+b=1
+'''
         
-        self.idlscript = '''
-        a=!pi
-        b=1
-        '''
-        
-        # Python does not like leading whitespace.
-        self.pythonscript = '''
+pythonscript = '''
 import math
 a=math.pi
 b=2
-        '''
+'''
+
+
+class CompareIDLTest(unittest.TestCase):
 
     @unittest.skipUnless(have_idl, 'IDL is not installed')
     def test_compare(self):
         
-        assert(compareIDL(self.idlscript, self.pythonscript, ['a']) == True)
+        assert(compareIDL(idlscript, pythonscript, ['a']) == True)
 
     @unittest.skipUnless(have_idl, 'IDL is not installed')
     def test_fail(self):
 
-        assert(compareIDL(self.idlscript, self.pythonscript, ['b']) == False)
+        assert(compareIDL(idlscript, pythonscript, ['b']) == False)
 
 
 if __name__ == "__main__":
