@@ -11,10 +11,10 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
     '''
     Base class implementing operations on data representing time series.
 
-    The derived class must implement a get_data() method that returns a 
-    numpy array of shape (n_time_elements, n_ensemble_elements)
+    The derived class must implement a `_get_not_indexed_data()` method
+    that returns a numpy array of shape (n_time_elements, n_ensemble_elements).
 
-    The derived class must implement a get_index_of() method to add 
+    The derived class must also implement a `get_index_of()` method to add 
     ensemble indexing with arbitrary \*args and \*\*kwargs parameters
     (e.g. returning of partial subset based on indxes or names).
 
@@ -212,69 +212,96 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
         plt.ylabel('cumsum(psd) [V^2]')
         return plt
 
-    def _get_counter(self):
-        if self._counter is None:
-            filename = self._file_name_walker.LGSWCCDFrameCounters()
-            self._counter = fits.getdata(filename)
-        return self._counter
-
 
 class TimeSeriesWithInterpolation(TimeSeries):
+    '''
+    :class:`TimeSeries` with automatic interpolation of missing data.
+    
+    Missing data points are detected from a jump in the frame counter,
+    and are linearly interpolated between valid data points.
 
+    In addition to the methods defined by :class:`TimeSeries`, the derived
+    class must also implement a `_get_counter()` method that returns
+    the (potentially incomplete) frame counter array.
+
+    Interpolated is not automatic. The derived class must call
+    this routine in the `_get_not_indexed_data()` method explicitly.
+    For example::
+        
+        def _get_counter(self):
+            return fits.getdata('frame_counter.fits')
+            
+        def _getNotIndexedData(self, *args, **kwargs):
+            raw_data = fits.getdata('file_with_incomplete_data.fits')
+            return self.interpolate_missing_data(raw_data)
+        
+    '''
     # TODO remove it?
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, samplingInterval):
         TimeSeries.__init__(self, samplingInterval)
         self.__deltaTime = samplingInterval
-        self._newCounter = None
-        self._file_name_walker = None
+        self._counter = None
+        self._original_counter = None
+ 
+    @add_to_help
+    def get_original_counter(self):
+        '''Returns the original frame counter array'''
+        if self._original_counter is None:
+            self._original_counter = self._get_counter()
+        return self._original_counter
 
-    def _get_counter(self):
+    @add_to_help
+    def get_counter(self):
+        '''Returns the interpolated frame counter array'''
         if self._counter is None:
-            filename = self._file_name_walker.slopesFrameCounters()
-            counter = fits.getdata(filename)
-            if counter.size != 0:
-                self._counter = NotAvailable()
-            else:
-                if counter[0] > counter[-1]:
-                    counter[np.argmax(counter) + 1:] += np.max(counter)
-                self._counter = counter
+            self._counter = self._interpolate_counter()
         return self._counter
+    
+    @abc.abstractmethod
+    def _get_counter(self):
+        pass
 
-    def _get_new_counter(self):
-        if self._headerParser.isAoLoopStatusClosed():
-            if self._newCounter is None:
-                self._calculate_new_counter()
-            return np.array(self._newCounter, dtype=int)
-        else:
-            return self._get_counter()
-
-    def _calculate_new_counter(self):
-        counter = self._get_counter()
+    def _interpolate_counter(self):
+        counter = self.get_original_counter()
         if isinstance(counter, NotAvailable):
-            self._newCounter = NotAvailable()
+            return NotAvailable()
         step = np.median(np.diff(counter))
-        self._newCounter = np.arange(counter[0], counter[-1] + step,
-                                     step, dtype=np.int)
+        return np.arange(counter[0], counter[-1] + step, step, dtype=np.int)
 
     def interpolate_missing_data(self, data):
-        counter = self._get_counter()
+        '''
+        Interpolate missing data.
+        
+        Parameters
+        ----------
+        data: ndarray
+            the original data
+            
+        Returns
+        -------
+        ndarray
+            the interpolated array
+        '''
+        counter = self.get_original_counter()
         if data.shape[0] == counter.shape[0]:
-            self._calculate_new_counter()
-            newData = np.zeros((self._newCounter.shape[0], data.shape[1]))
+            self._counter = self._interpolate_counter()
+            new_data = np.zeros((self._counter.shape[0], data.shape[1]))
             dc = np.diff(counter)
-            step = np.median(dc)
+            step = int(np.median(dc))
             jumps = np.where(dc > step)[0]
             nc = 0
             j1 = 0
             for j in jumps:
-                newData[nc + j1:nc + j + step] = data[j1:j + step]
-                newData[nc + j + step:nc + j + dc[j]] = np.outer(np.arange(step, dc[j]),
-                                                                 (data[j + step] - data[j]) / dc[j]) + data[j]
-                nc += (dc[j] - step) / step
+                new_data[nc + j1:nc + j + step] = data[j1:j + step]
+                interp = np.outer(np.arange(step, dc[j]),
+                                  (data[j + step] - data[j]) / dc[j]) + data[j]
+                new_data[nc + j + step:nc + j + dc[j]] = interp
+                                                               
+                nc += (dc[j] - step) // step
                 j1 = j + step
-            newData[nc + j1:] = data[j1:]
+            new_data[nc + j1:] = data[j1:]
         else:
-            newData = NotAvailable()
-        return newData
+            new_data = NotAvailable()
+        return new_data
