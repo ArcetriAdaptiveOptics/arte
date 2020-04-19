@@ -100,6 +100,14 @@ arte.utils.integrator module
    :members:
    :undoc-members:
    :show-inheritance:
+   
+arte.utils.iterators module
+-------------------------------
+
+.. automodule:: arte.utils.iterators
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 arte.utils.locate module
 ------------------------------
