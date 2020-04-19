@@ -17,7 +17,7 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
     Generates zero-centered domains in a cartesian plane.
 
     Generates a zero-centered domain on a cartesian plane or axis,
-    using cartesian or polar coordiantes, tipically for pupil sampling
+    using cartesian or polar coordinates, tipically for pupil sampling
     and FFT usage.
  
     Calling sequence::
@@ -84,13 +84,15 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
 
     HOW THE DOMAIN IS SAMPLED
 
-    The concept is the following: considering an array of Sample x Sample pixels, the
-    bottom-left corner of the bottom-left pixel has coordinates (-Ratio,-Ratio) and the
-    top-right cornet of the to-left pixel has coordinates (+Ratio,+Ratio). The procedure
-    returns the coordinates of the centers of the pixels. When Sample is even and 
-    ZERO_SAMPLE is set, the coordinates of the bottom-left corners of the pixels are returned.
+    The concept is the following: considering an array of
+    `sampling` x `sampling pixels, the bottom-left corner of the bottom-left
+    pixel has coordinates (-`ratio`,-`ratio`) and the top-right cornet of the
+    to-left pixel has coordinates (+`ratio`,+`ratio`). The procedure
+    returns the coordinates of the centers of the pixels. When `sampling` is
+    even and `zero_sampled` is True, the coordinates of the bottom-left corners
+    of the pixels are returned.
     
-    * Sampling is even and ZERO_SAMPLING is not set: the edge of the domain
+    * `sampling` is even and `zero_sampled` is False: the edge of the domain
       is not sampled and the sampling is symmetrical respect to origin::
 
                Ex: Sampling=4, Ratio=1.
@@ -100,7 +102,7 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
                      -0.75 -0.25  0.25  0.75     Returned vector
 
 
-    * Sampling is even and ZERO_SAMPLING is set: the lower edge is sampled
+    * `sampling` is even and `zero_sampled` is True: the lower edge is sampled
       and the sampling is not symmetrical respect to the origin::
 
               Ex: Sampling=4, Ratio=1.
@@ -109,7 +111,8 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
                     *     *     *     *          Sampling points
                    -1   -0.5    0    0.5         Returned vector
 
-    * Sampling is odd (ZERO_SAMPLING is ignored): the zero is always sampled::
+    * `sampling`  is odd (`zero_sampled`  is ignored): the zero is always
+      sampled::
 
                Ex: Sampling=5, Ratio=1.
                    -1   -3/5  -1/5   1/5   3/5    1    Domain (Ex. X axis)
@@ -117,7 +120,7 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
                        *     *     *     *     *       Sampling points
                      -4/5  -2/5    0    2/5   4/5      Returned vector   
 
-    * If FFT keyword is set, output values are ordered for FFT purposes::
+    * If `fft` is True, output values are ordered for FFT purposes::
 
            Ex: 2-dimensional domain: N = Sampling
            X or Y(0:N/2-1, 0:N/2-1)   1st quadrant (including origin

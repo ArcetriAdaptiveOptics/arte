@@ -39,6 +39,24 @@ class MakeXYTest(unittest.TestCase):
         np.testing.assert_array_equal( arr1, ref)
         np.testing.assert_array_equal( arr2, ref)
         
+    def test_polar(self):
+        
+        x, y = make_xy(2, 1, polar=True)
+        
+        ref_x = np.ones((2,2))*np.cos(45*np.pi/180.)
+        ref_y = np.array([[-135,-45],[135,45]])*np.pi/180.
+        
+        np.testing.assert_allclose(x, ref_x)
+        np.testing.assert_allclose(y, ref_y)
+        
+    def test_quarter(self):
+        
+        x1,y1 =make_xy(4,1)
+        x2,y2 =make_xy(4,1, quarter=True)
+
+        np.testing.assert_array_equal(x2, x1[2:4,2:4])
+        np.testing.assert_array_equal(y2, y1[2:4,2:4])
+        
 if __name__ == "__main__":
     unittest.main()
 
