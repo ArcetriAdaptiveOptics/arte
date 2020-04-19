@@ -4,8 +4,9 @@ import time
 import unittest
 import numpy as np
 import multiprocessing as mp
-from arte.utils.shared_array import SharedArray
 from itertools import repeat
+
+from arte.utils.shared_array import SharedArray
 
 
 class SharedArrayTest(unittest.TestCase):

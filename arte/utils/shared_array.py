@@ -43,43 +43,20 @@ class SharedArray:
     def __setitem__(self, key, value):
         self.ndarray()[key] = value
     
-    def ndarray(self):
+    def ndarray(self, realloc=False):
         '''
         Returns a new numpy wrapper around the buffer contents
         Call this function after a task has been spawned the multiprocessing
         module in order to have access to the shared memory segment.
+
+        If the array had already been accessed before passing it to the
+        multiprocessing task, the task has to set `refresh` to True
+        in order to reallocate a local copy of the array.
         '''
-        if self._ndarray is None:
+        if (self._ndarray is None) or realloc:
             arr = np.frombuffer(self._shared_buf, dtype=self.dtype)
             self._ndarray = arr.reshape(self.shape)
         return self._ndarray
-
-
-class SharedCircularBuffer(SharedArray):
-    '''
-    Implements a circular buffer on top of a SharedArray.
-    '''
-    def __init__(self, nFrames, shape, dtype):
-        SharedArray.__init__(self, (nFrames,)+shape, dtype)
-        self.nFrames = nFrames
-        self._circularCounter = mp.sharedctypes.RawValue( ctypes.c_uint32, 0)
-
-    def store(self, data, position=None):
-        '''
-        Store a record in the circular buffer. By default, the record is
-        stored following an internal counter, which is then incremented.
-        '''
-        if position is None:
-            position = self._circularCounter.value
-
-        self.ndarray()[position,:] = data
-        self._circularCounter.value = (position+1) % self.nFrames
-
-    def get(self, position):
-        return self.ndarray()[position,:]
-
-    def counter(self):
-        return self._circularCounter.value
 
 
 if __name__ == '__main__':

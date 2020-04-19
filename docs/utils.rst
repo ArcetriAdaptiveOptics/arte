@@ -12,6 +12,14 @@ arte.utils.capture_output module
    :undoc-members:
    :show-inheritance:
 
+arte.utils.circular_buffer module
+------------------------------
+
+.. automodule:: arte.utils.circular_buffer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 arte.utils.compareIDL module
 ------------------------------
 
