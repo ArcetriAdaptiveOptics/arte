@@ -3,7 +3,7 @@ Provides tools to build an interactive, searchable help based on docstrings.
 
 Any class to which :class:`ThisClassCanHelp` is added as a base class
 gets a :meth:`help` method that provides an interactive and searchable help
-based on the method docstrings. All the methods decorated with
+based on the method docstrings. All methods decorated with
 :func:`add_to_help` are added, together with all such methods in all the class members.
 
 Example::

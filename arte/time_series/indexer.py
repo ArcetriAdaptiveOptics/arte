@@ -52,6 +52,20 @@ class Indexer(object):
                 coord = v
         return self._xy_index(coord)
 
+    # TODO add boundary checks with maxrange on args
+    @staticmethod
+    def myrange(*args, maxrange):
+        
+        if len(args)==0:
+            return range(maxrange)
+        if len(args)==1:
+            return range(args[0])
+        if len(args)==2:
+            return range(args[0], args[1])
+        if len(args)==3:
+            return range(args[0], args[1], args[2])
+        raise ValueError
+            
 class ModeIndexer(Indexer):
 
     def __init__(self, max_mode=None):

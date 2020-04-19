@@ -3,8 +3,8 @@ import unittest
 import math
 import numpy as np
 import astropy.units as u
-from arte.time_series import TimeSeries
-from arte.time_series import ModeIndexer
+from arte.time_series import TimeSeries, TimeSeriesWithInterpolation
+from arte.time_series import Indexer, ModeIndexer
 
 
 class ATimeSeries(TimeSeries):
@@ -40,6 +40,21 @@ class ATimeSeries(TimeSeries):
         factor = np.float(frequency) * (math.pi * 2) / rate
         return np.sin(np.arange(length) * factor)
 
+class AnIncompleteTimeSeries(TimeSeriesWithInterpolation):
+    
+    test_data = np.arange(16).reshape((4, 4))
+    test_counter = np.array([0,1,3,4], dtype=np.uint32)
+
+    def _get_not_indexed_data(self):
+        data = self.test_data
+        return self.interpolate_missing_data(data)
+    
+    def _get_counter(self):
+        return self.test_counter
+
+    def get_index_of(self, *args, **kwargs):
+        return Indexer.myrange(*args, maxrange=4)
+        
 
 class TimeSeriesTest(unittest.TestCase):
 
@@ -77,6 +92,22 @@ class TimeSeriesTest(unittest.TestCase):
         ta = self._ts.time_average(times=[0.1, 0.3])
         self.assertAlmostEqual(ta[1], 1.)
 
+    def test_interpolation(self):
+        series = AnIncompleteTimeSeries(samplingInterval=1)
+        
+        origin_counter = series.get_original_counter()
+        interp_counter = series.get_counter()
+        data = series.get_data()
+        
+        ref_origin = np.array([0,1,3,4], dtype=np.uint32)
+        ref_interp = np.array([0,1,2,3,4], dtype=np.uint32)
+        ref_data   = np.array([6,7,8,9], dtype=np.float32)
+        
+        np.testing.assert_array_equal(origin_counter, ref_origin)
+        np.testing.assert_array_equal(interp_counter, ref_interp)
+        np.testing.assert_array_equal(data[2,:], ref_data)
+
+        assert data.shape == (5,4)
 
 if __name__ == "__main__":
     unittest.main()

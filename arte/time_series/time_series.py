@@ -1,5 +1,6 @@
 import abc
 import numpy as np
+import functools
 from astropy.io import fits
 from scipy.signal.spectral import welch
 from arte.utils.not_available import NotAvailable
@@ -10,12 +11,12 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
     '''
     Base class implementing operations on data representing time series.
 
-    The derived class must implement a get_data() method that returns a 
-    numpy array of shape (n_time_elements, n_ensemble_elements)
+    The derived class must implement a `_get_not_indexed_data()` method
+    that returns a numpy array of shape (n_time_elements, n_ensemble_elements).
 
-    The derived class can implement a get_index_of() method to add 
-    ensemble-indexing capabilities (e.g. returning of partial subset
-    based on names).
+    The derived class must also implement a `get_index_of()` method to add 
+    ensemble indexing with arbitrary \*args and \*\*kwargs parameters
+    (e.g. returning of partial subset based on indxes or names).
 
     Originally implemented as part of the ARGOS codebase.
     '''
@@ -75,30 +76,17 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
         not_indexed_data = self._get_not_indexed_data()
         return not_indexed_data.shape[1]
 
-    @add_to_help(arg_str='[time_idx]')
-    def ensemble_average(self, *args, **kwargs):
-        ''' Average across series at each sampling time '''
-        data = self.get_data(*args, **kwargs)
-        return np.mean(data, axis=1)
-
-    @add_to_help(arg_str='[time_idx]')
-    def ensemble_std(self, *args, **kwargs):
-        ''' Standard deviation across series at each sampling time '''
-        data = self.get_data(*args, **kwargs)
-        return np.std(data, axis=1)
-
-    @add_to_help(arg_str='[series_idx]')
-    def time_average(self, times=None, *args, **kwargs):
-        '''Average value over time for each series'''
+    def _apply(self, func, times=None, *args, **kwargs):
+        '''Extract data and apply the passed function'''
         data = self.get_data(*args, **kwargs)
         if times is None:
-            timeAverage = np.mean(data, axis=0)
+            result = func(data)
         else:
             idxs = np.array(np.arange(times[0], times[1]) / self.__deltaTime,
                             dtype='int32')
-            timeAverage = np.mean(data[idxs], axis=0)
-        return timeAverage
-
+            result = func(data[idxs])
+        return result
+        
     @add_to_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, from_freq=None, to_freq=None,
               segment_factor=None, window='boxcar', *args, **kwargs):
@@ -144,34 +132,49 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
         df = np.diff(self._frequency)[0]
         return x.T * df
 
-    @add_to_help(arg_str='[time_idx]')
+    @add_to_help(arg_str='[series_idx]')
     def time_median(self, times=None, *args, **kwargs):
         '''Median over time for each series'''
-        data = self.get_data(*args, **kwargs)
-        if times is None:
-            timeMedian = np.median(data, axis=0)
-        else:
-            idxs = np.array(np.arange(times[0], times[1]) / self.__deltaTime,
-                            dtype='int32')
-            timeMedian = np.median(data[idxs], axis=0)
-        return timeMedian
-
-    @add_to_help(doc_str='Standard deviation in time for each series', arg_str='series_idx')
+        func = functools.partial(np.median, axis=0)
+        return self._apply(func, times, *args, **kwargs)
+    
+    @add_to_help(doc_str='[series_idx]')
     def time_std(self, times=None, *args, **kwargs):
-        data = self.get_data(*args, **kwargs)
-        if times is None:
-            timeStd = np.std(data, axis=0)
-        else:
-            idxs = np.array(np.arange(times[0], times[1]) / self.__deltaTime,
-                            dtype='int32')
-            timeStd = np.std(data[idxs], axis=0)
-        return timeStd
+        '''Standard deviation over time for each series'''
+        func = functools.partial(np.std, axis=0)
+        return self._apply(func, times, *args, **kwargs)
 
+    @add_to_help(arg_str='[series_idx]')
+    def time_average(self, times=None, *args, **kwargs):
+        '''Average value over time for each series'''
+        func = functools.partial(np.mean, axis=0)
+        return self._apply(func, times, *args, **kwargs)
+
+    @add_to_help(arg_str='[time_idx]')
+    def ensemble_average(self, times=None, *args, **kwargs):
+        '''Average across series at each sampling time '''
+        func = functools.partial(np.mean, axis=1)
+        return self._apply(func, times, *args, **kwargs)
+
+    @add_to_help(arg_str='[time_idx]')
+    def ensemble_std(self, times=None, *args, **kwargs):
+        '''Standard deviation across series at each sampling time '''
+        func = functools.partial(np.std, axis=1)
+        return self._apply(func, times, *args, **kwargs)
+
+    @add_to_help(arg_str='[time_idx]')
+    def ensemble_median(self, times=None, *args, **kwargs):
+        '''Median across series at each sampling time '''
+        func = functools.partial(np.median, axis=1)
+        return self._apply(func, times, *args, **kwargs)
+
+    @add_to_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def plot_spectra(self, from_freq=None, to_freq=None,
                      segment_factor=None,
                      overplot=False,
                      label=None,
                      *args, **kwargs):
+        '''Plot the PSD across specified series'''
         power = self.power(from_freq, to_freq,
                            segment_factor,
                            *args, **kwargs)
@@ -189,9 +192,11 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
             plt.legend()
         return plt
 
+    @add_to_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def plot_cumulative_spectra(self, from_freq=None, to_freq=None,
                                 segment_factor=None,
                                 overplot=False, *args, **kwargs):
+        '''Plot the cumulative PSD across specified series'''
         power = self.power(from_freq, to_freq,
                            segment_factor,
                            *args, **kwargs)
@@ -207,69 +212,96 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
         plt.ylabel('cumsum(psd) [V^2]')
         return plt
 
-    def _get_counter(self):
-        if self._counter is None:
-            filename = self._file_name_walker.LGSWCCDFrameCounters()
-            self._counter = fits.getdata(filename)
-        return self._counter
-
 
 class TimeSeriesWithInterpolation(TimeSeries):
+    '''
+    :class:`TimeSeries` with automatic interpolation of missing data.
+    
+    Missing data points are detected from a jump in the frame counter,
+    and are linearly interpolated between valid data points.
 
+    In addition to the methods defined by :class:`TimeSeries`, the derived
+    class must also implement a `_get_counter()` method that returns
+    the (potentially incomplete) frame counter array.
+
+    Interpolated is not automatic. The derived class must call
+    this routine in the `_get_not_indexed_data()` method explicitly.
+    For example::
+        
+        def _get_counter(self):
+            return fits.getdata('frame_counter.fits')
+            
+        def _getNotIndexedData(self, *args, **kwargs):
+            raw_data = fits.getdata('file_with_incomplete_data.fits')
+            return self.interpolate_missing_data(raw_data)
+        
+    '''
     # TODO remove it?
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, samplingInterval):
         TimeSeries.__init__(self, samplingInterval)
         self.__deltaTime = samplingInterval
-        self._newCounter = None
-        self._file_name_walker = None
+        self._counter = None
+        self._original_counter = None
+ 
+    @add_to_help
+    def get_original_counter(self):
+        '''Returns the original frame counter array'''
+        if self._original_counter is None:
+            self._original_counter = self._get_counter()
+        return self._original_counter
 
-    def _get_counter(self):
+    @add_to_help
+    def get_counter(self):
+        '''Returns the interpolated frame counter array'''
         if self._counter is None:
-            filename = self._file_name_walker.slopesFrameCounters()
-            counter = fits.getdata(filename)
-            if counter.size != 0:
-                self._counter = NotAvailable()
-            else:
-                if counter[0] > counter[-1]:
-                    counter[np.argmax(counter) + 1:] += np.max(counter)
-                self._counter = counter
+            self._counter = self._interpolate_counter()
         return self._counter
+    
+    @abc.abstractmethod
+    def _get_counter(self):
+        pass
 
-    def _get_new_counter(self):
-        if self._headerParser.isAoLoopStatusClosed():
-            if self._newCounter is None:
-                self._calculate_new_counter()
-            return np.array(self._newCounter, dtype=int)
-        else:
-            return self._get_counter()
-
-    def _calculate_new_counter(self):
-        counter = self._get_counter()
+    def _interpolate_counter(self):
+        counter = self.get_original_counter()
         if isinstance(counter, NotAvailable):
-            self._newCounter = NotAvailable()
+            return NotAvailable()
         step = np.median(np.diff(counter))
-        self._newCounter = np.arange(counter[0], counter[-1] + step,
-                                     step, dtype=np.int)
+        return np.arange(counter[0], counter[-1] + step, step, dtype=np.int)
 
     def interpolate_missing_data(self, data):
-        counter = self._get_counter()
+        '''
+        Interpolate missing data.
+        
+        Parameters
+        ----------
+        data: ndarray
+            the original data
+            
+        Returns
+        -------
+        ndarray
+            the interpolated array
+        '''
+        counter = self.get_original_counter()
         if data.shape[0] == counter.shape[0]:
-            self._calculate_new_counter()
-            newData = np.zeros((self._newCounter.shape[0], data.shape[1]))
+            self._counter = self._interpolate_counter()
+            new_data = np.zeros((self._counter.shape[0], data.shape[1]))
             dc = np.diff(counter)
-            step = np.median(dc)
+            step = int(np.median(dc))
             jumps = np.where(dc > step)[0]
             nc = 0
             j1 = 0
             for j in jumps:
-                newData[nc + j1:nc + j + step] = data[j1:j + step]
-                newData[nc + j + step:nc + j + dc[j]] = np.outer(np.arange(step, dc[j]),
-                                                                 (data[j + step] - data[j]) / dc[j]) + data[j]
-                nc += (dc[j] - step) / step
+                new_data[nc + j1:nc + j + step] = data[j1:j + step]
+                interp = np.outer(np.arange(step, dc[j]),
+                                  (data[j + step] - data[j]) / dc[j]) + data[j]
+                new_data[nc + j + step:nc + j + dc[j]] = interp
+                                                               
+                nc += (dc[j] - step) // step
                 j1 = j + step
-            newData[nc + j1:] = data[j1:]
+            new_data[nc + j1:] = data[j1:]
         else:
-            newData = NotAvailable()
-        return newData
+            new_data = NotAvailable()
+        return new_data

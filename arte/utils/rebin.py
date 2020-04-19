@@ -23,7 +23,7 @@ def rebin(a, new_shape, sample=False):
 
     Parameters
     ----------
-    a : array_like
+    a : ndarray
         Input array.
     new_shape : 2-elements sequence
         Shape of the output array
@@ -39,13 +39,14 @@ def rebin(a, new_shape, sample=False):
         unless the sample parameter is set.
         If the new shape is bigger array elements are repeated.
 
-    Exceptions
-    ----------
-    ValueError will be raised in the following cases:
-        - new_shape is not a sequence of 2 values that can be converted to int
-        - new dimensions are not an integral factor of original dimensions
-        - one dimension requires an upsampling while the other requires
-          a downsampling
+    Raises
+    ------
+    ValueError
+        in the following cases:
+         - new_shape is not a sequence of 2 values that can be converted to int
+         - new dimensions are not an integral factor of original dimensions
+         - one dimension requires an upsampling while the other requires
+           a downsampling
 
     Examples
     --------

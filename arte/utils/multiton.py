@@ -19,9 +19,9 @@ def multiton(cls):
     '''
     instances = {}
     def getinstance(*args):
-        key = str(*args)
+        key = '.'.join(map(str,args))
         if key not in instances:
-            instances[key] = cls(*args)
+            instances[key] = cls(*(args[1:]))
         return instances[key]
     return getinstance
 
@@ -41,8 +41,8 @@ def multiton_id(cls):
     instances = {}
     def getinstance(*args):
         ids = [str(id(x)) for x in args]
-        key = ''.join(ids)
+        key = '.'.join(ids)
         if key not in instances:
-            instances[key] = cls(*args)
+            instances[key] = cls(*(args[1:]))
         return instances[key]
     return getinstance
