@@ -154,12 +154,9 @@ def _wrap_with(f, call=None, arg_str=None, doc_str=None):
         name = call
     else:
         name = f.__name__
-        if arg_str:
-            name += '('+arg_str+')'
-        else:
-            name += '()'
+        name += '(%s)' % (arg_str or '',)
 
-    hlp = _format_docstring(f)
+    hlp = doc_str or _format_docstring(f)
     f._arte_hlp = (name, hlp)
     
 def add_to_help(call=None, arg_str=None, doc_str=None):
