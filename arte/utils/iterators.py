@@ -10,7 +10,7 @@ def flatten(x):
 
     >>> flat = flatten([[1,[2,3]],4,[5,6]])
     >>> list(flat)
-    [1,2,3,4,5,6]
+    [1, 2, 3, 4, 5, 6]
     '''
     for item in x:
         try:
@@ -23,9 +23,9 @@ def pairwise(iterable):
     Pairwise iterator, from itertool recipes.
     See Python library docs, itertools chapter.
     
-    >>> s = [0,1,2,3,4,5,7]
+    >>> s = [0,1,2,3,4,5,6]
     >>> list(pairwise(s))
-    [(0, 1), (1, 2), (2, 3), (3, 5), (5, 6)]
+    [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6)]
     '''
     a, b = tee(iterable)
     next(b, None)

@@ -59,8 +59,8 @@ def rebin(a, new_shape, sample=False):
            [2, 2, 2, 3, 3, 3],
            [2, 2, 2, 3, 3, 3]])
     >>> rebin(b, (2, 3)) #downsize
-    array([[ 0. ,  0.5,  1. ],
-           [ 2. ,  2.5,  3. ]])
+    array([[0. , 0.5, 1. ],
+           [2. , 2.5, 3. ]])
     >>> rebin(b, (2, 3), sample=True) #downsize
     array([[0, 0, 1],
            [2, 2, 3]])
