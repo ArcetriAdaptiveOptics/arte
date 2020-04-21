@@ -52,7 +52,7 @@ def locate_first(pattern, rootdir=None):
     Returns
     -------
     string
-        the first filename matching *pattern*
+        the first filename matching *pattern*, or None if not found.
     '''
     loc = locate(pattern, rootdir)
     try:
@@ -60,5 +60,19 @@ def locate_first(pattern, rootdir=None):
     except StopIteration:
         return None
     
+    
+def replace_in_file( filename, search, replace):
+
+    filedata = None
+    with open(filename, 'r') as f:
+        filedata = f.read()
+
+    # Replace the target string
+    filedata = filedata.replace( search, replace)
+
+    # Write the file out again
+    with open(filename, 'w') as f:
+        f.write(filedata)
+   
 # ___oOo___
 
