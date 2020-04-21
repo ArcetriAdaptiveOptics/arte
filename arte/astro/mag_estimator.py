@@ -12,12 +12,13 @@ from collections import namedtuple
 import astropy.units as u
 
 from arte.utils.help import ThisClassCanHelp, add_to_help
+from arte.utils.unit_checker import unit_check
+
 
 class MagEstimator(ThisClassCanHelp):
     '''
     Estimates magnitude from detector counts
    
-            
     Parameters
     ----------
     total_adus: int * u.adu
@@ -42,7 +43,12 @@ class MagEstimator(ThisClassCanHelp):
     detector_qe: float * u.electron/u.ph, optional
         average QE over the considered band,
         defaults to 1.0
-                    
+
+    Raises
+    ------
+    TypeError
+        if the wrong astropy units are passed in the initializer
+
     Notes
     -----
         
@@ -73,9 +79,10 @@ class MagEstimator(ThisClassCanHelp):
         'V': _Band(532e-9*u.m, 3.60994e-9*u.erg/u.s/u.cm**2/u.angstrom),
         }
     
-    def __init__(self, total_adus,
-                       telescope,
+    @unit_check
+    def __init__(self, telescope,
                        detector_bandname,
+                       total_adus = 1 * u.adu,
                        detector_bandwidth = 300* u.nm,
                        detector_freq = 1.0 * u.Hz,
                        detector_gain = 1,
@@ -85,7 +92,7 @@ class MagEstimator(ThisClassCanHelp):
                        detector_qe = 1.0 * u.electron/u.ph):
 
         if detector_bandname not in self._bands:
-            raise ValueError('Unsupported band: '+detector_bandname)
+            raise ValueError('Unsupported band: '+str(detector_bandname))
 
         self._total_adus = total_adus
         self._detector_gain = detector_gain
