@@ -242,7 +242,7 @@ class TimeSeriesWithInterpolation(TimeSeries):
         def _get_counter(self):
             return fits.getdata('file_with_incomplete_frame_counter.fits')
             
-        def _get_not_indexed_data(self, *args, **kwargs):
+        def _get_not_indexed_data(self):
             raw_data = fits.getdata('file_with_incomplete_data.fits')
             return self.interpolate_missing_data(raw_data)
 

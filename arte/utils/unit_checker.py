@@ -21,7 +21,7 @@ def make_sure_its_a(unit, v, name=''):
 
 def unit_check(f):
     '''
-    This decorator will check that all the decorated function arguments
+    This decorator will check that all the decorated function's arguments
     have the correct astropy units, as defined in the default values of the
     decorated function. If the function does not define a unit for a parameter,
     the corresponding argument is not modified, whether it has a unit or not.
