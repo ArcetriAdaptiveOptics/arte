@@ -44,7 +44,7 @@ class MagEstimatorTest(unittest.TestCase):
 
     def test_incorrect_units(self):
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(u.UnitsError):
             _ = MagEstimator(total_adus = 65675.0 * u.ph,  # wrong!
                              telescope = VLT,
                              detector_bandname = 'R',

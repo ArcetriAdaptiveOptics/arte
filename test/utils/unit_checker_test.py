@@ -34,8 +34,8 @@ class UnitCheckTest(unittest.TestCase):
 
     def test_wrong_units(self):
         
-        with self.assertRaises(TypeError):
+        with self.assertRaises(u.UnitsError):
             self.a(c=2*u.s)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(u.UnitsError):
             self.a(b=2*u.m)
