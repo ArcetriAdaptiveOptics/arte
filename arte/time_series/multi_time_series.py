@@ -65,7 +65,7 @@ class MultiTimeSeries(TimeSeries):
     def delta_times(self, *args, **kwargs):
         '''Returns a vector of delta times'''
 
-        # Known astropy bug: units are lost when using hstack 
+        # Known astropy bug (numpy < 1.17): units are lost when using hstack 
         # We remove them before stacking, and add them later
         dt = np.hstack( \
               [np.repeat(x.delta_time.to('s').value, x.ensemble_size())
