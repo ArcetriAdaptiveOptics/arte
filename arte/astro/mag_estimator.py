@@ -11,11 +11,11 @@ import numpy as np
 from collections import namedtuple
 import astropy.units as u
 
-from arte.utils.help import ThisClassCanHelp, add_to_help
+from arte.utils.help import add_help
 from arte.utils.unit_checker import unit_check
 
-
-class MagEstimator(ThisClassCanHelp):
+@add_help
+class MagEstimator():
     '''
     Estimates magnitude from detector counts
    
@@ -105,17 +105,14 @@ class MagEstimator(ThisClassCanHelp):
         self._detector_qe = detector_qe
         self._telescope = telescope
 
-    @add_to_help
     def bandname(self):
         ''' Name of the band used for magnitude estimation'''
         return self._bandname
 
-    @add_to_help
     def bandnames(self):
         '''List of supported bandnames'''
         return self._bands.keys()
 
-    @add_to_help
     def flux_zero(self):
         '''Zero point in photons/sec'''
 
@@ -135,7 +132,6 @@ class MagEstimator(ThisClassCanHelp):
         '''
         return ergs * 5.0341125e7 * wl.to(u.angstrom).value * (u.ph/u.erg)
 
-    @add_to_help
     def photons_per_subap_per_frame(self):
         ''' Photons/subap/frame detected by sensor'''
         gain = self._detector_gain
@@ -145,7 +141,6 @@ class MagEstimator(ThisClassCanHelp):
 
         return self._total_adus * adu_e_ratio / gain / nsubaps / qe
 
-    @add_to_help
     def photons_per_second(self):
         ''' Photons/sec detected by sensor'''
         ph_subap_frame = self.photons_per_subap_per_frame()
@@ -156,7 +151,6 @@ class MagEstimator(ThisClassCanHelp):
 
         return ph_subap_frame * freq * nsubaps / transmission
 
-    @add_to_help
     def mag(self):
         '''Estimated magnitude'''
         flux = self.photons_per_second()

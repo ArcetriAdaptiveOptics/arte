@@ -3,11 +3,11 @@ import numpy as np
 import functools
 from scipy.signal.spectral import welch
 from arte.utils.not_available import NotAvailable
-from arte.utils.help import ThisClassCanHelp, add_to_help
+from arte.utils.help import add_help, modify_help
 from arte.utils.iterators import pairwise
 
-
-class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
+@add_help
+class TimeSeries(metaclass=abc.ABCMeta):
     '''
     Base class for implementing operations on data representing time series.
 
@@ -34,7 +34,6 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
     def _get_not_indexed_data(self):
         pass
 
-    @add_to_help
     def get_data(self, *args, **kwargs):
         '''
         Raw data as a matrix [time, series]
@@ -51,7 +50,6 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
         pass
  
     @property
-    @add_to_help
     def delta_time(self):
         '''Property with the interval between samples (astropy units)'''
         return self.__delta_time
@@ -66,7 +64,6 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
     def last_cutted_frequency(self):
         return self._lastCuttedFrequency
  
-    @add_to_help
     def ensemble_size(self):
         '''Number of distinct series in this time enseble'''
         not_indexed_data = self._get_not_indexed_data()
@@ -83,7 +80,7 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
             result = func(data[idxs])
         return result
         
-    @add_to_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
+    @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, from_freq=None, to_freq=None,
               segment_factor=None, window='boxcar', *args, **kwargs):
 
@@ -128,43 +125,43 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
         df = np.diff(self._frequency)[0]
         return x.T * df
 
-    @add_to_help(arg_str='[times=[from,to]], [series_idx]')
+    @modify_help(arg_str='[times=[from,to]], [series_idx]')
     def time_median(self, times=None, *args, **kwargs):
         '''Median over time for each series'''
         func = functools.partial(np.median, axis=0)
         return self._apply(func, times, *args, **kwargs)
     
-    @add_to_help(arg_str='[times=[from,to]], [series_idx]')
+    @modify_help(arg_str='[times=[from,to]], [series_idx]')
     def time_std(self, times=None, *args, **kwargs):
         '''Standard deviation over time for each series'''
         func = functools.partial(np.std, axis=0)
         return self._apply(func, times, *args, **kwargs)
 
-    @add_to_help(arg_str='[times=[from,to]], [series_idx]')
+    @modify_help(arg_str='[times=[from,to]], [series_idx]')
     def time_average(self, times=None, *args, **kwargs):
         '''Average value over time for each series'''
         func = functools.partial(np.mean, axis=0)
         return self._apply(func, times, *args, **kwargs)
 
-    @add_to_help(arg_str='[times=[from,to]], [time_idx]')
+    @modify_help(arg_str='[times=[from,to]], [time_idx]')
     def ensemble_average(self, times=None, *args, **kwargs):
         '''Average across series at each sampling time '''
         func = functools.partial(np.mean, axis=1)
         return self._apply(func, times, *args, **kwargs)
 
-    @add_to_help(arg_str='[times=[from,to]], [time_idx]')
+    @modify_help(arg_str='[times=[from,to]], [time_idx]')
     def ensemble_std(self, times=None, *args, **kwargs):
         '''Standard deviation across series at each sampling time '''
         func = functools.partial(np.std, axis=1)
         return self._apply(func, times, *args, **kwargs)
 
-    @add_to_help(arg_str='[times=[from,to]], [time_idx]')
+    @modify_help(arg_str='[times=[from,to]], [time_idx]')
     def ensemble_median(self, times=None, *args, **kwargs):
         '''Median across series at each sampling time '''
         func = functools.partial(np.median, axis=1)
         return self._apply(func, times, *args, **kwargs)
 
-    @add_to_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
+    @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def plot_spectra(self, from_freq=None, to_freq=None,
                      segment_factor=None,
                      overplot=False,
@@ -188,7 +185,7 @@ class TimeSeries(ThisClassCanHelp, metaclass=abc.ABCMeta):
             plt.legend()
         return plt
 
-    @add_to_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
+    @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def plot_cumulative_spectra(self, from_freq=None, to_freq=None,
                                 segment_factor=None,
                                 overplot=False, *args, **kwargs):
@@ -258,14 +255,12 @@ class TimeSeriesWithInterpolation(TimeSeries):
         self._counter = None
         self._original_counter = None
 
-    @add_to_help
     def get_original_counter(self):
         '''Returns the original frame counter array'''
         if self._original_counter is None:
             self._original_counter = self._get_counter()
         return self._original_counter
 
-    @add_to_help
     def get_counter(self):
         '''Returns the interpolated frame counter array'''
         if self._counter is None:

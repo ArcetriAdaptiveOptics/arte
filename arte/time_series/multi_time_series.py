@@ -2,7 +2,7 @@
 import numpy as np
 import astropy.units as u
 
-from arte.utils.help import add_to_help
+from arte.utils.help import modify_help
 from arte.time_series import TimeSeries
 
 class MultiTimeSeries(TimeSeries):
@@ -27,7 +27,6 @@ class MultiTimeSeries(TimeSeries):
         for v in args:
             self.add_series(v)
 
-    @add_to_help
     def add_series(self, series):
         '''
         Adds a new series to this MultiTimeSeries instance
@@ -43,7 +42,6 @@ class MultiTimeSeries(TimeSeries):
         return np.hstack([v._get_not_indexed_data()
                           for v in self._series])
         
-    @add_to_help
     def is_homogeneous(self, *args, **kwargs):
         '''Returns True if all selected series have the same
         :py:attr:`~arte.time_series.time_series.TimeSeries.delta_time`
@@ -56,12 +54,10 @@ class MultiTimeSeries(TimeSeries):
         dt = self.delta_times(*args, **kwargs)
         self.delta_time = dt[0]
 
-    @add_to_help
     def ensemble_size(self):
         '''Returns the total ensemble size'''
         return sum([x.ensemble_size() for x in self._series])
 
-    @add_to_help
     def delta_times(self, *args, **kwargs):
         '''Returns a vector of delta times'''
 
@@ -79,7 +75,7 @@ class MultiTimeSeries(TimeSeries):
 
         return dt
 
-    @add_to_help(arg_str='[time_idx]')
+    @modify_help(arg_str='[time_idx]')
     def ensemble_average(self, times=None, *args, **kwargs):
         ''' Average across series at each sampling time '''
         if self.is_homogeneous(*args, **kwargs):
@@ -88,7 +84,7 @@ class MultiTimeSeries(TimeSeries):
         else:
             raise Exception('Data series cannot be combined')
 
-    @add_to_help(arg_str='[time_idx]')
+    @modify_help(arg_str='[time_idx]')
     def ensemble_std(self,  times=None, *args, **kwargs):
         ''' Standard deviation across series at each sampling time '''
         if self.is_homogeneous(*args, **kwargs):
@@ -97,7 +93,7 @@ class MultiTimeSeries(TimeSeries):
         else:
             raise Exception('Data series cannot be combined')
 
-    @add_to_help(arg_str='[time_idx]')
+    @modify_help(arg_str='[time_idx]')
     def ensemble_median(self,  times=None, *args, **kwargs):
         ''' Standard deviation across series at each sampling time '''
         if self.is_homogeneous(*args, **kwargs):

@@ -1,24 +1,22 @@
 
-from arte.utils.help import ThisStaticClassCanHelp, add_to_help
+from arte.utils.help import add_help
 import astropy.units as u
 import numpy as np
 
-class Telescope(ThisStaticClassCanHelp):
+@add_help(classmethod=True)
+class Telescope():
 
     @classmethod
-    @add_to_help
     def diameter(cls):
         ''' Returns the telescope diameter'''
         return cls._diameter
 
     @classmethod
-    @add_to_help
     def obstruction(cls):
         '''Returns the telescope obstruction, in percentage [0..1]'''
         return cls._obstruction
 
     @classmethod
-    @add_to_help
     def area(cls):
         '''Returns the effective telescope collecting area'''
         r = cls._diameter/2
