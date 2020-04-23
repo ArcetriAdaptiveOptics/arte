@@ -1,3 +1,11 @@
+##########################################################
+#
+# who       when        what
+# --------  ----------  ----------------------------------
+# apuglisi  2020-04-23  Reimplemented as a class decorator
+# apuglisi  2019-09-28  Created
+#
+##########################################################
 '''
 Provides tools to build an interactive, searchable help based on docstrings.
 
@@ -92,6 +100,18 @@ def _is_hlp_class(obj):
 def add_help(cls=None, *, help_function='help', classmethod=False):
     '''
     Decorator to add interactive help to a class
+    
+    Parameters
+    ----------
+    help_function: str, optional
+        Name of the method that will be added to the class. Defaults to "help"
+    classmethod: bool, optional
+        If True, the help method will be added as a classmethod. Default False
+        
+    Returns
+    -------
+    class
+        The decorated class type
     '''
     # Trick to allow a decorator without parenthesis
     if cls is not None:
