@@ -84,12 +84,15 @@ Interactive session::
   ---------
   CustomClass               This a custom class
   CustomClass.a_method()    This is a method
+  
 
 '''
+import inspect
 from functools import partial
 
 HIDDEN_HELP = '__arte_help'
 HIDDEN_NAME = '__arte_name'
+HIDDEN_ARGS = '__arte_args'
 
 def _is_public_method(name):
     return name[0] != '_'
@@ -131,6 +134,11 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
         '''
         methods = {k:getattr(self,k) for k in dir(self) if callable(getattr(self, k))}
         members = {k:getattr(self,k) for k in dir(self) if not callable(getattr(self, k))}
+        
+        # Add properties too, with a workaround for the __abstractmethods__ bug
+        methods.update({k:getattr(self.__class__, k)
+                       for k in dir(self.__class__)
+                       if isinstance(getattr(self.__class__, k), property)})
 
         hlp_methods = {k:v for k,v in methods.items() if _is_public_method(k)}
         hlp_members = {k:v for k,v in members.items() if _is_hlp_class(v)}
@@ -140,10 +148,12 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
 
         hlp = {prefix: _format_docstring(self)}
 
-        for method in hlp_methods.values():
-            name = _format_name(method)
+        for name, method in hlp_methods.items():
+            name = _format_name(method, default=name)
+            pars = _format_pars(method)
             helpstr = _format_docstring(method)
-            hlp[prefix+'.'+name] = helpstr
+            
+            hlp[prefix+'.'+name+pars] = helpstr
 
         maxlen = max(map(len, hlp.keys()))
         fmt = '%%-%ds%%s' % (maxlen+3)
@@ -198,6 +208,10 @@ def modify_help(call=None, arg_str=None, doc_str=None):
       .mymethod1(foo)        : This method is very cool
       .mymethod2(idx1, idx2) : Now you see it
       .mymethod3()           : Surprise!
+      
+    .. Note::
+        if the method is a @staticmethod, this decorator
+        should be inserted *after* the staticmethod one.
     '''
     def wrap(f):
         _wrap_with(f, call, arg_str, doc_str)
@@ -211,23 +225,44 @@ def _format_docstring(obj, default=None):
     hlp = hlp.strip().splitlines()[0]
     return hlp
 
-def _format_name(obj):
+def _format_name(obj, default=None):
+    
+    if hasattr(obj, '__name__'):
+        myname = obj.__name__
+    else:
+        myname = default
     
     name = getattr(obj, HIDDEN_NAME, False)
-    name = name or obj.__name__+'()'
+    name = name or myname
     name = name.strip().splitlines()[0]
     return name
 
+def _format_pars(method):
+    if isinstance(method, property):
+        return ''
+    
+    args = getattr(method, HIDDEN_ARGS, None)
+    if args is not None:
+        return args
+
+    sig = inspect.signature(method)
+    return '(' + ','.join(sig.parameters.keys()) + ')'
+    
 def _wrap_with(f, call=None, arg_str=None, doc_str=None):
 
     if call:
         name = call
+        args = ''
     else:
         name = f.__name__
-        name += '(%s)' % (arg_str or '',)
+        if arg_str:
+            args = '(%s)' % arg_str
+        else:
+            args = None
 
     hlp = doc_str or _format_docstring(f)
     setattr(f, HIDDEN_NAME, name)
     setattr(f, HIDDEN_HELP, hlp)
+    setattr(f, HIDDEN_ARGS, args)
 
 # ___oOo___
