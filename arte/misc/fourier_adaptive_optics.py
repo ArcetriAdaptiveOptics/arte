@@ -3,8 +3,7 @@ from arte.utils.discrete_fourier_transform import \
     BidimensionalFourierTransform as bfft
 from arte.types.scalar_bidimensional_function import \
     ScalarBidimensionalFunction as S2DF
-from arte.utils.coordinates import xCoordinatesMap
-
+from arte.types.domainxy import DomainXY
 
 
 def logShow(image):
@@ -194,18 +193,18 @@ class FourierAdaptiveOptics(object):
 
 
     def _createPupilFunction(self):
-        xCoord= xCoordinatesMap(
-            self._pupilDiameterInPixels,
-            self.pupilPlanePixelSizeInMeters())
+        domain = DomainXY.from_shape( (self._pupilDiameterInPixels,
+                                       self._pupilDiameterInPixels),
+                                     self.pupilPlanePixelSizeInMeters())  
         self._pupilFunction= S2DF(
-            self._mask.asTransmissionValue(), xCoord, xCoord.T)
+            self._mask.asTransmissionValue(), domain=domain)
 
 
     def _createFlatPhaseMap(self):
         nPx= self._pupilDiameterInPixels
         pupPxSize= self.pupilPlanePixelSizeInMeters()
-        xCoord= xCoordinatesMap(nPx, pupPxSize)
-        phase= S2DF(np.ones((nPx, nPx)), xCoord, xCoord.T)
+        domain = DomainXY.from_shape((nPx, nPx), pupPxSize)
+        phase= S2DF(np.ones((nPx, nPx)), domain=domain)
         return phase
 
 

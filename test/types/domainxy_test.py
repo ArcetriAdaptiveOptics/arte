@@ -120,7 +120,6 @@ class DomainXYTest(unittest.TestCase):
         
         assert domain.shape == (5,10)
 
-
     def test_units(self):
         
         domain = DomainXY.from_shape((10,10), pixel_size = 1*u.cm)
@@ -131,6 +130,36 @@ class DomainXYTest(unittest.TestCase):
         assert domain.step[0].unit == u.cm
         assert domain[2:4,2:4].xcoord.unit == u.cm
         assert domain.cropped(1,4,1,4).xcoord.unit == u.cm
+
+    def test_cropping_with_units(self):
+         
+         domain = DomainXY.from_shape((100,100), pixel_size = 1*u.cm)
+         
+         xmin = 0.1 * u.m
+         xmax = 0.2 * u.m
+         ymin = 0.1 * u.m
+         ymax = 0.2 * u.m
+
+         assert domain.cropped(xmin, xmax, ymin, ymax).shape == (11,11)
+
+    def test_shift(self):
+         
+         domain = DomainXY.from_linspace(-1, 1, 11)
+         domain.shift(0.2, -0.2)
+         assert np.allclose(domain.origin, (4,6))
+
+    def test_shift_w_units(self):
+         
+         domain = DomainXY.from_shape((100,100), pixel_size = 1*u.cm)
+         self.assertAlmostEqual(domain.origin[0], 49.5*u.cm)
+         self.assertAlmostEqual(domain.origin[1], 49.5*u.cm)
+
+         domain.shift(0.1*u.m, -3.1415*u.mm)
+         self.assertAlmostEqual(domain.origin[0], 39.5*u.cm)
+         self.assertAlmostEqual(domain.origin[1], 49.81415*u.cm)
+         
+         with self.assertRaises(Exception):
+             domain.shift(0.1*u.s, 0)
 
 if __name__ == "__main__":
     unittest.main()

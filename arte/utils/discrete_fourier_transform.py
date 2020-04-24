@@ -1,7 +1,6 @@
 import numpy as np
-from arte.types.scalar_bidimensional_function import \
-    ScalarBidimensionalFunction
-from arte.utils.coordinates import xCoordinatesMap
+from arte.types.scalar_bidimensional_function import ScalarBidimensionalFunction
+from arte.types.domainxy import DomainXY
 
 
 __version__= "$Id: $"
@@ -9,30 +8,21 @@ __version__= "$Id: $"
 
 class BidimensionalFourierTransform(object):
 
-
     @staticmethod
     def distancesXMap(sizeInPoints, pixelSize):
-        return xCoordinatesMap(sizeInPoints, pixelSize)
-
-
-    @staticmethod
-    def distancesYMap(sizeInPoints, pixelSize):
-        return xCoordinatesMap(sizeInPoints, pixelSize).T
-
-
+        domain = DomainXY.from_shape((sizeInPoints, sizeInPoints), pixelSize)
+        return domain.xcoord
+    
     @staticmethod
     def distancesNormMap(sizeInPoints, pixelSize):
-        distX= BidimensionalFourierTransform.distancesXMap(
-            sizeInPoints, pixelSize)
-        distY= BidimensionalFourierTransform.distancesYMap(
-            sizeInPoints, pixelSize)
-        return np.linalg.norm(np.dstack((distX, distY)), axis=2)
+        domain = DomainXY.from_shape((sizeInPoints, sizeInPoints), pixelSize)
+        return np.linalg.norm(np.dstack((domain.xmap, domain.ymap)), axis=2)
 
 
     @staticmethod
     def frequenciesNormMap(sizeInPoints, pixelSize):
         n= sizeInPoints
-        a=np.tile(np.fft.fftfreq(n, d=pixelSize), (n, 1))
+        a= np.tile(np.fft.fftfreq(n, d=pixelSize), (n, 1))
         return np.fft.fftshift(np.linalg.norm(np.dstack((a, a.T)), axis=2))
 
 
@@ -47,7 +37,6 @@ class BidimensionalFourierTransform(object):
     def frequenciesYMap(sizeInPoints, pixelSize):
         return BidimensionalFourierTransform.frequenciesXMap(
             sizeInPoints, pixelSize).T
-
 
     @staticmethod
     def _isEven(num):
@@ -101,8 +90,8 @@ class BidimensionalFourierTransform(object):
     @staticmethod
     def direct(xyFunct):
         sizeInPx= xyFunct.values().shape[0]
-        pxSize= xyFunct.xyStep()
-        return ScalarBidimensionalFunction(
+        pxSize= xyFunct.xystep
+        return ScalarBidimensionalFunction.from_values_and_maps(
             BidimensionalFourierTransform.directTransform(xyFunct.values()),
             BidimensionalFourierTransform.frequenciesXMap(sizeInPx, pxSize),
             BidimensionalFourierTransform.frequenciesYMap(sizeInPx, pxSize),
@@ -112,8 +101,8 @@ class BidimensionalFourierTransform(object):
     @staticmethod
     def inverse(xyFunct):
         sizeInPx= xyFunct.values().shape[0]
-        pxSize= xyFunct.xyStep()
-        return ScalarBidimensionalFunction(
+        pxSize= xyFunct.xystep
+        return ScalarBidimensionalFunction.from_values_and_maps(
             BidimensionalFourierTransform.inverseTransform(xyFunct.values()),
             BidimensionalFourierTransform.frequenciesXMap(sizeInPx, pxSize),
             BidimensionalFourierTransform.frequenciesYMap(sizeInPx, pxSize),
