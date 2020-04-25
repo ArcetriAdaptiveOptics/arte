@@ -5,20 +5,17 @@ from arte.utils.radial_profile import computeRadialProfile
 from scipy import interpolate
 
 
-__version__= "$Id: $"
-
-
 @add_help
 class ScalarBidimensionalFunction(object):
     '''
     Represents a scalar function in an XY plane
-    
+
     The function is initialized with a 2d value and one of the following:
         - a domain over which it is defined
         - two X and Y maps with the domain coordinates
         - (nothing passed) a default domain with the same shape as the value,
           with centered origin and unitary step
-    
+
     Parameters
     ----------
     values_array: numpy.ndarray
@@ -40,6 +37,7 @@ class ScalarBidimensionalFunction(object):
            - both xmap/ymap and a domain has been passed
            - values_array is not a 2d array
     '''
+
     def __init__(self, values_array, xmap=None, ymap=None, domain=None):
 
         if len(values_array.shape) != 2:
@@ -50,7 +48,7 @@ class ScalarBidimensionalFunction(object):
                 raise ValueError('xmap and ymap must be specified together')
             if domain is not None:
                 raise ValueError('both domain and x/y maps specified')
-            
+
             domain = DomainXY.from_xy_maps(xmap, ymap)
         else:
             if not domain:
@@ -59,7 +57,7 @@ class ScalarBidimensionalFunction(object):
         self._values = values_array
         self._domain = domain
         self._check_passed_arrays()
-        
+
         self.xcoord = self._domain.xcoord
         self.ycoord = self._domain.ycoord
         self.xmap = self._domain.xmap
@@ -94,7 +92,7 @@ class ScalarBidimensionalFunction(object):
 
     def get_radial_profile(self):
         '''Get the radial profile around the domain origin.
-        
+
         Assumes that the domain sampling is the same in the X and Y
         directions
         '''
@@ -104,7 +102,7 @@ class ScalarBidimensionalFunction(object):
 
     def plot_radial_profile(self):
         import matplotlib.pyplot as plt
-        y, x= self.get_radial_profile()
+        y, x = self.get_radial_profile()
         plt.plot(x, y)
         plt.show()
 
@@ -113,7 +111,7 @@ class ScalarBidimensionalFunction(object):
         z = np.zeros(xs.shape)
         for i, (x, y) in enumerate(zip(xs, ys)):
             # get the indices of the nearest x,y
-            box = self._domain.get_boundingbox_slice(x,y,span=span)
+            box = self._domain.get_boundingbox_slice(x, y, span=span)
 
             # make slices of X,Y,Z that are only a few items wide
             nX = self._domain.xmap[box]
@@ -121,9 +119,9 @@ class ScalarBidimensionalFunction(object):
             nZ = self.values[box]
 
             if np.iscomplexobj(nZ):
-                z[i]= self._interp_complex(nX, nY, nZ, x, y)
+                z[i] = self._interp_complex(nX, nY, nZ, x, y)
             else:
-                z[i]= self._interp_real(nX, nY, nZ, x, y)
+                z[i] = self._interp_real(nX, nY, nZ, x, y)
         return z
 
     def _interp_real(self, nX, nY, nZ, x, y):
@@ -140,4 +138,6 @@ class ScalarBidimensionalFunction(object):
         box = self._domain.get_crop_slice(xmin, xmax, ymin, ymax)
         cropped_values = self.values[box]
         cropped_domain = self._domain[box]
-        return ScalarBidimensionalFunction(cropped_values, domain=cropped_domain)
+        return ScalarBidimensionalFunction(cropped_values,
+                                           domain=cropped_domain)
+
