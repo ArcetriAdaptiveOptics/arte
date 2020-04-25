@@ -4,6 +4,14 @@ utils
 Submodules
 ----------
 
+arte.utils.astropy_utils module
+--------------------------------
+
+.. automodule:: arte.utils.astropy_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 arte.utils.capture_output module
 --------------------------------
 

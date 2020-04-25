@@ -135,14 +135,21 @@ class DomainXYTest(unittest.TestCase):
          
          domain = DomainXY.from_shape((100,100), pixel_size = 1*u.cm)
          
-         xmin = 0.1 * u.m
-         xmax = 0.2 * u.m
-         ymin = 0.1 * u.m
-         ymax = 0.2 * u.m
+         xmin = 0.10 * u.m
+         xmax = 0.20 * u.m
+         ymin = 0.40 * u.m
+         ymax = 0.45 * u.m
 
-         # 12 = 10 cm + two 0.5cm edges because the linspace
+         cropped = domain.cropped(xmin, xmax, ymin, ymax)
+         
+         # 12 = 10 cm * 1pixel/cm + two 0.5cm edges because the linspace
          # is -49.5, -48.5, -47.5, etc.
-         assert domain.cropped(xmin, xmax, ymin, ymax).shape == (12,12)
+         # Same for 7 = 5cm * 1pixel/cm + two 0.5cm edges
+         assert cropped.shape == (7,12)
+         assert cropped.extent[0] == 9.5*u.cm
+         assert cropped.extent[1] == 20.5*u.cm
+         assert cropped.extent[2] == 39.5*u.cm
+         assert cropped.extent[3] == 45.5*u.cm
 
 
     def test_shift(self):

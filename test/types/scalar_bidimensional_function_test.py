@@ -19,16 +19,15 @@ class ScalarBidimensionalFunctionTest(unittest.TestCase):
         x= np.tile(np.linspace(-1, 1, 11), (11, 1))
         y= x.T
         v= 42* (x**2 + y**2)
-        xyFunc= ScalarBidimensionalFunction(v, domain=DomainXY.from_xy_maps(x,y))
+        xyFunc= ScalarBidimensionalFunction(v, x, y)
         self.assertEqual(-1, xyFunc.domain.xcoord.min())
         self.assertAlmostEqual(0.2, xyFunc.domain.step[0])
         self.assertAlmostEqual(0.2, xyFunc.domain.step[1])
 
     def testCutOutFromROI(self):
         x= np.tile(np.linspace(-1, 1, 11), (11, 1))
-        y= x.T
         v= 42* x
-        xyFunc= ScalarBidimensionalFunction(v, domain=DomainXY.from_xy_maps(x,y))
+        xyFunc= ScalarBidimensionalFunction(v, domain=DomainXY.from_linspace(-1,1,11))
 
         xmin= 0
         xmax= 0.5
@@ -44,9 +43,8 @@ class ScalarBidimensionalFunctionTest(unittest.TestCase):
 
     def testCutOutFromSameROI(self):
         x= np.tile(np.linspace(-1, 1, 11), (11, 1))
-        y= x.T
         v= 42* x
-        xyFunc= ScalarBidimensionalFunction(v, domain=DomainXY.from_xy_maps(x,y))
+        xyFunc= ScalarBidimensionalFunction(v, domain=DomainXY.from_linspace(-1,1,11))
 
         xmin= -1
         xmax= 1
@@ -59,9 +57,8 @@ class ScalarBidimensionalFunctionTest(unittest.TestCase):
 
     def testCutOutFromTooSmallROI(self):
         x= np.tile(np.linspace(-1, 1, 11), (11, 1))
-        y= x.T
         v= 42* x
-        xyFunc= ScalarBidimensionalFunction(v, domain=DomainXY.from_xy_maps(x,y))
+        xyFunc= ScalarBidimensionalFunction(v, domain=DomainXY.from_linspace(-1,1,11))
 
         xmin= 0.001
         xmax= 0.002
@@ -72,7 +69,6 @@ class ScalarBidimensionalFunctionTest(unittest.TestCase):
 
     def testInterpolate(self):
         x= np.tile(np.linspace(-1, 1, 11), (11, 1))
-        y= x.T
         v= 42* x
         xyFunc= ScalarBidimensionalFunction(v, domain=DomainXY.from_linspace(-1,1,11))
 
