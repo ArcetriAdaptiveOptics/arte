@@ -2,25 +2,21 @@
 import unittest
 from arte.misc.fourier_adaptive_optics import FourierAdaptiveOptics
 
-__version__ = "$Id:$"
-
 
 class FourierAdaptiveOpticsTest(unittest.TestCase):
 
-
     def setUp(self):
         pass
-
 
     def tearDown(self):
         pass
 
     def testConstruction(self):
-        pupDiameter= 16.0
-        wavelength= 1.35e-6
-        focalPlaneFoV= 0.8
-        resolutionFactor= 3.0
-        fao= FourierAdaptiveOptics(pupDiameter,
+        pupDiameter = 16.0
+        wavelength = 1.35e-6
+        focalPlaneFoV = 0.8
+        resolutionFactor = 3.0
+        fao = FourierAdaptiveOptics(pupDiameter,
                                    wavelength,
                                    focalPlaneFoV,
                                    resolutionFactor)
@@ -29,32 +25,30 @@ class FourierAdaptiveOpticsTest(unittest.TestCase):
         self.assertEqual(focalPlaneFoV, fao.focalPlaneFieldOfViewInArcsec())
         self.assertEqual(resolutionFactor, fao.resolutionFactor())
 
-
     def testPixelScales(self):
-        fao= FourierAdaptiveOptics(8.0, 1e-6, 1.290, 4.0)
+        fao = FourierAdaptiveOptics(8.0, 1e-6, 1.290, 4.0)
         self._checkPixelScale(fao)
-        fao= FourierAdaptiveOptics(42.0, 2.2e-6, 1.00, 2.0)
+        fao = FourierAdaptiveOptics(42.0, 2.2e-6, 1.00, 2.0)
         self._checkPixelScale(fao)
-        fao= FourierAdaptiveOptics(1.0, 0.5e-6, 10.00, 5.2)
+        fao = FourierAdaptiveOptics(1.0, 0.5e-6, 10.00, 5.2)
         self._checkPixelScale(fao)
-
 
     def _checkPixelScale(self, fao):
-        wavelength= fao.wavelengthInMeters()
-        pupDiameter= fao.pupilDiameterInMeters()
-        fov= fao.focalPlaneFieldOfViewInArcsec()
-        resolutionFactor= fao.resolutionFactor()
+        wavelength = fao.wavelengthInMeters()
+        pupDiameter = fao.pupilDiameterInMeters()
+        fov = fao.focalPlaneFieldOfViewInArcsec()
+        resolutionFactor = fao.resolutionFactor()
 
-        wantedPixelScale= (0.5 * wavelength / pupDiameter / resolutionFactor *
+        wantedPixelScale = (0.5 * wavelength / pupDiameter / resolutionFactor *
                            FourierAdaptiveOptics.RAD2ARCSEC)
-        wantedFocalPlaneSizeInPixels= int(fov / wantedPixelScale)
-        wantedAngularFreqPxSz= 1 / (
+        wantedFocalPlaneSizeInPixels = int(fov / wantedPixelScale)
+        wantedAngularFreqPxSz = 1 / (
             wantedFocalPlaneSizeInPixels * wantedPixelScale *
             FourierAdaptiveOptics.ARCSEC2RAD)
-        wantedPupilPlaneSpatialFreqPxSz= (
+        wantedPupilPlaneSpatialFreqPxSz = (
             wantedPixelScale * FourierAdaptiveOptics.ARCSEC2RAD /
             wavelength)
-        wantedPupilPlanePxSz= 1 / (
+        wantedPupilPlanePxSz = 1 / (
             wantedFocalPlaneSizeInPixels * wantedPupilPlaneSpatialFreqPxSz)
 
         self.assertAlmostEqual(wantedPixelScale,
@@ -88,14 +82,11 @@ class FourierAdaptiveOpticsTest(unittest.TestCase):
         print('Pupil Plane Spatial Frequency Pixel Size [1/m] %g' %
               fao.pupilPlaneSpatialFrequencyPizelSizeInInverseMeters())
 
-
     def testFocalPlaneAngularFrequencyCoordinates(self):
-        fao= FourierAdaptiveOptics(8.0, 1e-6, 1.290, 4.0)
-        coords= fao.focalPlaneAngularFrequencyCoordinatesInInverseRadians()
-         
-        
+        fao = FourierAdaptiveOptics(8.0, 1e-6, 1.290, 4.0)
+        coords = fao.focalPlaneAngularFrequencyCoordinatesInInverseRadians()
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
+    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
