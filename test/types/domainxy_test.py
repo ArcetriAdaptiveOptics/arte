@@ -140,7 +140,10 @@ class DomainXYTest(unittest.TestCase):
          ymin = 0.1 * u.m
          ymax = 0.2 * u.m
 
-         assert domain.cropped(xmin, xmax, ymin, ymax).shape == (11,11)
+         # 12 = 10 cm + two 0.5cm edges because the linspace
+         # is -49.5, -48.5, -47.5, etc.
+         assert domain.cropped(xmin, xmax, ymin, ymax).shape == (12,12)
+
 
     def test_shift(self):
          
@@ -160,6 +163,51 @@ class DomainXYTest(unittest.TestCase):
          
          with self.assertRaises(Exception):
              domain.shift(0.1*u.s, 0)
+             
+    def test_copy(self):
+        
+        domain = DomainXY.from_linspace(-1, 1, 11)
+        domain2 = domain[:]
+        
+        np.testing.assert_array_equal(domain.xcoord, domain2.xcoord)
+        np.testing.assert_array_equal(domain.ycoord, domain2.ycoord)
+    
+    def tet_shifted(self):
+
+        domain = DomainXY.from_linspace(-1, 1, 11)       
+        domain2 = domain.shifted(0.1, 0.2)
+        domain.shift(0.1, 0.2)
+        
+        assert domain == domain2
+
+    def test_unit_property(self):
+        
+        domain1 = DomainXY.from_linspace(-1, 1, 11)
+        domain2 = DomainXY.from_linspace(-1*u.m, 1*u.m, 11)
+        
+        assert domain1.unit == (1,1)
+        assert domain2.unit == (u.m, u.m)
+
+    def test_equal(self):
+        
+        domain = DomainXY.from_linspace(-1, 1, 11)
+        assert domain == domain
+        assert not (domain != domain)
+
+        domain2 = domain.shifted(0.1, 0.1)
+        assert domain2 != domain
+        assert not (domain2 == domain)
+
+    def test_equal_w_units(self):
+        
+        domain = DomainXY.from_linspace(-1*u.m, 1*u.m, 11)
+        assert domain == domain
+        assert not (domain != domain)
+
+        domain2 = domain.shifted(0.1, 0.1)
+        assert domain2 != domain
+        assert not (domain2 == domain)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,33 +2,13 @@
 
 import numpy as np
 import astropy.units as u
+
 from arte.utils.help import add_help
 from arte.math.make_xy import make_xy
+from arte.utils.astropy_utils import get_the_unit_if_it_has_one, \
+                                     match_and_remove_units
 
 
-def _get_the_unit_if_it_has_one(var):
-    '''Returns the argument unit, or 1 if it does not have it'''    
-    if isinstance(var, u.Quantity): 
-        return var.unit
-    else:
-        return 1
-                 
-def _match_and_remove_unit(var, var_to_match):
-    '''Make sure that var is in the same unit as var_to_match,
-       and then remove the unit'''
-    if isinstance(var, u.Quantity) and isinstance(var_to_match, u.Quantity):
-        # Catch the errors here to have nicer tracebacks, otherwise
-        # we end up deep into astropy libraries.
-        try:
-            return var.to(var_to_match.unit).value
-        except Exception as e:
-            raise u.UnitsError(str(e))
-
-    elif isinstance(var, u.Quantity):
-        return var.value
-    else:
-        return var
-    
 def _accept_one_or_two_elements(x, name=''):
     
     errmsg = '%s must be either a scalar or a 2-elements sequence' % name
@@ -52,10 +32,27 @@ def _accept_one_or_two_elements(x, name=''):
 
 @add_help   
 class DomainXY():
-    '''Holds information about a 2d domain'''
+    '''Holds information about a 2d domain
     
-    # Once initialized, everything is dynamically calculated from
-    # self._xcoord and self._ycoord.
+    For users of the old IDL make_xy, this is the same in class form.
+    Several initializers are provided to build a domain from different
+    data.
+    
+    Domains support astropy units and try to play nicely with them. For
+    example, the `shift()` method will shift a domain using the correct unit
+    if both the domain and the shift parameter has one. If not, everything
+    is converted to unitless, shifted, and then the unit is applied again.
+    Shapes and indexes in Python are strictly integer data type and cannot
+    use a unit.
+    
+    Domains can be compared with == and !=, but no ordering is defined
+    between them.
+
+    In addition to the access methods, domain data can be 
+    Since the domain sampling is regular, the class internally only stores two
+    linear vectors for the X and Y sampling. Everything else is dynamically
+    calculated on the fly from these vectors.
+    '''
 
     def __init__(self, xcoord_vector, ycoord_vector):
         self._xcoord= xcoord_vector
@@ -153,6 +150,17 @@ class DomainXY():
         return (self._compute_step_of_uniformly_spaced_vector(self.xcoord),
                 self._compute_step_of_uniformly_spaced_vector(self.ycoord))
 
+    def __eq__(self, other):
+        
+        xcoord, other_xcoord, _ = match_and_remove_units(self.xcoord, other.xcoord)
+        ycoord, other_ycoord, _ = match_and_remove_units(self.ycoord, other.ycoord)
+         
+        return np.allclose(xcoord, other_xcoord) and \
+               np.allclose(ycoord, other_ycoord)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     @property
     def origin(self):
         '''(x,y) = location of 0,0 coordinate, interpolated'''
@@ -170,23 +178,31 @@ class DomainXY():
     @property
     def unit(self):
          '''(x,y) = units used on X and Y, or 1 otherwise'''
-         return (_get_the_unit_if_it_has_one(self.xcoord),
-                 _get_the_unit_if_it_has_one(self.ycoord))
+         return (get_the_unit_if_it_has_one(self.xcoord),
+                 get_the_unit_if_it_has_one(self.ycoord))
 
     def shift(self, dx, dy):
-        '''Shift the domain'''
+        '''Shift the domain in place'''
 
-        myunit = self.unit
-        dx = _match_and_remove_unit(dx, self.xcoord)
-        dy = _match_and_remove_unit(dy, self.ycoord)
-        xcoord = _match_and_remove_unit(self.xcoord, None)
-        ycoord = _match_and_remove_unit(self.ycoord, None)
+        dx, xcoord, xunit = match_and_remove_units(self.xcoord, dx)
+        dy, ycoord, yunit = match_and_remove_units(self.ycoord, dy)
         
-        self._xcoord = (xcoord+dx)*myunit[0]
-        self._ycoord = (ycoord+dy)*myunit[1]
+        self._xcoord = (xcoord+dx)*xunit
+        self._ycoord = (ycoord+dy)*yunit
+    
+    def shifted(self, dx, dy):
+        '''Returns a new shifted domain'''
+        
+        new = self[:]
+        new.shift(dx,dy)
+        return new
         
     def get_boundingbox_slice(self, x, y, span=1):
         '''Slice that includes (x,y) with "span" pixels around'''
+
+        xcoord, x, _ = match_and_remove_units(self.xcoord, x)
+        ycoord, y, _ = match_and_remove_units(self.ycoord, y)
+
         xi = np.argmin(np.abs(self.xcoord - x))
         yi = np.argmin(np.abs(self.ycoord - y))
         xlo = max(xi - span, 0)
@@ -195,18 +211,15 @@ class DomainXY():
         yhi = min(yi + span, self.ycoord.size) 
         return np.s_[ylo:yhi, xlo:xhi]
     
-    def _minmax(self, xmin, xmax, ymin, ymax, boundary_check=True):
+    def _indices(self, xmin, xmax, ymin, ymax, boundary_check=True):
         '''Returns the outer indices that correspond to a bounding box'''
         
         # Index calculations are unitless, but first, make sure that
         # all units are the same. If no units have been assigned,
         # all these statements are no-ops.
-        xcoord = _match_and_remove_unit(self.xcoord, xmin)
-        ycoord = _match_and_remove_unit(self.ycoord, ymin)
-        xmax = _match_and_remove_unit(xmax, xmin)
-        ymax = _match_and_remove_unit(xmax, ymin)
-        xmin = _match_and_remove_unit(xmin, None)
-        ymin = _match_and_remove_unit(ymin, None)
+
+        xcoord, xmin, xmax, _ = match_and_remove_units(self.xcoord, xmin, xmax)
+        ycoord, ymin, ymax, _ = match_and_remove_units(self.ycoord, ymin, ymax)
 
         xlo = np.argmin(np.abs(xcoord - xmin))
         xhi = np.argmin(np.abs(xcoord - xmax)) + 1
@@ -217,12 +230,12 @@ class DomainXY():
             ylo = max(ylo, 0)
             xhi = min(xhi+ 1, xcoord.size)
             yhi = min(yhi+ 1, ycoord.size)
-
+ 
         return xlo, xhi, ylo, yhi
 
     def get_crop_slice(self, xmin, xmax, ymin, ymax):
         '''Slice to crop the domain'''
-        xlo, xhi, ylo, yhi = self._minmax(xmin, xmax, ymin, ymax)
+        xlo, xhi, ylo, yhi = self._indices(xmin, xmax, ymin, ymax)
         
         # Slices are (row,col), that is (y,x)
         return np.s_[ylo:yhi, xlo:xhi]
@@ -239,7 +252,7 @@ class DomainXY():
 
     def cropped(self, xmin, xmax, ymin, ymax):
         '''Returns a new cropped DomainXY object'''
-        xlo, xhi, ylo, yhi = self._minmax(xmin, xmax, ymin, ymax)
+        xlo, xhi, ylo, yhi = self._indices(xmin, xmax, ymin, ymax)
         xc = self.xcoord[xlo:xhi]
         yc = self.xcoord[ylo:yhi]
         return DomainXY.from_xy_vectors(xc, yc)
@@ -254,7 +267,7 @@ class DomainXY():
         
         # np.interp removes the unit, so let's remember it
         
-        unit = _get_the_unit_if_it_has_one(arr)  
+        unit = get_the_unit_if_it_has_one(arr)  
         vv = np.interp(value, arr, np.arange(arr.shape[0]),
                                    left=np.nan, right=np.nan)
         return vv*unit
