@@ -3,6 +3,8 @@ import unittest
 import numpy as np
 from arte.utils.discrete_fourier_transform import \
     BidimensionalFourierTransform as bfft
+from arte.types.scalar_bidimensional_function import ScalarBidimensionalFunction
+from arte.types.domainxy import DomainXY
 
 
 class BidimensionalFourierTransformTest(unittest.TestCase):
@@ -188,6 +190,45 @@ class BidimensionalFourierTransformTest(unittest.TestCase):
             np.all(mostNegFrequency == frequenciesMap[0, :]))
         self.assertTrue(
             np.all(mostPosFrequency == frequenciesMap[-1, :]))
+
+    def test_direct_sinus_x(self):
+        sizeInPoints = 500
+        pixelSize = 0.2
+        periodInLengthUnits = 4.0
+        amplitude = 13.4
+        phase = 0.8
+        spatialMap = self._makeSinusMap(
+            sizeInPoints, pixelSize, amplitude, periodInLengthUnits, phase)
+        xyDomain = DomainXY.from_shape((sizeInPoints, sizeInPoints),
+                                       pixelSize)
+        xyFunct = ScalarBidimensionalFunction(spatialMap, domain=xyDomain)
+        fftFunct = bfft.direct(xyFunct)
+        spectralMap = fftFunct.values
+        freqX = bfft.frequenciesXMap(sizeInPoints, pixelSize)
+        freqY = bfft.frequenciesYMap(sizeInPoints, pixelSize)
+
+        self.assertEqual((sizeInPoints, sizeInPoints), spectralMap.shape)
+        self.assertEqual(
+            1.0 / periodInLengthUnits,
+            np.abs(freqX.flatten()[np.argmax(np.abs(spectralMap))]))
+        self.assertEqual(
+            0.0,
+            np.abs(freqY.flatten()[np.argmax(np.abs(spectralMap))]))
+        self._checkParseval(spatialMap, spectralMap)
+
+    def testInverseDeltaMapEvenSize(self):
+        sz = 100
+        sz2 = int(sz / 2)
+        deltaMap = np.zeros((sz, sz))
+        deltaMap[sz2, sz2] = 1.0
+        xyDomain = DomainXY.from_shape((sz, sz), 1)
+        xyFunct = ScalarBidimensionalFunction(deltaMap,
+                                              domain=xyDomain)
+        fftFunct = bfft.inverse(xyFunct)
+        spectralMap = fftFunct.values
+        self.assertEqual((sz, sz), spectralMap.shape)
+        self.assertEqual(0, spectralMap.ptp())
+        self._checkParseval(deltaMap, spectralMap)
 
 
 if __name__ == "__main__":

@@ -79,22 +79,28 @@ class BidimensionalFourierTransform(object):
 
     @staticmethod
     def direct(xyFunct):
-        sizeInPx = xyFunct.values().shape[0]
-        pxSize = xyFunct.xystep
-        return ScalarBidimensionalFunction.from_values_and_maps(
-            BidimensionalFourierTransform.directTransform(xyFunct.values()),
-            BidimensionalFourierTransform.frequenciesXMap(sizeInPx, pxSize),
-            BidimensionalFourierTransform.frequenciesYMap(sizeInPx, pxSize),
+        sizeInPx = xyFunct.values.shape[0]
+        pxSize = xyFunct.domain.step
+        return ScalarBidimensionalFunction(
+            BidimensionalFourierTransform.directTransform(
+                xyFunct.values),
+            xmap=BidimensionalFourierTransform.frequenciesXMap(
+                sizeInPx, pxSize[1]),
+            ymap=BidimensionalFourierTransform.frequenciesYMap(
+                sizeInPx, pxSize[0])
         )
 
     @staticmethod
     def inverse(xyFunct):
-        sizeInPx = xyFunct.values().shape[0]
-        pxSize = xyFunct.xystep
-        return ScalarBidimensionalFunction.from_values_and_maps(
-            BidimensionalFourierTransform.inverseTransform(xyFunct.values()),
-            BidimensionalFourierTransform.frequenciesXMap(sizeInPx, pxSize),
-            BidimensionalFourierTransform.frequenciesYMap(sizeInPx, pxSize),
+        sizeInPx = xyFunct.values.shape[0]
+        pxSize = xyFunct.domain.step
+        return ScalarBidimensionalFunction(
+            BidimensionalFourierTransform.inverseTransform(
+                xyFunct.values),
+            xmap=BidimensionalFourierTransform.frequenciesXMap(
+                sizeInPx, pxSize[1]),
+            ymap=BidimensionalFourierTransform.frequenciesYMap(
+                sizeInPx, pxSize[0]),
         )
 
 #     @staticmethod
