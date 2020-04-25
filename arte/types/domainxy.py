@@ -168,7 +168,6 @@ class DomainXY():
         '''(x,y) = location of 0,0 coordinate, interpolated'''
         x = self._interpolate_for_value(self.xcoord, 0.0)
         y = self._interpolate_for_value(self.ycoord, 0.0)
-        print(x, y)
         return (x, y)
 
     @property
