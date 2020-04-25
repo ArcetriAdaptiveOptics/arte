@@ -93,12 +93,16 @@ from functools import partial
 HIDDEN_HELP = '__arte_help'
 HIDDEN_NAME = '__arte_name'
 HIDDEN_ARGS = '__arte_args'
+HIDDEN_HIDE = '__arte_hide'
 
 def _is_public_method(name):
     return name[0] != '_'
 
 def _is_hlp_class(obj):
     return hasattr(obj, HIDDEN_HELP)
+
+def _is_hidden(m):
+    return (hasattr(m, HIDDEN_HIDE)) and (getattr(m, HIDDEN_HIDE)== True)
 
 def add_help(cls=None, *, help_function='help', classmethod=False):
     '''
@@ -140,7 +144,8 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
                        for k in dir(self.__class__)
                        if isinstance(getattr(self.__class__, k), property)})
 
-        hlp_methods = {k:v for k,v in methods.items() if _is_public_method(k)}
+        hlp_methods = {k:v for k,v in methods.items() if _is_public_method(k) \
+                                                         and not _is_hidden(v)}
         hlp_members = {k:v for k,v in members.items() if _is_hlp_class(v)}
 
         if prefix=='':
@@ -217,6 +222,13 @@ def modify_help(call=None, arg_str=None, doc_str=None):
         _wrap_with(f, call, arg_str, doc_str)
         return f
     return wrap
+
+def hide_from_help(f):
+    '''
+    Decorator to hide a method from the interactive help
+    '''
+    setattr(f, HIDDEN_HIDE, True)
+    return f
 
 def _format_docstring(obj, default=None):
 

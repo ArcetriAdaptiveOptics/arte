@@ -2,7 +2,7 @@
 
 #!/usr/bin/env python
 import unittest
-from arte.utils.help import add_help, modify_help
+from arte.utils.help import add_help, modify_help, hide_from_help
 from arte.utils.capture_output import capture_output
 
 
@@ -40,6 +40,11 @@ class MyClass():
     @modify_help(doc_str='foo')
     def method_with_replaced_docstr(self):
         """This method has a modified docstring"""
+        pass
+
+    @hide_from_help
+    def hidden_method(self0):
+        '''an hidden method'''
         pass
 
 @add_help(help_function='show_help')
@@ -116,6 +121,11 @@ class HelpTest(unittest.TestCase):
         assert 'This is a static class' in out.getvalue()
         assert 'This is a method' in out.getvalue()
 
+    def test_hidden(self):
+        with capture_output() as (out, err):
+            self.a.help('hidden')   
+            
+        assert 'hidden method' not in out.getvalue()   
         
 
 if __name__ == "__main__":
