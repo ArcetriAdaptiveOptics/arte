@@ -274,6 +274,11 @@ class DomainXY():
 
     @staticmethod
     def _compute_step_of_uniformly_spaced_vector(vector):
-        delta= vector[1:] - vector[:-1]
-        assert np.isclose(0, delta.ptp(), atol=1e-6 * delta[0])
+        delta = vector[1:] - vector[:-1]
+        
+        # np.isclose() does not like quantities
+        d0, p2v = delta[0], delta.ptp()
+        if isinstance(p2v, u.Quantity):
+            d0, p2v = d0.value, p2v.value
+        assert np.isclose(0, p2v, atol=1e-6 * d0)
         return delta[0]
