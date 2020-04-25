@@ -5,6 +5,10 @@ import multiprocessing as mp
 import multiprocessing.sharedctypes
 from functools import reduce
 
+from arte.utils.help import add_help
+
+
+@add_help
 class SharedArray:
     '''
     Class for a numpy-like buffer built on top of multiprocessing.
@@ -23,6 +27,14 @@ class SharedArray:
 
     .. warning:: SharedArray works with processes spawned with mp.Process,
                  but do not work with mp.Pool, unless an mp.Manager is used.
+
+    Parameters
+    ----------
+    shape: integer sequence
+         array shape
+    type: numpy dtype
+         array dtype
+
 
     '''
     def __init__(self, shape, dtype):
@@ -45,13 +57,26 @@ class SharedArray:
     
     def ndarray(self, realloc=False):
         '''
-        Returns a new numpy wrapper around the buffer contents
+        Returns a new numpy wrapper around the buffer contents.
+        
         Call this function after a task has been spawned the multiprocessing
         module in order to have access to the shared memory segment.
 
         If the array had already been accessed before passing it to the
-        multiprocessing task, the task has to set `refresh` to True
+        multiprocessing task, the task has to set `realloc` to True
         in order to reallocate a local copy of the array.
+        
+        Parameters
+        ----------
+        Realloc: bool, optional
+            force array reallocation. Defaults to False
+            
+        Returns
+        -------
+        numpy.ndarray
+            the shared numpy array. The array is read-write and changes
+            will be immediately visible to other processes.
+        
         '''
         if (self._ndarray is None) or realloc:
             arr = np.frombuffer(self._shared_buf, dtype=self.dtype)
