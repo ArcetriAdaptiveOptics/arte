@@ -113,7 +113,10 @@ class HelpTest(unittest.TestCase):
         with self.assertRaises(AttributeError):
             self.b.help()   
         
-        self.b.show_help()
+        # We don't do anything with captured output, but let's
+        # clean stdout/err anyway.
+        with capture_output() as (out, err):
+            self.b.show_help()
     
     def test_static_class(self):
         with capture_output() as (out, err):

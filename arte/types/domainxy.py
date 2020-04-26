@@ -48,7 +48,7 @@ class DomainXY():
     Domains can be compared with == and !=, but no ordering is defined
     between them.
 
-    In addition to the access methods, domain data can be 
+    In addition to the access methods, domain data can be
     Since the domain sampling is regular, the class internally only stores two
     linear vectors for the X and Y sampling. Everything else is dynamically
     calculated on the fly from these vectors.
@@ -172,7 +172,7 @@ class DomainXY():
 
     @property
     def extent(self):
-        ''' [xmin, xmax, ymin, ymax] = minimum and maximum coordinates'''
+        '''[xmin, xmax, ymin, ymax] = minimum and maximum coordinates'''
         return [self.xcoord.min(), self.xcoord.max(),
                 self.ycoord.min(), self.ycoord.max()]
 
@@ -217,7 +217,7 @@ class DomainXY():
         y = max(y, ycoord.min())
         x = min(x, xcoord.max())
         y = min(y, ycoord.max())
-        
+
         return x * xunit, y * yunit
 
     def get_boundingbox_slice(self, x, y, span=1):
@@ -230,7 +230,7 @@ class DomainXY():
 
         idx_x = int(round(self._interpolate_for_value(xcoord, x)))
         idx_y = int(round(self._interpolate_for_value(ycoord, y)))
-        
+
         xlo, xhi, ylo, yhi = idx_x - span, idx_x + span, \
                              idx_y - span, idx_y + span
 
@@ -238,7 +238,7 @@ class DomainXY():
         ylo = max(ylo, 0)
         xhi = min(xhi, xcoord.size)
         yhi = min(yhi, ycoord.size)
-        
+
         # Slices are (row,col), that is (y,x)
         return np.s_[ylo:yhi, xlo:xhi]
 
@@ -253,7 +253,7 @@ class DomainXY():
         xhi = np.argmin(np.abs(xcoord - xmax)) + 2
         ylo = np.argmin(np.abs(ycoord - ymin))
         yhi = np.argmin(np.abs(ycoord - ymax)) + 2
-        
+
         if boundary_check:
             xlo = max(xlo, 0)
             ylo = max(ylo, 0)

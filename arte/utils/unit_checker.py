@@ -2,14 +2,15 @@
 
 import astropy.units as u
 
+
 def make_sure_its_a(unit, v, name=''):
     '''
     Make sure that `v` has the astropy unit `unit`.
-    
+
     If `v` does not have any unit, apply `unit` and return the combined value.
     If it has one, check that it can be converted to `unit`,
     and return the converted value. Otherwise, raise astropy.units.UnitsError.
-    
+
     Parameters
     ----------
     unit: astropy unit
@@ -24,7 +25,7 @@ def make_sure_its_a(unit, v, name=''):
     -------
     astropy Quantity
         the original value converted to `unit`.
-      
+
     Raises
     ------
     astropy.units.UnitsError
@@ -33,7 +34,7 @@ def make_sure_its_a(unit, v, name=''):
     '''
     if not isinstance(v, u.Quantity):
         return v * unit
-    
+
     try:
         normalized = v.to(unit)
     except u.UnitConversionError:
@@ -42,12 +43,13 @@ def make_sure_its_a(unit, v, name=''):
         raise u.UnitsError(errmsg)
     return normalized
 
+
 def unit_check(f):
     '''
     Decorator to add type checking of astropy units to a function.
-    
-    This decorator will ensure that, each time the decorated function is called,
-    all the arguments have the correct astropy units,
+
+    This decorator will ensure that, each time the decorated function is
+    called, all the arguments have the correct astropy units,
     as defined in the default values of the
     decorated function, calling `make_sure_its_a()` for each of them.
 
@@ -69,7 +71,7 @@ def unit_check(f):
         # Reconstruct the decorated function's arguments
         bound = sig.bind(*args, **kwargs)
         bound.apply_defaults()
-        
+
         # Check all arguments that have an astropy unit in their defaults
         for p in pars_to_check:
             bound.arguments[p.name] = make_sure_its_a(p.default.unit,
@@ -79,7 +81,7 @@ def unit_check(f):
 
         if sig.return_annotation is not inspect.Signature.empty:
             return make_sure_its_a(sig.return_annotation, ret_value,
-                                   'Return value from function '+ f.__name__)
+                                   'Return value from function ' + f.__name__)
         else:
             return ret_value
 

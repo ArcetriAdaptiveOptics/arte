@@ -3,11 +3,14 @@ import sys
 from io import StringIO
 from contextlib import contextmanager
 
+
 @contextmanager
 def capture_output():
     '''
-    Context manager to capture stdout and stderr
-    from a Python code section, using two StringIO objects.
+    Context manager to capture stdout and stderr.
+
+    Captures stddout and stderr from a Python code section,
+    using two StringIO objects.
     Example::
 
       with capture_output() as (out, err):
@@ -26,4 +29,3 @@ def capture_output():
         yield sys.stdout, sys.stderr
     finally:
         sys.stdout, sys.stderr = old_out, old_err
-

@@ -132,8 +132,9 @@ def match_and_remove_units(*args):
     newvars = [match_and_remove_unit(x, args[0]) for x in args[0:]]
     return newvars + [unit]
 
-def assert_array_almost_equal_w_units(a, b):
 
+def assert_array_almost_equal_w_units(a, b):
+    '''Clone of np.testing.asset_array_almost_equal for u.Quantities'''
     a_, b_, _ = match_and_remove_units(a, b)
     np.testing.assert_array_almost_equal(a_, b_)
 

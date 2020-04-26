@@ -9,7 +9,7 @@
 '''
 Provides tools to build an interactive, searchable help based on docstrings.
 
-Any class to decorated with @add_help 
+Any class to decorated with @add_help
 gets a :meth:`help` method that provides an interactive and searchable help
 based on the method docstrings. All public methods (not starting with "_")
 are added, together with all such methods in all the members that are
@@ -78,13 +78,12 @@ Interactive session::
   >>> a.help('inner')
   ---------
   MyClass.b              An inner class
-  
+
   >>> b = CustomClass()
   >>> b.show_help()
   ---------
   CustomClass               This a custom class
   CustomClass.a_method()    This is a method
-  
 
 '''
 import inspect
@@ -95,26 +94,30 @@ HIDDEN_NAME = '__arte_name'
 HIDDEN_ARGS = '__arte_args'
 HIDDEN_HIDE = '__arte_hide'
 
+
 def _is_public_method(name):
     return name[0] != '_'
+
 
 def _is_hlp_class(obj):
     return hasattr(obj, HIDDEN_HELP)
 
+
 def _is_hidden(m):
-    return (hasattr(m, HIDDEN_HIDE)) and (getattr(m, HIDDEN_HIDE)== True)
+    return (hasattr(m, HIDDEN_HIDE)) and (getattr(m, HIDDEN_HIDE) is True)
+
 
 def add_help(cls=None, *, help_function='help', classmethod=False):
     '''
     Decorator to add interactive help to a class
-    
+
     Parameters
     ----------
     help_function: str, optional
         Name of the method that will be added to the class. Defaults to "help"
     classmethod: bool, optional
         If True, the help method will be added as a classmethod. Default False
-        
+
     Returns
     -------
     class
@@ -128,6 +131,7 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
     def help(self, search='', prefix=''):
         '''
         Interactive help
+
         Prints on stdout a list of methods that match the *search* substring
         or all of them if *search* is left to the default value of an empty
         string, together with a one-line help taken from the first line
@@ -136,19 +140,19 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
         The *prefix* argument is prepended to the method name and is used
         for recursive help of every class member.
         '''
-        methods = {k:getattr(self,k) for k in dir(self) if callable(getattr(self, k))}
-        members = {k:getattr(self,k) for k in dir(self) if not callable(getattr(self, k))}
-        
+        methods = {k: getattr(self, k) for k in dir(self) if callable(getattr(self, k))}
+        members = {k: getattr(self, k) for k in dir(self) if not callable(getattr(self, k))}
+
         # Add properties too, with a workaround for the __abstractmethods__ bug
-        methods.update({k:getattr(self.__class__, k)
+        methods.update({k: getattr(self.__class__, k)
                        for k in dir(self.__class__)
                        if isinstance(getattr(self.__class__, k), property)})
 
         hlp_methods = {k:v for k,v in methods.items() if _is_public_method(k) \
-                                                         and not _is_hidden(v)}
+                                                        and not _is_hidden(v)}
         hlp_members = {k:v for k,v in members.items() if _is_hlp_class(v)}
 
-        if prefix=='':
+        if prefix == '':
             prefix = self.__class__.__name__
 
         hlp = {prefix: _format_docstring(self)}
@@ -157,11 +161,11 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
             name = _format_name(method, default=name)
             pars = _format_pars(method)
             helpstr = _format_docstring(method)
-            
-            hlp[prefix+'.'+name+pars] = helpstr
+
+            hlp[prefix + '.' + name + pars] = helpstr
 
         maxlen = max(map(len, hlp.keys()))
-        fmt = '%%-%ds%%s' % (maxlen+3)
+        fmt = '%%-%ds%%s' % (maxlen + 3)
 
         lines = []
         for k in sorted(hlp.keys()):
@@ -169,7 +173,7 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
             if search in line:
                 lines.append(line)
 
-        if len(lines)>0:
+        if len(lines) > 0:
             print('---------')
             for line in lines:
                 print(line)
@@ -178,15 +182,16 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
             obj.help(search=search, prefix='%s.%s' % (prefix, name))
 
     def decorate(cls):
-       setattr(cls, HIDDEN_HELP, False)  # Create attr but do not define a string
-       if classmethod:
-           func = partial(help, self=cls())
-           func.__name__ = help.__name__
-           setattr(cls, help_function, func)
-       else:
-           setattr(cls, help_function, help)
-       return cls
+        setattr(cls, HIDDEN_HELP, False)  # Set attr but do not define a string
+        if classmethod:
+            func = partial(help, self=cls())
+            func.__name__ = help.__name__
+            setattr(cls, help_function, func)
+        else:
+            setattr(cls, help_function, help)
+        return cls
     return decorate
+
 
 def modify_help(call=None, arg_str=None, doc_str=None):
     '''
@@ -213,7 +218,7 @@ def modify_help(call=None, arg_str=None, doc_str=None):
       .mymethod1(foo)        : This method is very cool
       .mymethod2(idx1, idx2) : Now you see it
       .mymethod3()           : Surprise!
-      
+
     .. Note::
         if the method is a @staticmethod, this decorator
         should be inserted *after* the staticmethod one.
@@ -223,12 +228,12 @@ def modify_help(call=None, arg_str=None, doc_str=None):
         return f
     return wrap
 
+
 def hide_from_help(f):
-    '''
-    Decorator to hide a method from the interactive help
-    '''
+    '''Decorator to hide a method from the interactive help'''
     setattr(f, HIDDEN_HIDE, True)
     return f
+
 
 def _format_docstring(obj, default=None):
 
@@ -237,29 +242,32 @@ def _format_docstring(obj, default=None):
     hlp = hlp.strip().splitlines()[0]
     return hlp
 
+
 def _format_name(obj, default=None):
-    
+
     if hasattr(obj, '__name__'):
         myname = obj.__name__
     else:
         myname = default
-    
+
     name = getattr(obj, HIDDEN_NAME, False)
     name = name or myname
     name = name.strip().splitlines()[0]
     return name
 
+
 def _format_pars(method):
     if isinstance(method, property):
         return ''
-    
+
     args = getattr(method, HIDDEN_ARGS, None)
     if args is not None:
         return args
 
     sig = inspect.signature(method)
     return '(' + ','.join(sig.parameters.keys()) + ')'
-    
+
+
 def _wrap_with(f, call=None, arg_str=None, doc_str=None):
 
     if call:
