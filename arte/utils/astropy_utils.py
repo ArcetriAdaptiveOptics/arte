@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import numpy as np
 import astropy.units as u
 
 
@@ -129,5 +130,11 @@ def match_and_remove_units(*args):
         unit = get_the_unit_if_it_has_one(args[0])
 
     newvars = [match_and_remove_unit(x, args[0]) for x in args[0:]]
-
     return newvars + [unit]
+
+def assert_array_almost_equal_w_units(a, b):
+
+    a_, b_, _ = match_and_remove_units(a, b)
+    np.testing.assert_array_almost_equal(a_, b_)
+
+# ___oOo___
