@@ -81,7 +81,7 @@ class DomainXY():
 
         pixel_size = _accept_one_or_two_elements(pixel_size, 'pixel_size')
 
-        tot_size = (shape[0] * pixel_size[0], shape[1] * pixel_size[0])
+        tot_size = (shape[0] * pixel_size[0], shape[1] * pixel_size[1])
 
         # a shape is (rows, cols), so equivalent to (y,x)
         y = np.linspace(-(tot_size[0] - pixel_size[0]) / 2,
