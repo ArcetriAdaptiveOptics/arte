@@ -198,39 +198,67 @@ class DomainXY():
         new.shift(dx, dy)
         return new
 
+    def contains(self, x, y):
+        '''Returns True if the coordinates are inside the domain'''
+
+        xcoord, x, _ = match_and_remove_units(self.xcoord, x)
+        ycoord, y, _ = match_and_remove_units(self.ycoord, y)
+
+        return (x >= xcoord.min()) and (x <= xcoord.max()) and \
+               (y >= ycoord.min()) and (y <= ycoord.max())
+
+    def restrict(self, x, y):
+        '''(x,y) = new coordinates restricted to be inside this domain'''
+
+        xcoord, x, xunit = match_and_remove_units(self.xcoord, x)
+        ycoord, y, yunit = match_and_remove_units(self.ycoord, y)
+
+        x = max(x, xcoord.min())
+        y = max(y, ycoord.min())
+        x = min(x, xcoord.max())
+        y = min(y, ycoord.max())
+        
+        return x * xunit, y * yunit
+
     def get_boundingbox_slice(self, x, y, span=1):
         '''Slice that includes (x,y) with "span" pixels around'''
 
-        _, x, _ = match_and_remove_units(self.xcoord, x)
-        _, y, _ = match_and_remove_units(self.ycoord, y)
+        x, y = self.restrict(x, y)
 
-        xi = np.argmin(np.abs(self.xcoord - x))
-        yi = np.argmin(np.abs(self.ycoord - y))
-        xlo = max(xi - span, 0)
-        ylo = max(yi - span, 0)
-        xhi = min(xi + span, self.xcoord.size)
-        yhi = min(yi + span, self.ycoord.size)
+        xcoord, x, _ = match_and_remove_units(self.xcoord, x)
+        ycoord, y, _ = match_and_remove_units(self.ycoord, y)
+
+        idx_x = int(round(self._interpolate_for_value(xcoord, x)))
+        idx_y = int(round(self._interpolate_for_value(ycoord, y)))
+        
+        xlo, xhi, ylo, yhi = idx_x - span, idx_x + span, \
+                             idx_y - span, idx_y + span
+
+        xlo = max(xlo, 0)
+        ylo = max(ylo, 0)
+        xhi = min(xhi, xcoord.size)
+        yhi = min(yhi, ycoord.size)
+        
+        # Slices are (row,col), that is (y,x)
         return np.s_[ylo:yhi, xlo:xhi]
 
     def _indices(self, xmin, xmax, ymin, ymax, boundary_check=True):
         '''Returns the outer indices that correspond to a bounding box'''
 
-        # Index calculations are unitless, but first, make sure that
-        # all units are the same. If no units have been assigned,
-        # all these statements are no-ops.
-
+        # Indexes must be unitless
         xcoord, xmin, xmax, _ = match_and_remove_units(self.xcoord, xmin, xmax)
         ycoord, ymin, ymax, _ = match_and_remove_units(self.ycoord, ymin, ymax)
 
         xlo = np.argmin(np.abs(xcoord - xmin))
-        xhi = np.argmin(np.abs(xcoord - xmax)) + 1
+        xhi = np.argmin(np.abs(xcoord - xmax)) + 2
         ylo = np.argmin(np.abs(ycoord - ymin))
-        yhi = np.argmin(np.abs(ycoord - ymax)) + 1
+        yhi = np.argmin(np.abs(ycoord - ymax)) + 2
+        
         if boundary_check:
             xlo = max(xlo, 0)
             ylo = max(ylo, 0)
-            xhi = min(xhi + 1, xcoord.size)
-            yhi = min(yhi + 1, ycoord.size)
+            xhi = min(xhi, xcoord.size)
+            yhi = min(yhi, ycoord.size)
 
         return xlo, xhi, ylo, yhi
 
@@ -255,7 +283,7 @@ class DomainXY():
         '''Returns a new cropped DomainXY object'''
         xlo, xhi, ylo, yhi = self._indices(xmin, xmax, ymin, ymax)
         xc = self.xcoord[xlo:xhi]
-        yc = self.xcoord[ylo:yhi]
+        yc = self.ycoord[ylo:yhi]
         return DomainXY.from_xy_vectors(xc, yc)
 
     def boundingbox(self, x, y, span=1):

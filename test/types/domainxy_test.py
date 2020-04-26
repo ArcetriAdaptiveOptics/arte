@@ -4,8 +4,11 @@
 import unittest
 import numpy as np
 import astropy.units as u
+
 from arte.math.make_xy import make_xy
 from arte.types.domainxy import DomainXY
+from arte.utils.astropy_utils import assert_array_almost_equal_w_units
+
 
 __version__ = "$Id:$"
 
@@ -64,6 +67,17 @@ class DomainXYTest(unittest.TestCase):
         ymax= 0.001
         cropped= domain.cropped(xmin, xmax, ymin, ymax)
         self.assertEqual((2,2), cropped.shape)
+
+    @unittest.skip("Cropping on exact values depends on floating precision")
+    def test_crop_on_values(self):
+        domain = DomainXY.from_linspace(-1, 1, 11)
+
+        xmin= 0.6
+        xmax= 0.8
+        ymin= -0.6
+        ymax= -0.2
+        cropped= domain.cropped(xmin, xmax, ymin, ymax)
+        self.assertEqual((2,3), cropped.shape)
 
     def test_makexy(self):
         
@@ -151,7 +165,6 @@ class DomainXYTest(unittest.TestCase):
          assert cropped.extent[2] == 39.5*u.cm
          assert cropped.extent[3] == 45.5*u.cm
 
-
     def test_shift(self):
          
          domain = DomainXY.from_linspace(-1, 1, 11)
@@ -215,6 +228,34 @@ class DomainXYTest(unittest.TestCase):
         assert domain2 != domain
         assert not (domain2 == domain)
 
+    def test_boundingbox(self):
 
+        domain = DomainXY.from_linspace(-1, 1, 11)
+        box = domain.boundingbox(0.32, -0.25, span=1)
+        
+        np.testing.assert_array_almost_equal(box.xcoord, [0.2, 0.4])
+        np.testing.assert_array_almost_equal(box.ycoord, [-0.4, -0.2])
+
+    def test_contains(self):
+        
+        domain1 = DomainXY.from_linspace(-1, 1, 11)
+        domain2 = DomainXY.from_linspace(-1*u.mm, 1*u.mm, 11)
+        
+        assert domain1.contains(-0.5, 0) == True
+        assert domain1.contains(2, 0) == False
+        assert domain1.contains(4, 2) == False
+        assert domain2.contains(-0.5*u.mm, 0) == True
+        assert domain2.contains(2, 0*u.mm) == False
+        assert domain2.contains(4, 2*u.mm) == False
+
+    def test_boundingbox_w_units(self):
+
+        domain = DomainXY.from_linspace(-1*u.mm, 1*u.mm, 11)
+        box = domain.boundingbox(0.32, -0.25, span=1)
+        
+        assert_array_almost_equal_w_units(box.xcoord, [0.2, 0.4]*u.mm)
+        assert_array_almost_equal_w_units(box.ycoord, [-0.4, -0.2]*u.mm)
+
+       
 if __name__ == "__main__":
     unittest.main()
