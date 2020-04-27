@@ -1,5 +1,28 @@
-'''
-@author: lbusoni
+r''' This module manages atmospheric Cn2 profiles.
+
+The class Cn2Profile is the base class: it allows to describe a profile
+as a set of layers each one with specified J, outer scale :math:`L_0`,
+wind speed and wind direction and located at a specified altitude h
+above the ground
+
+Cn2Profile allows to specify the zenith angle z and the wavelength and 
+
+The following relations are used, where the index i identifies
+the i-th layer and the airmass is :math:`X=\sec z`.
+
+
+.. math::
+   :nowrap:
+
+   \begin{eqnarray}
+    k & = & \frac{2 \pi}{\lambda} \\
+    J_i & = & {C_n^2}_i \, dh_i  \\
+    {r_0}_i & = & (0.423 \, X \, k^2 J_i)^{-3/5} \\
+    r_0 & = & \big( \sum{{{r_0}_i}^{-5/3}} \big)^{-3/5} \\
+        & = & \big( \sum{0.423 X k^2 J_i} \big)^{-3/5} \\
+    \theta_0 & = & \big( 2.914 k^2 X^{8/3} \sum{J_i h_i^{5/3}} \big)^{-3/5} 
+   \end{eqnarray}
+
 '''
 import numpy as np
 from astropy.units.quantity import Quantity
@@ -10,18 +33,28 @@ from astropy.io import fits
 import astropy.units as u
 from collections.abc import Iterable
 
-"""
-
-k = 2pi/lambda
-J[i] = dh[i] * Cn2[i]
-r0[i] = (0.422727 * airmass * k**2 J[i]) ** (-3/5)
-
-r0 = (Sum r0[i]**(-5/3) ) ** (-3/5) = (Sum 0.423 airmass k**2 J[i]) ** (-3/5)
-theta0 = (2.914 k**2 airmass**(8/3) Sum(J*h**(5/3))) ** (-3/5)
-"""
-
 
 class Cn2Profile(object):
+    """
+    Parameters
+    ----------
+        layersJs: :class:`~numpy:numpy.ndarray`
+                  array of layers Js in meters**(1/3)
+        layersL0: :class:`~numpy:numpy.ndarray`
+                  array of layers outer-scale L0 in meters
+        layersAltitude: :class:`~numpy:numpy.ndarray`
+                  array of layers altitude at Zenith in meters
+        layersWindSpeed: :class:`~numpy:numpy.ndarray`
+                  array of layers wind speed in meters per second
+        layersWindDirection: :class:`~numpy:numpy.ndarray`
+                  array of layers wind direction in degrees, clockwise
+                  from North
+
+    Every array must be 1D and have the same size, defining the number of
+    layers of the profile
+
+    All parameters must be defined at zenith
+    """
 
     DEFAULT_LAMBDA = 500e-9
     DEFAULT_AIRMASS = 1.0
@@ -32,19 +65,6 @@ class Cn2Profile(object):
                  layersAltitude,
                  layersWindSpeed,
                  layersWindDirection):
-        """
-        Cn2 profile constructor
-
-        Parameters:
-            layersJs (ndarray): array of layers Js in meters**(1/3)
-            layersL0 (ndarray): array of layers outer-scale L0 in meters
-            layersAltitude (ndarry): array of layers altitude at Zenith in
-                meters
-
-        Every array must be 1D and have the same size, defining the number of
-            layers of the profile
-        All parameters defined at zenith
-        """
         self._layersJs = np.array(layersJs)
         self._layersL0 = np.array(layersL0)
         self._layersAltitudeInMeterAtZenith = np.array(layersAltitude)
@@ -75,15 +95,25 @@ class Cn2Profile(object):
         """
         Cn2 profile constructor from r0 values of each layer
 
-        Parameters:
-            layersR0 (ndarray): array of layers r0 in meters at 500nm
-            layersL0 (ndarray): array of layers outer-scale L0 in meters
-            layersAltitude (ndarry): array of layers altitude at Zenith in
-                meters
+        Parameters
+        ----------
+            layersR0: :class:`~numpy:numpy.ndarray`
+                      array of layers r0 in meters at 500nm
+            layersL0: :class:`~numpy:numpy.ndarray`
+                      array of layers outer-scale L0 in meters
+            layersAltitude: :class:`~numpy:numpy.ndarray`
+                      array of layers altitude at Zenith in meters
+            layersWindSpeed: :class:`~numpy:numpy.ndarray`
+                      array of layers wind speed in meters per second
+            layersWindDirection: :class:`~numpy:numpy.ndarray`
+                      array of layers wind direction in degrees, clockwise
+                      from North
+
 
         Every array must be 1D and have the same size, defining the number of
-            layers of the profile
-        All parameters defined at zenith
+        layers of the profile
+
+        All parameters must be defined at zenith
         """
         layersR0 = cls._quantitiesToValue(layersR0)
         layersL0 = cls._quantitiesToValue(layersL0)
@@ -108,19 +138,31 @@ class Cn2Profile(object):
                           layersWindDirection):
         """
         Cn2 profile constructor from total r0 at zenith and fractional J of
-            each layer
+        each layer
 
-        Parameters:
-            r0AtZenith (float): overall r0 at zenith [m]
-            layersFractionalJ (ndarray): array of J values for each layer.
-                Array must sum up to 1
-            layersL0 (ndarray): array of layers outer-scale L0 in meters
-            layersAltitude (ndarry): array of layers altitude at Zenith in
-                meters
+        Parameters
+        ----------
+            r0AtZenith: float
+                        overall r0 at zenith [m]
+            layersFractionalJ: :class:`~numpy:numpy.ndarray`
+                               array of J values for each layer.
+                               Array must sum up to 1
+            layersL0: :class:`~numpy:numpy.ndarray`
+                      array of layers outer-scale L0 in meters
+            layersAltitude: :class:`~numpy:numpy.ndarray`
+                      array of layers altitude at Zenith in meters
+            layersWindSpeed: :class:`~numpy:numpy.ndarray`
+                      array of layers wind speed in meters per second
+            layersWindDirection: :class:`~numpy:numpy.ndarray`
+                      array of layers wind direction in degrees, clockwise
+                      from North
+
 
         Every array must be 1D and have the same size, defining the number of
-            layers of the profile
-        All parameters defined at zenith
+        layers of the profile
+
+        All parameters must be defined at zenith
+
         """
         r0AtZenith = cls._quantitiesToValue(r0AtZenith)
         layersFractionalJ = cls._quantitiesToValue(layersFractionalJ)
@@ -133,7 +175,7 @@ class Cn2Profile(object):
         assert (np.abs(sumJ - 1.0) < 0.01), \
             "Total of J values must be 1.0, got %g" % sumJ
         totalJ = r0AtZenith ** (-5. / 3) / (
-            0.422727 * (2 * np.pi / cls.DEFAULT_LAMBDA) ** 2 * 
+            0.422727 * (2 * np.pi / cls.DEFAULT_LAMBDA) ** 2 *
             cls.DEFAULT_AIRMASS)
         js = np.array(layersFractionalJ) * totalJ
         return Cn2Profile(js,
@@ -166,7 +208,7 @@ class Cn2Profile(object):
 
     @staticmethod
     def _js2r0(Js, airmass, wavelength):
-        r0s = (0.422727 * airmass * (2 * np.pi / wavelength) ** 2 * 
+        r0s = (0.422727 * airmass * (2 * np.pi / wavelength) ** 2 *
                np.array(Js)) ** (-3. / 5)
         return r0s
 
@@ -183,6 +225,12 @@ class Cn2Profile(object):
         return 1. / np.cos(zenithInRad)
 
     def airmass(self):
+        '''
+        Returns
+        -------
+        airmass: float
+            airmass at specified zenith angle
+        '''
         return self._airmass * u.dimensionless_unscaled
 
     def layers_distance(self):
@@ -225,18 +273,21 @@ class Cn2Profile(object):
 
     def r0(self):
         '''
-        Returns:
-            r0 (float): Fried parameter at specified lambda and zenith angle
+        Returns
+        -------
+        r0: :class:`~astropy:astropy.units.quantity.Quantity` equivalent to meters
+            Fried parameter at defined wavelength and zenith angle
         '''
-        return (0.422727 * self._airmass * 
-                (2 * np.pi / self._lambda) ** 2 * 
+        return (0.422727 * self._airmass *
+                (2 * np.pi / self._lambda) ** 2 *
                 np.sum(self._layersJs)) ** (-3. / 5) * u.m
 
     def r0s(self):
         '''
-        Returns:
-            r0s (numpy array): Fried parameter at specified lambda
-            and zenith angle for each layer
+        Returns
+        -------
+        r0: :class:`~astropy:astropy.units.quantity.Quantity` equivalent to meters of :class:`~numpy:numpy.ndarray`
+            Fried parameter of each layer at defined wavelength and zenith angle 
         '''
         return self._js2r0(self._layersJs,
                            self._airmass,
@@ -248,9 +299,9 @@ class Cn2Profile(object):
             theta0 (float): isoplanatic angle at specified lambda and zenith
                 angle [arcsec]
         '''
-        return (2.914 * self._airmass ** (8. / 3) * 
-                (2 * np.pi / self._lambda) ** 2 * 
-                np.sum(self._layersJs * 
+        return (2.914 * self._airmass ** (8. / 3) *
+                (2 * np.pi / self._lambda) ** 2 *
+                np.sum(self._layersJs *
                        self._layersAltitudeInMeterAtZenith ** (5. / 3))
                 ) ** (-3. / 5) * Constants.RAD2ARCSEC * u.arcsec
 
@@ -259,9 +310,9 @@ class Cn2Profile(object):
         Returns:
             tau0 (float): tau0 at specified lambda and zenith angle [sec]
         '''
-        return (2.914 * self._airmass * 
-                (2 * np.pi / self._lambda) ** 2 * 
-                np.sum(self._layersJs * 
+        return (2.914 * self._airmass *
+                (2 * np.pi / self._lambda) ** 2 *
+                np.sum(self._layersJs *
                        self._layersWindSpeed ** (5. / 3))
                 ) ** (-3. / 5) * u.s
 
