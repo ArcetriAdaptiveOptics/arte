@@ -21,7 +21,7 @@ arte.utils.capture_output module
    :show-inheritance:
 
 arte.utils.circular_buffer module
-------------------------------
+----------------------------------
 
 .. automodule:: arte.utils.circular_buffer
    :members:
@@ -40,14 +40,6 @@ arte.utils.constants module
 ------------------------------
 
 .. automodule:: arte.utils.constants
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.coordinates module
---------------------------------
-
-.. automodule:: arte.utils.coordinates
    :members:
    :undoc-members:
    :show-inheritance:
@@ -109,14 +101,6 @@ arte.utils.image\_moments module
    :undoc-members:
    :show-inheritance:
 
-arte.utils.integrator module
--------------------------------
-
-.. automodule:: arte.utils.integrator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   
 arte.utils.iterators module
 -------------------------------
 

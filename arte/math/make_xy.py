@@ -52,8 +52,8 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
     quarter: bool, optional
              If True, only 1st quadrant is returned with (X>=0 AND Y>=0).
              The array returned has:
-               * if Sampling is even: Sampling/2 X Sampling/2 elements
-               * if Sampling is odd:  (Sampling+1)/2 X (Sampling+1)/2 elements
+             * if Sampling is even: Sampling/2 X Sampling/2 elements
+             * if Sampling is odd:  (Sampling+1)/2 X (Sampling+1)/2 elements
     fft: bool, optional
          If True, order the output values for FFT purposes. For example:
 
@@ -178,7 +178,7 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
 
 def _xy_to_polar(x, y):
 
-    r = np.sqrt(x*x + y*y)
+    r = np.sqrt(x * x + y * y)
     y = np.arctan2(y, x)
     return r, y
 

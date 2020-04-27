@@ -34,6 +34,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               'sphinx.ext.napoleon',
               "sphinx.ext.intersphinx",
+              "nbsphinx",
               ]
 intersphinx_mapping = {
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
