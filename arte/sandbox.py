@@ -23,14 +23,14 @@ class Test1():
 
         self._tb = TurbulentPhase()
         self._pxSize = self._pupDiameterInMeters / self._pupDiameterInPixels
-        self._freqs = bfft.frequenciesNormMap(self._pupDiameterInPixels,
+        self._freqs = bfft.frequencies_norm_map(self._pupDiameterInPixels,
                                               self._pxSize)
-        self._dist = bfft.distancesNormMap(self._pupDiameterInPixels,
+        self._dist = bfft.distances_norm_map(self._pupDiameterInPixels,
                                            self._pxSize)
         self._mapCenter = (np.asarray(self._dist.shape) / 2).astype(np.int)
         self._psd = self._tb.vonKarmanPowerSpectralDensity(self._r0, self._L0,
                                                            self._freqs)
-        self._phaseAC = bfft.directTransform(self._psd).real
+        self._phaseAC = bfft.direct_transform(self._psd).real
         self._phaseSTF = 2 * (
             self._phaseAC[self._mapCenter[0], self._mapCenter[1]] -
             self._phaseAC)

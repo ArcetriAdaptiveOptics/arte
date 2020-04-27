@@ -236,22 +236,22 @@ class FourierAdaptiveOptics(object):
         self._stf = 2 * (ac[cc[0], cc[1]] - ac)
 
     def _createFocalPlaneCoordinatesInArcSec(self):
-        return bfft.distancesXMap(
+        return bfft.distances_x_map(
             self.focalPlaneSizeInPixels(),
             self.focalPlanePixelSizeInArcsec())
 
     def _createFocalPlaneAngularFrequencyCoordinatesInInverseRadians(self):
-        return bfft.frequenciesXMap(
+        return bfft.frequencies_x_map(
             self.focalPlaneSizeInPixels(),
             self.focalPlanePixelSizeInArcsec() * self.ARCSEC2RAD)
 
     def _createPupilPlaneCoordinatesInMeters(self):
-        return bfft.distancesXMap(
+        return bfft.distances_x_map(
             self.focalPlaneSizeInPixels(),
             self.pupilPlanePixelSizeInMeters())
 
     def _createPupilPlaneSpatialFrequencyCoordiantesInInverseMeters(self):
-        return bfft.frequenciesXMap(
+        return bfft.frequencies_x_map(
             self.focalPlaneSizeInPixels(),
             self.pupilPlanePixelSizeInMeters())
 

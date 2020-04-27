@@ -36,6 +36,7 @@ class ScalarBidimensionalFunction(object):
            - xmap is passed, but not ymap
            - both xmap/ymap and a domain has been passed
            - values_array is not a 2d array
+           - shapes of values and xmap/ymap or domain don't match
     '''
 
     def __init__(self, values_array, xmap=None, ymap=None, domain=None):
@@ -69,7 +70,10 @@ class ScalarBidimensionalFunction(object):
         self._check_shapes()
 
     def _check_shapes(self):
-        assert self.values.shape == self._domain.shape
+        if not self.values.shape == self._domain.shape:
+            raise ValueError(
+                "values shape (%s) don't match domain shape (%s)" %
+                (str(self.values.shape), str(self._domain.shape)))
 
     @property
     def values(self):

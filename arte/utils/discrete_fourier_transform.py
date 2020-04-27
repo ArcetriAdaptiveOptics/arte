@@ -6,30 +6,30 @@ from arte.types.domainxy import DomainXY
 class BidimensionalFourierTransform(object):
 
     @staticmethod
-    def distancesXMap(sizeInPoints, pixelSize):
+    def distances_x_map(sizeInPoints, pixelSize):
         domain = DomainXY.from_shape((sizeInPoints, sizeInPoints), pixelSize)
         return domain.xcoord
 
     @staticmethod
-    def distancesNormMap(sizeInPoints, pixelSize):
+    def distances_norm_map(sizeInPoints, pixelSize):
         domain = DomainXY.from_shape((sizeInPoints, sizeInPoints), pixelSize)
         return np.linalg.norm(np.dstack((domain.xmap, domain.ymap)), axis=2)
 
     @staticmethod
-    def frequenciesNormMap(sizeInPoints, pixelSize):
+    def frequencies_norm_map(sizeInPoints, pixelSize):
         n = sizeInPoints
         a = np.tile(np.fft.fftfreq(n, d=pixelSize), (n, 1))
         return np.fft.fftshift(np.linalg.norm(np.dstack((a, a.T)), axis=2))
 
     @staticmethod
-    def frequenciesXMap(sizeInPoints, pixelSize):
+    def frequencies_x_map(sizeInPoints, pixelSize):
         n = sizeInPoints
         a = np.tile(np.fft.fftfreq(n, d=pixelSize), (n, 1))
         return np.fft.fftshift(a)
 
     @staticmethod
-    def frequenciesYMap(sizeInPoints, pixelSize):
-        return BidimensionalFourierTransform.frequenciesXMap(
+    def frequencies_y_map(sizeInPoints, pixelSize):
+        return BidimensionalFourierTransform.frequencies_x_map(
             sizeInPoints, pixelSize).T
 
     @staticmethod
@@ -40,7 +40,7 @@ class BidimensionalFourierTransform(object):
             return False
 
     @staticmethod
-    def mostPositiveFrequency(sizeInPoints, pixelSize):
+    def most_positive_frequency(sizeInPoints, pixelSize):
         sizeInLengthUnits = sizeInPoints * pixelSize
         if BidimensionalFourierTransform._isEven(sizeInPoints):
             return (0.5 * sizeInPoints - 1) / sizeInLengthUnits
@@ -48,7 +48,7 @@ class BidimensionalFourierTransform(object):
             return 0.5 * (sizeInPoints - 1) / sizeInLengthUnits
 
     @staticmethod
-    def mostNegativeFrequency(sizeInPoints, pixelSize):
+    def most_negative_frequency(sizeInPoints, pixelSize):
         sizeInLengthUnits = sizeInPoints * pixelSize
         if BidimensionalFourierTransform._isEven(sizeInPoints):
             return -0.5 * sizeInPoints / sizeInLengthUnits
@@ -56,12 +56,12 @@ class BidimensionalFourierTransform(object):
             return -0.5 * (sizeInPoints - 1) / sizeInLengthUnits
 
     @staticmethod
-    def smallestFrequency(sizeInPoints, pixelSize):
+    def smallest_frequency(sizeInPoints, pixelSize):
         sizeInLengthUnits = sizeInPoints * pixelSize
         return 1. / sizeInLengthUnits
 
     @staticmethod
-    def directTransform(data):
+    def direct_transform(data):
         res = np.fft.fftshift(
             np.fft.fft2(
                 np.fft.fftshift(data, axes=(-1, -2)),
@@ -70,7 +70,7 @@ class BidimensionalFourierTransform(object):
         return res
 
     @staticmethod
-    def inverseTransform(data):
+    def inverse_transform(data):
         res = np.fft.ifftshift(
             np.fft.ifft2(
                 np.fft.ifftshift(data),
@@ -79,28 +79,28 @@ class BidimensionalFourierTransform(object):
 
     @staticmethod
     def direct(xyFunct):
-        sizeInPx = xyFunct.values.shape[0]
-        pxSize = xyFunct.domain.step
+        sizeY, sizeX = xyFunct.values.shape
+        pxSizeX, pxSizeY = xyFunct.domain.step
         return ScalarBidimensionalFunction(
-            BidimensionalFourierTransform.directTransform(
+            BidimensionalFourierTransform.direct_transform(
                 xyFunct.values),
-            xmap=BidimensionalFourierTransform.frequenciesXMap(
-                sizeInPx, pxSize[1]),
-            ymap=BidimensionalFourierTransform.frequenciesYMap(
-                sizeInPx, pxSize[0])
+            xmap=BidimensionalFourierTransform.frequencies_x_map(
+                sizeX, pxSizeX),
+            ymap=BidimensionalFourierTransform.frequencies_y_map(
+                sizeY, pxSizeY)
         )
 
     @staticmethod
     def inverse(xyFunct):
-        sizeInPx = xyFunct.values.shape[0]
-        pxSize = xyFunct.domain.step
+        sizeY, sizeX = xyFunct.values.shape
+        pxSizeX, pxSizeY = xyFunct.domain.step
         return ScalarBidimensionalFunction(
-            BidimensionalFourierTransform.inverseTransform(
+            BidimensionalFourierTransform.inverse_transform(
                 xyFunct.values),
-            xmap=BidimensionalFourierTransform.frequenciesXMap(
-                sizeInPx, pxSize[1]),
-            ymap=BidimensionalFourierTransform.frequenciesYMap(
-                sizeInPx, pxSize[0]),
+            xmap=BidimensionalFourierTransform.frequencies_x_map(
+                sizeX, pxSizeX),
+            ymap=BidimensionalFourierTransform.frequencies_y_map(
+                sizeY, pxSizeY)
         )
 
 #     @staticmethod
