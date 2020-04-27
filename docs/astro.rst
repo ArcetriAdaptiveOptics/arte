@@ -13,22 +13,6 @@ Module contents
 Submodules
 ----------
 
-arte.astro.mag_estimator module
--------------------------------
-
-.. automodule:: arte.astro.mag_estimator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.astro.n_phot module
-------------------------
-
-.. automodule:: arte.astro.n_phot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 arte.astro.telescopes module
 ----------------------------
 

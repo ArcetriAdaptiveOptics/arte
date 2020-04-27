@@ -75,9 +75,9 @@ class MagEstimator():
 
     _Band = namedtuple('Band', 'wl ergs')
     _bands = {
-        'R': _Band(650e-9*u.m, 2.28665e-9*u.erg/u.s/u.cm**2/u.angstrom),
-        'I': _Band(900e-9*u.m, 1.22603e-9*u.erg/u.s/u.cm**2/u.angstrom),
-        'V': _Band(532e-9*u.m, 3.60994e-9*u.erg/u.s/u.cm**2/u.angstrom),
+        'R': _Band(650e-9 * u.m, 2.28665e-9 * u.erg / u.s / u.cm ** 2 / u.angstrom),
+        'I': _Band(900e-9 * u.m, 1.22603e-9 * u.erg / u.s / u.cm ** 2 / u.angstrom),
+        'V': _Band(532e-9 * u.m, 3.60994e-9 * u.erg / u.s / u.cm ** 2 / u.angstrom),
         }
 
     @unit_check
@@ -87,13 +87,13 @@ class MagEstimator():
                        detector_bandwidth=300 * u.nm,
                        detector_freq=1.0 * u.Hz,
                        detector_gain=1,
-                       detector_adu_e_ratio=1.0 * u.electron/u.adu,
+                       detector_adu_e_ratio=1.0 * u.electron / u.adu,
                        detector_nsubaps=1,
                        wfs_transmission=1.0,
-                       detector_qe=1.0 * u.electron/u.ph):
+                       detector_qe=1.0 * u.electron / u.ph):
 
         if detector_bandname not in self._bands:
-            raise ValueError('Unsupported band: '+ str(detector_bandname))
+            raise ValueError('Unsupported band: ' + str(detector_bandname))
 
         self._total_adus = total_adus
         self._detector_gain = detector_gain
@@ -121,7 +121,7 @@ class MagEstimator():
 
         photons = self._ergs_to_photons(ergs, wl)
 
-        return (photons * self._telescope.area() * self._bandwidth).to(u.ph/u.s)
+        return (photons * self._telescope.area() * self._bandwidth).to(u.ph / u.s)
 
     def _ergs_to_photons(self, ergs, wl):
         '''
@@ -131,7 +131,7 @@ class MagEstimator():
         https://hea-www.harvard.edu/~pgreen/figs/Conversions.pdf
         http://www.stsci.edu/~strolger/docs/UNITS.txt
         '''
-        return ergs * 5.0341125e7 * wl.to(u.angstrom).value * (u.ph/u.erg)
+        return ergs * 5.0341125e7 * wl.to(u.angstrom).value * (u.ph / u.erg)
 
     def photons_per_subap_per_frame(self):
         '''Photons/subap/frame detected by sensor'''

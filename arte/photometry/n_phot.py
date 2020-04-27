@@ -4,16 +4,18 @@ from __future__ import print_function
 
 # TODO add astropy units
 
-def n_phot( mag,
-            band=None,
-            surf=1.0,
-            delta_t=1.0,
-            lambda_=None,
-            width=None,
-            e0=None,
-            back_mag=None,
-            model='default',
-            verbose=False):
+
+def n_phot(
+        mag,
+        band=None,
+        surf=1.0,
+        delta_t=1.0,
+        lambda_=None,
+        width=None,
+        e0=None,
+        back_mag=None,
+        model='default',
+        verbose=False):
     '''
     This routine computes from a source magnitude the corresponding
     number of photons for a given band, a given surface and a given time
@@ -196,7 +198,7 @@ def n_phot( mag,
         print('BAND CENTRAL WAVELENGTH : ', mymodel.lambda_tab[idx_band])
 
     if width is None:
-        width = mymodel.width_tab[idx_band]   # bandwidth[m]
+        width = mymodel.width_tab[idx_band]  # bandwidth[m]
 
     if back_mag is None:
         back_mag = mymodel.back_mag_tab[idx_band]  # sky background magnitude
@@ -204,14 +206,14 @@ def n_phot( mag,
     if e0 is None:
         e0 = mymodel.e0_tab[idx_band]  # A0 star 0-mag. brightness [J/s/m^2/um]
 
-    h = 6.626e-34             # Planck constant [Js]
-    c = 3e8                   # light velocity [m/s]
+    h = 6.626e-34  # Planck constant [Js]
+    c = 3e8  # light velocity [m/s]
 
     # source number of photons
-    nb_of_photons = lambda_*delta_t*surf*(width*1e6)*e0/(h*c) * 10**(-mag/2.5)
+    nb_of_photons = lambda_ * delta_t * surf * (width * 1e6) * e0 / (h * c) * 10 ** (-mag / 2.5)
 
     # sky background nb of photons
-    background = lambda_*delta_t*surf*(width*1e6)*e0/(h*c) * 10**(-back_mag/2.5)
+    background = lambda_ * delta_t * surf * (width * 1e6) * e0 / (h * c) * 10 ** (-back_mag / 2.5)
 
     return (nb_of_photons, background)
 
@@ -243,30 +245,30 @@ class DefaultModel():
 
     # default sky background magnitudes:
     back_mag_tab = \
-      [23.,  22.,  21.,  20., 19.5,  14., 13.5, 12.5,   3.,   0.,  23.]
+      [23., 22., 21., 20., 19.5, 14., 13.5, 12.5, 3., 0., 23.]
 
     # list(map()) should work on both python2 and 3
     lambda_tab = list(map(lambda x: x * 1e-6, lambda_tab))
-    width_tab  = list(map(lambda x: x * 1e-6, width_tab))
-    e0_tab     = list(map(lambda x: x * 1e-10, e0_tab))
+    width_tab = list(map(lambda x: x * 1e-6, width_tab))
+    e0_tab = list(map(lambda x: x * 1e-10, e0_tab))
 
 
 class Maory1Model():
     '''based on E-SPE-ESO-276-0206 issue 1 and MAORY Tech Notes 19 Dec 2007'''
 
-    band_tab     = ['V',   'R',  'I', ' J',  'H',  'K']
-    lambda_tab   = [0.54, 0.65, 0.80, 1.25, 1.65, 2.20]  # 1e-6
-    width_tab    = [.090, .130, .200, .300, .350, .400]  # 1e-6
-    e0_tab       = [368., 177., 119., 28.6, 10.8, 3.79]  # 1e-10
+    band_tab = ['V', 'R', 'I', ' J', 'H', 'K']
+    lambda_tab = [0.54, 0.65, 0.80, 1.25, 1.65, 2.20]  # 1e-6
+    width_tab = [.090, .130, .200, .300, .350, .400]  # 1e-6
+    e0_tab = [368., 177., 119., 28.6, 10.8, 3.79]  # 1e-10
     back_mag_tab = [21.4, 20.6, 19.7, 16.5, 14.4, 13.0]
 
     # list(map()) should work on both python2 and 3
     lambda_tab = list(map(lambda x: x * 1e-6, lambda_tab))
-    width_tab  = list(map(lambda x: x * 1e-6, width_tab))
-    e0_tab     = list(map(lambda x: x * 1e-10, e0_tab))
-
+    width_tab = list(map(lambda x: x * 1e-6, width_tab))
+    e0_tab = list(map(lambda x: x * 1e-10, e0_tab))
 
 # Add models as function attributes
+
 
 n_phot.default_model = DefaultModel()
 n_phot.maory_model = Maory1Model()
