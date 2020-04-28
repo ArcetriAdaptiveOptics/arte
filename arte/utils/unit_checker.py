@@ -44,6 +44,7 @@ def make_sure_its_a(unit, v, name=''):
         raise u.UnitsError(errmsg)
     return normalized
 
+
 def get_the_unit_if_it_has_one(var):
     '''Returns the argument unit, or 1 if it does not have any.
 
@@ -71,38 +72,6 @@ def get_the_unit_if_it_has_one(var):
         return var.unit
     else:
         return 1
-
-def separate_value_and_unit(var):
-    '''Returns the argument value and unit, if `var` has one.
-    
-    If not, `var` is returned unchanged and unit is set to 1.
-
-    Parameters
-    ----------
-    var: any type
-        the variable to be tested
-
-    Returns
-    -------
-    value, unit
-        tuple with the value and the astropy unit of `var`
-        or 1 if `var` does not have a unit.
-
-    Examples
-    --------
-    >>> a = 42 * u.m
-    >>> separate_value_and_unit(a)
-    (42.0, Unit("m"))
-
-    >>> b = 42
-    >>> separate_value_and_unit(b)
-    (42, 1)
-    '''
-    if isinstance(var, u.Quantity):
-        return var.value, var.unit
-    else:
-        return var, 1
-
 
 def match_and_remove_unit(var, var_to_match):
     '''
@@ -209,7 +178,6 @@ def assert_array_almost_equal_w_units(a, b):
     a_, b_, _ = match_and_remove_units(a, b)
     np.testing.assert_array_almost_equal(a_, b_)
 
-# ___oOo___
 
 def unit_check(f):
     '''
