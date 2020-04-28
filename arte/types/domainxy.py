@@ -5,8 +5,8 @@ import astropy.units as u
 
 from arte.utils.help import add_help
 from arte.math.make_xy import make_xy
-from arte.utils.astropy_utils import get_the_unit_if_it_has_one, \
-                                     match_and_remove_units
+from arte.utils.unit_checker import get_the_unit_if_it_has_one, \
+                                    match_and_remove_units
 
 
 def _accept_one_or_two_elements(x, name=''):

@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import doctest
 import unittest
+import numpy as np
 import astropy.units as u
 from arte.utils.unit_checker import unit_check
+from arte.utils.unit_checker import assert_array_almost_equal_w_units
 
 class UnitCheckTest(unittest.TestCase):
 
@@ -39,3 +42,18 @@ class UnitCheckTest(unittest.TestCase):
 
         with self.assertRaises(u.UnitsError):
             self.a(b=2*u.m)
+
+    def test_docstrings(self):
+        from arte.utils import unit_checker
+        doctest.testmod(unit_checker, raise_on_error=True)
+        
+    def test_assert_array_almost_equal_w_units(self):
+        
+        a = np.arange(5)*u.mm
+        b = np.arange(5)*u.mm
+        c = np.arange(5)*u.mm +1*u.mm
+        
+        assert_array_almost_equal_w_units(a, b)
+
+        with self.assertRaises(AssertionError):
+            assert_array_almost_equal_w_units(a, c)

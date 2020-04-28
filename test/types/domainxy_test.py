@@ -7,7 +7,7 @@ import astropy.units as u
 
 from arte.math.make_xy import make_xy
 from arte.types.domainxy import DomainXY
-from arte.utils.astropy_utils import assert_array_almost_equal_w_units
+from arte.utils.unit_checker import assert_array_almost_equal_w_units
 
 
 class DomainXYTest(unittest.TestCase):
