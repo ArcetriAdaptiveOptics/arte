@@ -1,6 +1,7 @@
 import numpy as np
 from arte.types.scalar_bidimensional_function import ScalarBidimensionalFunction
 from arte.types.domainxy import DomainXY
+from arte.utils.unit_checker import get_the_unit_if_it_has_one, make_sure_its_a
 
 
 class BidimensionalFourierTransform(object):
@@ -62,20 +63,22 @@ class BidimensionalFourierTransform(object):
 
     @staticmethod
     def direct_transform(data):
+        unit = get_the_unit_if_it_has_one(data)
         res = np.fft.fftshift(
             np.fft.fft2(
                 np.fft.fftshift(data, axes=(-1, -2)),
                 norm="ortho"),
             axes=(-1, -2))
-        return res
+        return make_sure_its_a(unit, res)
 
     @staticmethod
     def inverse_transform(data):
+        unit = get_the_unit_if_it_has_one(data)
         res = np.fft.ifftshift(
             np.fft.ifft2(
                 np.fft.ifftshift(data),
                 norm="ortho"))
-        return res
+        return make_sure_its_a(unit, res)
 
     @staticmethod
     def direct(xyFunct):
@@ -85,9 +88,9 @@ class BidimensionalFourierTransform(object):
             BidimensionalFourierTransform.direct_transform(
                 xyFunct.values),
             xmap=BidimensionalFourierTransform.frequencies_x_map(
-                sizeX, pxSizeX),
+                sizeX, pxSizeX) * (1 / xyFunct.domain.unit[0]),
             ymap=BidimensionalFourierTransform.frequencies_y_map(
-                sizeY, pxSizeY)
+                sizeY, pxSizeY) * (1 / xyFunct.domain.unit[1])
         )
 
     @staticmethod
@@ -98,9 +101,9 @@ class BidimensionalFourierTransform(object):
             BidimensionalFourierTransform.inverse_transform(
                 xyFunct.values),
             xmap=BidimensionalFourierTransform.frequencies_x_map(
-                sizeX, pxSizeX),
+                sizeX, pxSizeX) * (1 / xyFunct.domain.unit[0]),
             ymap=BidimensionalFourierTransform.frequencies_y_map(
-                sizeY, pxSizeY)
+                sizeY, pxSizeY) * (1 / xyFunct.domain.unit[1])
         )
 
 #     @staticmethod

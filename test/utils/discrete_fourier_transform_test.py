@@ -302,6 +302,21 @@ class BidimensionalFourierTransformTest(unittest.TestCase):
         self.assertTrue(spectr.ycoord.unit.is_equivalent((1 / u.kg).unit))
         self.assertTrue(spectr.values.unit.is_equivalent((u.V)))
 
+    def test_inverse_units(self):
+        from astropy import units as u
+        szx, szy = (20, 10)
+        stepx, stepy = (0.1 * u.m, 0.4 * u.kg)
+        ampl = 1.0 * u.V
+        xy = DomainXY.from_shape((szy, szx), (stepy, stepx))
+        map_in_V = ampl * np.ones(xy.shape)
+        spatial_funct = ScalarBidimensionalFunction(map_in_V, domain=xy)
+        spectr = bfft.inverse(spatial_funct)
+        self.assertTrue(spectr.xmap.unit.is_equivalent((1 / u.m).unit))
+        self.assertTrue(spectr.ymap.unit.is_equivalent((1 / u.kg).unit))
+        self.assertTrue(spectr.xcoord.unit.is_equivalent((1 / u.m).unit))
+        self.assertTrue(spectr.ycoord.unit.is_equivalent((1 / u.kg).unit))
+        self.assertTrue(spectr.values.unit.is_equivalent((u.V)))
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
