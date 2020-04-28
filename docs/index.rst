@@ -15,8 +15,6 @@ Arcetri Random sTuff collEction (arte, pronounced "àr-te") is open-source softw
    :maxdepth: 1
 
    install_upgrade
-   api
-   release
 
 
 Tutorial

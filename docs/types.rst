@@ -12,6 +12,14 @@ arte.types.aperture module
    :undoc-members:
    :show-inheritance:
 
+arte.types.domainxy module
+-----------------------------
+
+.. automodule:: arte.types.domainxy
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 arte.types.fisba\_measure module
 -----------------------------------
 

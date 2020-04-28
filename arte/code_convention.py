@@ -40,19 +40,19 @@ class NiceWriter:
     def public_work(self, an_argument):
         """
         One-liner description here.
-        
+
         More detailed description here, using reStructuredText if needed.
-        
+
         Parameters
         ----------
         an_argument: string
            argument description here.
-           
+
         Returns
         -------
         k: int
            whatever.
-            
+
         """
         if self._path.startswith(an_argument):
             os.chdir(self.A_CLASS_CONSTANT)
@@ -68,7 +68,7 @@ class NiceWriter:
         while k < 9:
             a_container.append(j + k)
             k = k + 1
-        
+
         return sum(a_container)
 
     def _say_something_private(self, x):

@@ -15,7 +15,7 @@ arte.math.make_xy module
 Module contents
 ---------------
 
-.. automodule:: arte.misc
+.. automodule:: arte.math
    :members:
    :undoc-members:
    :show-inheritance:

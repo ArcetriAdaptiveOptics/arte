@@ -2,7 +2,8 @@
 import math
 import unittest
 
-from arte.astro.n_phot import n_phot
+from arte.photometry.n_phot import n_phot
+
 
 class NPhotTest(unittest.TestCase):
 
@@ -14,12 +15,11 @@ class NPhotTest(unittest.TestCase):
         '''
         nb_of_photons, background = n_phot(5.,
                                            band='V',
-                                           surf=math.pi*(8.**2)/4,
+                                           surf=math.pi * (8.**2) / 4,
                                            delta_t=12.)
 
         self.assertAlmostEqual(nb_of_photons, 58226029796.93801)
         self.assertAlmostEqual(background, 23180.19997502259)
-
 
     def test_nphot2(self):
         '''
@@ -28,13 +28,12 @@ class NPhotTest(unittest.TestCase):
         '''
         nb_of_photons, background = n_phot(5.,
                                            band='V',
-                                           surf=math.pi*(8.**2)/4,
+                                           surf=math.pi * (8.**2) / 4,
                                            delta_t=12.,
                                            back_mag=19.5)
 
         self.assertAlmostEqual(nb_of_photons, 58226029796.93801)
         self.assertAlmostEqual(background, 92282.03824920504)
-
 
     def test_nphot3(self):
         '''
@@ -44,7 +43,7 @@ class NPhotTest(unittest.TestCase):
         nb_of_photons, background = n_phot(5.,
                                            lambda_=5.4E-7,
                                            width=1E-8,
-                                           surf=math.pi*(8.**2)/4,
+                                           surf=math.pi * (8.**2) / 4,
                                            delta_t=12.,
                                            back_mag=19.5)
 

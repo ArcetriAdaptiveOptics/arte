@@ -70,26 +70,26 @@ def compareIDL(idlscript, pythonscript, vars_to_compare,
            pythonscript = '\n'.join(pythonscript)
 
     p = subprocess.Popen('idl', stdin=subprocess.PIPE, shell=True)
-    p.communicate((idlscript+savecmd).encode())
+    p.communicate((idlscript + savecmd).encode())
     idldata = readsav(tmpfile)
 
     exec(pythonscript)
 
-    good =[]
+    good = []
     for varname in vars_to_compare:
         idlvar = idldata[varname]
         pyvar = locals()[varname]
 
         if pyvar is None:
-           print('%s is None, cannot compare' % varname)
-           return False
+            print('%s is None, cannot compare' % varname)
+            return False
 
-        goodvar = np.all( np.isclose(idlvar, pyvar))
+        goodvar = np.all(np.isclose(idlvar, pyvar))
         if verbose and not goodvar:
-           print('%s differs' % varname)
-           if verbose > 1:
-               print('IDL value   : ', idlvar)
-               print('Python value: ', pyvar)
+            print('%s differs' % varname)
+            if verbose > 1:
+                print('IDL value   : ', idlvar)
+                print('Python value: ', pyvar)
         good.append(goodvar)
 
     return all(good)

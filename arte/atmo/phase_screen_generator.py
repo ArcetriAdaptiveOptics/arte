@@ -74,9 +74,9 @@ class PhaseScreenGenerator(object):
         nSub= 3
         lowFreqScreen= np.zeros((self._screenSzInPx, self._screenSzInPx),
                                 dtype=np.complex)
-        freqX= bfft.frequenciesXMap(nSub, 1./ nSub)
-        freqY= bfft.frequenciesYMap(nSub, 1./ nSub)
-        freqMod= bfft.frequenciesNormMap(nSub, 1./ nSub)
+        freqX= bfft.frequencies_x_map(nSub, 1./ nSub)
+        freqY= bfft.frequencies_y_map(nSub, 1./ nSub)
+        freqMod= bfft.frequencies_norm_map(nSub, 1./ nSub)
         vv= np.arange(self._screenSzInPx) / self._screenSzInPx
         xx= np.tile(vv, (self._screenSzInPx, 1))
         yy= xx.T

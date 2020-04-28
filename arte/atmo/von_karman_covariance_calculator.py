@@ -11,6 +11,8 @@ from arte.utils.zernike_generator import ZernikeGenerator
 
 class VonKarmanSpatioTemporalCovariance():
     """
+    Covariance of Von Karman atmospheric turbulence
+
     This class computes the covariance and its Fourier transform, the Cross
     Power Spectral Density (CPSD), between Zernike coefficients describing
     the turbulence induced phase aberrations of two sources seen by two
@@ -19,13 +21,13 @@ class VonKarmanSpatioTemporalCovariance():
 
     References
     ----------
-    Plantet et al. (2020) - "Spatio-temporal statistics of the turbulent
+        Plantet et al. (2020) - "Spatio-temporal statistics of the turbulent
         Zernike coefficients and piston-removed phase from two distinct beams".
 
-    Plantet et al. (2018) - "LO WFS of MAORY: performance and sky coverage
+        Plantet et al. (2018) - "LO WFS of MAORY: performance and sky coverage
         assessment."
 
-    Whiteley et al. (1998) - "Temporal properties of the Zernike expansion
+        Whiteley et al. (1998) - "Temporal properties of the Zernike expansion
         coefficients of turbulence-induced phase aberrations for aperture
         and source motion".
 
@@ -44,7 +46,7 @@ class VonKarmanSpatioTemporalCovariance():
     aperture1: `~arte.types.aperture.CircularOpticalAperture`
         Geometry of the first optical aperture.
         (e.g. aperture1 = arte.types.aperture.CircularOpticalAperture(
-                                                    10, (0, 0, 0)))
+        10, (0, 0, 0)))
 
     aperture2: `~arte.types.aperture.CircularOpticalAperture`
         Geometry of the second optical aperture.
@@ -52,8 +54,8 @@ class VonKarmanSpatioTemporalCovariance():
     cn2_profile: `~arte.atmo.cn2_profile`
         Cn2 profile.
         (e.g. cn2_eso = arte.atmo.cn2_profile.EsoEltProfiles.Q1()
-         e.g. cn2_invented = arte.atmo.cn2_profile.Cn2Profile.from_r0s(
-            [0.16], [25], [10e3], [0.1], [0]))
+        e.g. cn2_invented = arte.atmo.cn2_profile.Cn2Profile.from_r0s(
+        [0.16], [25], [10e3], [0.1], [0]))
 
     spat_freqs: `numpy.ndarray`
         Range of spatial frequencies that are used in Zernike covariance,
@@ -396,15 +398,15 @@ class VonKarmanSpatioTemporalCovariance():
         self._c4 = np.pi / 4 * (1 - self._deltaj) * ((-1) ** j - 1)
         self._c5 = np.pi / 4 * (1 - self._deltak) * ((-1) ** k - 1)
 
-        integFunc = 2 * self._c0 * self._c1 * 1j**(0.5 * ((-1)**(
+        integFunc = 2 * self._c0 * self._c1 * 1j ** (0.5 * ((-1) ** (
             self._nj + self._nk) - 1)) / (vl * np.pi) * \
             self._psd / f ** 2 * self._b1 * self._b2 * \
             (np.cos(2 * np.pi * f * self._sl * np.cos(th1 - self._thS) +
-                    np.pi / 4 * ((-1)**(self._nj + self._nk) - 1)) *
+                    np.pi / 4 * ((-1) ** (self._nj + self._nk) - 1)) *
              np.cos(self._mj * th1 + self._c4) *
              np.cos(self._mk * th1 + self._c5) +
              np.cos(2 * np.pi * f * self._sl * np.cos(th2 - self._thS) +
-                    np.pi / 4 * ((-1)**(self._nj + self._nk) - 1)) *
+                    np.pi / 4 * ((-1) ** (self._nj + self._nk) - 1)) *
              np.cos(self._mj * th2 + self._c4) *
              np.cos(self._mk * th2 + self._c5))
         return integFunc, fPerp

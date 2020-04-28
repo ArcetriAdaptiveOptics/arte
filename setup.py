@@ -9,17 +9,15 @@ NAME = 'arte'
 DESCRIPTION = 'Arcetri Random sTuff collEction'
 URL = 'https://github.com/ArcetriAdaptiveOptics/arte'
 EMAIL = 'lorenzo.busoni@inaf.it'
-AUTHOR = 'Lorenzo Busoni'
-LICENSE= 'MIT'
-KEYWORDS= 'Adaptive Optics, Astrophysics, INAF, Arcetri',
-
+AUTHOR = 'Lorenzo Busoni, Alfio Puglisi, INAF Arcetri Adaptive Optics group'
+LICENSE = 'MIT'
+KEYWORDS = 'Adaptive Optics, Astrophysics, INAF, Arcetri',
 
 here = os.path.abspath(os.path.dirname(__file__))
 # Load the package's __version__.py module as a dictionary.
 about = {}
 with open(os.path.join(here, NAME, '__version__.py')) as f:
     exec(f.read(), about)
-
 
 
 class UploadCommand(Command):
@@ -83,11 +81,12 @@ setup(name=NAME,
       package_data={
           'arte': ['data/*'],
       },
-      install_requires=["numpy",
+      install_requires=["numpy>1.17",
                         "scipy",
                         "matplotlib",
                         "astropy",
-                        "synphot"
+                        "synphot",
+                        "pytest"
                         ],
       include_package_data=True,
       test_suite='test',

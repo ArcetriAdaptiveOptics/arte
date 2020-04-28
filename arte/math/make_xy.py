@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 #  who           when        what
 #  --------      ---------   ------------
 #  A. Riccardi   April 1995  Written
@@ -6,7 +6,7 @@
 #                            the code. Ratio can be any positive number,
 #                            no longer constrained to be larger than Sampling.
 #  A. Puglisi    2019-09-08  ported to Python, added dtype parameter
-################################################################################
+###############################################################################
 
 import numpy as np
 
@@ -19,12 +19,12 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
     Generates a zero-centered domain on a cartesian plane or axis,
     using cartesian or polar coordinates, tipically for pupil sampling
     and FFT usage.
- 
+
     Calling sequence::
 
        x,y = make_xy(sampling, ratio)
        r, theta = make_xy(sampling, ratio, polar=True)
- 
+
     Parameters
     ----------
     sampling: int
@@ -33,9 +33,8 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
     ratio: float
            Extension of sampled domain: -Ratio <= x [,y] <= +Ratio
 
-    Other parameters
+    Other Parameters
     ----------------
-
     polar: bool, optional
            If True, return domain sampling in polar coordinates. Default
            value is False (use cartesian coordinates)
@@ -53,15 +52,15 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
     quarter: bool, optional
              If True, only 1st quadrant is returned with (X>=0 AND Y>=0).
              The array returned has:
-               * if Sampling is even: Sampling/2 X Sampling/2 elements
-               * if Sampling is odd:  (Sampling+1)/2 X (Sampling+1)/2 elements
+             * if Sampling is even: Sampling/2 X Sampling/2 elements
+             * if Sampling is odd:  (Sampling+1)/2 X (Sampling+1)/2 elements
     fft: bool, optional
          If True, order the output values for FFT purposes. For example:
 
          * Sampling=4, Ratio=1 vector -3/4,-1/4,+1/4,+3/4 is returned as +1/4,+3/4,-3/4,-1/4.
          * Sampling=4, Ratio=1, /ZERO_SAMPLING vector -1,-1/2,0,+1/2 is returned as 0,1/2,-1,-1/2
          * Sampling=5, Ratio=1 vector -4/5,-2/5,0,+2/5,+4/5 is returned as 0,+2/5,+4/5,-4/5,-2/5 
-                 
+
     Returns
     -------
       (X, Y): tuple of numpy arrays
@@ -77,11 +76,9 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
     ------
     ValueError
         If the sampling parameter is lower than 2.
-    
 
     Notes
     -----
-
     HOW THE DOMAIN IS SAMPLED
 
     The concept is the following: considering an array of
@@ -91,7 +88,7 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
     returns the coordinates of the centers of the pixels. When `sampling` is
     even and `zero_sampled` is True, the coordinates of the bottom-left corners
     of the pixels are returned.
-    
+
     * `sampling` is even and `zero_sampled` is False: the edge of the domain
       is not sampled and the sampling is symmetrical respect to origin::
 
@@ -118,7 +115,7 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
                    -1   -3/5  -1/5   1/5   3/5    1    Domain (Ex. X axis)
                     |     |     |     |     |     |
                        *     *     *     *     *       Sampling points
-                     -4/5  -2/5    0    2/5   4/5      Returned vector   
+                     -4/5  -2/5    0    2/5   4/5      Returned vector
 
     * If `fft` is True, output values are ordered for FFT purposes::
 
@@ -129,10 +126,8 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
            X or Y(N/2:N, N/2:N)       3rd quadrant
            X or Y(0:N/2-1, N/2:N)     2nd quadrant
 
- 
     Examples
     --------
- 
     Compute a tilt plane on a round pupil
 
     >>> x, y = make_xy(256, 1.0)
@@ -140,53 +135,51 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
     >>> pupil[(x*x + y*y)<=1] =1
     >>> plt.imshow(pupil)
 
-    ''' 
+    '''
 
     if sampling <= 1:
         raise ValueError('make_xy: sampling must be larger than 1')
     even_sampling = ((sampling % 2) == 0)
 
     if quarter:
-       if even_sampling:
-          size = sampling//2
-          if zero_sampled:
-              x0 = 0.0
-          else:
-              x0 = -0.5
-       else:
-          size = (sampling+1)//2
-          x0 = 0.0
+        if even_sampling:
+            size = sampling // 2
+            if zero_sampled:
+                x0 = 0.0
+            else:
+                x0 = -0.5
+        else:
+            size = (sampling + 1) // 2
+            x0 = 0.0
     else:
-       size = sampling
-       x0 = (sampling-1)/2.0
-       if even_sampling and zero_sampled:
-           x0 += 0.5
+        size = sampling
+        x0 = (sampling - 1) / 2.0
+        if even_sampling and zero_sampled:
+            x0 += 0.5
 
-    x = (np.arange(size, dtype=dtype)-x0) / (sampling/2.0) * ratio
-        
+    x = (np.arange(size, dtype=dtype) - x0) / (sampling / 2.0) * ratio
+
     if fft and not quarter:
         if even_sampling:
-           x = np.roll(x, -sampling/2)
+            x = np.roll(x, -sampling / 2)
         else:
-           x = np.roll(x, -(sampling-1)/2)
+            x = np.roll(x, -(sampling - 1) / 2)
 
     if vector:
         return x
 
-    x = np.tile(x, (size,1))
+    x = np.tile(x, (size, 1))
     y = np.transpose(x).copy()
     if polar:
-       x,y = _xy_to_polar(x,y)
+        x, y = _xy_to_polar(x, y)
 
-    return x,y
+    return x, y
 
-def _xy_to_polar(x,y):
 
-    r=np.sqrt(x*x+y*y)
-    y=np.arctan2(y,x)
+def _xy_to_polar(x, y):
+
+    r = np.sqrt(x * x + y * y)
+    y = np.arctan2(y, x)
     return r, y
 
-
-
-
-
+# ___oOo___

@@ -11,14 +11,15 @@ import numpy as np
 from collections import namedtuple
 import astropy.units as u
 
-from arte.utils.help import ThisClassCanHelp, add_to_help
+from arte.utils.help import add_help
 from arte.utils.unit_checker import unit_check
 
 
-class MagEstimator(ThisClassCanHelp):
+@add_help
+class MagEstimator():
     '''
     Estimates magnitude from detector counts
-   
+
     Parameters
     ----------
     total_adus: int * u.adu
@@ -51,7 +52,6 @@ class MagEstimator(ThisClassCanHelp):
 
     Notes
     -----
-        
     From https://www.eso.org/observing/etc/doc/skycalc/helpskycalc.html#mags ::
 
         (flux for zero mag in Vega system)
@@ -72,27 +72,28 @@ class MagEstimator(ThisClassCanHelp):
          Q     Q0 = 6.8e-15
 
     '''
+
     _Band = namedtuple('Band', 'wl ergs')
     _bands = {
-        'R': _Band(650e-9*u.m, 2.28665e-9*u.erg/u.s/u.cm**2/u.angstrom),
-        'I': _Band(900e-9*u.m, 1.22603e-9*u.erg/u.s/u.cm**2/u.angstrom),
-        'V': _Band(532e-9*u.m, 3.60994e-9*u.erg/u.s/u.cm**2/u.angstrom),
+        'R': _Band(650e-9 * u.m, 2.28665e-9 * u.erg / u.s / u.cm ** 2 / u.angstrom),
+        'I': _Band(900e-9 * u.m, 1.22603e-9 * u.erg / u.s / u.cm ** 2 / u.angstrom),
+        'V': _Band(532e-9 * u.m, 3.60994e-9 * u.erg / u.s / u.cm ** 2 / u.angstrom),
         }
-    
+
     @unit_check
     def __init__(self, telescope,
                        detector_bandname,
-                       total_adus = 1 * u.adu,
-                       detector_bandwidth = 300* u.nm,
-                       detector_freq = 1.0 * u.Hz,
-                       detector_gain = 1,
-                       detector_adu_e_ratio = 1.0 * u.electron/u.adu,
-                       detector_nsubaps = 1,
-                       wfs_transmission = 1.0,
-                       detector_qe = 1.0 * u.electron/u.ph):
+                       total_adus=1 * u.adu,
+                       detector_bandwidth=300 * u.nm,
+                       detector_freq=1.0 * u.Hz,
+                       detector_gain=1,
+                       detector_adu_e_ratio=1.0 * u.electron / u.adu,
+                       detector_nsubaps=1,
+                       wfs_transmission=1.0,
+                       detector_qe=1.0 * u.electron / u.ph):
 
         if detector_bandname not in self._bands:
-            raise ValueError('Unsupported band: '+str(detector_bandname))
+            raise ValueError('Unsupported band: ' + str(detector_bandname))
 
         self._total_adus = total_adus
         self._detector_gain = detector_gain
@@ -105,17 +106,14 @@ class MagEstimator(ThisClassCanHelp):
         self._detector_qe = detector_qe
         self._telescope = telescope
 
-    @add_to_help
     def bandname(self):
-        ''' Name of the band used for magnitude estimation'''
+        '''Name of the band used for magnitude estimation'''
         return self._bandname
 
-    @add_to_help
     def bandnames(self):
         '''List of supported bandnames'''
         return self._bands.keys()
 
-    @add_to_help
     def flux_zero(self):
         '''Zero point in photons/sec'''
 
@@ -123,8 +121,8 @@ class MagEstimator(ThisClassCanHelp):
 
         photons = self._ergs_to_photons(ergs, wl)
 
-        return (photons * self._telescope.area() * self._bandwidth).to(u.ph/u.s)
-    
+        return (photons * self._telescope.area() * self._bandwidth).to(u.ph / u.s)
+
     def _ergs_to_photons(self, ergs, wl):
         '''
         Converts from ergs to number of photons at a given wavelength
@@ -133,11 +131,10 @@ class MagEstimator(ThisClassCanHelp):
         https://hea-www.harvard.edu/~pgreen/figs/Conversions.pdf
         http://www.stsci.edu/~strolger/docs/UNITS.txt
         '''
-        return ergs * 5.0341125e7 * wl.to(u.angstrom).value * (u.ph/u.erg)
+        return ergs * 5.0341125e7 * wl.to(u.angstrom).value * (u.ph / u.erg)
 
-    @add_to_help
     def photons_per_subap_per_frame(self):
-        ''' Photons/subap/frame detected by sensor'''
+        '''Photons/subap/frame detected by sensor'''
         gain = self._detector_gain
         nsubaps = self._detector_nsubaps
         adu_e_ratio = self._detector_adu_e_ratio
@@ -145,9 +142,8 @@ class MagEstimator(ThisClassCanHelp):
 
         return self._total_adus * adu_e_ratio / gain / nsubaps / qe
 
-    @add_to_help
     def photons_per_second(self):
-        ''' Photons/sec detected by sensor'''
+        '''Photons/sec detected by sensor'''
         ph_subap_frame = self.photons_per_subap_per_frame()
 
         freq = self._detector_freq.to('1/s')
@@ -156,11 +152,9 @@ class MagEstimator(ThisClassCanHelp):
 
         return ph_subap_frame * freq * nsubaps / transmission
 
-    @add_to_help
     def mag(self):
         '''Estimated magnitude'''
         flux = self.photons_per_second()
         zero_flux = self.flux_zero()
 
-        return -2.5*np.log10(flux / zero_flux)
-
+        return -2.5 * np.log10(flux / zero_flux)
