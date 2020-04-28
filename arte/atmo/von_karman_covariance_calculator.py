@@ -150,6 +150,15 @@ class VonKarmanSpatioTemporalCovariance():
     def aperture2(self):
         return self._ap2
 
+    def cn2_profile(self):
+        return self._cn2
+
+    def spatial_frequencies(self):
+        return self._freqs
+
+    def temporal_frequencies(self):
+        return self._temporalFreqs
+
     def _quantitiesToValue(self, quantity):
         if type(quantity) == list:
             value = np.array([quantity[i].value for i in range(len(quantity))])
@@ -531,6 +540,8 @@ class VonKarmanSpatioTemporalCovariance():
             Zernike CPSD or matrix of Zernike CPSDs in [rad**2/Hz].
         """
 
+        self._temporalFreqs = temp_freqs
+
         if (np.isscalar(j) and np.isscalar(k)):
             zernikeCPSD = self._getZernikeCPSDAllLayers(j, k, temp_freqs
                                                         ) * u.rad ** 2 / u.Hz
@@ -582,6 +593,8 @@ class VonKarmanSpatioTemporalCovariance():
             General Zernike CPSD in [rad**2/Hz].
         """
 
+        self._temporalFreqs = temp_freqs
+
         if (np.isscalar(j) and np.isscalar(k)):
             zernikeCPSD = self._getGeneralZernikeCPSDAllLayers(
                 j, k, temp_freqs) * u.rad ** 2 / u.Hz
@@ -623,16 +636,19 @@ class VonKarmanSpatioTemporalCovariance():
             Phase CPSD in [rad**2/Hz].
         """
 
+        self._temporalFreqs = temp_freqs
+
         phaseCPSD = self._getPhaseCPSDAllLayers(temp_freqs) * u.rad ** 2 / u.Hz
         return phaseCPSD
 
-    def plotCPSD(self, cpsd, temp_freqs, func_part, scale, legend='',
-                 wavelength=None):
+    def plotCPSD(self, cpsd, func_part, scale, legend):
         import matplotlib.pyplot as plt
-        if wavelength is None:
-            lam = self._cn2.DEFAULT_LAMBDA
-        else:
-            lam = wavelength
+#         if wavelength is None:
+#             lam = self._cn2.DEFAULT_LAMBDA
+#         else:
+#             lam = wavelength
+        lam = self._cn2.wavelength().value
+        temp_freqs = self.temporal_frequencies()
         m_to_nm = 1e18
         if func_part == 'real':
             if scale == 'log':
@@ -640,26 +656,26 @@ class VonKarmanSpatioTemporalCovariance():
                     temp_freqs,
                     np.abs(np.real(cpsd)) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='(real) ' + legend)
+                    '-', label=legend)
             elif scale == 'linear':
                 plt.semilogx(
                     temp_freqs,
                     np.real(cpsd) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='(real) ' + legend)
+                    '-', label=legend)
         elif func_part == 'imag':
             if scale == 'log':
                 plt.loglog(
                     temp_freqs,
                     np.abs(np.imag(cpsd)) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='(imag) ' + legend)
+                    '-', label=legend)
             elif scale == 'linear':
                 plt.semilogx(
                     temp_freqs,
                     np.imag(cpsd) *
                     (lam / (2 * np.pi)) ** 2 * m_to_nm,
-                    '-', label='(imag) ' + legend)
+                    '-', label=legend)
         plt.legend()
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('CPSD [nm$^{2}$/Hz]')
