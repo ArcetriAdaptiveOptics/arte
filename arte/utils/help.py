@@ -127,7 +127,6 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
     if cls is not None:
         return add_help()(cls)
 
-    @modify_help(arg_str="search='str'")
     def help(self, search='', prefix=''):
         '''
         Interactive help
@@ -143,21 +142,22 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
         methods = {k: getattr(self, k) for k in dir(self) if callable(getattr(self, k))}
         members = {k: getattr(self, k) for k in dir(self) if not callable(getattr(self, k))}
 
-        # Add properties too, with a workaround for the __abstractmethods__ bug
-        methods.update({k: getattr(self.__class__, k)
-                       for k in dir(self.__class__)
-                       if isinstance(getattr(self.__class__, k), property)})
+        properties = ({k: getattr(self.__class__, k)
+                      for k in dir(self.__class__)
+                      if isinstance(getattr(self.__class__, k), property)})
 
-        hlp_methods = {k:v for k,v in methods.items() if _is_public_method(k) \
-                                                        and not _is_hidden(v)}
-        hlp_members = {k:v for k,v in members.items() if _is_hlp_class(v)}
+        methods.update(properties)
+
+        methods = {k: v for k, v in methods.items() if _is_public_method(k) \
+                                                      and not _is_hidden(v)}
+        members = {k: v for k, v in members.items() if _is_hlp_class(v)}
 
         if prefix == '':
             prefix = self.__class__.__name__
 
         hlp = {prefix: _format_docstring(self)}
 
-        for name, method in hlp_methods.items():
+        for name, method in methods.items():
             name = _format_name(method, default=name)
             pars = _format_pars(method)
             helpstr = _format_docstring(method)
@@ -178,7 +178,7 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
             for line in lines:
                 print(line)
 
-        for name, obj in sorted(hlp_members.items()):
+        for name, obj in sorted(members.items()):
             obj.help(search=search, prefix='%s.%s' % (prefix, name))
 
     def decorate(cls):
@@ -186,9 +186,9 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
         if classmethod:
             func = partial(help, self=cls())
             func.__name__ = help.__name__
-            setattr(cls, help_function, func)
+            setattr(cls, help_function, hide_from_help(func))
         else:
-            setattr(cls, help_function, help)
+            setattr(cls, help_function, hide_from_help(help))
         return cls
     return decorate
 
