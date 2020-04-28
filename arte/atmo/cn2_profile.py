@@ -119,8 +119,8 @@ class Cn2Profile(object):
         layersL0 = cls._quantitiesToValue(layersL0)
         layersAltitude = cls._quantitiesToValue(layersAltitude)
         layersWindSpeed = cls._quantitiesToValue(layersWindSpeed)
-        layersWindDirection = np.deg2rad(cls._quantitiesToValue(
-            layersWindDirection))
+        layersWindDirection = cls._quantitiesToValue(
+            np.deg2rad(layersWindDirection))
         js = cls._r02js(layersR0, cls.DEFAULT_AIRMASS, cls.DEFAULT_LAMBDA)
         return Cn2Profile(js,
                           layersL0,
@@ -169,8 +169,8 @@ class Cn2Profile(object):
         layersL0 = cls._quantitiesToValue(layersL0)
         layersAltitude = cls._quantitiesToValue(layersAltitude)
         layersWindSpeed = cls._quantitiesToValue(layersWindSpeed)
-        layersWindDirection = np.deg2rad(cls._quantitiesToValue(
-            layersWindDirection))
+        layersWindDirection = cls._quantitiesToValue(
+            np.deg2rad(layersWindDirection))
         sumJ = np.array(layersFractionalJ).sum()
         assert (np.abs(sumJ - 1.0) < 0.01), \
             "Total of J values must be 1.0, got %g" % sumJ
