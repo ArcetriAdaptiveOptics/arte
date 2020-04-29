@@ -3,17 +3,17 @@ from astropy import units as u
 from astropy.units.quantity import Quantity
 
 
-def wavefrontRms2StrehlRatio(wavefrontRms, wavelength):
+def wavefront_rms_2_strehl_ratio(wavefrontRms, wavelength):
     """
     Compute Strehl ratio from wavefront aberration according to
     Marechal approximation
 
     Parameters
     ----------
-    wavefrontRms : `~astropy.units.Quantity` or float
+    wavefrontRms : `astropy.units.quantity.Quantity` or float
         Wavefront aberration rms; if float units must be in meter
 
-    wavelength : `~astropy.units.Quantity` or float
+    wavelength : `astropy.units.quantity.Quantity` or float
         Wavelength to compute Strehl Ratio; if float units must be in meter
 
 
@@ -23,14 +23,14 @@ def wavefrontRms2StrehlRatio(wavefrontRms, wavelength):
         Strehl ratio
     """
     if not isinstance(wavefrontRms, Quantity):
-        wavefrontRms= wavefrontRms * u.m
+        wavefrontRms = wavefrontRms * u.m
     if not isinstance(wavelength, Quantity):
-        wavelength= wavelength * u.m
+        wavelength = wavelength * u.m
 
-    return np.exp(-(wavefrontRms/wavelength*2*np.pi)**2)
+    return np.exp(-(wavefrontRms / wavelength * 2 * np.pi) ** 2).value
 
 
-def strehlRatio2WavefrontRms(strehlRatio, wavelength):
+def strehl_ratio_2_wavefront_rms(strehlRatio, wavelength):
     """
     Compute wavefront aberration from Strehl ratio according to
     Marechal approximation
@@ -40,23 +40,23 @@ def strehlRatio2WavefrontRms(strehlRatio, wavelength):
     strehlRatio : float
         Strehl ratio (0.0-1.0)
 
-    wavelength : `~astropy.units.Quantity` or float
+    wavelength : `astropy.units.quantity.Quantity` or float
         Wavelength to compute Strehl Ratio; if float units must be in meter
 
 
     Returns
     -------
-    wavefrontRms : `~astropy.units.Quantity`
+    wavefrontRms : `astropy.units.quantity.Quantity`
         Wavefront aberration rms
 
     """
     if not isinstance(wavelength, Quantity):
-        wavelength= wavelength * u.m
+        wavelength = wavelength * u.m
 
-    return np.sqrt(- wavelength**2 / (4*np.pi**2) * np.log(strehlRatio))
+    return wavelength / (2 * np.pi) * np.sqrt(-1 * np.log(strehlRatio))
 
 
-def scaleStrehlRatio(strehlRatio, fromWavelength, toWavelength):
+def scale_strehl_ratio(strehlRatio, fromWavelength, toWavelength):
     """
     Scale Strehl ratio from one wavelength to another one according to
     Marechal approximation
@@ -66,10 +66,10 @@ def scaleStrehlRatio(strehlRatio, fromWavelength, toWavelength):
     strehlRatio : float
         Strehl ratio (0.0-1.0)
 
-    fromWavelength : `~astropy.units.Quantity` or float
+    fromWavelength : `astropy.units.quantity.Quantity` or float
         Wavelength Strehl Ratio is given at; if float units must be in meter
 
-    toWavelength : `~astropy.units.Quantity` or float
+    toWavelength : `astropy.units.quantity.Quantity` or float
         Wavelength to compute Strehl Ratio at; if float units must be in meter
 
 
@@ -79,5 +79,9 @@ def scaleStrehlRatio(strehlRatio, fromWavelength, toWavelength):
         Strehl Ratio computed at toWavelength
     """
 
-    wfRms= strehlRatio2WavefrontRms(strehlRatio, fromWavelength)
-    return wavefrontRms2StrehlRatio(wfRms, toWavelength)
+    if isinstance(fromWavelength, Quantity):
+        fromWavelength = fromWavelength.to(u.m).value
+    if isinstance(toWavelength, Quantity):
+        toWavelength = toWavelength.to(u.m).value
+
+    return strehlRatio ** (fromWavelength / toWavelength) ** 2

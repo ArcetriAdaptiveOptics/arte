@@ -4,14 +4,6 @@ utils
 Submodules
 ----------
 
-arte.utils.astropy_utils module
---------------------------------
-
-.. automodule:: arte.utils.astropy_utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 arte.utils.capture_output module
 --------------------------------
 
@@ -125,6 +117,14 @@ arte.utils.logger module
    :undoc-members:
    :show-inheritance:
 
+arte.utils.marechal module
+----------------------------------
+
+.. automodule:: arte.utils.marechal
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 arte.utils.math module
 -------------------------
 
@@ -185,14 +185,6 @@ arte.utils.shared_array module
 ------------------------------
 
 .. automodule:: arte.utils.shared_array
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.strehl\_ratio module
-----------------------------------
-
-.. automodule:: arte.utils.strehl_ratio
    :members:
    :undoc-members:
    :show-inheritance:

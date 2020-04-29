@@ -36,10 +36,10 @@ extensions = ['sphinx.ext.autodoc',
               "sphinx.ext.intersphinx",
               ]
 intersphinx_mapping = {
-    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
-    'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
     # 'matplotlib': ('http://matplotlib.org/', None),
-    'astropy': ('http://docs.astropy.org/en/stable/', None),
+    'astropy': ('https://docs.astropy.org/en/stable/', None),
     }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -80,3 +80,7 @@ html_theme = 'nature'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# The reST default role (used for this markup: `text`) to use for all
+# documents.
+default_role = 'py:obj'
