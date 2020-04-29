@@ -5,8 +5,8 @@ import astropy.units as u
 
 from arte.utils.help import add_help
 from arte.math.make_xy import make_xy
-from arte.utils.unit_checker import get_the_unit_if_it_has_one, \
-                                    match_and_remove_units
+from arte.utils.unit_checker import assert_unit_is_equivalent, \
+                                    separate_value_and_unit
 
 
 def _accept_one_or_two_elements(x, name=''):
@@ -55,8 +55,8 @@ class DomainXY():
     '''
 
     def __init__(self, xcoord_vector, ycoord_vector):
-        self._xcoord = xcoord_vector
-        self._ycoord = ycoord_vector
+        self._xcoord = xcoord_vector.copy()
+        self._ycoord = ycoord_vector.copy()
         assert len(self._xcoord.shape) == 1
         assert len(self._ycoord.shape) == 1
 
@@ -152,23 +152,22 @@ class DomainXY():
 
     def __eq__(self, other):
 
-        xcoord, other_xcoord, _ = match_and_remove_units(self.xcoord,
-                                                         other.xcoord)
-        ycoord, other_ycoord, _ = match_and_remove_units(self.ycoord,
-                                                         other.ycoord)
-
-        return np.allclose(xcoord, other_xcoord) and \
-            np.allclose(ycoord, other_ycoord)
+        return np.allclose(self._xcoord, other._xcoord) and \
+               np.allclose(self._ycoord, other._ycoord)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     @property
+    def origin_in_px(self):
+        '''(x,y) = indexes of 0,0 coordinate, interpolated'''
+        return (self._interpolate_for_value(self.xcoord, 0.0),
+                self._interpolate_for_value(self.ycoord, 0.0))
+
+    @property
     def origin(self):
-        '''(x,y) = location of 0,0 coordinate, interpolated'''
-        x = self._interpolate_for_value(self.xcoord, 0.0)
-        y = self._interpolate_for_value(self.ycoord, 0.0)
-        return (x, y)
+        '''(x,y) = indexes of 0,0 coordinate, interpolated'''
+        return self.origin_in_px
 
     @property
     def extent(self):
@@ -179,17 +178,18 @@ class DomainXY():
     @property
     def unit(self):
         '''(x,y) = units used on X and Y, or 1 otherwise'''
-        return (get_the_unit_if_it_has_one(self.xcoord),
-                get_the_unit_if_it_has_one(self.ycoord))
+        _, xunit = separate_value_and_unit(self._xcoord)
+        _, yunit = separate_value_and_unit(self._ycoord)
+        return (xunit, yunit)
 
     def shift(self, dx, dy):
         '''Shift the domain in place'''
 
-        dx, xcoord, xunit = match_and_remove_units(self.xcoord, dx)
-        dy, ycoord, yunit = match_and_remove_units(self.ycoord, dy)
+        assert_unit_is_equivalent(dx, ref=self._xcoord)
+        assert_unit_is_equivalent(dy, ref=self._ycoord)
 
-        self._xcoord = (xcoord + dx) * xunit
-        self._ycoord = (ycoord + dy) * yunit
+        self._xcoord += dx
+        self._ycoord += dy
 
     def shifted(self, dx, dy):
         '''Returns a new shifted domain'''
@@ -201,43 +201,40 @@ class DomainXY():
     def contains(self, x, y):
         '''Returns True if the coordinates are inside the domain'''
 
-        xcoord, x, _ = match_and_remove_units(self.xcoord, x)
-        ycoord, y, _ = match_and_remove_units(self.ycoord, y)
+        assert_unit_is_equivalent(x, ref=self._xcoord)
+        assert_unit_is_equivalent(y, ref=self._ycoord)
 
-        return (x >= xcoord.min()) and (x <= xcoord.max()) and \
-               (y >= ycoord.min()) and (y <= ycoord.max())
+        return (x >= self._xcoord.min()) and (x <= self._xcoord.max()) and \
+               (y >= self._ycoord.min()) and (y <= self._ycoord.max())
 
     def restrict(self, x, y):
         '''(x,y) = new coordinates restricted to be inside this domain'''
 
-        xcoord, x, xunit = match_and_remove_units(self.xcoord, x)
-        ycoord, y, yunit = match_and_remove_units(self.ycoord, y)
+        assert_unit_is_equivalent(x, ref=self._xcoord)
+        assert_unit_is_equivalent(y, ref=self._ycoord)
 
-        x = max(x, xcoord.min())
-        y = max(y, ycoord.min())
-        x = min(x, xcoord.max())
-        y = min(y, ycoord.max())
+        x = max(x, self._xcoord.min())
+        y = max(y, self._ycoord.min())
+        x = min(x, self._xcoord.max())
+        y = min(y, self._ycoord.max())
 
-        return x * xunit, y * yunit
+        return x, y
 
     def get_boundingbox_slice(self, x, y, span=1):
         '''Slice that includes (x,y) with "span" pixels around'''
 
         x, y = self.restrict(x, y)
 
-        xcoord, x, _ = match_and_remove_units(self.xcoord, x)
-        ycoord, y, _ = match_and_remove_units(self.ycoord, y)
-
-        idx_x = int(round(self._interpolate_for_value(xcoord, x)))
-        idx_y = int(round(self._interpolate_for_value(ycoord, y)))
+        idx_x = int(round(self._interpolate_for_value(self._xcoord, x)))
+        idx_y = int(round(self._interpolate_for_value(self._ycoord, y)))
 
         xlo, xhi, ylo, yhi = idx_x - span, idx_x + span, \
                              idx_y - span, idx_y + span
 
         xlo = max(xlo, 0)
         ylo = max(ylo, 0)
-        xhi = min(xhi, xcoord.size)
-        yhi = min(yhi, ycoord.size)
+        xhi = min(xhi, self._xcoord.size)
+        yhi = min(yhi, self._ycoord.size)
 
         # Slices are (row,col), that is (y,x)
         return np.s_[ylo:yhi, xlo:xhi]
@@ -246,19 +243,21 @@ class DomainXY():
         '''Returns the outer indices that correspond to a bounding box'''
 
         # Indexes must be unitless
-        xcoord, xmin, xmax, _ = match_and_remove_units(self.xcoord, xmin, xmax)
-        ycoord, ymin, ymax, _ = match_and_remove_units(self.ycoord, ymin, ymax)
+        assert_unit_is_equivalent(xmin, ref=self._xcoord)
+        assert_unit_is_equivalent(xmax, ref=self._xcoord)
+        assert_unit_is_equivalent(ymin, ref=self._ycoord)
+        assert_unit_is_equivalent(ymax, ref=self._ycoord)
 
-        xlo = np.argmin(np.abs(xcoord - xmin))
-        xhi = np.argmin(np.abs(xcoord - xmax)) + 2
-        ylo = np.argmin(np.abs(ycoord - ymin))
-        yhi = np.argmin(np.abs(ycoord - ymax)) + 2
+        xlo = np.argmin(np.abs(self._xcoord - xmin))
+        xhi = np.argmin(np.abs(self._xcoord - xmax)) + 2
+        ylo = np.argmin(np.abs(self._ycoord - ymin))
+        yhi = np.argmin(np.abs(self._ycoord - ymax)) + 2
 
         if boundary_check:
             xlo = max(xlo, 0)
             ylo = max(ylo, 0)
-            xhi = min(xhi, xcoord.size)
-            yhi = min(yhi, ycoord.size)
+            xhi = min(xhi, self._xcoord.size)
+            yhi = min(yhi, self._ycoord.size)
 
         return xlo, xhi, ylo, yhi
 
@@ -293,13 +292,10 @@ class DomainXY():
 
     @staticmethod
     def _interpolate_for_value(arr, value):
+        '''Returns the interpolated index (unitless) in `arr` for `value`'''
 
-        # np.interp removes the unit, so let's remember it
-
-        unit = get_the_unit_if_it_has_one(arr)
-        vv = np.interp(value, arr, np.arange(arr.shape[0]),
-                       left=np.nan, right=np.nan)
-        return vv * unit
+        return np.interp(value, arr, np.arange(arr.shape[0]),
+                         left=np.nan, right=np.nan)
 
     @staticmethod
     def _compute_step_of_uniformly_spaced_vector(vector):

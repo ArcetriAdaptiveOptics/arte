@@ -4,6 +4,52 @@ import numpy as np
 import astropy.units as u
 
 
+def assert_unit_is_equivalent(var, ref):
+    '''Make sure that `var` has a unit compatible with `ref`'''
+
+    if isinstance(var, u.Quantity):
+        if isinstance(ref, u.Quantity):
+            assert var.unit.is_equivalent(ref.unit)
+        else:
+            raise AssertionError('Variable has units while it should not')
+    else:
+        if isinstance(ref, u.Quantity):
+            raise AssertionError('Variable has no unit, while it should be '
+                                 'equivalent to %s' % (ref.unit))
+
+
+def separate_value_and_unit(var):
+    '''Returns the argument value and unit, if `var` has one.
+    
+    If not, `var` is returned unchanged and unit is set to 1.
+
+    Parameters
+    ----------
+    var: any type
+        the variable to be tested
+
+    Returns
+    -------
+    value, unit
+        tuple with the value and the astropy unit of `var`
+        or 1 if `var` does not have a unit.
+
+    Examples
+    --------
+    >>> a = 42 * u.m
+    >>> separate_value_and_unit(a)
+    (42.0, Unit("m"))
+
+    >>> b = 42
+    >>> separate_value_and_unit(b)
+    (42, 1)
+    '''
+    if isinstance(var, u.Quantity):
+        return var.value, var.unit
+    else:
+        return var, 1
+
+
 def make_sure_its_a(unit, v, name=''):
     '''
     Make sure that `v` has the astropy unit `unit`.
@@ -44,34 +90,6 @@ def make_sure_its_a(unit, v, name=''):
         raise u.UnitsError(errmsg)
     return normalized
 
-
-def get_the_unit_if_it_has_one(var):
-    '''Returns the argument unit, or 1 if it does not have any.
-
-    Parameters
-    ----------
-    var: any type
-        the variable to be tested
-
-    Returns
-    -------
-    unit
-        the astropy unit of `var` or 1 if `var` does not have a unit.
-
-    Examples
-    --------
-    >>> a = 42
-    >>> get_the_unit_if_it_has_one(a)
-    1
-
-    >>> b = 42*u.m
-    >>> get_the_unit_if_it_has_one(b)
-    Unit("m")
-    '''
-    if isinstance(var, u.Quantity):
-        return var.unit
-    else:
-        return 1
 
 def match_and_remove_unit(var, var_to_match):
     '''
@@ -167,7 +185,7 @@ def match_and_remove_units(*args):
     if len(args) == 0:
         return [1]
     else:
-        unit = get_the_unit_if_it_has_one(args[0])
+        _, unit = separate_value_and_unit(args[0])
 
     newvars = [match_and_remove_unit(x, args[0]) for x in args[0:]]
     return newvars + [unit]
