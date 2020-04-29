@@ -76,6 +76,29 @@ class DomainXYTest(unittest.TestCase):
         cropped = domain.cropped(xmin, xmax, ymin, ymax)
         self.assertEqual((2, 3), cropped.shape)
 
+    def test_crop_w_units(self):
+
+        domain = DomainXY.from_linspace(-1, 1, 11)
+
+        with self.assertRaises(AssertionError):
+            _ = domain.cropped(*([1, 2, 3, 4] * u.cm))
+
+    def test_crop_missing_units(self):
+
+        domain = DomainXY.from_linspace(-1*u.cm, 1*u.cm, 11)
+
+        with self.assertRaises(AssertionError):
+            _ = domain.cropped(1, 2, 3, 4)
+
+        with self.assertRaises(AssertionError):
+            _ = domain.cropped(1 * u.cm, 2, 3, 4)
+
+        with self.assertRaises(AssertionError):
+            _ = domain.cropped(1 * u.cm, 2 * u.cm, 3, 4)
+
+        with self.assertRaises(AssertionError):
+            _ = domain.cropped(1 * u.cm, 2 * u.cm, 3 * u.cm, 4)
+
     def test_makexy(self):
 
         domain = DomainXY.from_makexy(5, 2)
@@ -154,10 +177,10 @@ class DomainXYTest(unittest.TestCase):
 
         assert domain.xcoord.unit == u.cm
         assert domain.xmap.unit == u.cm
-        assert domain.origin[0].unit == u.cm
+        assert isinstance(domain.origin[0], float) # no unit
         assert domain.step[0].unit == u.cm
         assert domain[2:4, 2:4].xcoord.unit == u.cm
-        assert domain.cropped(1, 4, 1, 4).xcoord.unit == u.cm
+        assert domain.cropped(1*u.cm, 4*u.cm, 1*u.cm, 4*u.cm).xcoord.unit == u.cm
 
     def test_cropping_with_units(self):
 
@@ -171,7 +194,6 @@ class DomainXYTest(unittest.TestCase):
         cropped = domain.cropped(xmin, xmax, ymin, ymax)
 
         # 12 = 10 cm * 1pixel/cm + two 0.5cm edges because the linspace
-        # is -49.5, -48.5, -47.5, etc.
         # Same for 7 = 5cm * 1pixel/cm + two 0.5cm edges
         assert cropped.shape == (7, 12)
         assert cropped.extent[0] == 9.5 * u.cm
@@ -185,18 +207,31 @@ class DomainXYTest(unittest.TestCase):
         domain.shift(0.2, -0.2)
         assert np.allclose(domain.origin, (4, 6))
 
+        # Raise if shift with unit
+        with self.assertRaises(AssertionError):
+            domain.shift(0.1 * u.m, 0.2 * u.m)
+            
     def test_shift_w_units(self):
 
         domain = DomainXY.from_shape((100, 100), pixel_size=1 * u.cm)
-        self.assertAlmostEqual(domain.origin[0], 49.5 * u.cm)
-        self.assertAlmostEqual(domain.origin[1], 49.5 * u.cm)
+        self.assertAlmostEqual(domain.origin[0], 49.5)
+        self.assertAlmostEqual(domain.origin[1], 49.5)
 
         domain.shift(0.1 * u.m, -3.1415 * u.mm)
-        self.assertAlmostEqual(domain.origin[0], 39.5 * u.cm)
-        self.assertAlmostEqual(domain.origin[1], 49.81415 * u.cm)
+        self.assertAlmostEqual(domain.origin[0], 39.5)
+        self.assertAlmostEqual(domain.origin[1], 49.81415)
 
-        with self.assertRaises(Exception):
-            domain.shift(0.1 * u.s, 0)
+        # Raise if incompatible unit
+        with self.assertRaises(AssertionError):
+            domain.shift(0.1 * u.s, 0.2 * u.s)
+
+        # Raise if missing unit
+        with self.assertRaises(AssertionError):
+            domain.shift(0.1 * u.m, 0.2)
+
+        # Raise if missing unit
+        with self.assertRaises(AssertionError):
+            domain.shift(0.1, 0.2 * u.m)
 
     def test_copy(self):
 
@@ -238,9 +273,42 @@ class DomainXYTest(unittest.TestCase):
         assert domain == domain
         assert not (domain != domain)
 
-        domain2 = domain.shifted(0.1, 0.1)
+        domain2 = domain.shifted(0.1 * u.cm, 0.1 * u.km)
         assert domain2 != domain
         assert not (domain2 == domain)
+
+
+    def test_contains(self):
+
+        domain = DomainXY.from_linspace(-1, 1, 11)
+
+        self.assertTrue(domain.contains(-0.5, 0))
+        self.assertFalse(domain.contains(2, 0))
+        self.assertFalse(domain.contains(4, 2))
+        
+        # Raise if we get a with unit
+        with self.assertRaises(AssertionError):
+            domain.shift(0.1 * u.m, 0.2 * u.m)
+
+    def test_contains_w_units(self):
+
+        domain = DomainXY.from_linspace(-1 * u.mm, 1 * u.mm, 11)
+
+        self.assertTrue(domain.contains(-0.5 * u.mm, 0 * u.mm))
+        self.assertFalse(domain.contains(2 * u.mm, 0 * u.mm))
+        self.assertFalse(domain.contains(4 * u.mm, 2 * u.mm))
+
+        # Raise if incompatible unit
+        with self.assertRaises(AssertionError):
+            domain.contains(-0.5 * u.s, 0 * u.kg)
+
+        # Raise if missing unit
+        with self.assertRaises(AssertionError):
+            domain.contains(-0.5, 0 * u.mm)
+
+        # Raise if missing unit
+        with self.assertRaises(AssertionError):
+            domain.contains(-0.5 * u.mm, 0)
 
     def test_boundingbox(self):
 
@@ -250,25 +318,29 @@ class DomainXYTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(box.xcoord, [0.2, 0.4])
         np.testing.assert_array_almost_equal(box.ycoord, [-0.4, -0.2])
 
-    def test_contains(self):
-
-        domain1 = DomainXY.from_linspace(-1, 1, 11)
-        domain2 = DomainXY.from_linspace(-1 * u.mm, 1 * u.mm, 11)
-
-        self.assertTrue(domain1.contains(-0.5, 0))
-        self.assertFalse(domain1.contains(2, 0))
-        self.assertFalse(domain1.contains(4, 2))
-        self.assertTrue(domain2.contains(-0.5 * u.mm, 0))
-        self.assertFalse(domain2.contains(2, 0 * u.mm))
-        self.assertFalse(domain2.contains(4, 2 * u.mm))
+        # Raise if we get a with unit
+        with self.assertRaises(AssertionError):
+            domain.boundingbox(0.1 * u.m, 0.2 * u.m, span=1)
 
     def test_boundingbox_w_units(self):
 
         domain = DomainXY.from_linspace(-1 * u.mm, 1 * u.mm, 11)
-        box = domain.boundingbox(0.32, -0.25, span=1)
+        box = domain.boundingbox(0.32 * u.mm, -0.25 * u.mm, span=1)
 
         assert_array_almost_equal_w_units(box.xcoord, [0.2, 0.4] * u.mm)
         assert_array_almost_equal_w_units(box.ycoord, [-0.4, -0.2] * u.mm)
+
+        # Raise if incompatible unit
+        with self.assertRaises(AssertionError):
+            domain.boundingbox(-0.5 * u.s, 0 * u.kg)
+
+        # Raise if missing unit
+        with self.assertRaises(AssertionError):
+            domain.boundingbox(-0.5, 0 * u.mm)
+
+        # Raise if missing unit
+        with self.assertRaises(AssertionError):
+            domain.boundingbox(-0.5 * u.mm, 0)
 
 
 if __name__ == "__main__":
