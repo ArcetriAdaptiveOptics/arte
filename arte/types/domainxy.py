@@ -60,23 +60,23 @@ class DomainXY():
         assert len(self._xcoord.shape) == 1
         assert len(self._ycoord.shape) == 1
 
-    @staticmethod
-    def from_xy_vectors(x_vector, y_vector):
+    @classmethod
+    def from_xy_vectors(cls, x_vector, y_vector):
         '''Build a domain as a cartesian product of two coordinate vectors'''
-        return DomainXY(x_vector, y_vector)
+        return cls(x_vector, y_vector)
 
-    @staticmethod
-    def from_extent(xmin, xmax, ymin, ymax, npoints):
+    @classmethod
+    def from_extent(cls, xmin, xmax, ymin, ymax, npoints):
         '''Build a domain from a bounding box'''
 
         npoints = _accept_one_or_two_elements(npoints, 'npoints')
 
         x = np.linspace(xmin, xmax, npoints[0])
         y = np.linspace(ymin, ymax, npoints[1])
-        return DomainXY(x, y)
+        return cls(x, y)
 
-    @staticmethod
-    def from_shape(shape, pixel_size=1):
+    @classmethod
+    def from_shape(cls, shape, pixel_size=1):
         '''Build a domain from a shape and a pixel size'''
 
         pixel_size = _accept_one_or_two_elements(pixel_size, 'pixel_size')
@@ -92,26 +92,26 @@ class DomainXY():
                         (tot_size[1] - pixel_size[1]) / 2,
                         shape[1])
 
-        return DomainXY.from_xy_vectors(x, y)
+        return cls.from_xy_vectors(x, y)
 
-    @staticmethod
-    def from_makexy(*args, **kwargs):
+    @classmethod
+    def from_makexy(cls, *args, **kwargs):
         '''Same arguments as make_xy'''
         x, y = make_xy(*args, **kwargs)
-        return DomainXY.from_xy_maps(x, y)
+        return cls.from_xy_maps(x, y)
 
-    @staticmethod
-    def from_linspace(*args, **kwargs):
+    @classmethod
+    def from_linspace(cls, *args, **kwargs):
         '''Cartesian product of two identical np.linspace(). Same arguments'''
         v = np.linspace(*args, **kwargs)
-        return DomainXY.from_xy_vectors(v, v)
+        return cls.from_xy_vectors(v, v)
 
-    @staticmethod
-    def from_xy_maps(xmap, ymap):
+    @classmethod
+    def from_xy_maps(cls, xmap, ymap):
         '''Build a domain from two 2d maps (like the ones from make_xy)'''
         xcoord_vector = xmap[0, :]
         ycoord_vector = ymap[:, 0]
-        return DomainXY(xcoord_vector, ycoord_vector)
+        return cls(xcoord_vector, ycoord_vector)
 
     @property
     def shape(self):
