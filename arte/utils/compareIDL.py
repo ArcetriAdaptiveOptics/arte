@@ -11,12 +11,12 @@ from __future__ import print_function
 import os.path
 import tempfile
 import subprocess
-import collections
 import numpy as np
 from scipy.io import readsav
+from collections import Iterable
 
 
-def compareIDL(idlscript, pythonscript, vars_to_compare,
+def compareIDL(idlscript, pyscript, vars_to_compare,
                precision=1e-5, verbose=0, tmpfile=None):
     '''
     Compare IDL and Python routines results, to aid in porting.
@@ -32,7 +32,7 @@ def compareIDL(idlscript, pythonscript, vars_to_compare,
     idlscript: string or list of strings
         IDL statements. If in a single string,
         they must be separated by newlines
-    pythonscript: string or list of strings
+    pyscript: string or list of strings
         Python statements. If in a single string,
         they must be separated by newlines
     vars_to_compare: list of strings
@@ -61,19 +61,17 @@ def compareIDL(idlscript, pythonscript, vars_to_compare,
                        *vars_to_compare,
                        'FILENAME="%s"\n' % tmpfile])
 
-    if isinstance(idlscript, collections.Sequence) \
-       and not isinstance(idlscript, str):
-           idlscript = '\n'.join(idlscript)
+    if isinstance(idlscript, Iterable) and not isinstance(idlscript, str):
+        idlscript = '\n'.join(idlscript)
 
-    if isinstance(pythonscript, collections.Sequence) \
-       and not isinstance(pythonscript, str):
-           pythonscript = '\n'.join(pythonscript)
+    if isinstance(pyscript, Iterable) and not isinstance(pyscript, str):
+        pyscript = '\n'.join(pyscript)
 
     p = subprocess.Popen('idl', stdin=subprocess.PIPE, shell=True)
     p.communicate((idlscript + savecmd).encode())
     idldata = readsav(tmpfile)
 
-    exec(pythonscript)
+    exec(pyscript)
 
     good = []
     for varname in vars_to_compare:
