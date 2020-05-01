@@ -13,7 +13,7 @@ class UnitCheckTest(unittest.TestCase):
     def a(self, a=1,
                 b=2* u.s,
                 c=3* u.m):
-
+        '''function a'''
         assert not isinstance(a, u.Quantity)
         assert b.unit == u.s
         assert c.unit == u.m
@@ -24,6 +24,9 @@ class UnitCheckTest(unittest.TestCase):
 
     def test_nothing(self):
         self.a()
+        
+    def test_wraps(self):
+        assert self.a.__doc__ == 'function a'
 
     def test_args_without_units_are_not_touched(self):
         self.a(42)

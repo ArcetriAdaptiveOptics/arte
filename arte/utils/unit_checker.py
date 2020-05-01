@@ -2,7 +2,7 @@
 
 import numpy as np
 import astropy.units as u
-
+from functools import wraps
 
 def assert_unit_is_equivalent(var, ref):
     '''Make sure that `var` has a unit compatible with `ref`'''
@@ -219,6 +219,7 @@ def unit_check(f):
     pars_to_check = [p for p in sig.parameters.values()
                      if isinstance(p.default, u.Quantity)]
 
+    @wraps(f)
     def wrapper(*args, **kwargs):
 
         # Reconstruct the decorated function's arguments
