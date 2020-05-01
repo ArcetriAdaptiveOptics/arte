@@ -271,7 +271,7 @@ class DomainXY():
     def __getitem__(self, idx):
         '''Returns another DomainXY slicing this one'''
         # A single xx slice means (xx, :)
-        if type(idx) == type(np.s_[1:2]):
+        if isinstance(idx, slice):
             idx = (idx, np.s_[:])
 
         xmap = self.xmap[idx]
