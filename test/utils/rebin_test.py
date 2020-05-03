@@ -56,7 +56,7 @@ class RebinTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             _ = rebin(a,(3,3))
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NotImplementedError):
             _ = rebin(a,(3,7))
        
 
