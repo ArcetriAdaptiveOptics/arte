@@ -57,9 +57,12 @@ def make_xy(sampling, ratio, dtype=None, polar=False, vector=False,
     fft: bool, optional
          If True, order the output values for FFT purposes. For example:
 
-         * Sampling=4, Ratio=1 vector -3/4,-1/4,+1/4,+3/4 is returned as +1/4,+3/4,-3/4,-1/4.
-         * Sampling=4, Ratio=1, /ZERO_SAMPLING vector -1,-1/2,0,+1/2 is returned as 0,1/2,-1,-1/2
-         * Sampling=5, Ratio=1 vector -4/5,-2/5,0,+2/5,+4/5 is returned as 0,+2/5,+4/5,-4/5,-2/5 
+         * Sampling=4, Ratio=1 vector -3/4,-1/4,+1/4,+3/4:
+             returned as +1/4,+3/4,-3/4,-1/4.
+         * Sampling=4, Ratio=1, zero_sampled=True, vector -1,-1/2,0,+1/2:
+             returned as 0,1/2,-1,-1/2
+         * Sampling=5, Ratio=1 vector -4/5,-2/5,0,+2/5,+4/5:
+             returned as 0,+2/5,+4/5,-4/5,-2/5 
 
     Returns
     -------
