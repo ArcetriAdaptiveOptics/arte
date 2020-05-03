@@ -213,14 +213,6 @@ arte.utils.unit_checker module
    :undoc-members:
    :show-inheritance:
 
-arte.utils.von\_karman\_psd module
--------------------------------------
-
-.. automodule:: arte.utils.von_karman_psd
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 arte.utils.zernike\_generator module
 ---------------------------------------
 

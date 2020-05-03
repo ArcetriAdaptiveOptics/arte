@@ -25,17 +25,20 @@ class VonKarmanPsd():
 
     Example
     -------
-    Compute the total variance of Kolmogorov over a 10m telescope:
-    R = 5
-    r0 = 0.1
-    L0 = np.inf
-    psd = von_karmann_psd.VonKarmanPsd(r0, L0)
-    freqs = np.logspace(-5, 4, 1000)
-    bess = scipy.special.jv(1, 2*np.pi*R*freqs)
-    psdPistonRem = psd.spatial_psd(freqs) * (1 - (bess/(np.pi*R*freqs))**2)
-    varInSquareRad = np.trapz(psdPistonRem*2*np.pi*freqs, freqs)
+    Compute the total variance of Kolmogorov over a 10m telescope and 
+    compare variance [rad2] with Noll('76): :math:`\Delta_1= 1.029 (D/r_0)^{5/3}`
 
-    Compare varInSquareRad with Noll('76): delta1 = 1.029*(2*R/r0)**(5./3)
+    >>> R = 5
+    >>> r0 = 0.1
+    >>> L0 = np.inf
+    >>> psd = von_karman_psd.VonKarmanPsd(r0, L0)
+    >>> freqs = np.logspace(-8, 4, 1000)
+    >>> bess = scipy.special.jv(1, 2*np.pi*R*freqs)
+    >>> psdPistonRem = psd.spatial_psd(freqs) * (1 - (bess/(np.pi*R*freqs))**2)
+    >>> varInRad2 = np.trapz(psdPistonRem*2*np.pi*freqs, freqs)
+    >>> varInRad2Noll = 1.029*(2*R/r0)**(5./3)
+    >>> print("%g %g" % (varInRad2, varInRad2Noll))
+    2214.36 2216.91
     '''
 
     def __init__(self, fried_param, outer_scale):
