@@ -1,9 +1,12 @@
 from functools import wraps
+import os
 import time
+import pickle
 import traceback
 import inspect
 import threading
 import types
+from astropy.io import fits
 from arte.utils.logger import LoggerException
 
 
@@ -201,3 +204,80 @@ def synchronized(item):
     else:
         assert False, "Unsupported item type: %s is of type %s" % (
             str(item), type(item))
+
+
+class FitsFileCache:
+    '''Adapter to cache data into FITS files'''
+    def check(fname): return os.path.exists(fname)
+    def load(fname): return fits.getdata(fname)
+    def store(fname, data): fits.writeto(fname, data)
+
+
+class TextFileCache:
+    '''Adapter to cache data into text files'''
+    def check(fname): return os.path.exists(fname)
+    def load(fname): return open(fname, 'r').read()
+    def store(fname, data): open(fname, 'w').write(data)
+
+
+class PickleFileCache:
+    '''Adapter to cache data into files using pickle'''
+    def check(fname): return os.path.exists(fname)
+    def load(fname): return pickle.load(open(fname, 'r'))
+    def store(fname, data): pickle.dump(data, open(fname, 'w'))
+
+
+def cache_on_disk(fname=None, fname_func=None, adapter=FitsFileCache):
+    '''
+    Decorator that caches a function result into a local file.
+
+    The file can be specified as either a constant filename, or a function
+    that returns a filename. The second form is useful if the filename is not
+    known when the function is defined, but only at runtime.
+
+    Roughly equivalent to:
+
+        if adapter.check(fname):
+            data = adapter.load(fname)
+        else:
+            data = f()
+            adapter.store(fname, data)
+        return data
+
+    Parameters
+    ----------
+    fname : str, optional
+        name of the file where the data is stored. One of `filename` and
+        `fname_func` must be specified.
+    fname_func : callable, optional
+        function or callable without arguments that returns a filename,
+        to be used in case the name changes at runtime.
+    adapter : class
+        class managing the load/store to file, optional. By default FITS
+        files will be used as storage.
+    '''
+    if (fname is None and fname_func is None) or \
+       (fname is not None and fname_func is not None):
+        raise ValueError('One of filename and fname_func must be specified')
+
+    # Always use fname_func, binding the current value of filename.
+    if fname:
+        def fname_func():
+            return fname
+
+    def decorator(f):
+
+        @wraps(f)
+        def cache_result_into_files(*args, **kwargs):
+            fname = fname_func()
+            if adapter.check(fname):
+                return adapter.load(fname)
+            else:
+                data = f(*args, **kwargs)
+                adapter.store(fname, data)
+                return data
+
+        return cache_result_into_files
+
+    return decorator
+
