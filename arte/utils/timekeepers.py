@@ -1,6 +1,7 @@
 
 import time
 
+
 class TimeKeeper:
     '''
     Class to give information about iterative loops.
@@ -23,23 +24,25 @@ class TimeKeeper:
             print('%d iterations (%5.2f Hz) - average time: %5.2f ms' %
                       (timekeep.count, timekeep.rate, timekeep.ms))
     '''
+
     def __init__(self, interval=1.0):
-       self.interval = interval
-       self.t0  = time.time()
-       self.cnt = 0
+        self.interval = interval
+        self.t0  = time.time()
+        self.cnt = 0
 
     def inc(self):
-       self.cnt +=1
-       t1 = time.time()
-       if (t1-self.t0)>=self.interval:
-          tdiff = t1-self.t0
-          self.rate = self.cnt / tdiff
-          self.count = self.cnt
-          self.ms = 1.0/self.rate*1e3
-          self.cnt=0
-          self.t0=t1
-          return True
-       return False
+        self.cnt += 1
+        t1 = time.time()
+        if (t1 - self.t0) >= self.interval:
+            tdiff = t1 - self.t0
+            self.rate = self.cnt / tdiff
+            self.count = self.cnt
+            self.ms = 1.0 / self.rate * 1e3
+            self.cnt = 0
+            self.t0 = t1
+            return True
+        return False
+
 
 class CyclePrinter():
     '''
@@ -52,40 +55,38 @@ class CyclePrinter():
     "print" function), and a format for the number of seconds.
 
     Call the 'cycle' function at each iteration. If at least "period"
-    second have passed from the last call, the "logFunc" function
+    second have passed from the last call, the "log_func" function
     will be called with a descriptive message as a string argument.
     '''
 
-    def __init__(self, name, period=1.0, logFunc=print, fmt='%5.2f'):
+    def __init__(self, name, period=1.0, log_func=print, fmt='%5.2f'):
         self.name = name
         self.period = period
-        self.cycleCounter = 0
-        self.totalCounter = 0
+        self.cycle_counter = 0
         self.start = None
-        self.prevCycle = None
-        self.logFunc = logFunc
+        self.prev_cycle = None
+        self.log_func = log_func
         self.fmt = fmt
 
     def cycle(self):
-        self.cycleCounter += 1
-        self.totalCounter += 1
+        self.cycle_counter += 1
         now = time.time()
         if self.start is None:
             self.start = now
-            self.prevCycle = now
+            self.prev_cycle = now
             return
 
-        if now - self.prevCycle > self.period:
-            self.elapsedTime = now-self.prevCycle
-            self.logFunc( self._msg())
-            self.prevCycle = now
-            self.cycleCounter = 0
+        if now - self.prev_cycle > self.period:
+            self.elapsed_time = now - self.prev_cycle
+            self.log_func(self._msg())
+            self.prev_cycle = now
+            self.cycle_counter = 0
 
     def _msg(self):
-        msg=('%s: %d cycles in '+self.fmt+' seconds') % \
-            (self.name,
-             self.cycleCounter,
-             self.elapsedTime)
+        msg = ('%s: %d cycles in ' + self.fmt + ' seconds') % \
+               (self.name,
+                self.cycle_counter,
+                self.elapsed_time)
         return msg
 
 
@@ -99,21 +100,23 @@ class PercentPrinter(CyclePrinter):
     function will be called. "total" defaults to 100.
     '''
 
-    def __init__(self, name, period=1.0, logFunc=print, fmt='%5.2f', total=100):
+    def __init__(self, name, period=1.0, log_func=print,
+                       fmt='%5.2f', total=100):
 
-        CyclePrinter.__init__(self, name, period, logFunc, fmt)
+        CyclePrinter.__init__(self, name, period, log_func, fmt)
         self.total = total
 
     def _msg(self):
 
-        percent = int(self.counter*100.0 / self.total)
-        msg=('%s: %d done (%d out of %d) in '+self.fmt+' seconds') % \
-            (self.name,
-             percent,
-             self.counter,
-             self.total,
-             self.elapsedTime)
+        percent = int(self.counter * 100.0 / self.total)
+        msg = ('%s: %d done (%d out of %d) in ' + self.fmt + ' seconds') % \
+                (self.name,
+                 percent,
+                 self.counter,
+                 self.total,
+                 self.elapsed_time)
         return msg
+
 
 class SpeedPrinter(CyclePrinter):
     '''
@@ -123,13 +126,12 @@ class SpeedPrinter(CyclePrinter):
     instead of the number of cycles
     '''
 
-    def __init__(self, name, period=1.0, logFunc=print, fmt='%5.2f'):
-        CyclePrinter.__init__(self, name, period, logFunc, fmt)
+    def __init__(self, name, period=1.0, log_func=print, fmt='%5.2f'):
+        CyclePrinter.__init__(self, name, period, log_func, fmt)
         self.fmt = fmt
 
     def _msg(self):
 
-        speed = self.cycleCounter / self.elapsedTime
-        msg=('%s: '+self.fmt+' iteration/sec') % (self.name, speed)
+        speed = self.cycle_counter / self.elapsed_time
+        msg = ('%s: ' + self.fmt + ' iteration/sec') % (self.name, speed)
         return msg
-

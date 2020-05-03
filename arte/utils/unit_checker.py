@@ -4,6 +4,7 @@ import numpy as np
 import astropy.units as u
 from functools import wraps
 
+
 def assert_unit_is_equivalent(var, ref):
     '''Make sure that `var` has a unit compatible with `ref`'''
 
@@ -20,7 +21,7 @@ def assert_unit_is_equivalent(var, ref):
 
 def separate_value_and_unit(var):
     '''Returns the argument value and unit, if `var` has one.
-    
+
     If not, `var` is returned unchanged and unit is set to 1.
 
     Parameters

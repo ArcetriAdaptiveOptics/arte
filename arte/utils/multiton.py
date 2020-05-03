@@ -7,8 +7,11 @@
 #
 #########################################################
 
+
 def multiton(cls):
     '''
+    Multiton decorator
+
     Decorator that returns the same instance of a class
     every time it is instantiated with the same parameters.
 
@@ -18,15 +21,20 @@ def multiton(cls):
     that returns an instance, rather than a class type instance.
     '''
     instances = {}
+
     def getinstance(*args):
-        key = '.'.join(map(str,args))
+        key = '.'.join(map(str, args))
         if key not in instances:
             instances[key] = cls(*(args[1:]))
         return instances[key]
+
     return getinstance
+
 
 def multiton_id(cls):
     '''
+    Multiton decorator for mutable types
+
     Decorator that returns the same instance of a class
     every time it is instantiated with the same parameters.
 
@@ -39,10 +47,12 @@ def multiton_id(cls):
     that returns an instance, rather than a class type instance.
     '''
     instances = {}
+
     def getinstance(*args):
         ids = [str(id(x)) for x in args]
         key = '.'.join(ids)
         if key not in instances:
             instances[key] = cls(*(args[1:]))
         return instances[key]
+
     return getinstance
