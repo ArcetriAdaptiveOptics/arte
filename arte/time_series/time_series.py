@@ -6,6 +6,7 @@ from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
 from arte.utils.iterators import pairwise
 
+
 @add_help
 class TimeSeries(metaclass=abc.ABCMeta):
     '''
@@ -14,8 +15,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
     Derived classes must implement a `_get_not_indexed_data()` method
     that returns a numpy array of shape (n_time_elements, n_ensemble_elements).
 
-    Derived classes must also implement a `get_index_of()` method to add 
-    ensemble indexing with arbitrary \*args and \*\*kwargs parameters
+    Derived classes must also implement a `get_index_of()` method to add
+    ensemble indexing with arbitrary *args and **kwargs parameters
     (e.g. returning of partial subset based on indexes or names).
 
     Originally implemented as part of the ARGOS codebase.
@@ -35,9 +36,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
         pass
 
     def get_data(self, *args, **kwargs):
-        '''
-        Raw data as a matrix [time, series]
-        '''
+        '''Raw data as a matrix [time, series]'''
+
         not_indexed_data = self._get_not_indexed_data()
         index = self.get_index_of(*args, **kwargs)
         if index is None:
@@ -48,7 +48,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def get_index_of(self, *args, **kwargs):
         pass
- 
+
     @property
     def delta_time(self):
         '''Property with the interval between samples (astropy units)'''
@@ -63,7 +63,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
 
     def last_cutted_frequency(self):
         return self._lastCuttedFrequency
- 
+
     def ensemble_size(self):
         '''Number of distinct series in this time enseble'''
         not_indexed_data = self._get_not_indexed_data()
@@ -79,12 +79,12 @@ class TimeSeries(metaclass=abc.ABCMeta):
                             dtype='int32')
             result = func(data[idxs])
         return result
-        
+
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, from_freq=None, to_freq=None,
               segment_factor=None, window='boxcar', *args, **kwargs):
-
         '''PSD across specified series'''
+
         index = self.get_index_of(*args, **kwargs)
         if segment_factor is None:
             if self._segment_factor is None:
@@ -130,7 +130,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         '''Median over time for each series'''
         func = functools.partial(np.median, axis=0)
         return self._apply(func, times, *args, **kwargs)
-    
+
     @modify_help(arg_str='[times=[from,to]], [series_idx]')
     def time_std(self, times=None, *args, **kwargs):
         '''Standard deviation over time for each series'''
@@ -145,19 +145,19 @@ class TimeSeries(metaclass=abc.ABCMeta):
 
     @modify_help(arg_str='[times=[from,to]], [time_idx]')
     def ensemble_average(self, times=None, *args, **kwargs):
-        '''Average across series at each sampling time '''
+        '''Average across series at each sampling time'''
         func = functools.partial(np.mean, axis=1)
         return self._apply(func, times, *args, **kwargs)
 
     @modify_help(arg_str='[times=[from,to]], [time_idx]')
     def ensemble_std(self, times=None, *args, **kwargs):
-        '''Standard deviation across series at each sampling time '''
+        '''Standard deviation across series at each sampling time'''
         func = functools.partial(np.std, axis=1)
         return self._apply(func, times, *args, **kwargs)
 
     @modify_help(arg_str='[times=[from,to]], [time_idx]')
     def ensemble_median(self, times=None, *args, **kwargs):
-        '''Median across series at each sampling time '''
+        '''Median across series at each sampling time'''
         func = functools.partial(np.median, axis=1)
         return self._apply(func, times, *args, **kwargs)
 
@@ -209,7 +209,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
 class TimeSeriesWithInterpolation(TimeSeries):
     '''
     :class:`TimeSeries` with automatic interpolation of missing data.
-    
+
     Missing data points are detected from a jump in the frame counter,
     and are linearly interpolated between valid data points.
 
@@ -233,20 +233,20 @@ class TimeSeriesWithInterpolation(TimeSeries):
     one frame is missing, the data array must have shape (99,n) and the
     frame counter (99,). The interpolated data and frame counter will
     have the correct dimensions.
-    
+
     For example::
-        
+
         def _get_counter(self):
             return fits.getdata('file_with_incomplete_frame_counter.fits')
-            
+
         def _get_not_indexed_data(self):
             raw_data = fits.getdata('file_with_incomplete_data.fits')
             return self.interpolate_missing_data(raw_data)
 
     Since interpolation can be slow, it is recommended that some form of
     caching strategy is implemented in the `_get_not_indexed_data()` method.
-    
     '''
+
     # TODO remove it?
     __metaclass__ = abc.ABCMeta
 
@@ -266,7 +266,7 @@ class TimeSeriesWithInterpolation(TimeSeries):
         if self._counter is None:
             self._counter = self._interpolate_counter()
         return self._counter
-    
+
     @abc.abstractmethod
     def _get_counter(self):
         pass
@@ -276,21 +276,21 @@ class TimeSeriesWithInterpolation(TimeSeries):
         if isinstance(counter, NotAvailable):
             return NotAvailable()
         step = np.median(np.diff(counter))
-        n = round((max(counter)-min(counter))/step) +1
+        n = round((max(counter) - min(counter)) / step) + 1
         if n == len(counter):
             return counter
         else:
-            return np.arange(n)*step + min(counter)
+            return np.arange(n) * step + min(counter)
 
     def interpolate_missing_data(self, data):
         '''
         Interpolate missing data.
-        
+
         Parameters
         ----------
         data: ndarray
             the original data
-            
+
         Returns
         -------
         ndarray
@@ -308,46 +308,46 @@ class TimeSeriesWithInterpolation(TimeSeries):
 
         if data.shape[0] != counter.shape[0]:
             raise ValueError('Shape mismatch between frame counter and data:'
-                              +' - Data: %s' % str(data.shape)
-                              +' - Counter: %s' % str(counter.shape))
+                              + ' - Data: %s' % str(data.shape)
+                              + ' - Counter: %s' % str(counter.shape))
 
         self._counter = self._interpolate_counter()
-        
+
         # No interpolation done
         if len(self._counter) == len(self.get_original_counter()):
             return data
 
         new_data = np.zeros((self._counter.shape[0], data.shape[1]))
-        
+
         # Normalize original counter to unsigned integer with unitary steps,
         # keeping the gaps. It makes easier to use the counter as
         # slice indexes, which must be integers.
         step = np.median(np.diff(counter))
-        mycounter = np.round(counter/step - min(counter)/step).astype(np.uint32)
+        mycounter = np.round((counter - min(counter)) / step).astype(np.uint32)
         deltas = np.diff(mycounter)
         jumps = np.where(deltas > 1)[0]
 
         # Data before the first jump
-        new_data[0:jumps[0]+1] = data[0:jumps[0]+1]
-        
-        shift=0
-        jump_idx = np.concatenate( (jumps, [len(new_data)]))
-        
-        for j,nextj in pairwise(jump_idx):
+        new_data[:jumps[0] + 1] = data[:jumps[0] + 1]
+
+        shift = 0
+        jump_idx = np.concatenate((jumps, [len(new_data)]))
+
+        for j, nextj in pairwise(jump_idx):
             n_interp = deltas[j]
-            gap = n_interp-1
+            gap = n_interp - 1
             interp = np.outer(np.arange(0, n_interp),
                               (data[j + 1] - data[j]) / n_interp) + data[j]
-            
+
             # Interpolated data
             new_data[shift+j : shift+j+n_interp] = interp
 
             # Original data up to the next jump
             new_data[shift+j+n_interp: shift+nextj+n_interp] = data[j+1:nextj+1]
-            
+
             # Keep track of how much data has been inserted in new_data
             shift += gap
-                                                               
+
         return new_data
 
 # ___oOo___
