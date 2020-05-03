@@ -73,6 +73,9 @@ class NotAvailable(CanBeIncomplete):
     def __mul__(self, other):
         return self
 
+    def __matmul__(self, other):
+        return self
+
     def __floordiv__(self, other):
         return self
 
@@ -115,6 +118,9 @@ class NotAvailable(CanBeIncomplete):
     def __rmul__(self, other):
         return self
 
+    def __rmatmul__(self, other):
+        return self
+
     def __rdiv__(self, other):
         return self
 
@@ -155,6 +161,9 @@ class NotAvailable(CanBeIncomplete):
         return self
 
     def __imul__(self, other):
+        return self
+
+    def __imatmul__(self, other):
         return self
 
     def __idiv__(self, other):
