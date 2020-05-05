@@ -40,6 +40,7 @@ class VonKarmanPsd():
     >>> print("%g %g" % (varInRad2, varInRad2Noll))
     2214.36 2216.91
     '''
+    NUM_CONST = 0.02289558710855519
 
     def __init__(self, fried_param, outer_scale):
         self._r0 = fried_param
@@ -55,18 +56,29 @@ class VonKarmanPsd():
                     len(self._L0), len(self._r0))
 
     def _computeVonKarmanPsd(self, freqs):
-        c = (24. / 5 * gamma(6. / 5)) ** (5. / 6) * \
-            gamma(11. / 6) ** 2 / (2 * np.pi ** (11 / 3))
         if type(self._r0) == np.ndarray:
             self._psd = np.array([
-                c * self._r0[i] ** (-5. / 3) *
-                (freqs ** 2 + 1 / self._L0 ** 2) ** (-11. / 6)
+                self.NUM_CONST * self._r0[i] ** (-5. / 3) *
+                (freqs ** 2 + 1 / self._L0[i] ** 2) ** (-11. / 6)
                 for i in range(self._r0.shape[0])])
         else:
-            self._psd = 0.0229 * self._r0 ** (-5. / 3) * \
+            self._psd = self.NUM_CONST * self._r0 ** (-5. / 3) * \
                 (freqs ** 2 + 1 / self._L0 ** 2) ** (-11. / 6)
 
     def spatial_psd(self, freqs):
+        '''
+        Spatial Power Spectral Density of Von Karman turbulence
+
+        Parameters
+        ----------
+        freqs: :class:`~numpy:numpy.ndarray`
+            Spatial frequencies vector[m^-1].
+
+        Returns
+        -------
+        psd: :class:`~numpy:numpy.ndarray`
+            power spectral density computed at the specified frequencies
+        '''
         self._computeVonKarmanPsd(freqs)
         return self._psd
 

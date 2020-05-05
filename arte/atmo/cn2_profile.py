@@ -254,8 +254,10 @@ class Cn2Profile(object):
 
     def wind_direction(self):
         """
-        Returns:
-            (array): wind direction of each layer [deg, clockwise from N]
+        Returns
+        -------
+        wind: :class:`~astropy:astropy.units.quantity.Quantity` containing an array.
+            wind direction of each layer [deg, clockwise from N]
         """
         # TODO: check the unit. layersWindDirection is converted in SI, so
         # in radiants. I think that I must return np.rad2deg(layersWindDir) *
@@ -264,8 +266,10 @@ class Cn2Profile(object):
 
     def seeing(self):
         """
-        Returns:
-            seeing value in arcsec at specified lambda and zenith angle
+        Returns
+        -------
+        seeing: :class:`~astropy:astropy.units.quantity.Quantity` equivalent to arcsec
+            seeing value at specified lambda and zenith angle
             defined as 0.98 * lambda / r0
         """
         return 0.98 * self._lambda / self.r0() * Constants.RAD2ARCSEC * \
