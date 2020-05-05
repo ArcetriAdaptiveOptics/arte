@@ -4,9 +4,10 @@
 
 import numpy as np
 import astropy.units as u
-from arte.utils import von_karman_psd, math
+from arte.utils import math
 import logging
 from arte.utils.zernike_generator import ZernikeGenerator
+from arte.atmo import von_karman_psd
 
 
 class VonKarmanSpatioTemporalCovariance():

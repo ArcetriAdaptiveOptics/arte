@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from arte.atmo.cn2_profile import Cn2Profile
-from arte.utils.von_karman_psd import VonKarmanPsd
+from arte.atmo.von_karman_psd import VonKarmanPsd
 
 
 class VonKarmannPsdTest(unittest.TestCase):
