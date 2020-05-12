@@ -14,11 +14,10 @@ def quadraticSum(arrayOfErrorsWithSign):
     8 = quadraticSum(10, -6])
 
     '''
-    total= 0.
+    total = 0.
     for err in arrayOfErrorsWithSign:
         if err < 0:
-            total -= err**2
+            total -= err ** 2
         else:
-            total += err**2
+            total += err ** 2
     return np.sqrt(total)
- 
