@@ -208,6 +208,9 @@ class NotAvailable(CanBeIncomplete):
     def __invert__(self):
         return self
 
+    def __format__(self, fmt):
+        return 'NA'
+
     @staticmethod
     def transformInNotAvailable(obj):
         obj.__class__ = NotAvailable
