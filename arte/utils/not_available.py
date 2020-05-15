@@ -55,7 +55,10 @@ class NotAvailable(CanBeIncomplete):
     def __iter__(self):
         return self
 
-    def next(self):
+    def next(self):          # Python2
+        raise StopIteration
+
+    def __next__(self):      # Python3
         raise StopIteration
 
     def __repr__(self):
