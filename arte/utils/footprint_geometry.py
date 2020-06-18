@@ -31,13 +31,11 @@ class FootprintGeometry():
         self._telescopeRadiusInMeter = radiusInMeter
 
     def addLgs(self,
-               launcherRadialDistanceInMeter,
-               launcherAzInDeg,
                thetaSkyInArcsec,
                AzSkyInDeg):
         self._lgs.append(
-            {'lRo': launcherRadialDistanceInMeter,
-             'lAz': launcherAzInDeg,
+            {'lRo': 0,
+             'lAz': 0,
              'skyTheta': thetaSkyInArcsec,
              'skyAz': AzSkyInDeg})
 
@@ -251,7 +249,7 @@ def mainFootprintGeometry(h=12000, lgsTh=15, lgsN=4, ngsTh=60, ngsN=3,
     fg.setLayerAltitude(h)
     if lgsN > 0:
         for azAng in np.arange(0, 360, 360 / lgsN):
-            fg.addLgs(0, 0, lgsTh, azAng)
+            fg.addLgs(lgsTh, azAng)
     if ngsN > 0:
         for azAng in np.arange(0, 360, 360 / ngsN):
             fg.addNgs(ngsTh, azAng)
