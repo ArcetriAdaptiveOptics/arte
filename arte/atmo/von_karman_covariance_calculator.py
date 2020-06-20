@@ -8,6 +8,7 @@ from arte.utils import math
 import logging
 from arte.utils.zernike_generator import ZernikeGenerator
 from arte.atmo import von_karman_psd
+from arte.utils.decorator import cacheResult
 
 
 class VonKarmanSpatioTemporalCovariance():
@@ -72,37 +73,16 @@ class VonKarmanSpatioTemporalCovariance():
                  cn2_profile,
                  spat_freqs,
                  logger=logging.getLogger('VK_COVARIANCE')):
-        self._source1 = source1
-        self._source2 = source2
-        self._ap1 = aperture1
-        self._ap2 = aperture2
-        self._cn2 = cn2_profile
-        self._freqs = spat_freqs
+        self.setSource1(source1)
+        self.setSource2(source2)
+        self.setAperture1(aperture1)
+        self.setAperture2(aperture2)
+        self.setCn2Profile(cn2_profile)
+        self.setSpatialFrequencies(spat_freqs)
         self._logger = logger
 
-        self._source1Coords = self._quantitiesToValue(
-            source1.getSourcePolarCoords())
-        self._source2Coords = self._quantitiesToValue(
-            source2.getSourcePolarCoords())
-        self._ap1Coords = self._quantitiesToValue(
-            aperture1.getCartesianCoords())
-        self._ap2Coords = self._quantitiesToValue(
-            aperture2.getCartesianCoords())
-        self._ap1Radius = self._quantitiesToValue(
-            aperture1.getApertureRadius())
-        self._ap2Radius = self._quantitiesToValue(
-            aperture2.getApertureRadius())
-        self._layersDistance = self._quantitiesToValue(
-            cn2_profile.layers_distance())
-        self._r0s = self._quantitiesToValue(cn2_profile.r0s())
-        self._outerScale = self._quantitiesToValue(cn2_profile.outer_scale())
-        self._numberOfLayers = self._quantitiesToValue(
-            cn2_profile.number_of_layers())
-        self._windSpeed = self._quantitiesToValue(cn2_profile.wind_speed())
-        self._windDirection = self._quantitiesToValue(
-            cn2_profile.wind_direction())
-
     def setCn2Profile(self, cn2_profile):
+        self._resetCachedResults()
         self._cn2 = cn2_profile
         self._layersDistance = self._quantitiesToValue(
             cn2_profile.layers_distance())
@@ -115,16 +95,19 @@ class VonKarmanSpatioTemporalCovariance():
             cn2_profile.wind_direction())
 
     def setSource1(self, s1):
+        self._resetCachedResults()
         self._source1 = s1
         self._source1Coords = self._quantitiesToValue(
             s1.getSourcePolarCoords())
 
     def setSource2(self, s2):
+        self._resetCachedResults()
         self._source2 = s2
         self._source2Coords = self._quantitiesToValue(
             s2.getSourcePolarCoords())
 
     def setAperture1(self, ap1):
+        self._resetCachedResults()
         self._ap1 = ap1
         self._ap1Coords = self._quantitiesToValue(
             ap1.getCartesianCoords())
@@ -132,6 +115,7 @@ class VonKarmanSpatioTemporalCovariance():
             ap1.getApertureRadius())
 
     def setAperture2(self, ap2):
+        self._resetCachedResults()
         self._ap2 = ap2
         self._ap2Coords = self._quantitiesToValue(
             ap2.getCartesianCoords())
@@ -139,7 +123,18 @@ class VonKarmanSpatioTemporalCovariance():
             ap2.getApertureRadius())
 
     def setSpatialFrequencies(self, freqs):
+        self._resetCachedResults()
         self._freqs = freqs
+
+    def _resetCachedResults(self):
+        # TODO: lb 200620. This is ugly, the decorator should offer
+        # the method to reset itself. It could also mean that the
+        # methods setSource, setAperture etc are not needed and one
+        # should instantiate a new object instead of modifying it.
+        # Also, note that we call this method to reset everything
+        # every time something is modified, and this is
+        # likely suboptimal
+        self._initializeGeometry_cached_result = {}
 
     def source1(self):
         return self._source1
@@ -224,63 +219,72 @@ class VonKarmanSpatioTemporalCovariance():
         return psd
 
     def _integrate(self, int_func, int_var):
-        return np.trapz(np.real(int_func), int_var) + \
-            1j * np.trapz(np.imag(int_func), int_var)
+        return np.trapz(int_func, int_var)
+#        return np.trapz(np.real(int_func), int_var) + \
+#            1j * np.trapz(np.imag(int_func), int_var)
 
+    @cacheResult
     def _initializeGeometry(self, nLayer, spat_freqs):
-        self._a1 = self._layerScalingFactor1(nLayer)
-        self._a2 = self._layerScalingFactor2(nLayer)
-        self._R1 = self._ap1Radius
-        self._R2 = self._ap2Radius
+        a1 = self._layerScalingFactor1(nLayer)
+        a2 = self._layerScalingFactor2(nLayer)
+        R1 = self._ap1Radius
+        R2 = self._ap2Radius
         sep = self._layerProjectedAperturesSeparation(nLayer)
-        self._sl = np.linalg.norm(sep)
-        self._thS = np.arctan2(sep[1], sep[0])
-        self._psd = self._VonKarmanPSDOneLayer(nLayer, spat_freqs)
+        sl = np.linalg.norm(sep)
+        thS = np.arctan2(sep[1], sep[0])
+        psd = self._VonKarmanPSDOneLayer(nLayer, spat_freqs)
+        return a1, a2, R1, R2, sl, thS, psd
 
-    def _initializeFunctionsForZernikeComputations(self, j, k, spat_freqs):
-        self._nj, self._mj = ZernikeGenerator.degree(j)
-        self._nk, self._mk = ZernikeGenerator.degree(k)
+    # @cacheResult
+    def _initializeFunctionsForZernikeComputations(
+            self, j, k, spat_freqs, a1, a2):
+        nj, mj = ZernikeGenerator.degree(j)
+        nk, mk = ZernikeGenerator.degree(k)
 
-        self._deltaj = math.kroneckerDelta(0, self._mj)
-        self._deltak = math.kroneckerDelta(0, self._mk)
+        deltaj = math.kroneckerDelta(0, mj)
+        deltak = math.kroneckerDelta(0, mk)
 
-        self._b1 = math.besselFirstKind(
-            self._nj + 1,
-            2 * np.pi * spat_freqs * self._R1 * (1 - self._a1))
-        self._b2 = math.besselFirstKind(
-            self._nk + 1,
-            2 * np.pi * spat_freqs * self._R2 * (1 - self._a2))
+        b1 = math.besselFirstKind(
+            nj + 1,
+            2 * np.pi * spat_freqs * self._ap1Radius * (1 - a1))
+        b2 = math.besselFirstKind(
+            nk + 1,
+            2 * np.pi * spat_freqs * self._ap2Radius * (1 - a2))
 
-        self._c0 = (-1) ** self._mk * np.sqrt((
-            self._nj + 1) * (self._nk + 1)) * 1j ** (
-            self._nj + self._nk) * 2 ** (
-            1 - 0.5 * (self._deltaj + self._deltak))
-        self._c1 = 1. / (
-            np.pi * self._R1 * self._R2 * (1 - self._a1) * (1 - self._a2))
+        c0 = (-1) ** mk * np.sqrt((nj + 1) * (nk + 1)) * 1j ** (
+            nj + nk) * 2 ** (
+            1 - 0.5 * (deltaj + deltak))
+        c1 = 1. / (
+            np.pi * self._ap1Radius * self._ap2Radius * (1 - a1) * (1 - a2))
+
+        return nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1
 
     def _computeZernikeCovarianceOneLayer(self, j, k, nLayer):
-        self._initializeGeometry(nLayer, self._freqs)
-        self._initializeFunctionsForZernikeComputations(j, k, self._freqs)
+        a1, a2, R1, R2, sl, thS, psd = \
+            self._initializeGeometry(nLayer, self._freqs)
+        nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1 = \
+            self._initializeFunctionsForZernikeComputations(
+                j, k, self._freqs, a1, a2)
 
-        self._b3 = math.besselFirstKind(
-            self._mj + self._mk,
-            self._sl * 2 * np.pi * self._freqs)
-        self._b4 = math.besselFirstKind(
-            np.abs(self._mj - self._mk),
-            self._sl * 2 * np.pi * self._freqs)
-        self._c2 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) +
-                                (1 - self._deltak) * ((-1) ** k - 1))
-        self._c3 = np.pi / 4 * ((1 - self._deltaj) * ((-1) ** j - 1) -
-                                (1 - self._deltak) * ((-1) ** k - 1))
+        b3 = math.besselFirstKind(
+            mj + mk,
+            sl * 2 * np.pi * self._freqs)
+        b4 = math.besselFirstKind(
+            np.abs(mj - mk),
+            sl * 2 * np.pi * self._freqs)
+        c2 = np.pi / 4 * ((1 - deltaj) * ((-1) ** j - 1) +
+                                (1 - deltak) * ((-1) ** k - 1))
+        c3 = np.pi / 4 * ((1 - deltaj) * ((-1) ** j - 1) -
+                                (1 - deltak) * ((-1) ** k - 1))
 
-        zernikeIntegrand = self._c0 * self._c1 * \
-            self._psd / self._freqs * self._b1 * self._b2 * \
-            (np.cos((self._mj + self._mk) * self._thS + self._c2) *
-             1j ** (3 * (self._mj + self._mk)) *
-             self._b3 +
-             np.cos((self._mj - self._mk) * self._thS + self._c3) *
-             1j ** (3 * np.abs(self._mj - self._mk)) *
-             self._b4)
+        zernikeIntegrand = c0 * c1 * \
+            psd / self._freqs * b1 * b2 * \
+            (np.cos((mj + mk) * thS + c2) *
+             1j ** (3 * (mj + mk)) *
+             b3 +
+             np.cos((mj - mk) * thS + c3) *
+             1j ** (3 * np.abs(mj - mk)) *
+             b4)
         zernikeCovOneLayer = self._integrate(zernikeIntegrand, self._freqs)
         return zernikeCovOneLayer
 
@@ -290,10 +294,10 @@ class VonKarmanSpatioTemporalCovariance():
             in range(self._numberOfLayers)])
         return zernikeCovAllLayers.sum()
 
-    def _initializeFunctionsForPhaseComputations(self, spat_freqs):
-        k = (1 - self._a2) * self._R2 / ((1 - self._a1) * self._R1)
-        arg1 = np.pi * self._R1 * (1 - self._a1)
-        arg2 = np.pi * self._R2 * (1 - self._a2)
+    def _initializeFunctionsForPhaseComputations(self, spat_freqs, a1, a2):
+        k = (1 - a2) * self._ap2Radius / ((1 - a1) * self._ap1Radius)
+        arg1 = np.pi * self._ap1Radius * (1 - a1)
+        arg2 = np.pi * self._ap2Radius * (1 - a2)
         b0 = math.besselFirstKind(1, 2 * arg1 * (k - 1) * spat_freqs)
         b1 = math.besselFirstKind(1, 2 * arg1 * spat_freqs)
         b2 = math.besselFirstKind(1, 2 * arg2 * spat_freqs)
@@ -303,23 +307,25 @@ class VonKarmanSpatioTemporalCovariance():
         else:
             self._b1Phase = b0 / (arg1 * (k - 1) * spat_freqs)
 
-        if self._a1 == 1:
+        if a1 == 1:
             self._b2Phase = 1
         else:
             self._b2Phase = b1 / (arg1 * spat_freqs)
 
-        if self._a2 == 1:
+        if a2 == 1:
             self._b3Phase = 1
         else:
             self._b3Phase = b2 / (arg2 * spat_freqs)
 
     def _computePhaseCovarianceOneLayer(self, nLayer):
-        self._initializeGeometry(nLayer, self._freqs)
-        self._initializeFunctionsForPhaseComputations(self._freqs)
+        a1, a2, R1, R2, sl, thS, psd = \
+            self._initializeGeometry(nLayer, self._freqs)
+        self._initializeFunctionsForPhaseComputations(
+            self._freqs, a1, a2)
         b0Phase = math.besselFirstKind(0,
-                                       2 * np.pi * self._freqs * self._sl)
+                                       2 * np.pi * self._freqs * sl)
 
-        phaseIntegrand = 2 * np.pi * self._freqs * self._psd * b0Phase * (
+        phaseIntegrand = 2 * np.pi * self._freqs * psd * b0Phase * (
             self._b1Phase - self._b2Phase * self._b3Phase)
         phaseCovOneLayer = self._integrate(phaseIntegrand, self._freqs)
         return phaseCovOneLayer
@@ -388,28 +394,31 @@ class VonKarmanSpatioTemporalCovariance():
         fPerp = self._freqs
         f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
 
-        self._initializeGeometry(nLayer, f)
-        self._initializeFunctionsForZernikeComputations(j, k, f)
+        a1, a2, R1, R2, sl, thS, psd = \
+            self._initializeGeometry(nLayer, f)
+        nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1 = \
+            self._initializeFunctionsForZernikeComputations(
+                j, k, f, a1, a2)
 
         thWind = np.deg2rad(self._windDirection[nLayer])
         th0 = np.arccos(-temp_freq / (f * vl))
         th1 = th0 + thWind
         th2 = -th0 + thWind
 
-        self._c4 = np.pi / 4 * (1 - self._deltaj) * ((-1) ** j - 1)
-        self._c5 = np.pi / 4 * (1 - self._deltak) * ((-1) ** k - 1)
+        c4 = np.pi / 4 * (1 - deltaj) * ((-1) ** j - 1)
+        c5 = np.pi / 4 * (1 - deltak) * ((-1) ** k - 1)
 
-        integFunc = 2 * self._c0 * self._c1 * 1j ** (0.5 * ((-1) ** (
-            self._nj + self._nk) - 1)) / (vl * np.pi) * \
-            self._psd / f ** 2 * self._b1 * self._b2 * \
-            (np.cos(2 * np.pi * f * self._sl * np.cos(th1 - self._thS) +
-                    np.pi / 4 * ((-1) ** (self._nj + self._nk) - 1)) *
-             np.cos(self._mj * th1 + self._c4) *
-             np.cos(self._mk * th1 + self._c5) +
-             np.cos(2 * np.pi * f * self._sl * np.cos(th2 - self._thS) +
-                    np.pi / 4 * ((-1) ** (self._nj + self._nk) - 1)) *
-             np.cos(self._mj * th2 + self._c4) *
-             np.cos(self._mk * th2 + self._c5))
+        integFunc = 2 * c0 * c1 * 1j ** (0.5 * ((-1) ** (
+            nj + nk) - 1)) / (vl * np.pi) * \
+            psd / f ** 2 * b1 * b2 * \
+            (np.cos(2 * np.pi * f * sl * np.cos(th1 - thS) +
+                    np.pi / 4 * ((-1) ** (nj + nk) - 1)) *
+             np.cos(mj * th1 + c4) *
+             np.cos(mk * th1 + c5) +
+             np.cos(2 * np.pi * f * sl * np.cos(th2 - thS) +
+                    np.pi / 4 * ((-1) ** (nj + nk) - 1)) *
+             np.cos(mj * th2 + c4) *
+             np.cos(mk * th2 + c5))
         return integFunc, fPerp
 
     def integrandOfZernikeCPSD(self, j, k, nLayer, temp_freq):
@@ -418,27 +427,30 @@ class VonKarmanSpatioTemporalCovariance():
         fPerp = self._freqs
         f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
 
-        self._initializeGeometry(nLayer, f)
-        self._initializeFunctionsForZernikeComputations(j, k, f)
+        a1, a2, R1, R2, sl, thS, psd = \
+            self._initializeGeometry(nLayer, f)
+        nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1 = \
+            self._initializeFunctionsForZernikeComputations(
+                j, k, f, a1, a2)
 
         thWind = np.deg2rad(self._windDirection[nLayer])
         th0 = np.arccos(-temp_freq / (f * vl))
         th1 = th0 + thWind
         th2 = -th0 + thWind
 
-        self._c4 = np.pi / 4 * (1 - self._deltaj) * ((-1) ** j - 1)
-        self._c5 = np.pi / 4 * (1 - self._deltak) * ((-1) ** k - 1)
+        c4 = np.pi / 4 * (1 - deltaj) * ((-1) ** j - 1)
+        c5 = np.pi / 4 * (1 - deltak) * ((-1) ** k - 1)
 
-        integFunc = self._c0 * self._c1 / (vl * np.pi) * \
-            self._psd / f ** 2 * self._b1 * self._b2 * \
-            (np.exp(-2 * 1j * np.pi * f * self._sl * np.cos(
-                th1 - self._thS)) *
-             np.cos(self._mj * th1 + self._c4) *
-             np.cos(self._mk * th1 + self._c5) +
-             np.exp(-2 * 1j * np.pi * f * self._sl * np.cos(
-                 th2 - self._thS)) *
-             np.cos(self._mj * th2 + self._c4) *
-             np.cos(self._mk * th2 + self._c5))
+        integFunc = c0 * c1 / (vl * np.pi) * \
+            psd / f ** 2 * b1 * b2 * \
+            (np.exp(-2 * 1j * np.pi * f * sl * np.cos(
+                th1 - thS)) *
+             np.cos(mj * th1 + c4) *
+             np.cos(mk * th1 + c5) +
+             np.exp(-2 * 1j * np.pi * f * sl * np.cos(
+                 th2 - thS)) *
+             np.cos(mj * th2 + c4) *
+             np.cos(mk * th2 + c5))
         return integFunc, fPerp
 
     def integrandOfPhaseCPSD(self, nLayer, temp_freq):
@@ -447,20 +459,21 @@ class VonKarmanSpatioTemporalCovariance():
         fPerp = self._freqs
         f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
 
-        self._initializeGeometry(nLayer, f)
-        self._initializeFunctionsForPhaseComputations(f)
+        a1, a2, R1, R2, sl, thS, psd = \
+            self._initializeGeometry(nLayer, f)
+        self._initializeFunctionsForPhaseComputations(f, a1, a2)
 
         thWind = np.deg2rad(self._windDirection[nLayer])
         th0 = np.arccos(-temp_freq / (f * vl))
         th1 = th0 + thWind
         th2 = -th0 + thWind
 
-        intFunc = 1. / vl * self._psd * (
+        intFunc = 1. / vl * psd * (
             self._b1Phase - self._b2Phase * self._b3Phase) * (
-                np.exp(-2 * 1j * np.pi * f * self._sl * np.cos(
-                    th1 - self._thS)) +
-            np.exp(-2 * 1j * np.pi * f * self._sl * np.cos(
-                th2 - self._thS)))
+                np.exp(-2 * 1j * np.pi * f * sl * np.cos(
+                    th1 - thS)) +
+            np.exp(-2 * 1j * np.pi * f * sl * np.cos(
+                th2 - thS)))
         return intFunc, fPerp
 
     def getZernikeCovariance(self, j, k):
@@ -507,8 +520,8 @@ class VonKarmanSpatioTemporalCovariance():
 
     def getPhaseCovariance(self):
         """
-        Return the covariance between the phase seen from source1 with
-        aperture1 and the phase seen from source2 with aperture2.
+        Return the covariance between the phase seen from source1 on
+        aperture1 and the phase seen from source2 on aperture2.
 
         Returns
         -------
@@ -524,9 +537,9 @@ class VonKarmanSpatioTemporalCovariance():
     def getZernikeCPSD(self, j, k, temp_freqs):
         """
         Return the Cross Power Spectral Density (CPSD) of the Zernike
-        coefficients with index j and k describing the phase seen by aperture1
+        coefficients with index j and k describing the phase seen on aperture1
         and aperture2 observing, respectively, source1 and source2.
-        The CPSD is a function of temporal frequency.
+        The CPSD is a function of the temporal frequency.
 
         Parameters
         ----------
@@ -535,7 +548,7 @@ class VonKarmanSpatioTemporalCovariance():
         k: int
             Index of the Zernike coefficient (related to source2 on aperture2).
         temp_freqs: numpy.ndarray
-            Temporal frequencies array.
+            Temporal frequencies array in Hz.
 
         Returns
         -------
@@ -546,26 +559,26 @@ class VonKarmanSpatioTemporalCovariance():
         self._temporalFreqs = temp_freqs
 
         if (np.isscalar(j) and np.isscalar(k)):
-            zernikeCPSD = self._getZernikeCPSDAllLayers(j, k, temp_freqs
-                                                        ) * u.rad ** 2 / u.Hz
+            zernikeCPSD = self._getZernikeCPSDAllLayers(
+                j, k, temp_freqs)
 
         elif (np.isscalar(j) and np.isscalar(k) is False):
             zernikeCPSD = np.array([
                 self._getZernikeCPSDAllLayers(j, k_mode, temp_freqs)
-                for k_mode in k]) * u.rad ** 2 / u.Hz
+                for k_mode in k])
 
         elif (np.isscalar(j) is False and np.isscalar(k)):
             zernikeCPSD = np.array([
                 self._getZernikeCPSDAllLayers(j_mode, k, temp_freqs)
-                for j_mode in j]) * u.rad ** 2 / u.Hz
+                for j_mode in j])
 
         else:
             zernikeCPSD = np.array([
                 [self._getZernikeCPSDAllLayers(j_mode, k_mode, temp_freqs)
                     for k_mode in k]
-                for j_mode in j]) * u.rad ** 2 / u.Hz
+                for j_mode in j])
 
-        return zernikeCPSD
+        return zernikeCPSD * u.rad ** 2 / u.Hz
 
     def getGeneralZernikeCPSD(self, j, k, temp_freqs):
         # TODO: Is this function necessary? We can get the same result
@@ -600,26 +613,26 @@ class VonKarmanSpatioTemporalCovariance():
 
         if (np.isscalar(j) and np.isscalar(k)):
             zernikeCPSD = self._getGeneralZernikeCPSDAllLayers(
-                j, k, temp_freqs) * u.rad ** 2 / u.Hz
+                j, k, temp_freqs)
 
         elif (np.isscalar(j) and np.isscalar(k) is False):
             zernikeCPSD = np.array([
                 self._getGeneralZernikeCPSDAllLayers(j, k_mode, temp_freqs)
-                for k_mode in k]) * u.rad ** 2 / u.Hz
+                for k_mode in k])
 
         elif (np.isscalar(j) is False and np.isscalar(k)):
             zernikeCPSD = np.array([
                 self._getGeneralZernikeCPSDAllLayers(j_mode, k, temp_freqs)
-                for j_mode in j]) * u.rad ** 2 / u.Hz
+                for j_mode in j])
 
         else:
             zernikeCPSD = np.array([
                 [self._getGeneralZernikeCPSDAllLayers(j_mode, k_mode,
                                                       temp_freqs)
                     for k_mode in k]
-                for j_mode in j]) * u.rad ** 2 / u.Hz
+                for j_mode in j])
 
-        return zernikeCPSD
+        return zernikeCPSD * u.rad ** 2 / u.Hz
 
     def getPhaseCPSD(self, temp_freqs):
         """
