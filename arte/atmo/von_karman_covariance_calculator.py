@@ -220,22 +220,17 @@ class VonKarmanSpatioTemporalCovariance():
 
     def _integrate(self, int_func, int_var):
         return np.trapz(int_func, int_var)
-#        return np.trapz(np.real(int_func), int_var) + \
-#            1j * np.trapz(np.imag(int_func), int_var)
 
     @cacheResult
     def _initializeGeometry(self, nLayer, spat_freqs):
         a1 = self._layerScalingFactor1(nLayer)
         a2 = self._layerScalingFactor2(nLayer)
-        R1 = self._ap1Radius
-        R2 = self._ap2Radius
         sep = self._layerProjectedAperturesSeparation(nLayer)
         sl = np.linalg.norm(sep)
         thS = np.arctan2(sep[1], sep[0])
         psd = self._VonKarmanPSDOneLayer(nLayer, spat_freqs)
-        return a1, a2, R1, R2, sl, thS, psd
+        return a1, a2, sl, thS, psd
 
-    # @cacheResult
     def _initializeFunctionsForZernikeComputations(
             self, j, k, spat_freqs, a1, a2):
         nj, mj = ZernikeGenerator.degree(j)
@@ -260,7 +255,7 @@ class VonKarmanSpatioTemporalCovariance():
         return nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1
 
     def _computeZernikeCovarianceOneLayer(self, j, k, nLayer):
-        a1, a2, R1, R2, sl, thS, psd = \
+        a1, a2, sl, thS, psd = \
             self._initializeGeometry(nLayer, self._freqs)
         nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1 = \
             self._initializeFunctionsForZernikeComputations(
@@ -318,7 +313,7 @@ class VonKarmanSpatioTemporalCovariance():
             self._b3Phase = b2 / (arg2 * spat_freqs)
 
     def _computePhaseCovarianceOneLayer(self, nLayer):
-        a1, a2, R1, R2, sl, thS, psd = \
+        a1, a2, sl, thS, psd = \
             self._initializeGeometry(nLayer, self._freqs)
         self._initializeFunctionsForPhaseComputations(
             self._freqs, a1, a2)
@@ -394,7 +389,7 @@ class VonKarmanSpatioTemporalCovariance():
         fPerp = self._freqs
         f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
 
-        a1, a2, R1, R2, sl, thS, psd = \
+        a1, a2, sl, thS, psd = \
             self._initializeGeometry(nLayer, f)
         nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1 = \
             self._initializeFunctionsForZernikeComputations(
@@ -427,7 +422,7 @@ class VonKarmanSpatioTemporalCovariance():
         fPerp = self._freqs
         f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
 
-        a1, a2, R1, R2, sl, thS, psd = \
+        a1, a2, sl, thS, psd = \
             self._initializeGeometry(nLayer, f)
         nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1 = \
             self._initializeFunctionsForZernikeComputations(
@@ -459,7 +454,7 @@ class VonKarmanSpatioTemporalCovariance():
         fPerp = self._freqs
         f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
 
-        a1, a2, R1, R2, sl, thS, psd = \
+        a1, a2, sl, thS, psd = \
             self._initializeGeometry(nLayer, f)
         self._initializeFunctionsForPhaseComputations(f, a1, a2)
 
