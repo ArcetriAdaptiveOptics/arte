@@ -31,7 +31,7 @@ from arte.utils.package_data import dataRootDir
 import os
 from astropy.io import fits
 import astropy.units as u
-from collections.abc import Iterable
+from astropy.utils.misc import isiterable
 
 
 class Cn2Profile(object):
@@ -186,7 +186,7 @@ class Cn2Profile(object):
 
     @staticmethod
     def _quantitiesToValue(quantity):
-        if isinstance(quantity, Iterable):
+        if isiterable(quantity):
             if isinstance(quantity[0], Quantity):
                 value = np.array(
                     [quantity[i].si.value for i in range(len(quantity))])
@@ -213,15 +213,23 @@ class Cn2Profile(object):
         return r0s
 
     def set_zenith_angle(self, zenithAngleInDeg):
-        self._zenithInDeg = zenithAngleInDeg
-        self._airmass = self.zenith_angle_to_airmass(zenithAngleInDeg)
+        if isinstance(zenithAngleInDeg, Quantity):
+            value = zenithAngleInDeg.to(u.deg).value
+        else:
+            value = zenithAngleInDeg
+        self._zenithInDeg = value
+        self._airmass = self.zenith_angle_to_airmass(value)
 
     def zenith_angle(self):
         return self._zenithInDeg * u.deg
 
     @staticmethod
     def zenith_angle_to_airmass(zenithAngleInDeg):
-        zenithInRad = zenithAngleInDeg * Constants.DEG2RAD
+        if isinstance(zenithAngleInDeg, Quantity):
+            value = zenithAngleInDeg.to(u.deg).value
+        else:
+            value = zenithAngleInDeg
+        zenithInRad = value * Constants.DEG2RAD
         return 1. / np.cos(zenithInRad)
 
     def airmass(self):
@@ -237,7 +245,11 @@ class Cn2Profile(object):
         return self._layersAltitudeInMeterAtZenith * self._airmass * u.m
 
     def set_wavelength(self, wavelengthInMeters):
-        self._lambda = wavelengthInMeters
+        if isinstance(wavelengthInMeters, Quantity):
+            value = wavelengthInMeters.to(u.m).value
+        else:
+            value = wavelengthInMeters
+        self._lambda = value
 
     def wavelength(self):
         return self._lambda * u.m
@@ -272,7 +284,7 @@ class Cn2Profile(object):
             seeing value at specified lambda and zenith angle
             defined as 0.98 * lambda / r0
         """
-        return 0.98 * self._lambda / self.r0() * Constants.RAD2ARCSEC * \
+        return 0.98 * self.wavelength() / self.r0() * Constants.RAD2ARCSEC * \
             u.arcsec
 
     def r0(self):
