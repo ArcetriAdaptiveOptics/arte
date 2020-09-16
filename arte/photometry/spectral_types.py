@@ -40,6 +40,7 @@ class PickelsLibrary(object):
             "G8V": "pickles_uk_30",
             "K0V": "pickles_uk_31",
             "K2V": "pickles_uk_33",
+            "K3V": "pickles_uk_34",
             "K5V": "pickles_uk_36",
             "K7V": "pickles_uk_37",
             "M0V": "pickles_uk_38",

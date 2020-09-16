@@ -10,8 +10,8 @@ from synphot import SourceSpectrum
 from synphot.models import Box1D
 from synphot.spectrum import SpectralElement
 from synphot.observation import Observation
-from arte.phot.spectral_types import PickelsLibrary
-from arte.phot import spectral_types
+from arte.photometry.spectral_types import PickelsLibrary
+from arte.photometry import spectral_types
 
 
 def getNormalizedSpectrum(spectralType, magnitude, filter_name):
@@ -21,7 +21,7 @@ def getNormalizedSpectrum(spectralType, magnitude, filter_name):
     Returns a structure containing the synthetic spectrum of the star having the spectral type and magnitude 
     in the specified input filter. Magnitude is in VEGAMAG-F(lambda) system.
     Spectra are from PICKLES, PASP, 110, 863 (1998)
-    Absolute flux spectra, no effect of athmospheric and instrument transmission
+    Absolute flux spectra, no effect of atmospheric and instrument transmission
 
     INPUT:
     spectral_type:   scalar string. spectral type and luminosity class (e.g. G2V or M4III)
@@ -56,57 +56,65 @@ def getNormalizedSpectrum(spectralType, magnitude, filter_name):
     return spectrum_norm
 
 
-# get_vega() downloads this one
-synphot.specio.read_remote_spec(
-    'http://ssb.stsci.edu/cdbs/calspec/alpha_lyr_stis_008.fits')
+def misc():
+    # get_vega() downloads this one
+    synphot.specio.read_remote_spec(
+        'http://ssb.stsci.edu/cdbs/calspec/alpha_lyr_stis_008.fits')
 
-# G5V of UVKLIB subset of Pickles library
-# see http://www.stsci.edu/hst/instrumentation/reference-data-for-calibration-and-tools/astronomical-catalogs/pickles-atlas.html
-synphot.specio.read_remote_spec(
-    'http://ssb.stsci.edu/cdbs/grid/pickles/dat_uvk/pickles_uk_27.fits')
+    # G5V of UVKLIB subset of Pickles library
+    # see http://www.stsci.edu/hst/instrumentation/reference-data-for-calibration-and-tools/astronomical-catalogs/pickles-atlas.html
+    synphot.specio.read_remote_spec(
+        'http://ssb.stsci.edu/cdbs/grid/pickles/dat_uvk/pickles_uk_27.fits')
 
-# read the sourcespectrum
-spG5V= SourceSpectrum.from_file(
-    'http://ssb.stsci.edu/cdbs/grid/pickles/dat_uvk/pickles_uk_27.fits')
-spG2V= SourceSpectrum.from_file(
-    'http://ssb.stsci.edu/cdbs/grid/pickles/dat_uvk/pickles_uk_26.fits')
+    # read the sourcespectrum
+    spG5V= SourceSpectrum.from_file(
+        'http://ssb.stsci.edu/cdbs/grid/pickles/dat_uvk/pickles_uk_27.fits')
+    spG2V= SourceSpectrum.from_file(
+        'http://ssb.stsci.edu/cdbs/grid/pickles/dat_uvk/pickles_uk_26.fits')
 
-filtR= SpectralElement.from_filter('johnson_r')
-spG2V_19r= spG2V.normalize(
-    19*synphot.units.VEGAMAG, filtR,
-    vegaspec=SourceSpectrum.from_vega())
+    filtR= SpectralElement.from_filter('johnson_r')
+    spG2V_19r= spG2V.normalize(
+        19*synphot.units.VEGAMAG, filtR,
+        vegaspec=SourceSpectrum.from_vega())
 
-bp= SpectralElement(Box1D, x_0=700*u.nm, width=600*u.nm)
-obs= Observation(spG2V_19r, bp)
-obs.countrate(area=50*u.m**2)
-
-
-bp220= SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)
-bpCRed= SpectralElement(Box1D, x_0=1650*u.nm, width=300*u.nm)*0.8
-
-Observation(spG2V_19r, bp220).countrate(area=50*u.m**2)
-Observation(spG2V_19r, bpCRed).countrate(area=50*u.m**2)
+    bp= SpectralElement(Box1D, x_0=700*u.nm, width=600*u.nm)
+    obs= Observation(spG2V_19r, bp)
+    obs.countrate(area=50*u.m**2)
 
 
-spM0V_8R= getNormalizedSpectrum('M0V', 8.0, 'johnson_r')
+    bp220= SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)
+    bpCRed= SpectralElement(Box1D, x_0=1650*u.nm, width=300*u.nm)*0.8
+
+    Observation(spG2V_19r, bp220).countrate(area=50*u.m**2)
+    Observation(spG2V_19r, bpCRed).countrate(area=50*u.m**2)
+
+    spM0V_8R= getNormalizedSpectrum('M0V', 8.0, 'johnson_r')
 
 
-uPhotonSecM2Micron=u.photon/(u.s * u.m**2 * u.micron)
+    uPhotonSecM2Micron=u.photon/(u.s * u.m**2 * u.micron)
 
-spG2V_8R= getNormalizedSpectrum(spectral_types.G2V, 8.0, 'johnson_r')
-plt.plot(spG2V_8R.waveset, spG2V_8R(spG2V_8R.waveset).to(uPhotonSecM2Micron))
+    spG2V_8R= getNormalizedSpectrum("G2V", 8.0, 'johnson_r')
+    plt.plot(spG2V_8R.waveset, spG2V_8R(spG2V_8R.waveset).to(uPhotonSecM2Micron))
 
-# compare with Armando's
-spG2V_19R= getNormalizedSpectrum(spectral_types.G2V, 19, 'johnson_r')
-bp= SpectralElement(Box1D, x_0=700*u.nm, width=600*u.nm)
-obs= Observation(spG2V_19R, bp)
-obs.countrate(area=50*u.m**2)
+    # compare with Armando's
+    spG2V_19R= getNormalizedSpectrum("G2V", 19, 'johnson_r')
+    bp= SpectralElement(Box1D, x_0=700*u.nm, width=600*u.nm)
+    obs= Observation(spG2V_19R, bp)
+    obs.countrate(area=50*u.m**2)
 
 
-# zeropoint in filtro r in erg/s/cm2/A
-Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).effstim('flam')
-# zeropoint in ph/s/m2
-Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).countrate(area=1*u.m**2)
+    # zeropoint in filtro r in erg/s/cm2/A
+    Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).effstim('flam')
+    # zeropoint in ph/s/m2
+    Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).countrate(area=1*u.m**2)
+
+
+def zeropoints():
+    Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
+    Observation(getNormalizedSpectrum('G2V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
+    Observation(getNormalizedSpectrum('K3V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
+    Observation(getNormalizedSpectrum('M0V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
+    Observation(getNormalizedSpectrum('M4V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
 
 
 class Photometry(object):
