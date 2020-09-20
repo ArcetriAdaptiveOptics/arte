@@ -14,8 +14,8 @@ class RebinTest(unittest.TestCase):
                              [2, 2, 2, 3, 3, 3]])
 
     def test_docstring(self):
-        from arte.utils import rebin
-        doctest.testmod(rebin, raise_on_error=True)
+        import arte.utils.rebin as rebin_module
+        doctest.testmod(rebin_module, raise_on_error=True)
 
 
     def test_newshape_types(self):
