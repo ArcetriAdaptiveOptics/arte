@@ -92,13 +92,12 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-3, 3, 100)
 
-        vk_cov = VonKarmanSpatioTemporalCovariance(
-            source1, source2, aperture, aperture, cn2, spatial_freqs)
-
         modoJ = 2
         modoK = 5
         temp_freqs = [0.05, 130, 250]
 
+        vk_cov = VonKarmanSpatioTemporalCovariance(
+            source1, source2, aperture, aperture, cn2, spatial_freqs)
         got = vk_cov.getZernikeCPSD(modoJ, modoK, temp_freqs)
 
         want = np.array([
@@ -165,11 +164,14 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         j = [2, 3]
         k = [2, 3]
 
-        vk = VonKarmanSpatioTemporalCovariance(
+        vkCov = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        vkCpsd = VonKarmanSpatioTemporalCovariance(
             source, source, aperture, aperture, cn2, spatial_freqs)
 
-        cpsdMatrix = 2 * np.real(vk.getZernikeCPSD(j, k, temporal_freqs).value)
-        covarianceMatrix = vk.getZernikeCovariance(j, k).value
+        cpsdMatrix = 2 * np.real(vkCpsd.getZernikeCPSD(j, k, temporal_freqs
+                                                       ).value)
+        covarianceMatrix = vkCov.getZernikeCovariance(j, k).value
         covFromCPSD = np.trapz(cpsdMatrix, temporal_freqs)
         np.testing.assert_allclose(
             covFromCPSD, covarianceMatrix, rtol=0.01, atol=1e-3)
@@ -184,6 +186,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-3, 3, 100)
         temporal_freqs = np.logspace(-4, 4, 100)
+
         j = [2]
         k = [2, 3]
 
@@ -204,6 +207,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-3, 3, 100)
         temporal_freqs = np.logspace(-4, 4, 100)
+
         j = [2, 3]
         k = [2, 3, 4]
 
@@ -228,16 +232,17 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture2 = CircularOpticalAperture(5, [1, 0, 0])
         spatial_freqs = np.logspace(-3, 3, 10)
         temporal_freqs = np.logspace(-4, 4, 11)
+
         j = [2, 3]
         k = [2, 4]
 
         vk = VonKarmanSpatioTemporalCovariance(
             source1, source1, aperture1, aperture1, cn2, spatial_freqs)
-        cpsd1 = vk.getGeneralZernikeCPSD(j, k, temporal_freqs)
+        cpsd1 = vk.getGeneralZernikeCPSD(j, k, temporal_freqs).value
 
         vk.setSource1(source2)
         vk.setAperture2(aperture2)
-        cpsd2 = vk.getGeneralZernikeCPSD(j, k, temporal_freqs)
+        cpsd2 = vk.getGeneralZernikeCPSD(j, k, temporal_freqs).value
         self.assertFalse(np.allclose(
             cpsd1, cpsd2, atol=1e-14))
 
