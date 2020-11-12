@@ -7,15 +7,16 @@ from arte.atmo.von_karman_covariance_calculator import \
 from arte.atmo.cn2_profile import Cn2Profile
 from arte.types.guide_source import GuideSource
 from arte.types.aperture import CircularOpticalAperture
-from test.test_helper import setUpLogger
-import logging
+# from test.test_helper import setUpLogger
+# import logging
+import sys
 
 
 class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
 
-    def setUp(self):
-        setUpLogger(logging.DEBUG)
-        pass
+    #     def setUp(self):
+    #         setUpLogger(logging.DEBUG)
+    #         pass
 
     def tearDown(self):
         pass
@@ -245,6 +246,62 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         cpsd2 = vk.getGeneralZernikeCPSD(j, k, temporal_freqs).value
         self.assertFalse(np.allclose(
             cpsd1, cpsd2, atol=1e-14))
+
+    @unittest.skipIf('cupy' not in sys.modules,
+                     "Can't test code with cupy")
+    def testZernikeCPSDOnGPU(self):
+        cn2 = Cn2Profile.from_r0s(
+            [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 23])
+        rho, theta = (0, 0)
+        source = GuideSource((rho, theta), np.inf)
+        radius = 5
+        center = [0, 0, 0]
+        aperture = CircularOpticalAperture(radius, center)
+        spatial_freqs = np.logspace(-3, 3, 100)
+        temporal_freqs = np.logspace(-4, 4, 100)
+
+        j = [2, 3]
+        k = [2, 3, 4]
+
+        vk_np = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        cpsd_np = vk_np.getZernikeCPSD(j, k, temporal_freqs)
+
+        vk_cp = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        vk_cp.useGPU()
+        cpsd_cp = vk_cp.getZernikeCPSD(j, k, temporal_freqs)
+
+        np.testing.assert_allclose(
+            cpsd_np, cpsd_cp, atol=1e-14)
+
+    @unittest.skipIf('cupy' not in sys.modules,
+                     "Can't test code with cupy")
+    def testGeneralZernikeCPSDOnGPU(self):
+        cn2 = Cn2Profile.from_r0s(
+            [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 23])
+        rho, theta = (0, 0)
+        source = GuideSource((rho, theta), np.inf)
+        radius = 5
+        center = [0, 0, 0]
+        aperture = CircularOpticalAperture(radius, center)
+        spatial_freqs = np.logspace(-3, 3, 100)
+        temporal_freqs = np.logspace(-4, 4, 100)
+
+        j = [2, 3]
+        k = [2, 3, 4]
+
+        vk_np = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        cpsd_np = vk_np.getGeneralZernikeCPSD(j, k, temporal_freqs)
+
+        vk_cp = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        vk_cp.useGPU()
+        cpsd_cp = vk_cp.getGeneralZernikeCPSD(j, k, temporal_freqs)
+
+        np.testing.assert_allclose(
+            cpsd_np, cpsd_cp, atol=1e-14)
 
 
 if __name__ == "__main__":
