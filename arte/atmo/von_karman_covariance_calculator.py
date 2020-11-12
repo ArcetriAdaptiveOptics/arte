@@ -6,15 +6,14 @@ import numpy as np
 try:
     import cupy as cp
 except ImportError:
-    print("Can't import cupy. Use numpy.")
-finally:
+    print("Can't import cupy")
     cp = None
 import astropy.units as u
 from arte.utils import math
 import logging
 from arte.utils.zernike_generator import ZernikeGenerator
 from arte.atmo import von_karman_psd
-# from arte.utils.decorator import cacheResult
+from arte.utils.decorator import cacheResult
 
 
 class VonKarmanSpatioTemporalCovariance():
@@ -235,12 +234,12 @@ class VonKarmanSpatioTemporalCovariance():
     def _initializeGeometry(self, nLayer, spat_freqs):
         a1 = self._layerScalingFactor1(nLayer)
         a2 = self._layerScalingFactor2(nLayer)
-        sep = self._layerProjectedAperturesSeparation(nLayer)
+        sep = self._xp.array(self._layerProjectedAperturesSeparation(nLayer))
 
         if self._xp == cp:
-            sep = cp.array(sep)
-            psd = self._VonKarmanPSDOneLayer(nLayer, cp.asnumpy(spat_freqs))
-            psd = cp.array(psd)
+            psd = self._VonKarmanPSDOneLayer(
+                nLayer, self._xp.asnumpy(spat_freqs))
+            psd = self._xp.array(psd)
         elif self._xp == np:
             psd = self._VonKarmanPSDOneLayer(nLayer, spat_freqs)
         sl = self._xp.linalg.norm(sep)
@@ -258,18 +257,21 @@ class VonKarmanSpatioTemporalCovariance():
         if self._xp == cp:
             r1 = cp.array(self._ap1Radius)
             r2 = cp.array(self._ap2Radius)
+            b1 = math.besselFirstKindOnGPU(
+                nj + 1,
+                2 * self._xp.pi * spat_freqs * r1 * (1 - a1))
+            b2 = math.besselFirstKindOnGPU(
+                nk + 1,
+                2 * self._xp.pi * spat_freqs * r2 * (1 - a2))
         elif self._xp == np:
             r1 = self._ap1Radius
             r2 = self._ap2Radius
-
-        b1 = math.besselFirstKind(
-            nj + 1,
-            2 * self._xp.pi * spat_freqs * r1 * (1 - a1),
-            self._xp)
-        b2 = math.besselFirstKind(
-            nk + 1,
-            2 * self._xp.pi * spat_freqs * r2 * (1 - a2),
-            self._xp)
+            b1 = math.besselFirstKind(
+                nj + 1,
+                2 * self._xp.pi * spat_freqs * r1 * (1 - a1))
+            b2 = math.besselFirstKind(
+                nk + 1,
+                2 * self._xp.pi * spat_freqs * r2 * (1 - a2))
 
         c0 = (-1) ** mk * self._xp.sqrt((nj + 1) * (nk + 1)) * 1j ** (
             nj + nk) * 2 ** (
@@ -280,35 +282,45 @@ class VonKarmanSpatioTemporalCovariance():
         return nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1
 
     def _computeZernikeCovarianceOneLayer(self, j, k, nLayer):
+        f = self._xp.array(self._spat_freqs)
         a1, a2, sl, thS, psd = \
-            self._initializeGeometry(nLayer, self._spat_freqs)
+            self._initializeGeometry(nLayer, f)
         _, mj, _, mk, deltaj, deltak, b1, b2, c0, c1 = \
             self._initializeFunctionsForZernikeComputations(
-                j, k, self._spat_freqs, a1, a2)
+                j, k, f, a1, a2)
 
-        b3 = math.besselFirstKind(
-            mj + mk,
-            sl * 2 * np.pi * self._spat_freqs,
-            self._xp)
-        b4 = math.besselFirstKind(
-            np.abs(mj - mk),
-            sl * 2 * np.pi * self._spat_freqs,
-            self._xp)
-        c2 = np.pi / 4 * ((1 - deltaj) * ((-1) ** j - 1) +
-                          (1 - deltak) * ((-1) ** k - 1))
-        c3 = np.pi / 4 * ((1 - deltaj) * ((-1) ** j - 1) -
-                          (1 - deltak) * ((-1) ** k - 1))
+        if self._xp == cp:
+            b3 = math.besselFirstKindOnGPU(
+                mj + mk,
+                sl * 2 * self._xp.pi * f)
+            b4 = math.besselFirstKindOnGPU(
+                np.abs(mj - mk),
+                sl * 2 * self._xp.pi * f)
+        elif self._xp == np:
+            b3 = math.besselFirstKind(
+                mj + mk,
+                sl * 2 * self._xp.pi * f)
+            b4 = math.besselFirstKind(
+                np.abs(mj - mk),
+                sl * 2 * self._xp.pi * f)
+        c2 = self._xp.pi / 4 * ((1 - deltaj) * ((-1) ** j - 1) +
+                                (1 - deltak) * ((-1) ** k - 1))
+        c3 = self._xp.pi / 4 * ((1 - deltaj) * ((-1) ** j - 1) -
+                                (1 - deltak) * ((-1) ** k - 1))
 
         zernikeIntegrand = c0 * c1 * \
-            psd / self._spat_freqs * b1 * b2 * \
-            (np.cos((mj + mk) * thS + c2) *
+            psd / f * b1 * b2 * \
+            (self._xp.cos((mj + mk) * thS + c2) *
              1j ** (3 * (mj + mk)) *
              b3 +
              np.cos((mj - mk) * thS + c3) *
-             1j ** (3 * np.abs(mj - mk)) *
+             1j ** (3 * self._xp.abs(mj - mk)) *
              b4)
+        if self._xp == cp:
+            zernikeIntegrand = self._xp.asnumpy(zernikeIntegrand)
+            f = self._xp.asnumpy(f)
         zernikeCovOneLayer = self._integrate(
-            zernikeIntegrand, self._spat_freqs)
+            zernikeIntegrand, f)
         return zernikeCovOneLayer
 
     def _computeZernikeCovarianceAllLayers(self, j, k):
@@ -321,9 +333,9 @@ class VonKarmanSpatioTemporalCovariance():
         k = (1 - a2) * self._ap2Radius / ((1 - a1) * self._ap1Radius)
         arg1 = np.pi * self._ap1Radius * (1 - a1)
         arg2 = np.pi * self._ap2Radius * (1 - a2)
-        b0 = math.besselFirstKind(1, 2 * arg1 * (k - 1) * spat_freqs, self._xp)
-        b1 = math.besselFirstKind(1, 2 * arg1 * spat_freqs, self._xp)
-        b2 = math.besselFirstKind(1, 2 * arg2 * spat_freqs, self._xp)
+        b0 = math.besselFirstKind(1, 2 * arg1 * (k - 1) * spat_freqs)
+        b1 = math.besselFirstKind(1, 2 * arg1 * spat_freqs)
+        b2 = math.besselFirstKind(1, 2 * arg2 * spat_freqs)
 
         if k == 1:
             self._b1Phase = 1
@@ -346,8 +358,7 @@ class VonKarmanSpatioTemporalCovariance():
         self._initializeFunctionsForPhaseComputations(
             self._spat_freqs, a1, a2)
         b0Phase = math.besselFirstKind(0,
-                                       2 * np.pi * self._spat_freqs * sl,
-                                       self._xp)
+                                       2 * np.pi * self._spat_freqs * sl)
 
         phaseIntegrand = 2 * np.pi * self._spat_freqs * psd * b0Phase * (
             self._b1Phase - self._b2Phase * self._b3Phase)
@@ -427,13 +438,12 @@ class VonKarmanSpatioTemporalCovariance():
             vdir = self._xp.array(self._windDirection[nLayer])
             tf, sp_perp = self._xp.meshgrid(
                 self._xp.array(temp_freqs), self._xp.array(self._spat_freqs))
-            f = self._xp.sqrt(sp_perp ** 2 + (tf / vl) ** 2)
         elif self._xp == np:
             vl = self._windSpeed[nLayer]
             vdir = self._windDirection[nLayer]
             tf, sp_perp = self._xp.meshgrid(temp_freqs, self._spat_freqs)
-            f = self._xp.sqrt(sp_perp ** 2 + (tf / vl) ** 2)
 
+        f = self._xp.sqrt(sp_perp ** 2 + (tf / vl) ** 2)
         a1, a2, sl, thS, psd = self._initializeGeometry(nLayer, f)
         nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1 = \
             self._initializeFunctionsForZernikeComputations(
@@ -470,13 +480,12 @@ class VonKarmanSpatioTemporalCovariance():
             vdir = self._xp.array(self._windDirection[nLayer])
             tf, sp_perp = self._xp.meshgrid(
                 self._xp.array(temp_freqs), self._xp.array(self._spat_freqs))
-            f = self._xp.sqrt(sp_perp ** 2 + (tf / vl) ** 2)
         elif self._xp == np:
             vl = self._windSpeed[nLayer]
             vdir = self._windDirection[nLayer]
             tf, sp_perp = self._xp.meshgrid(temp_freqs, self._spat_freqs)
-            f = self._xp.sqrt(sp_perp ** 2 + (tf / vl) ** 2)
 
+        f = self._xp.sqrt(sp_perp ** 2 + (tf / vl) ** 2)
         a1, a2, sl, thS, psd = self._initializeGeometry(nLayer, f)
         _, mj, _, mk, deltaj, deltak, b1, b2, c0, c1 = \
             self._initializeFunctionsForZernikeComputations(
