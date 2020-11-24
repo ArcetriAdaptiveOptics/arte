@@ -14,9 +14,9 @@ from arte.photometry.spectral_types import PickelsLibrary
 from arte.photometry import spectral_types
 
 
-def getNormalizedSpectrum(spectralType, magnitude, filter_name):
+def get_normalized_spectrum(spectral_type, magnitude, filter_name):
     """
-    spec_data = getNormalizedSpectrum(spectral_type, magnitude, filter_name)
+    spec_data = get_normalized_spectrum(spectral_type, magnitude, filter_name)
 
     Returns a structure containing the synthetic spectrum of the star having the spectral type and magnitude 
     in the specified input filter. Magnitude is in VEGAMAG-F(lambda) system.
@@ -24,7 +24,7 @@ def getNormalizedSpectrum(spectralType, magnitude, filter_name):
     Absolute flux spectra, no effect of atmospheric and instrument transmission
 
     INPUT:
-    spectral_type:   scalar string. spectral type and luminosity class (e.g. G2V or M4III)
+    spectral_type:   scalar string. spectral type and luminosity class (e.g. G2V or M4III) or 'vega'
     magnitude:       scalar float. magnitude in the filter_name filter
     filter_name:     scalar string. Name of the filter (see get_filter(/GET) for a filter database)
     filter_family:   scalar string. Name of the filter family (see get_filter(/GET) for a filter database)
@@ -43,8 +43,11 @@ def getNormalizedSpectrum(spectralType, magnitude, filter_name):
     p3 = legend(TARGET=[p0,p1,p2])
 """
     # read the sourcespectrum
-    spectrum= SourceSpectrum.from_file(
-        PickelsLibrary.filename(spectralType))
+    if spectral_type == 'vega':
+        spectrum = SourceSpectrum.from_vega()
+    else:
+        spectrum= SourceSpectrum.from_file(
+            PickelsLibrary.filename(spectral_type))
 
     bandpass= SpectralElement.from_filter(filter_name)
 
@@ -54,6 +57,8 @@ def getNormalizedSpectrum(spectralType, magnitude, filter_name):
         vegaspec=SourceSpectrum.from_vega())
 
     return spectrum_norm
+
+
 
 
 def misc():
@@ -88,39 +93,41 @@ def misc():
     Observation(spG2V_19r, bp220).countrate(area=50*u.m**2)
     Observation(spG2V_19r, bpCRed).countrate(area=50*u.m**2)
 
-    spM0V_8R= getNormalizedSpectrum('M0V', 8.0, 'johnson_r')
+    spM0V_8R= get_normalized_spectrum('M0V', 8.0, 'johnson_r')
 
 
     uPhotonSecM2Micron=u.photon/(u.s * u.m**2 * u.micron)
 
-    spG2V_8R= getNormalizedSpectrum("G2V", 8.0, 'johnson_r')
+    spG2V_8R= get_normalized_spectrum("G2V", 8.0, 'johnson_r')
     plt.plot(spG2V_8R.waveset, spG2V_8R(spG2V_8R.waveset).to(uPhotonSecM2Micron))
 
     # compare with Armando's
-    spG2V_19R= getNormalizedSpectrum("G2V", 19, 'johnson_r')
+    spG2V_19R= get_normalized_spectrum("G2V", 19, 'johnson_r')
     bp= SpectralElement(Box1D, x_0=700*u.nm, width=600*u.nm)
     obs= Observation(spG2V_19R, bp)
     obs.countrate(area=50*u.m**2)
 
 
     # zeropoint in filtro r in erg/s/cm2/A
-    Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).effstim('flam')
+    Observation(get_normalized_spectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).effstim('flam')
     # zeropoint in ph/s/m2
-    Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).countrate(area=1*u.m**2)
+    Observation(get_normalized_spectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).countrate(area=1*u.m**2)
 
 
 def zeropoints():
-    Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(getNormalizedSpectrum('G2V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(getNormalizedSpectrum('K3V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(getNormalizedSpectrum('M0V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(getNormalizedSpectrum('M4V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
+    Observation(get_normalized_spectrum('A0V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
+    Observation(get_normalized_spectrum('G2V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
+    Observation(get_normalized_spectrum('K3V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
+    Observation(get_normalized_spectrum('M0V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
+    Observation(get_normalized_spectrum('M4V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
 
 
 class Photometry(object):
 
     def __init__(self, spectral_type, magnitude, filter, bandpass_filter):
         pass
-    
+
     def countrate(self, area):
         pass
+
+
