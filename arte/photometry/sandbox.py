@@ -10,10 +10,8 @@ from synphot import SourceSpectrum
 from synphot.models import Box1D
 from synphot.spectrum import SpectralElement
 from synphot.observation import Observation
-from arte.photometry.spectral_types import PickelsLibrary
-from arte.photometry import spectral_types
 from arte.photometry.filters import Filters
-from arte.photometry.normalized_star_spectrum import get_normalized_star_spectrum
+from arte.photometry import get_normalized_star_spectrum
 
 
 
@@ -73,20 +71,24 @@ def misc():
     Observation(get_normalized_star_spectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).countrate(area=1*u.m**2)
 
 
-def zeropoints():
-    Observation(get_normalized_star_spectrum('A0V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(get_normalized_star_spectrum('G2V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(get_normalized_star_spectrum('K3V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(get_normalized_star_spectrum('M0V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(get_normalized_star_spectrum('M4V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
 
-
-class Photometry(object):
-
-    def __init__(self, spectral_type, magnitude, filter, bandpass_filter):
-        pass
-
-    def countrate(self, area):
-        pass
-
+def check_zeropoints_ESO():
+    '''
+    Shouldn't they match http://www.eso.org/observing/etc/doc/skycalc/helpskycalc.html#mags?
+    '''
+    obsR = Observation(
+        get_normalized_star_spectrum('vega', 0, Filters.JOHNSON_R),
+        Filters.get(Filters.ESO_ETC_R))
+    obsI = Observation(
+        get_normalized_star_spectrum('vega', 0, Filters.JOHNSON_R),
+        Filters.get(Filters.ESO_ETC_I))
+    obsJ = Observation(
+        get_normalized_star_spectrum('vega', 0, Filters.JOHNSON_R),
+        Filters.get(Filters.ESO_ETC_J))
+    print("R: %s" % obsR.effstim('flam'))
+    print("I: %s" % obsI.effstim('flam'))
+    print("J: %s" % obsJ.effstim('flam'))
+    print("R: %s / m2" % obsR.countrate(area=1*u.m**2))
+    print("I: %s / m2" % obsI.countrate(area=1*u.m**2))
+    print("J: %s / m2" % obsJ.countrate(area=1*u.m**2))
 
