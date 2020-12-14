@@ -3,7 +3,8 @@
 '''
 
 import numpy as np
-from scipy.special import gamma
+from scipy.special import jv
+import astropy.units as u
 
 
 class VonKarmanPsd():
@@ -39,6 +40,8 @@ class VonKarmanPsd():
     >>> varInRad2Noll = 1.029*(2*R/r0)**(5./3)
     >>> print("%g %g" % (varInRad2, varInRad2Noll))
     2214.36 2216.91
+
+    or use shortcut function von_karman_psd.rms()
     '''
     NUM_CONST = 0.02289558710855519
 
@@ -90,4 +93,44 @@ class VonKarmanPsd():
         else:
             plt.loglog(freqs, psd[idx])
         plt.xlabel('Frequency [m$^{-1}$]')
-        plt.ylabel('PSD [m$^{2}$]')
+        plt.ylabel('PSD [rad$^{2}$]')
+
+
+def rms(diameter: u.m,
+        wavelength: u.nm,
+        fried_param: u.m,
+        outer_scale: u.m):
+    '''
+    Von Karman wavefront rms value over a circular aperture
+
+    Parameters
+    ----------
+    diameter: `~astropy.units.quantity.Quantity` equivalent to meter
+        Aperture diameter
+
+    wavelength: `~astropy.units.quantity.Quantity` equivalent to nanometer
+        wavelength
+
+    fried_param: `~astropy.units.quantity.Quantity` equivalent to meter
+        Fried parameter r0 defined at the specified wavelength
+
+    outer_scale: `~astropy.units.quantity.Quantity` equivalent to meter
+        Outer scale L0. Use np.inf for Kolmogorov spectrum
+
+    Returns
+    -------
+    rms: `~astropy.units.quantity.Quantity`
+        wavefront rms for the specified von Karman turbulence
+    '''
+    R = 0.5 * diameter.to(u.m).value
+    wl = wavelength.to(u.nm).value
+    r0 = fried_param.to(u.m).value
+    L0 = outer_scale.to(u.m).value
+    psd = VonKarmanPsd(r0, L0)
+    freqs = np.logspace(-8, 4, 1000)
+    bess = jv(1, 2 * np.pi * R * freqs)
+    psdTotal = psd.spatial_psd(freqs)
+    psdPistonRem = psdTotal * (1 - (bess / (np.pi * R * freqs)) ** 2)
+    varInRad2 = np.trapz(psdPistonRem * 2 * np.pi * freqs, freqs)
+    return np.sqrt(varInRad2) * wl / 2 / np.pi * u.nm
+
