@@ -303,6 +303,31 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         np.testing.assert_allclose(
             cpsd_np, cpsd_cp, atol=1e-14)
 
+    @unittest.skipIf('cupy' not in sys.modules,
+                     "Can't test code with cupy")
+    def testPhaseCPSDOnGPU(self):
+        cn2 = Cn2Profile.from_r0s(
+            [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 23])
+        rho, theta = (0, 0)
+        source = GuideSource((rho, theta), np.inf)
+        radius = 5
+        center = [0, 0, 0]
+        aperture = CircularOpticalAperture(radius, center)
+        spatial_freqs = np.logspace(-3, 3, 100)
+        temporal_freqs = np.logspace(-4, 4, 100)
+
+        vk_np = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        cpsd_np = vk_np.getPhaseCPSD(temporal_freqs)
+
+        vk_cp = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        vk_cp.useGPU()
+        cpsd_cp = vk_cp.getPhaseCPSD(temporal_freqs)
+
+        np.testing.assert_allclose(
+            cpsd_np, cpsd_cp, atol=1e-14)
+
 
 if __name__ == "__main__":
     unittest.main()
