@@ -399,7 +399,8 @@ class EsoEltProfiles():
         h = rr[0]
         js = rr[idxJ] / 100
         windSpeed = rr[idxWind]
-        windDirection = np.linspace(0, 360, len(js))
+#         windDirection = np.linspace(0, 360, len(js))
+        windDirection = np.random.uniform(0, 360, len(js))
         L0s = np.ones(len(js)) * cls.L0
         return Cn2Profile.from_fractional_j(
             r0, js, L0s, h, windSpeed, windDirection)
