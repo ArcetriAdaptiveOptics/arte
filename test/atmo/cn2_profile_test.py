@@ -154,6 +154,10 @@ class Cn2ProfileTest(unittest.TestCase):
         self.assertAlmostEqual(0.097, pr.r0().value, delta=0.001)
         self.assertAlmostEqual(0.00311, pr.tau0().value, delta=0.00001)
 
+    def testEsoProfilesCanModifyL0(self):
+        pr = EsoEltProfiles.Median(L0=np.inf)
+        self.assertAlmostEqual(np.inf, pr.outer_scale().value[0], delta=0.001)
+
 # TODO: [0.3 * u.deg] as wind direction input doesn't work because
 # it is seen as a list, so it cannot be converted in rad using np.deg2rad
 #     def testScalarQuantityAsArgument(self):

@@ -393,20 +393,22 @@ class EsoEltProfiles():
         return fits.getdata(filename, header=True)
 
     @classmethod
-    def _profileMaker(cls, keyR0, idxJ, idxWind):
+    def _profileMaker(cls, keyR0, idxJ, idxWind, L0=None):
         rr, hdr = cls._restoreProfiles()
         r0 = hdr[keyR0]
         h = rr[0]
         js = rr[idxJ] / 100
         windSpeed = rr[idxWind]
         windDirection = np.linspace(0, 360, len(js))
-        L0s = np.ones(len(js)) * cls.L0
+        if L0 is None:
+            L0 = cls.L0
+        L0s = np.ones(len(js)) * L0
         return Cn2Profile.from_fractional_j(
             r0, js, L0s, h, windSpeed, windDirection)
 
     @classmethod
-    def Median(cls):
-        return cls._profileMaker('R0MEDIAN', 1, 6)
+    def Median(cls, *args, **kwargs):
+        return cls._profileMaker('R0MEDIAN', 1, 6, *args, **kwargs)
 
     @classmethod
     def Q1(cls):
