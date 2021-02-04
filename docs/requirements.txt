@@ -2,3 +2,5 @@ ipykernel
 nbsphinx
 numpy
 astropy
+synphot
+scipy
