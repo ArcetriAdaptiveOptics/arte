@@ -7,13 +7,13 @@ from astropy.io import fits
 
 class EsoSkyCalc(object):
     '''
-    Interface to EsoSkyCalc
+    Interface to `EsoSkyCalc <http://www.eso.org/observing/etc/bin/gen/form?INS.MODE=swspectr+INS.NAME=SKYCALC>`_ 
 
+    Calling sequence::
 
-    Other Parameters
-    ----------------
-    the full list of keywords parameters and defaults is in
-    http://www.eso.org/observing/etc/doc/skycalc/helpskycalccli.html
+       sky = EsoSkyCalc(**kwargs)
+
+    the full list of keywords parameters and defaults is in `the help page <http://www.eso.org/observing/etc/doc/skycalc/helpskycalccli.html>`_ 
 
     Examples
     --------
@@ -25,6 +25,7 @@ class EsoSkyCalc(object):
     Retrieve dictionary of default values
 
     >>> defdict= EsoSkyCalc.default_values()
+    >>> defdict['observatory'] == '3060m'
 
 
     '''

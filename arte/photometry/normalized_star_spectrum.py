@@ -31,9 +31,10 @@ def get_normalized_star_spectrum(spectral_type, magnitude, filter_name):
     -------
         spectrum: synphot.SourceSpectrum object defining the spectrum
 
-    Example:
+    Examples
     --------
     Plot the spectrum of a vega, A0V, G2V stars of mag=8 defined on JohnsonR filter
+
     >>> sp= get_normalized_star_spectrum('vega', 8, Filters.JOHNSON_R)
     >>> spA0V= get_normalized_star_spectrum('A0V', 8, Filters.JOHNSON_R)
     >>> spG2V= get_normalized_star_spectrum('G2V', 8, Filters.JOHNSON_R)
@@ -50,13 +51,13 @@ def get_normalized_star_spectrum(spectral_type, magnitude, filter_name):
     if spectral_type == 'vega':
         spectrum = SourceSpectrum.from_vega()
     else:
-        spectrum= SourceSpectrum.from_file(
+        spectrum = SourceSpectrum.from_file(
             PickelsLibrary.filename(spectral_type))
 
-    bandpass= Filters.get(filter_name)
+    bandpass = Filters.get(filter_name)
 
-    spectrum_norm= spectrum.normalize(
-        magnitude*synphot.units.VEGAMAG,
+    spectrum_norm = spectrum.normalize(
+        magnitude * synphot.units.VEGAMAG,
         bandpass,
         vegaspec=SourceSpectrum.from_vega())
 
