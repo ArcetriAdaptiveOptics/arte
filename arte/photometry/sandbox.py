@@ -7,11 +7,14 @@ import matplotlib.pyplot as plt
 import synphot
 from astropy import units as u
 from synphot import SourceSpectrum
-from synphot.models import Box1D
+from synphot.models import Box1D, Empirical1D
 from synphot.spectrum import SpectralElement
 from synphot.observation import Observation
 from arte.photometry.filters import Filters
+from synphot.units import FLAM
 from arte.photometry import get_normalized_star_spectrum
+from arte.photometry.eso_sky_calc import EsoSkyCalc
+import numpy as np
 
 
 def misc():
@@ -68,19 +71,36 @@ def check_zeropoints_ESO():
     '''
     Shouldn't they match http://www.eso.org/observing/etc/doc/skycalc/helpskycalc.html#mags?
     '''
-    obsR = Observation(
-        get_normalized_star_spectrum('vega', 0, Filters.JOHNSON_R),
-        Filters.get(Filters.ESO_ETC_R))
-    obsI = Observation(
-        get_normalized_star_spectrum('vega', 0, Filters.JOHNSON_R),
-        Filters.get(Filters.ESO_ETC_I))
-    obsJ = Observation(
-        get_normalized_star_spectrum('vega', 0, Filters.JOHNSON_R),
-        Filters.get(Filters.ESO_ETC_J))
-    print("R: %s" % obsR.effstim('flam'))
-    print("I: %s" % obsI.effstim('flam'))
-    print("J: %s" % obsJ.effstim('flam'))
-    print("R: %s / m2" % obsR.countrate(area=1 * u.m ** 2))
-    print("I: %s / m2" % obsI.countrate(area=1 * u.m ** 2))
-    print("J: %s / m2" % obsJ.countrate(area=1 * u.m ** 2))
+    # sky = EsoSkyCalc(airmass=1, moon_target_sep=45.0, moon_alt=45,
+    #                 observatory='paranal', wdelta=10)
+    # atmo = SpectralElement(Empirical1D, points=sky.lam, lookup_table=sky.trans)
+
+    filters = [Filters.ESO_ETC_U,
+               Filters.ESO_ETC_B,
+               Filters.ESO_ETC_V,
+               Filters.ESO_ETC_R,
+               Filters.ESO_ETC_I,
+               Filters.ESO_ETC_Z,
+               Filters.ESO_ETC_Y,
+               Filters.ESO_ETC_J,
+               Filters.ESO_ETC_H,
+               Filters.ESO_ETC_K,
+               Filters.ESO_ETC_L,
+               Filters.ESO_ETC_M
+               ]
+
+    eso_etc_zp = np.array([
+        4.18023e-09, 6.60085e-09, 3.60994e-09,
+        2.28665e-09, 1.22603e-09, 7.76068e-10,
+        5.973e-10, 3.12e-10, 1.14e-10, 3.94e-11,
+        4.83e-12, 2.04e-12, 1.23e-13, 6.8e-15]) * FLAM
+
+    star = get_normalized_star_spectrum('vega', 0.03, Filters.ESO_ETC_R)
+    for filt_name, etc_zp in zip(filters, eso_etc_zp):
+        filt = Filters.get(filt_name)
+        obs = Observation(star, filt)
+        zp = obs.effstim('flam', wavelengths=filt.waveset)
+        err = (zp - etc_zp) / etc_zp * 100
+        print(f"{filt_name} | {zp} | {err:+0.03f}% | "
+              f"{filt.waveset.to(u.nm)[0]:g} {filt.waveset.to(u.nm)[-1]:g}")
 
