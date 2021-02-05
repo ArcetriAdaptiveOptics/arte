@@ -13,9 +13,12 @@ class VonKarmanPsd():
     phase assuming the Von Karman spectrum.
     The PSD is obtained from the following expression:
 
-        PSD(f,h) = (24/5 * gamma(6/5))**(5/6) *
-            gamma(11/6)**2 / (2 * np.pi ** (11 / 3)) *
-            r0(h)**(-5/3) * (f**2+1/L0**2)**(-11/6)
+    .. math::
+
+        PSD(f,h) = c * r_0(h)^{-5/3} * ( f^2+ \\frac{1}{L_0^2})^{-11/6}
+
+        c = ( \\frac{24}{5} \Gamma(6/5) )^{5/6}  \\frac{\Gamma(11/6)^2}{2 \pi^{11/3} } = 0.0228955
+
 
     Parameters
     ----------
@@ -99,7 +102,8 @@ class VonKarmanPsd():
 def rms(diameter: u.m,
         wavelength: u.nm,
         fried_param: u.m,
-        outer_scale: u.m):
+        outer_scale: u.m,
+        freqs=None):
     '''
     Von Karman wavefront rms value over a circular aperture
 
@@ -117,9 +121,14 @@ def rms(diameter: u.m,
     outer_scale: `~astropy.units.quantity.Quantity` equivalent to meter
         Outer scale L0. Use np.inf for Kolmogorov spectrum
 
+    Other Parameters
+    ----------
+    freqs:  array of `~astropy.units.quantity.Quantity` equivalent to 1/meter
+        spatial frequencies array. Default logspace(-8, 4, 1000) m^-1
+
     Returns
     -------
-    rms: `~astropy.units.quantity.Quantity`
+    rms: `~astropy.units.quantity.Quantity` equivalent to nm
         wavefront rms for the specified von Karman turbulence
     '''
     R = 0.5 * diameter.to(u.m).value
@@ -127,7 +136,9 @@ def rms(diameter: u.m,
     r0 = fried_param.to(u.m).value
     L0 = outer_scale.to(u.m).value
     psd = VonKarmanPsd(r0, L0)
-    freqs = np.logspace(-8, 4, 1000)
+    if freqs is None:
+        freqs = np.logspace(-8, 4, 1000) / u.m
+    freqs = freqs.to(1 / u.m).value
     bess = jv(1, 2 * np.pi * R * freqs)
     psdTotal = psd.spatial_psd(freqs)
     psdPistonRem = psdTotal * (1 - (bess / (np.pi * R * freqs)) ** 2)
