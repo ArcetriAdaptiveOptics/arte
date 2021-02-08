@@ -101,6 +101,7 @@ def check_zeropoints_ESO():
         obs = Observation(star, filt)
         zp = obs.effstim('flam', wavelengths=filt.waveset)
         err = (zp - etc_zp) / etc_zp * 100
-        print(f"{filt_name} | {zp} | {err:+0.03f}% | "
+        cnts = obs.countrate(area=1 * u.m ** 2)
+        print(f"{filt_name:10s} | {zp:10.3e} | {err:+7.3f}% | {cnts:10.3e} |"
               f"{filt.waveset.to(u.nm)[0]:g} {filt.waveset.to(u.nm)[-1]:g}")
 
