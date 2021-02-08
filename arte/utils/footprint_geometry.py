@@ -18,8 +18,9 @@ class FootprintGeometry():
         self._telescopeRadiusInMeter = 4.1
         self._drawMetapupil = True
 
-    def setInstrumentFoV(self, instrFoVInArcsec):
+    def setInstrumentFoV(self, instrFoVInArcsec, instrRotInDeg=0):
         self._instrFoVInArcsec = instrFoVInArcsec
+        self._instrRotInDeg = instrRotInDeg
 
     def set_zenith_angle(self, zenithAngleInDeg):
         self._zenithAngleInDeg = zenithAngleInDeg
@@ -81,7 +82,8 @@ class FootprintGeometry():
 
         self._sciL = []
         if self._instrFoVInArcsec:
-            for sciFovCornerDeg in [45, 135, 225, 315]:
+            for sciFovCornerDeg in np.array([45, 135, 225, 315]
+                                            ) + self._instrRotInDeg:
                 cc = self._centerOffset(
                     self._instrFoVInArcsec / 2 * np.sqrt(2),
                     sciFovCornerDeg,
@@ -94,18 +96,19 @@ class FootprintGeometry():
         if self._lgs:
             raLgs = np.max([np.linalg.norm((l.x, l.y)) + l.r
                             for l in self._lgsL])
+        else:
+            raLgs = 0
         if self._ngs:
             raNgs = np.max([np.linalg.norm((l.x, l.y)) + l.r
                             for l in self._ngsL])
-
-        raTargets = np.max([np.linalg.norm((l.x, l.y)) + l.r
-                            for l in self._targetsL])
-        if not self._lgs:
-            ra = np.max([raNgs, raTargets])
-        elif not self._ngs:
-            ra = np.max([raLgs, raTargets])
         else:
-            ra = np.max([raLgs, raNgs, raTargets])
+            raNgs = 0
+        if self._targetsL:
+            raTargets = np.max([np.linalg.norm((l.x, l.y)) + l.r
+                                for l in self._targetsL])
+        else:
+            raTargets = 0
+        ra = np.max([raLgs, raNgs, raTargets])
 
         self._metapupilL.append(FootprintXYRadius(0, 0, ra))
 
@@ -128,10 +131,12 @@ class FootprintGeometry():
         self._xlim = 0
         for l in self._lgsL:
             self._addAnnularFootprint(
-                l.x, l.y, l.r, 0. * l.r, color='y', alpha=0.4)
+                l.x, l.y, l.r, 0.99 * l.r, color='y', alpha=0.5)
+            self._addAnnularFootprint(
+                l.x, l.y, l.r, 0.00 * l.r, color='y', alpha=0.1)
         for l in self._ngsL:
             self._addAnnularFootprint(
-                l.x, l.y, l.r, 0.99 * l.r, color='r', alpha=0.1)
+                l.x, l.y, l.r, 0.99 * l.r, color='r', alpha=0.5)
         for l in self._targetsL:
             self._addAnnularFootprint(
                 l.x, l.y, l.r, 0.99 * l.r, color='b', alpha=0.5)
@@ -198,7 +203,7 @@ class FootprintGeometry():
         ax.set_ylim(-self._xlim, self._xlim)
         p = PatchCollection(self._patches, match_original=True)
         ax.add_collection(p)
-        ax.set_title('Footprints @ %g km, zenith= %g°' % (
+        ax.set_title('Footprints @ %g km, zenith= %7.3f°' % (
             self._layerAltitudeInMeter / 1000, self._zenithAngleInDeg))
         if self._instrFoVInArcsec:
             plt.text(0.5, 0.05,
@@ -230,8 +235,9 @@ class FootprintGeometry():
         if self._ngs:
             for l in self._ngsL:
                 print("NGS (x,y,r): %f, %f - %f" % (l.x, l.y, l.r))
-        for l in self._targetsL:
-            print("Targets (x,y,r): %f, %f - %f" % (l.x, l.y, l.r))
+        if self._targets:
+            for l in self._targetsL:
+                print("Targets (x,y,r): %f, %f - %f" % (l.x, l.y, l.r))
         for l in self._sciL:
             print("Science (x,y,r): %f, %f - %f" % (l[0], l[1], l[2]))
         for l in self._metapupilL:
