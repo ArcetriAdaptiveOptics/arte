@@ -200,7 +200,7 @@ class ZernikeGenerator(object):
         return ret
 
     def getDerivativeX(self, index):
-        if index not in list(self._dictDxCache.keys()):
+        if index not in self._dictDxCache:
             self._dictDxCache[index] = self._computeDerivativeX(index)
         return self._dictDxCache[index]
 
@@ -212,7 +212,7 @@ class ZernikeGenerator(object):
         return dx
 
     def getDerivativeY(self, index):
-        if index not in list(self._dictDyCache.keys()):
+        if index not in self._dictDyCache:
             self._dictDyCache[index] = self._computeDerivativeY(index)
         return self._dictDyCache[index]
 
