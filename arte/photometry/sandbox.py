@@ -95,13 +95,17 @@ def check_zeropoints_ESO():
         5.973e-10, 3.12e-10, 1.14e-10, 3.94e-11,
         4.83e-12, 2.04e-12, 1.23e-13, 6.8e-15]) * FLAM
 
-    star = get_normalized_star_spectrum('vega', 0.03, Filters.ESO_ETC_R)
+    star = get_normalized_star_spectrum('vega', 0.0, Filters.ESO_ETC_R)
     for filt_name, etc_zp in zip(filters, eso_etc_zp):
         filt = Filters.get(filt_name)
         obs = Observation(star, filt)
         zp = obs.effstim('flam', wavelengths=filt.waveset)
         err = (zp - etc_zp) / etc_zp * 100
-        cnts = obs.countrate(area=1 * u.m ** 2)
+        cnts = obs.countrate(area=1 * u.m ** 2, wavelengths=filt.waveset)
         print(f"{filt_name:10s} | {zp:10.3e} | {err:+7.3f}% | {cnts:10.3e} |"
               f"{filt.waveset.to(u.nm)[0]:g} {filt.waveset.to(u.nm)[-1]:g}")
+
+
+
+
 
