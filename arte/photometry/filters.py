@@ -32,6 +32,8 @@ class Filters(object):
     ESO_ETC_M = 'eso_etc_m'
     ESO_ETC_N = 'eso_etc_n'
     ESO_ETC_Q = 'eso_etc_q'
+    C_RED_ONE = 'c_red_one'
+    CCD_220 = 'ccd_220'
 
 
     SYNPHOT = [
@@ -90,6 +92,12 @@ class Filters(object):
         dirname = os.path.join(rootDir, 'photometry', 'filters', 'eso_etc')
         return dirname
 
+    @staticmethod
+    def _DetectorsFolder():
+        rootDir = dataRootDir()
+        dirname = os.path.join(rootDir, 'photometry', 'detectors')
+        return dirname
+
     @classmethod
     def _eso_etc_u(cls):
         return cls._eso_etc('u', u.nm)
@@ -146,7 +154,17 @@ class Filters(object):
     def _eso_etc_q(cls):
         return cls._eso_etc('q', u.um)
 
+    @classmethod
+    def _ccd_220(cls):
+        return SpectralElement.from_file(
+            os.path.join(cls._DetectorsFolder(), 'ccd220.dat'),
+            wave_unit=u.um)
 
+    @classmethod
+    def _c_red_one(cls):
+        return SpectralElement.from_file(
+            os.path.join(cls._DetectorsFolder(), 'c_red_one.dat'),
+            wave_unit=u.nm)
 
 
     @classmethod
