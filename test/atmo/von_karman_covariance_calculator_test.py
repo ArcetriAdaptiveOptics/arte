@@ -198,7 +198,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         self.assertTrue(cpsdMatrix.shape == (len(j), len(k),
                                              temporal_freqs.shape[0]))
 
-    def testCPSDvsGeneralCPSD(self):
+    def testZernikeCPSDvsZernikeGeneralCPSD(self):
         cn2 = Cn2Profile.from_r0s(
             [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 23])
         rho, theta = (0, 0)
@@ -223,6 +223,26 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
 
         np.testing.assert_allclose(
             cov_from_cpsd, cov_from_general_cpsd, atol=1e-14)
+
+    def testPhaseCPSDvsPhaseGeneralCPSD(self):
+        cn2 = Cn2Profile.from_r0s(
+            [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 90])
+        rho, theta = (0, 0)
+        source = GuideSource((rho, theta), np.inf)
+        radius = 20
+        center = [0, 0, 0]
+        aperture = CircularOpticalAperture(radius, center)
+        spatial_freqs = np.logspace(-3, 3, 100)
+        temporal_freqs = np.logspace(-3, 3, 100)
+
+        vk = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+
+        cpsd = vk.getPhaseCPSD(temporal_freqs)
+        general_cpsd = vk.getGeneralPhaseCPSD(temporal_freqs)
+
+        np.testing.assert_allclose(
+            2 * cpsd.real, general_cpsd, atol=1e-14)
 
     def testModifySourceAndAperture(self):
         cn2 = Cn2Profile.from_r0s(
