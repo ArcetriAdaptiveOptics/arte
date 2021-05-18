@@ -62,6 +62,9 @@ class SharedCircularBuffer(GenericCircularBuffer):
 
     .. warning:: Since 3.8 the Python standard library provides a SharedMemory
                  class that makes this implementation not working.
+
+    .. warning:: It does not work on Windows.
+
     '''
 
     def __init__(self, n_frames, shape, dtype):

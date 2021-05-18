@@ -31,7 +31,7 @@ class SharedArray:
     .. warning:: Since 3.8 the Python standard library provides a SharedMemory
                  class that must be used instead of this.
 
-    .. warning:: It does not work in Windows.
+    .. warning:: It does not work on Windows.
 
     Parameters
     ----------

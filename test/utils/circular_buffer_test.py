@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import platform
 import sys
 import time
 import unittest
@@ -29,6 +30,8 @@ class CircularBufferTest(unittest.TestCase):
 
     @unittest.skipIf(sys.version_info >= (3, 8),
                      "not compatible with python>3.8")
+    @unittest.skipIf(platform.system() == 'Windows',
+                     "not compatible with Windows")
     def test_data(self):
         '''
         Test that shared data can be passed back and forth
