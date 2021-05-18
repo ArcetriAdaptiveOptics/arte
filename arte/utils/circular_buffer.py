@@ -32,13 +32,13 @@ class GenericCircularBuffer():
         if position is None:
             position = self._position[0]
 
-        self._buf[position, :] = data
+        self._buf[position,:] = data
         self._counter[0] = self._counter[0] + 1
         self._position[0] = self._counter[0] % self._len
 
     def get(self, position):
         '''Returns a frame from the circular buffer'''
-        return self._buf[position, :]
+        return self._buf[position,:]
 
     def position(self):
         '''Returns the current position in the circular buffer'''
@@ -57,7 +57,15 @@ class NumpyCircularBuffer(GenericCircularBuffer):
 
 
 class SharedCircularBuffer(GenericCircularBuffer):
-    '''Implements a circular buffer on top of a SharedArray'''
+    '''
+    Implements a circular buffer on top of a SharedArray
+
+    .. warning:: Since 3.8 the Python standard library provides a SharedMemory
+                 class that makes this implementation not working.
+
+    .. warning:: It does not work on Windows.
+
+    '''
 
     def __init__(self, n_frames, shape, dtype):
         super().__init__(n_frames, shape, dtype, SharedArray)
