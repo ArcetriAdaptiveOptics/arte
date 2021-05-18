@@ -89,7 +89,8 @@ setup(name=NAME,
                         "matplotlib",
                         "astropy",
                         "synphot",
-                        "pytest"
+                        "pytest",
+                        "skycalc-cli"
                         ],
       include_package_data=True,
       test_suite='test',
