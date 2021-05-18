@@ -28,6 +28,9 @@ class SharedArray:
     .. warning:: SharedArray works with processes spawned with mp.Process,
                  but do not work with mp.Pool, unless an mp.Manager is used.
 
+    .. warning:: Since 3.8 the Python standard library provides a SharedMemory
+                 class that must be used instead of this.
+
     Parameters
     ----------
     shape: integer sequence
@@ -42,7 +45,7 @@ class SharedArray:
         self.dtype = np.dtype(dtype)
         self._ndarray = None
 
-        n_elements = reduce(lambda x,y: x*y, self.shape)
+        n_elements = reduce(lambda x, y: x * y, self.shape)
         n_bytes = n_elements * self.dtype.itemsize
         self._shared_buf = mp.sharedctypes.RawArray(ctypes.c_byte, n_bytes)
 

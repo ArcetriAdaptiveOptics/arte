@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import time
 import unittest
 import numpy as np
@@ -11,40 +12,44 @@ from arte.utils.shared_array import SharedArray
 
 class SharedArrayTest(unittest.TestCase):
 
+    @unittest.skipIf(sys.version_info >= (3, 8),
+                     "not compatible with python>3.8")
     def test_data(self):
         '''
         Test that shared data can be passed back and forth
         to a task
         '''
+
         def task(arr, trig):
             '''
             A task that polls on a trigger for max 5 seconds,
             and when triggered, modifies the input array.
             '''
-            timeout=5
-            now=time.time()
+            timeout = 5
+            now = time.time()
 
             while True:
-                if trig[0]==1:
+                if trig[0] == 1:
                     break
                 time.sleep(0.01)
-                if time.time()-now >= timeout:
+                if time.time() - now >= timeout:
                     raise TimeoutError
-            arr[1] = arr[0]+1
-    
+            arr[1] = arr[0] + 1
+
         arr = SharedArray((2,), np.int32)
         trig = SharedArray((1,), np.int32)
-    
-        p = mp.Process(target = task, args=(arr, trig))
-        p.start()
-    
-        arr[0]=1    # Initialize some data
-        trig[0]=1   # Trigger the task
-        p.join()    # Wait for the task to complete
-        
-        assert arr[1] == 2   # Check task result
 
-    @unittest.skip("Does not work with a Pool unless an mp.Manager is used")    
+        p = mp.Process(target=task, args=(arr, trig))
+        p.start()
+
+        arr[0] = 1  # Initialize some data
+        trig[0] = 1  # Trigger the task
+        p.join()  # Wait for the task to complete
+
+        assert arr[1] == 2  # Check task result
+
+    @unittest.skipIf(sys.version_info >= (3, 8),
+                     "not compatible with python>3.8")
     def test_pool(self):
         '''
         Test that we can read back from a pool
@@ -57,6 +62,6 @@ class SharedArrayTest(unittest.TestCase):
         arr = SharedArray((10,), np.int32)
 
         with mp.Pool(4) as p:
-            p.map(pool_task, zip(range(10), repeat(arr,10)))
-        
-        np.testing.assert_array_equal( arr[:], np.arange(10, dtype=np.int32)) 
+            p.map(pool_task, zip(range(10), repeat(arr, 10)))
+
+        np.testing.assert_array_equal(arr[:], np.arange(10, dtype=np.int32))
