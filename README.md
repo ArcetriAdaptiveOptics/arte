@@ -3,6 +3,26 @@
 A collection of routines and utilities
 developed by the Arcetri Astrophysical Observatory's AO group.
 
+## Documentation
+
+See readthedocs https://arte.readthedocs.io
+
+## Installation
+__arte__ is tested on python 3.6+ only
+
+* From pip (typically old version):
+
+```pip install arte```
+
+* From source (latest, check that Python Package test is passing):
+
+```
+git clone https://github.com/ArcetriAdaptiveOptics/arte.git
+cd arte
+pip install -e .
+```
+
+
 ![Python package](https://github.com/ArcetriAdaptiveOptics/arte/workflows/Python%20package/badge.svg)
 [![Coverage Status][coveralls]][coverallslink]
 [![Documentation Status](https://readthedocs.org/projects/arte/badge/?version=latest)](https://arte.readthedocs.io/en/latest/?badge=latest)
