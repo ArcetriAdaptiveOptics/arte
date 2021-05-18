@@ -10,8 +10,8 @@ from arte.utils.locate import replace_in_file
 
 # Replicate an example os.walk() output
 _files = [('foo', ['bar, bar2'], ['foo.txt']),
-          ('foo/bar', [], ['bar.txt']),
-          ('foo/bar2', [], ['bar2.txt'])]
+          (os.path.join('foo', 'bar'), [], ['bar.txt']),
+          (os.path.join('foo', 'bar2'), [], ['bar2.txt'])]
 
 
 def _walk(rootdir):
