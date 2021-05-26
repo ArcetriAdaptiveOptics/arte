@@ -14,7 +14,7 @@ class GeneralizedFittingError(object):
                  cn2Profile,
                  zenithAngleInDeg,
                  seeingInArcsec):
-        self._freqs= spatialFrequenciesInInverseMeter
+        self._spat_freqs= spatialFrequenciesInInverseMeter
         self._hdm= altitudeOfDeformableMirrorsInMeter
         self._pitch= pitchOfDeformableMirrorsInMeter
         self._fov= optimizedFieldOfViewInArcsec

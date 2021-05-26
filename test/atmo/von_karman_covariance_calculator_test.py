@@ -7,15 +7,16 @@ from arte.atmo.von_karman_covariance_calculator import \
 from arte.atmo.cn2_profile import Cn2Profile
 from arte.types.guide_source import GuideSource
 from arte.types.aperture import CircularOpticalAperture
-from test.test_helper import setUpLogger
-import logging
+# from test.test_helper import setUpLogger
+# import logging
+import sys
 
 
 class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
 
-    def setUp(self):
-        setUpLogger(logging.DEBUG)
-        pass
+    #     def setUp(self):
+    #         setUpLogger(logging.DEBUG)
+    #         pass
 
     def tearDown(self):
         pass
@@ -92,13 +93,12 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-3, 3, 100)
 
-        vk_cov = VonKarmanSpatioTemporalCovariance(
-            source1, source2, aperture, aperture, cn2, spatial_freqs)
-
         modoJ = 2
         modoK = 5
         temp_freqs = [0.05, 130, 250]
 
+        vk_cov = VonKarmanSpatioTemporalCovariance(
+            source1, source2, aperture, aperture, cn2, spatial_freqs)
         got = vk_cov.getZernikeCPSD(modoJ, modoK, temp_freqs)
 
         want = np.array([
@@ -165,11 +165,14 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         j = [2, 3]
         k = [2, 3]
 
-        vk = VonKarmanSpatioTemporalCovariance(
+        vkCov = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        vkCpsd = VonKarmanSpatioTemporalCovariance(
             source, source, aperture, aperture, cn2, spatial_freqs)
 
-        cpsdMatrix = 2 * np.real(vk.getZernikeCPSD(j, k, temporal_freqs).value)
-        covarianceMatrix = vk.getZernikeCovariance(j, k).value
+        cpsdMatrix = 2 * np.real(vkCpsd.getZernikeCPSD(j, k, temporal_freqs
+                                                       ).value)
+        covarianceMatrix = vkCov.getZernikeCovariance(j, k).value
         covFromCPSD = np.trapz(cpsdMatrix, temporal_freqs)
         np.testing.assert_allclose(
             covFromCPSD, covarianceMatrix, rtol=0.01, atol=1e-3)
@@ -184,6 +187,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-3, 3, 100)
         temporal_freqs = np.logspace(-4, 4, 100)
+
         j = [2]
         k = [2, 3]
 
@@ -194,7 +198,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         self.assertTrue(cpsdMatrix.shape == (len(j), len(k),
                                              temporal_freqs.shape[0]))
 
-    def testCPSDvsGeneralCPSD(self):
+    def testZernikeCPSDvsZernikeGeneralCPSD(self):
         cn2 = Cn2Profile.from_r0s(
             [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 23])
         rho, theta = (0, 0)
@@ -204,6 +208,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture = CircularOpticalAperture(radius, center)
         spatial_freqs = np.logspace(-3, 3, 100)
         temporal_freqs = np.logspace(-4, 4, 100)
+
         j = [2, 3]
         k = [2, 3, 4]
 
@@ -219,6 +224,26 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         np.testing.assert_allclose(
             cov_from_cpsd, cov_from_general_cpsd, atol=1e-14)
 
+    def testPhaseCPSDvsPhaseGeneralCPSD(self):
+        cn2 = Cn2Profile.from_r0s(
+            [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 90])
+        rho, theta = (0, 0)
+        source = GuideSource((rho, theta), np.inf)
+        radius = 20
+        center = [0, 0, 0]
+        aperture = CircularOpticalAperture(radius, center)
+        spatial_freqs = np.logspace(-3, 3, 100)
+        temporal_freqs = np.logspace(-3, 3, 100)
+
+        vk = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+
+        cpsd = vk.getPhaseCPSD(temporal_freqs)
+        general_cpsd = vk.getGeneralPhaseCPSD(temporal_freqs)
+
+        np.testing.assert_allclose(
+            2 * cpsd.real, general_cpsd, atol=1e-14)
+
     def testModifySourceAndAperture(self):
         cn2 = Cn2Profile.from_r0s(
             [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 23])
@@ -228,18 +253,100 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         aperture2 = CircularOpticalAperture(5, [1, 0, 0])
         spatial_freqs = np.logspace(-3, 3, 10)
         temporal_freqs = np.logspace(-4, 4, 11)
+
         j = [2, 3]
         k = [2, 4]
 
         vk = VonKarmanSpatioTemporalCovariance(
             source1, source1, aperture1, aperture1, cn2, spatial_freqs)
-        cpsd1 = vk.getGeneralZernikeCPSD(j, k, temporal_freqs)
+        cpsd1 = vk.getGeneralZernikeCPSD(j, k, temporal_freqs).value
 
         vk.setSource1(source2)
         vk.setAperture2(aperture2)
-        cpsd2 = vk.getGeneralZernikeCPSD(j, k, temporal_freqs)
+        cpsd2 = vk.getGeneralZernikeCPSD(j, k, temporal_freqs).value
         self.assertFalse(np.allclose(
             cpsd1, cpsd2, atol=1e-14))
+
+    @unittest.skipIf('cupy' not in sys.modules,
+                     "Can't test code with cupy")
+    def testZernikeCPSDOnGPU(self):
+        cn2 = Cn2Profile.from_r0s(
+            [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 23])
+        rho, theta = (0, 0)
+        source = GuideSource((rho, theta), np.inf)
+        radius = 5
+        center = [0, 0, 0]
+        aperture = CircularOpticalAperture(radius, center)
+        spatial_freqs = np.logspace(-3, 3, 100)
+        temporal_freqs = np.logspace(-4, 4, 100)
+
+        j = [2, 3]
+        k = [2, 3, 4]
+
+        vk_np = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        cpsd_np = vk_np.getZernikeCPSD(j, k, temporal_freqs)
+
+        vk_cp = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        vk_cp.useGPU()
+        cpsd_cp = vk_cp.getZernikeCPSD(j, k, temporal_freqs)
+
+        np.testing.assert_allclose(
+            cpsd_np, cpsd_cp, atol=1e-14)
+
+    @unittest.skipIf('cupy' not in sys.modules,
+                     "Can't test code with cupy")
+    def testGeneralZernikeCPSDOnGPU(self):
+        cn2 = Cn2Profile.from_r0s(
+            [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 23])
+        rho, theta = (0, 0)
+        source = GuideSource((rho, theta), np.inf)
+        radius = 5
+        center = [0, 0, 0]
+        aperture = CircularOpticalAperture(radius, center)
+        spatial_freqs = np.logspace(-3, 3, 100)
+        temporal_freqs = np.logspace(-4, 4, 100)
+
+        j = [2, 3]
+        k = [2, 3, 4]
+
+        vk_np = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        cpsd_np = vk_np.getGeneralZernikeCPSD(j, k, temporal_freqs)
+
+        vk_cp = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        vk_cp.useGPU()
+        cpsd_cp = vk_cp.getGeneralZernikeCPSD(j, k, temporal_freqs)
+
+        np.testing.assert_allclose(
+            cpsd_np, cpsd_cp, atol=1e-14)
+
+    @unittest.skipIf('cupy' not in sys.modules,
+                     "Can't test code with cupy")
+    def testPhaseCPSDOnGPU(self):
+        cn2 = Cn2Profile.from_r0s(
+            [0.16, 3.14], [25, 12], [10e3, 200], [10, 8], [-20, 23])
+        rho, theta = (0, 0)
+        source = GuideSource((rho, theta), np.inf)
+        radius = 5
+        center = [0, 0, 0]
+        aperture = CircularOpticalAperture(radius, center)
+        spatial_freqs = np.logspace(-3, 3, 100)
+        temporal_freqs = np.logspace(-4, 4, 100)
+
+        vk_np = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        cpsd_np = vk_np.getPhaseCPSD(temporal_freqs)
+
+        vk_cp = VonKarmanSpatioTemporalCovariance(
+            source, source, aperture, aperture, cn2, spatial_freqs)
+        vk_cp.useGPU()
+        cpsd_cp = vk_cp.getPhaseCPSD(temporal_freqs)
+
+        np.testing.assert_allclose(
+            cpsd_np, cpsd_cp, atol=1e-14)
 
 
 if __name__ == "__main__":

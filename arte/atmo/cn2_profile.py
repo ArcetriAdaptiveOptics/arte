@@ -399,7 +399,8 @@ class EsoEltProfiles():
         h = rr[0]
         js = rr[idxJ] / 100
         windSpeed = rr[idxWind]
-        windDirection = np.linspace(0, 360, len(js))
+#         windDirection = np.linspace(0, 360, len(js))
+        windDirection = np.random.uniform(0, 360, len(js))
         if L0 is None:
             L0 = cls.L0
         L0s = np.ones(len(js)) * L0
@@ -446,5 +447,22 @@ class MiscellaneusProfiles():
         windSpeed = np.ones(len(js)) * 10.0
         windDirection = np.linspace(0, 360, len(js))
         L0s = np.ones(len(js)) * 25.0
+        return Cn2Profile.from_fractional_j(
+            r0, js, L0s, hs, windSpeed, windDirection)
+
+    @classmethod
+    def LBT(cls):
+        '''
+        From G. Agapito, C. Arcidiacono, F. Quiros-Pacheco, S. Esposito,
+        "Adaptive optics at short wavelengths - Expected performance and sky
+        coverage of the FLAO system going toward visible wavelengths",
+        doi: 10.1007/s10686-014-9380-7
+        '''
+        r0 = 0.140
+        hs = np.array([0.103, 0.725, 2.637, 11.068]) * 1000
+        js = [0.70, 0.06, 0.14, 0.10]
+        windSpeed = [2., 4., 6., 25.]
+        windDirection = [0., 90., 180., 270.]
+        L0s = np.ones(len(js)) * 40.0
         return Cn2Profile.from_fractional_j(
             r0, js, L0s, hs, windSpeed, windDirection)

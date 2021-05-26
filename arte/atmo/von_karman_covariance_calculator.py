@@ -3,12 +3,17 @@
 '''
 
 import numpy as np
+try:
+    import cupy as cp
+except ImportError:
+    print("Can't import cupy")
+    cp = None
 import astropy.units as u
 from arte.utils import math
 import logging
 from arte.utils.zernike_generator import ZernikeGenerator
 from arte.atmo import von_karman_psd
-from arte.utils.decorator import cacheResult
+# from arte.utils.decorator import cacheResult
 
 
 class VonKarmanSpatioTemporalCovariance():
@@ -79,7 +84,11 @@ class VonKarmanSpatioTemporalCovariance():
         self.setAperture2(aperture2)
         self.setCn2Profile(cn2_profile)
         self.setSpatialFrequencies(spat_freqs)
+        self._xp = np
         self._logger = logger
+
+    def useGPU(self):
+        self._xp = cp
 
     def setCn2Profile(self, cn2_profile):
         self._resetCachedResults()
@@ -124,7 +133,7 @@ class VonKarmanSpatioTemporalCovariance():
 
     def setSpatialFrequencies(self, freqs):
         self._resetCachedResults()
-        self._freqs = freqs
+        self._spat_freqs = freqs
 
     def _resetCachedResults(self):
         # TODO: lb 200620. This is ugly, the decorator should offer
@@ -152,7 +161,7 @@ class VonKarmanSpatioTemporalCovariance():
         return self._cn2
 
     def spatial_frequencies(self):
-        return self._freqs
+        return self._spat_freqs
 
     def temporal_frequencies(self):
         return self._temporalFreqs
@@ -218,17 +227,20 @@ class VonKarmanSpatioTemporalCovariance():
         psd = vk.spatial_psd(freqs)
         return psd
 
-    def _integrate(self, int_func, int_var):
-        return np.trapz(int_func, int_var)
-
-    @cacheResult
+#     @cacheResult
     def _initializeGeometry(self, nLayer, spat_freqs):
         a1 = self._layerScalingFactor1(nLayer)
         a2 = self._layerScalingFactor2(nLayer)
-        sep = self._layerProjectedAperturesSeparation(nLayer)
-        sl = np.linalg.norm(sep)
-        thS = np.arctan2(sep[1], sep[0])
-        psd = self._VonKarmanPSDOneLayer(nLayer, spat_freqs)
+        sep = self._xp.array(self._layerProjectedAperturesSeparation(nLayer))
+
+        if self._xp == cp:
+            psd = self._VonKarmanPSDOneLayer(
+                nLayer, self._xp.asnumpy(spat_freqs))
+            psd = self._xp.array(psd)
+        elif self._xp == np:
+            psd = self._VonKarmanPSDOneLayer(nLayer, spat_freqs)
+        sl = self._xp.linalg.norm(sep)
+        thS = self._xp.arctan2(sep[1], sep[0])
         return a1, a2, sl, thS, psd
 
     def _initializeFunctionsForZernikeComputations(
@@ -239,48 +251,72 @@ class VonKarmanSpatioTemporalCovariance():
         deltaj = math.kroneckerDelta(0, mj)
         deltak = math.kroneckerDelta(0, mk)
 
-        b1 = math.besselFirstKind(
-            nj + 1,
-            2 * np.pi * spat_freqs * self._ap1Radius * (1 - a1))
-        b2 = math.besselFirstKind(
-            nk + 1,
-            2 * np.pi * spat_freqs * self._ap2Radius * (1 - a2))
+        if self._xp == cp:
+            r1 = cp.array(self._ap1Radius)
+            r2 = cp.array(self._ap2Radius)
+            b1 = math.besselFirstKindOnGPU(
+                nj + 1,
+                2 * self._xp.pi * spat_freqs * r1 * (1 - a1))
+            b2 = math.besselFirstKindOnGPU(
+                nk + 1,
+                2 * self._xp.pi * spat_freqs * r2 * (1 - a2))
+        elif self._xp == np:
+            r1 = self._ap1Radius
+            r2 = self._ap2Radius
+            b1 = math.besselFirstKind(
+                nj + 1,
+                2 * self._xp.pi * spat_freqs * r1 * (1 - a1))
+            b2 = math.besselFirstKind(
+                nk + 1,
+                2 * self._xp.pi * spat_freqs * r2 * (1 - a2))
 
-        c0 = (-1) ** mk * np.sqrt((nj + 1) * (nk + 1)) * 1j ** (
+        c0 = (-1) ** mk * self._xp.sqrt((nj + 1) * (nk + 1)) * 1j ** (
             nj + nk) * 2 ** (
             1 - 0.5 * (deltaj + deltak))
         c1 = 1. / (
-            np.pi * self._ap1Radius * self._ap2Radius * (1 - a1) * (1 - a2))
+            self._xp.pi * r1 * r2 * (1 - a1) * (1 - a2))
 
         return nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1
 
     def _computeZernikeCovarianceOneLayer(self, j, k, nLayer):
+        f = self._xp.array(self._spat_freqs)
         a1, a2, sl, thS, psd = \
-            self._initializeGeometry(nLayer, self._freqs)
-        nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1 = \
+            self._initializeGeometry(nLayer, f)
+        _, mj, _, mk, deltaj, deltak, b1, b2, c0, c1 = \
             self._initializeFunctionsForZernikeComputations(
-                j, k, self._freqs, a1, a2)
+                j, k, f, a1, a2)
 
-        b3 = math.besselFirstKind(
-            mj + mk,
-            sl * 2 * np.pi * self._freqs)
-        b4 = math.besselFirstKind(
-            np.abs(mj - mk),
-            sl * 2 * np.pi * self._freqs)
-        c2 = np.pi / 4 * ((1 - deltaj) * ((-1) ** j - 1) +
+        if self._xp == cp:
+            b3 = math.besselFirstKindOnGPU(
+                mj + mk,
+                sl * 2 * self._xp.pi * f)
+            b4 = math.besselFirstKindOnGPU(
+                np.abs(mj - mk),
+                sl * 2 * self._xp.pi * f)
+        elif self._xp == np:
+            b3 = math.besselFirstKind(
+                mj + mk,
+                sl * 2 * self._xp.pi * f)
+            b4 = math.besselFirstKind(
+                np.abs(mj - mk),
+                sl * 2 * self._xp.pi * f)
+        c2 = self._xp.pi / 4 * ((1 - deltaj) * ((-1) ** j - 1) +
                                 (1 - deltak) * ((-1) ** k - 1))
-        c3 = np.pi / 4 * ((1 - deltaj) * ((-1) ** j - 1) -
+        c3 = self._xp.pi / 4 * ((1 - deltaj) * ((-1) ** j - 1) -
                                 (1 - deltak) * ((-1) ** k - 1))
 
         zernikeIntegrand = c0 * c1 * \
-            psd / self._freqs * b1 * b2 * \
-            (np.cos((mj + mk) * thS + c2) *
+            psd / f * b1 * b2 * \
+            (self._xp.cos((mj + mk) * thS + c2) *
              1j ** (3 * (mj + mk)) *
              b3 +
              np.cos((mj - mk) * thS + c3) *
-             1j ** (3 * np.abs(mj - mk)) *
+             1j ** (3 * self._xp.abs(mj - mk)) *
              b4)
-        zernikeCovOneLayer = self._integrate(zernikeIntegrand, self._freqs)
+        if self._xp == cp:
+            zernikeIntegrand = self._xp.asnumpy(zernikeIntegrand)
+            f = self._xp.asnumpy(f)
+        zernikeCovOneLayer = np.trapz(zernikeIntegrand, f)
         return zernikeCovOneLayer
 
     def _computeZernikeCovarianceAllLayers(self, j, k):
@@ -289,52 +325,83 @@ class VonKarmanSpatioTemporalCovariance():
             in range(self._numberOfLayers)])
         return zernikeCovAllLayers.sum()
 
-    def _initializeFunctionsForPhaseComputations(self, spat_freqs, a1, a2):
-        k = (1 - a2) * self._ap2Radius / ((1 - a1) * self._ap1Radius)
-        arg1 = np.pi * self._ap1Radius * (1 - a1)
-        arg2 = np.pi * self._ap2Radius * (1 - a2)
-        b0 = math.besselFirstKind(1, 2 * arg1 * (k - 1) * spat_freqs)
-        b1 = math.besselFirstKind(1, 2 * arg1 * spat_freqs)
-        b2 = math.besselFirstKind(1, 2 * arg2 * spat_freqs)
+    def _initializeFunctionsForPhaseComputations(self, f, a1, a2):
+        if self._xp == cp:
+            r1 = cp.array(self._ap1Radius)
+            r2 = cp.array(self._ap2Radius)
+            k = (1 - a2) * r2 / ((1 - a1) * r1)
+            arg1 = self._xp.pi * r1 * (1 - a1)
+            arg2 = self._xp.pi * r2 * (1 - a2)
+
+            b0 = math.besselFirstKindOnGPU(1, 2 * arg1 * (k - 1) * f)
+#             def b0(f): return math.besselFirstKindOnGPU(
+#                 1, 2 * arg1 * (k - 1) * f)
+
+            b1 = math.besselFirstKindOnGPU(1, 2 * arg1 * f)
+#             def b1(f): return math.besselFirstKindOnGPU(
+#                 1, 2 * arg1 * f)
+
+            b2 = math.besselFirstKindOnGPU(1, 2 * arg2 * f)
+#             def b2(f): return math.besselFirstKindOnGPU(
+#                 1, 2 * arg2 * f)
+        elif self._xp == np:
+            k = (1 - a2) * self._ap2Radius / ((1 - a1) * self._ap1Radius)
+            arg1 = np.pi * self._ap1Radius * (1 - a1)
+            arg2 = np.pi * self._ap2Radius * (1 - a2)
+            b0 = math.besselFirstKind(1, 2 * arg1 * (k - 1) * f)
+#             def b0(f): return math.besselFirstKind(
+#                 1, 2 * arg1 * (k - 1) * f)
+            b1 = math.besselFirstKind(1, 2 * arg1 * f)
+#             def b1(f): return math.besselFirstKind(
+#                 1, 2 * arg1 * f)
+            b2 = math.besselFirstKind(1, 2 * arg2 * f)
+#             def b2(f): return math.besselFirstKind(
+#                 1, 2 * arg2 * f)
 
         if k == 1:
+            #             self._b1Phase = lambda f: f**0
             self._b1Phase = 1
         else:
-            self._b1Phase = b0 / (arg1 * (k - 1) * spat_freqs)
+            #             self._b1Phase = lambda f: b0(
+            #                 f) / (arg1 * (k - 1) * f)
+            self._b1Phase = b0 / (arg1 * (k - 1) * f)
 
         if a1 == 1:
+            #             self._b2Phase = lambda f: f**0
             self._b2Phase = 1
         else:
-            self._b2Phase = b1 / (arg1 * spat_freqs)
+            #             self._b2Phase = lambda f: b1(
+            #                 f) / (arg1 * f)
+            self._b2Phase = b1 / (arg1 * f)
 
         if a2 == 1:
+            #             self._b3Phase = lambda f: f**0
             self._b3Phase = 1
         else:
-            self._b3Phase = b2 / (arg2 * spat_freqs)
+            #             self._b3Phase = lambda f: b2(
+            #                 f) / (arg2 * f)
+            self._b3Phase = b2 / (arg2 * f)
 
     def _computePhaseCovarianceOneLayer(self, nLayer):
         a1, a2, sl, thS, psd = \
-            self._initializeGeometry(nLayer, self._freqs)
+            self._initializeGeometry(nLayer, self._spat_freqs)
         self._initializeFunctionsForPhaseComputations(
-            self._freqs, a1, a2)
+            self._spat_freqs, a1, a2)
         b0Phase = math.besselFirstKind(0,
-                                       2 * np.pi * self._freqs * sl)
+                                       2 * np.pi * self._spat_freqs * sl)
 
-        phaseIntegrand = 2 * np.pi * self._freqs * psd * b0Phase * (
+        phaseIntegrand = 2 * np.pi * self._spat_freqs * psd * b0Phase * (
             self._b1Phase - self._b2Phase * self._b3Phase)
-        phaseCovOneLayer = self._integrate(phaseIntegrand, self._freqs)
+        phaseCovOneLayer = np.trapz(phaseIntegrand, self._spat_freqs)
         return phaseCovOneLayer
-
-    def _getZernikeCPSDOneTemporalFrequency(self, j, k, nLayer, t_freq):
-        func, fPerp = self.integrandOfZernikeCPSD(j, k, nLayer, t_freq)
-        return self._integrate(func, fPerp)
 
     def _getZernikeCPSDAllTemporalFrequenciesOneLayer(self, j, k, nLayer,
                                                       temp_freqs):
-        return np.array([
-            self._getZernikeCPSDOneTemporalFrequency(
-                j, k, nLayer, t_freq) for t_freq in temp_freqs
-        ])
+
+        integrand, fPerp = self.integrandOfZernikeCPSD(j, k, nLayer,
+                                                       temp_freqs)
+        cpsdZernikeOneLayer = np.trapz(integrand, fPerp, axis=0)
+        return cpsdZernikeOneLayer
 
     def _getZernikeCPSDAllLayers(self, j, k, temp_freqs):
         cpsd = np.array([
@@ -344,17 +411,14 @@ class VonKarmanSpatioTemporalCovariance():
         cpsdTotal = cpsd.sum(axis=0)
         return cpsdTotal
 
-    def _getGeneralZernikeCPSDOneTemporalFrequency(self, j, k, nLayer, t_freq):
-        func, fPerp = self._integrandOfGeneralZernikeCPSD(j, k, nLayer, t_freq)
-        return self._integrate(func, fPerp)
-
     def _getGeneralZernikeCPSDAllTemporalFrequenciesOneLayer(self, j, k,
                                                              nLayer,
                                                              temp_freqs):
-        return np.array([
-            self._getGeneralZernikeCPSDOneTemporalFrequency(
-                j, k, nLayer, t_freq) for t_freq in temp_freqs
-        ])
+
+        integrand, fPerp = self.integrandOfGeneralZernikeCPSD(j, k, nLayer,
+                                                              temp_freqs)
+        cpsdGeneralZernikeOneLayer = np.trapz(integrand, fPerp, axis=0)
+        return cpsdGeneralZernikeOneLayer
 
     def _getGeneralZernikeCPSDAllLayers(self, j, k, temp_freqs):
         cpsd = np.array([
@@ -364,16 +428,24 @@ class VonKarmanSpatioTemporalCovariance():
         cpsdTotal = cpsd.sum(axis=0)
         return cpsdTotal
 
-    def _getPhaseCPSDOneTemporalFrequency(self, nLayer, t_freq):
-        func, fPerp = self.integrandOfPhaseCPSD(nLayer, t_freq)
-        return self._integrate(func, fPerp)
+    def _getPhaseCPSDAllTemporalFrequenciesOneLayer(self, nLayer, t_freqs):
+        func, fPerp = self.integrandOfPhaseCPSD(nLayer, t_freqs)
+        cpsdPhaseOneLayer = np.trapz(func, fPerp, axis=0)
+        return cpsdPhaseOneLayer
 
-    def _getPhaseCPSDAllTemporalFrequenciesOneLayer(self, nLayer,
-                                                    temp_freqs):
-        return np.array([
-            self._getPhaseCPSDOneTemporalFrequency(nLayer, t_freq)
-            for t_freq in temp_freqs
-        ])
+    def _getGeneralPhaseCPSDAllTemporalFrequenciesOneLayer(self, nLayer,
+                                                           t_freqs):
+        func, fPerp = self.integrandOfGeneralPhaseCPSD(nLayer, t_freqs)
+        genCpsdPhaseOneLayer = np.trapz(func, fPerp, axis=0)
+#         inte = self.integrandOfGeneralPhaseCPSD(nLayer, t_freqs)(
+#             self._spat_freqs)
+#         genCpsdPhaseOneLayer, _ = integrate.quad_vec(inte,
+#                                                      self._spat_freqs[0],
+#                                                      self._spat_freqs[
+#                                                          self._spat_freqs.shape[0]
+#                                                          - 1])
+#         genCpsdPhaseOneLayer = np.trapz(inte, self._spat_freqs, axis=0)
+        return genCpsdPhaseOneLayer
 
     def _getPhaseCPSDAllLayers(self, temp_freqs):
         phaseCPSD = np.array([
@@ -383,93 +455,185 @@ class VonKarmanSpatioTemporalCovariance():
         phaseCPSDTotal = phaseCPSD.sum(axis=0)
         return phaseCPSDTotal
 
-    def _integrandOfGeneralZernikeCPSD(self, j, k, nLayer, temp_freq):
-        vl = self._windSpeed[nLayer]
+    def _getGeneralPhaseCPSDAllLayers(self, temp_freqs):
+        gPhaseCPSD = np.array([
+            self._getGeneralPhaseCPSDAllTemporalFrequenciesOneLayer(
+                nLayer, temp_freqs)
+            for nLayer in range(self._numberOfLayers)])
+        gPhaseCPSDTotal = gPhaseCPSD.sum(axis=0)
+        return gPhaseCPSDTotal
 
-        fPerp = self._freqs
-        f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
+    def integrandOfGeneralZernikeCPSD(self, j, k, nLayer, temp_freqs):
+        if self._xp == cp:
+            vl = self._xp.array(self._windSpeed[nLayer])
+            vdir = self._xp.array(self._windDirection[nLayer])
+            tf, sp_perp = self._xp.meshgrid(
+                self._xp.array(temp_freqs), self._xp.array(self._spat_freqs))
+        elif self._xp == np:
+            vl = self._windSpeed[nLayer]
+            vdir = self._windDirection[nLayer]
+            tf, sp_perp = self._xp.meshgrid(temp_freqs, self._spat_freqs)
 
-        a1, a2, sl, thS, psd = \
-            self._initializeGeometry(nLayer, f)
+        f = self._xp.sqrt(sp_perp ** 2 + (tf / vl) ** 2)
+        a1, a2, sl, thS, psd = self._initializeGeometry(nLayer, f)
         nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1 = \
             self._initializeFunctionsForZernikeComputations(
                 j, k, f, a1, a2)
 
-        thWind = np.deg2rad(self._windDirection[nLayer])
-        th0 = np.arccos(-temp_freq / (f * vl))
+        thWind = self._xp.deg2rad(vdir)
+        th0 = self._xp.arccos(-tf / (f * vl))
         th1 = th0 + thWind
         th2 = -th0 + thWind
 
-        c4 = np.pi / 4 * (1 - deltaj) * ((-1) ** j - 1)
-        c5 = np.pi / 4 * (1 - deltak) * ((-1) ** k - 1)
+        c4 = self._xp.pi / 4 * (1 - deltaj) * ((-1) ** j - 1)
+        c5 = self._xp.pi / 4 * (1 - deltak) * ((-1) ** k - 1)
 
         integFunc = 2 * c0 * c1 * 1j ** (0.5 * ((-1) ** (
-            nj + nk) - 1)) / (vl * np.pi) * \
+            nj + nk) - 1)) / (vl * self._xp.pi) * \
             psd / f ** 2 * b1 * b2 * \
-            (np.cos(2 * np.pi * f * sl * np.cos(th1 - thS) +
-                    np.pi / 4 * ((-1) ** (nj + nk) - 1)) *
-             np.cos(mj * th1 + c4) *
-             np.cos(mk * th1 + c5) +
-             np.cos(2 * np.pi * f * sl * np.cos(th2 - thS) +
-                    np.pi / 4 * ((-1) ** (nj + nk) - 1)) *
-             np.cos(mj * th2 + c4) *
-             np.cos(mk * th2 + c5))
-        return integFunc, fPerp
+            (self._xp.cos(2 * self._xp.pi * f * sl * self._xp.cos(th1 - thS) +
+                          self._xp.pi / 4 * ((-1) ** (nj + nk) - 1)) *
+             self._xp.cos(mj * th1 + c4) *
+             self._xp.cos(mk * th1 + c5) +
+             self._xp.cos(2 * self._xp.pi * f * sl * self._xp.cos(th2 - thS) +
+                          self._xp.pi / 4 * ((-1) ** (nj + nk) - 1)) *
+             self._xp.cos(mj * th2 + c4) *
+             self._xp.cos(mk * th2 + c5))
 
-    def integrandOfZernikeCPSD(self, j, k, nLayer, temp_freq):
-        vl = self._windSpeed[nLayer]
+        if self._xp == cp:
+            return self._xp.asnumpy(integFunc), self._xp.asnumpy(sp_perp)
+        elif self._xp == np:
+            return integFunc, sp_perp
 
-        fPerp = self._freqs
-        f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
+    def integrandOfZernikeCPSD(self, j, k, nLayer, temp_freqs):
+        if self._xp == cp:
+            vl = self._xp.array(self._windSpeed[nLayer])
+            vdir = self._xp.array(self._windDirection[nLayer])
+            tf, sp_perp = self._xp.meshgrid(
+                self._xp.array(temp_freqs), self._xp.array(self._spat_freqs))
+        elif self._xp == np:
+            vl = self._windSpeed[nLayer]
+            vdir = self._windDirection[nLayer]
+            tf, sp_perp = self._xp.meshgrid(temp_freqs, self._spat_freqs)
 
-        a1, a2, sl, thS, psd = \
-            self._initializeGeometry(nLayer, f)
-        nj, mj, nk, mk, deltaj, deltak, b1, b2, c0, c1 = \
+        f = self._xp.sqrt(sp_perp ** 2 + (tf / vl) ** 2)
+        a1, a2, sl, thS, psd = self._initializeGeometry(nLayer, f)
+        _, mj, _, mk, deltaj, deltak, b1, b2, c0, c1 = \
             self._initializeFunctionsForZernikeComputations(
                 j, k, f, a1, a2)
 
-        thWind = np.deg2rad(self._windDirection[nLayer])
-        th0 = np.arccos(-temp_freq / (f * vl))
+        thWind = self._xp.deg2rad(vdir)
+        th0 = self._xp.arccos(-tf / (f * vl))
         th1 = th0 + thWind
         th2 = -th0 + thWind
 
-        c4 = np.pi / 4 * (1 - deltaj) * ((-1) ** j - 1)
-        c5 = np.pi / 4 * (1 - deltak) * ((-1) ** k - 1)
+        c4 = self._xp.pi / 4 * (1 - deltaj) * ((-1) ** j - 1)
+        c5 = self._xp.pi / 4 * (1 - deltak) * ((-1) ** k - 1)
 
-        integFunc = c0 * c1 / (vl * np.pi) * \
+        integFunc = c0 * c1 / (vl * self._xp.pi) * \
             psd / f ** 2 * b1 * b2 * \
-            (np.exp(-2 * 1j * np.pi * f * sl * np.cos(
+            (self._xp.exp(-2 * 1j * self._xp.pi * f * sl * self._xp.cos(
                 th1 - thS)) *
-             np.cos(mj * th1 + c4) *
-             np.cos(mk * th1 + c5) +
-             np.exp(-2 * 1j * np.pi * f * sl * np.cos(
+             self._xp.cos(mj * th1 + c4) *
+             self._xp.cos(mk * th1 + c5) +
+             self._xp.exp(-2 * 1j * self._xp.pi * f * sl * self._xp.cos(
                  th2 - thS)) *
-             np.cos(mj * th2 + c4) *
-             np.cos(mk * th2 + c5))
-        return integFunc, fPerp
+             self._xp.cos(mj * th2 + c4) *
+             self._xp.cos(mk * th2 + c5))
 
-    def integrandOfPhaseCPSD(self, nLayer, temp_freq):
-        vl = self._windSpeed[nLayer]
+        if self._xp == cp:
+            return self._xp.asnumpy(integFunc), self._xp.asnumpy(sp_perp)
+        elif self._xp == np:
+            return integFunc, sp_perp
 
-        fPerp = self._freqs
-        f = np.sqrt(fPerp ** 2 + (temp_freq / vl) ** 2)
+    def integrandOfPhaseCPSD(self, nLayer, temp_freqs):
+        if self._xp == cp:
+            vl = self._xp.array(self._windSpeed[nLayer])
+            vdir = self._xp.array(self._windDirection[nLayer])
+            tf, sp_perp = self._xp.meshgrid(
+                self._xp.array(temp_freqs), self._xp.array(self._spat_freqs))
+        elif self._xp == np:
+            vl = self._windSpeed[nLayer]
+            vdir = self._windDirection[nLayer]
+            tf, sp_perp = self._xp.meshgrid(temp_freqs, self._spat_freqs)
 
+        f = self._xp.sqrt(sp_perp ** 2 + (tf / vl) ** 2)
         a1, a2, sl, thS, psd = \
             self._initializeGeometry(nLayer, f)
         self._initializeFunctionsForPhaseComputations(f, a1, a2)
 
-        thWind = np.deg2rad(self._windDirection[nLayer])
-        th0 = np.arccos(-temp_freq / (f * vl))
+        thWind = self._xp.deg2rad(vdir)
+        th0 = self._xp.arccos(-tf / (f * vl))
         th1 = th0 + thWind
         th2 = -th0 + thWind
 
         intFunc = 1. / vl * psd * (
             self._b1Phase - self._b2Phase * self._b3Phase) * (
-                np.exp(-2 * 1j * np.pi * f * sl * np.cos(
+                self._xp.exp(-2 * 1j * self._xp.pi * f * sl * self._xp.cos(
                     th1 - thS)) +
-            np.exp(-2 * 1j * np.pi * f * sl * np.cos(
+            self._xp.exp(-2 * 1j * self._xp.pi * f * sl * self._xp.cos(
                 th2 - thS)))
-        return intFunc, fPerp
+
+        if self._xp == cp:
+            return self._xp.asnumpy(intFunc), self._xp.asnumpy(sp_perp)
+        elif self._xp == np:
+            return intFunc, sp_perp
+
+    def integrandOfGeneralPhaseCPSD(self, nLayer, temp_freqs):
+        if self._xp == cp:
+            vl = self._xp.array(self._windSpeed[nLayer])
+            vdir = self._xp.array(self._windDirection[nLayer])
+            tf, sp_perp = self._xp.meshgrid(
+                self._xp.array(temp_freqs), self._xp.array(self._spat_freqs))
+#             tf = self._xp.array(temp_freqs)
+        elif self._xp == np:
+            vl = self._windSpeed[nLayer]
+            vdir = self._windDirection[nLayer]
+            tf, sp_perp = self._xp.meshgrid(temp_freqs, self._spat_freqs)
+#             tf = temp_freqs
+
+        f = self._xp.sqrt(sp_perp ** 2 + (tf / vl) ** 2)
+#         def f(sf_perp):
+#             tf_g, sf_g = np.meshgrid(tf, sf_perp)
+#             return self._xp.sqrt(sf_g ** 2 + (tf_g / vl) ** 2)
+
+        a1, a2, sl, thS, psd = \
+            self._initializeGeometry(nLayer, f)
+        self._initializeFunctionsForPhaseComputations(f, a1, a2)
+
+        thWind = self._xp.deg2rad(vdir)
+        th0 = self._xp.arccos(-tf / (f * vl))
+
+#         def th0(f):
+#             return self._xp.arccos(-tf / (f * vl))
+
+#         def cos1(f):
+#             return f**0 * self._xp.cos(
+#                 2 * np.pi * f * sl * self._xp.cos(thWind - thS) *
+#                 self._xp.cos(th0(f)))
+
+#         def cos2(f):
+#             return f**0 * self._xp.cos(
+#                 2 * np.pi * f * sl * self._xp.sin(thWind - thS) *
+#                 self._xp.sin(th0(f)))
+
+        intFunc = 4. / vl * psd * (
+            self._b1Phase - self._b2Phase * self._b3Phase
+        ) * self._xp.cos(
+            2 * np.pi * f * sl * self._xp.cos(thWind - thS) * self._xp.cos(
+                th0)) * self._xp.cos(
+            2 * np.pi * f * sl * self._xp.sin(thWind - thS) *
+            self._xp.sin(th0))
+
+        if self._xp == cp:
+            return self._xp.asnumpy(intFunc), self._xp.asnumpy(sp_perp)
+        elif self._xp == np:
+            return intFunc, sp_perp
+#         return lambda sf_perp: 4. / vl * self._VonKarmanPSDOneLayer(
+#             nLayer, f(sf_perp)) * (
+#             self._b1Phase(f(sf_perp)) - self._b2Phase(f(sf_perp)) *
+#             self._b3Phase(f(sf_perp))) * \
+#             cos1(f(sf_perp)) * cos2(f(sf_perp))
 
     def getZernikeCovariance(self, j, k):
         """
@@ -651,6 +815,16 @@ class VonKarmanSpatioTemporalCovariance():
 
         phaseCPSD = self._getPhaseCPSDAllLayers(temp_freqs) * u.rad ** 2 / u.Hz
         return phaseCPSD
+
+    def getGeneralPhaseCPSD(self, temp_freqs):
+        """
+        """
+
+        self._temporalFreqs = temp_freqs
+
+        generalPhaseCPSD = self._getGeneralPhaseCPSDAllLayers(
+            temp_freqs) * u.rad ** 2 / u.Hz
+        return generalPhaseCPSD
 
     def plotCPSD(self, cpsd, func_part, scale, legend):
         import matplotlib.pyplot as plt
