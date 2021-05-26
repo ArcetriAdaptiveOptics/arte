@@ -1,6 +1,8 @@
 import numpy as np
 from arte.types.region_of_interest import RegionOfInterest
 
+#class BaseMask
+
 
 class CircularMask():
 
@@ -69,3 +71,52 @@ class CircularMask():
         radius = int(self.radius())
         return RegionOfInterest(centerX - radius, centerX + radius,
                                 centerY - radius, centerY + radius)
+
+
+class AnnularMask(CircularMask):
+    '''
+    Inheritance of CicularMask class to provide an annular mask
+    Added inRadius parameter, radius of central obstruction. 
+    Default inRadius values is 0 with AnnularMask converging to CircularMask
+    '''
+    def __init__(self,
+             frameShape,
+             maskRadius=None,
+             maskCenter=None, 
+             inRadius=0):
+        self._inRadius = inRadius
+        super().__init__(frameShape, maskRadius, maskCenter)
+        
+    def __repr__(self):
+        return "shape %s, radius %f, center %s, inradius %f" % (
+            self._shape, self._maskRadius, self._maskCenter, self._inRadius)
+    
+    def inRadius(self):
+        return self._inRadius
+    
+    def _computeMask(self):
+        
+        if self._maskRadius is None:
+            self._maskRadius = min(self._shape) / 2.
+        if self._maskCenter is None:
+            self._maskCenter = 0.5 * np.array([self._shape[0],
+                                               self._shape[1]])
+
+        r = self._maskRadius
+        cc = self._maskCenter
+        y, x = np.mgrid[0.5: self._shape[0] + 0.5:1,
+                        0.5: self._shape[1] + 0.5:1]
+        
+        tmp = ((x - cc[1])**2 + (y - cc[0])**2) <= r**2
+        print(self)
+        if self._inRadius == 0:
+            self._mask = np.where(tmp, False, True)
+        else:
+            cc = CircularMask(self._shape, self._inRadius, self._maskCenter)
+            tmp[cc.asTransmissionValue() > 0]=False
+            self._mask = np.where(tmp, False, True)
+            
+    @staticmethod
+    def fromMaskedArray(maskedArray):
+        raise Exception("Not implemented yet. ")        
+    

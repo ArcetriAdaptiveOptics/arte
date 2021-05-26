@@ -7,53 +7,14 @@ import matplotlib.pyplot as plt
 import synphot
 from astropy import units as u
 from synphot import SourceSpectrum
-from synphot.models import Box1D
+from synphot.models import Box1D, Empirical1D
 from synphot.spectrum import SpectralElement
 from synphot.observation import Observation
-from arte.photometry.spectral_types import PickelsLibrary
-from arte.photometry import spectral_types
-
-
-def getNormalizedSpectrum(spectralType, magnitude, filter_name):
-    """
-    spec_data = getNormalizedSpectrum(spectral_type, magnitude, filter_name)
-
-    Returns a structure containing the synthetic spectrum of the star having the spectral type and magnitude 
-    in the specified input filter. Magnitude is in VEGAMAG-F(lambda) system.
-    Spectra are from PICKLES, PASP, 110, 863 (1998)
-    Absolute flux spectra, no effect of atmospheric and instrument transmission
-
-    INPUT:
-    spectral_type:   scalar string. spectral type and luminosity class (e.g. G2V or M4III)
-    magnitude:       scalar float. magnitude in the filter_name filter
-    filter_name:     scalar string. Name of the filter (see get_filter(/GET) for a filter database)
-    filter_family:   scalar string. Name of the filter family (see get_filter(/GET) for a filter database)
-
-    RETURN:
-    SourceSpectrum object defining the spectrum
-
-    EXAMPLES:
-    return the photon flux outside the earth atmosphere of a A0V, G2V and M0V star with magnitude 8.0 in R filter (Bessel90 standard)
-    data_G2V = GET_SPECTRUM("G2V", 8.0, "R", "UBVRI-Bessell90", /PHOT)
-    data_M0V = GET_SPECTRUM("M0V", 8.0, "R", "UBVRI-Bessell90", /PHOT)
-    data_A0V = GET_SPECTRUM("A0V", 8.0, "R", "UBVRI-Bessell90", /PHOT)
-    p0 = plot(data_G2V.wavelength, data_G2V.flux, XTITLE=data_G2V.lambda_unit, YTITLE=data_G2V.flux_unit,NAME="G2V")
-    p1 = plot(data_M0V.wavelength, data_M0V.flux, COLOR="red", OVERPLOT=p0, NAME="M0V")
-    p2 = plot(data_A0V.wavelength, data_A0V.flux, COLOR="blue", OVERPLOT=p0, NAME="A0V")
-    p3 = legend(TARGET=[p0,p1,p2])
-"""
-    # read the sourcespectrum
-    spectrum= SourceSpectrum.from_file(
-        PickelsLibrary.filename(spectralType))
-
-    bandpass= SpectralElement.from_filter(filter_name)
-
-    spectrum_norm= spectrum.normalize(
-        magnitude*synphot.units.VEGAMAG,
-        bandpass,
-        vegaspec=SourceSpectrum.from_vega())
-
-    return spectrum_norm
+from arte.photometry.filters import Filters
+from synphot.units import FLAM
+from arte.photometry import get_normalized_star_spectrum
+from arte.photometry.eso_sky_calc import EsoSkyCalc
+import numpy as np
 
 
 def misc():
@@ -67,60 +28,85 @@ def misc():
         'http://ssb.stsci.edu/cdbs/grid/pickles/dat_uvk/pickles_uk_27.fits')
 
     # read the sourcespectrum
-    spG5V= SourceSpectrum.from_file(
+    spG5V = SourceSpectrum.from_file(
         'http://ssb.stsci.edu/cdbs/grid/pickles/dat_uvk/pickles_uk_27.fits')
-    spG2V= SourceSpectrum.from_file(
+    spG2V = SourceSpectrum.from_file(
         'http://ssb.stsci.edu/cdbs/grid/pickles/dat_uvk/pickles_uk_26.fits')
 
-    filtR= SpectralElement.from_filter('johnson_r')
-    spG2V_19r= spG2V.normalize(
-        19*synphot.units.VEGAMAG, filtR,
+    filtR = SpectralElement.from_filter('johnson_r')
+    spG2V_19r = spG2V.normalize(
+        19 * synphot.units.VEGAMAG, filtR,
         vegaspec=SourceSpectrum.from_vega())
 
-    bp= SpectralElement(Box1D, x_0=700*u.nm, width=600*u.nm)
-    obs= Observation(spG2V_19r, bp)
-    obs.countrate(area=50*u.m**2)
+    bp = SpectralElement(Box1D, x_0=700 * u.nm, width=600 * u.nm)
+    obs = Observation(spG2V_19r, bp)
+    obs.countrate(area=50 * u.m ** 2)
 
+    bp220 = SpectralElement(Box1D, x_0=800 * u.nm, width=400 * u.nm)
+    bpCRed = SpectralElement(Box1D, x_0=1650 * u.nm, width=300 * u.nm) * 0.8
 
-    bp220= SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)
-    bpCRed= SpectralElement(Box1D, x_0=1650*u.nm, width=300*u.nm)*0.8
+    Observation(spG2V_19r, bp220).countrate(area=50 * u.m ** 2)
+    Observation(spG2V_19r, bpCRed).countrate(area=50 * u.m ** 2)
 
-    Observation(spG2V_19r, bp220).countrate(area=50*u.m**2)
-    Observation(spG2V_19r, bpCRed).countrate(area=50*u.m**2)
+    spM0V_8R = get_normalized_star_spectrum('M0V', 8.0, 'johnson_r')
 
-    spM0V_8R= getNormalizedSpectrum('M0V', 8.0, 'johnson_r')
+    uPhotonSecM2Micron = u.photon / (u.s * u.m ** 2 * u.micron)
 
-
-    uPhotonSecM2Micron=u.photon/(u.s * u.m**2 * u.micron)
-
-    spG2V_8R= getNormalizedSpectrum("G2V", 8.0, 'johnson_r')
+    spG2V_8R = get_normalized_star_spectrum("G2V", 8.0, 'johnson_r')
     plt.plot(spG2V_8R.waveset, spG2V_8R(spG2V_8R.waveset).to(uPhotonSecM2Micron))
 
     # compare with Armando's
-    spG2V_19R= getNormalizedSpectrum("G2V", 19, 'johnson_r')
-    bp= SpectralElement(Box1D, x_0=700*u.nm, width=600*u.nm)
-    obs= Observation(spG2V_19R, bp)
-    obs.countrate(area=50*u.m**2)
-
+    spG2V_19R = get_normalized_star_spectrum("G2V", 19, 'johnson_r')
+    bp = SpectralElement(Box1D, x_0=700 * u.nm, width=600 * u.nm)
+    obs = Observation(spG2V_19R, bp)
+    obs.countrate(area=50 * u.m ** 2)
 
     # zeropoint in filtro r in erg/s/cm2/A
-    Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).effstim('flam')
+    Observation(get_normalized_star_spectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).effstim('flam')
     # zeropoint in ph/s/m2
-    Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).countrate(area=1*u.m**2)
+    Observation(get_normalized_star_spectrum('A0V', 0, 'johnson_r'), SpectralElement.from_filter('johnson_r')).countrate(area=1 * u.m ** 2)
 
 
-def zeropoints():
-    Observation(getNormalizedSpectrum('A0V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(getNormalizedSpectrum('G2V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(getNormalizedSpectrum('K3V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(getNormalizedSpectrum('M0V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
-    Observation(getNormalizedSpectrum('M4V', 0, 'johnson_r'), SpectralElement(Box1D, x_0=800*u.nm, width=400*u.nm)).countrate(area=1*u.m**2)
+def check_zeropoints_ESO():
+    '''
+    Shouldn't they match http://www.eso.org/observing/etc/doc/skycalc/helpskycalc.html#mags?
+    '''
+    # sky = EsoSkyCalc(airmass=1, moon_target_sep=45.0, moon_alt=45,
+    #                 observatory='paranal', wdelta=10)
+    # atmo = SpectralElement(Empirical1D, points=sky.lam, lookup_table=sky.trans)
+
+    filters = [Filters.ESO_ETC_U,
+               Filters.ESO_ETC_B,
+               Filters.ESO_ETC_V,
+               Filters.ESO_ETC_R,
+               Filters.ESO_ETC_I,
+               Filters.ESO_ETC_Z,
+               Filters.ESO_ETC_Y,
+               Filters.ESO_ETC_J,
+               Filters.ESO_ETC_H,
+               Filters.ESO_ETC_K,
+               Filters.ESO_ETC_L,
+               Filters.ESO_ETC_M
+               ]
+
+    eso_etc_zp = np.array([
+        4.18023e-09, 6.60085e-09, 3.60994e-09,
+        2.28665e-09, 1.22603e-09, 7.76068e-10,
+        5.973e-10, 3.12e-10, 1.14e-10, 3.94e-11,
+        4.83e-12, 2.04e-12, 1.23e-13, 6.8e-15]) * FLAM
+
+    star = get_normalized_star_spectrum('vega', 0.0, Filters.ESO_ETC_R)
+    for filt_name, etc_zp in zip(filters, eso_etc_zp):
+        filt = Filters.get(filt_name)
+        obs = Observation(star, filt)
+        zp = obs.effstim('flam', wavelengths=filt.waveset)
+        err = (zp - etc_zp) / etc_zp * 100
+        cnts = obs.countrate(area=1 * u.m ** 2, wavelengths=filt.waveset)
+        print(f"{filt_name:10s} | {zp:10.3e} | {err:+7.3f}% | {cnts:10.3e} |"
+              f"{filt.waveset.to(u.nm)[0]:g} {filt.waveset.to(u.nm)[-1]:g}")
 
 
-class Photometry(object):
 
-    def __init__(self, spectral_type, magnitude, filter, bandpass_filter):
-        pass
-    
-    def countrate(self, area):
-        pass
+
+
+

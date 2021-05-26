@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from arte.types.mask import CircularMask
+from arte.types.mask import CircularMask, AnnularMask
 
 
 __version__ = "$Id: $"
@@ -65,6 +65,13 @@ class MaskTest(unittest.TestCase):
         transmission= mask.asTransmissionValue()
         self.assertEqual(1, transmission[5, 5])
         self.assertEqual(0, transmission[0, 0])
+        
+    def testAnularMask(self):
+        mask1= CircularMask((10, 10),4,(5,5))
+        mask2= CircularMask((10, 10),2,(5,5))
+        mask3 = AnnularMask ((10, 10),4,(5,5),2)
+        mask4 = mask1.mask() | ~mask2.mask()
+        self.assertEqual(mask3.mask().all(), mask4.all())
 
 if __name__ == "__main__":
     unittest.main()

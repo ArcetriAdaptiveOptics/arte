@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from arte.atmo.von_karman_psd import VonKarmanPsd
+from arte.atmo.von_karman_psd import VonKarmanPsd, rms
+from astropy import units as u
 
 
 class VonKarmannPsdTest(unittest.TestCase):
@@ -18,11 +19,10 @@ class VonKarmannPsdTest(unittest.TestCase):
         self.assertAlmostEqual(want[0], psd[0], delta=.1)
         self.assertAlmostEqual(want[1], psd[1], delta=.1)
 
-# FIXME! IT SHOULD FAIL
     def testWrongParameters(self):
-        r0 = 0.1
+        r0 = [0.1, 10]
         L0 = 10
-        self.failUnlessRaises(Exception, VonKarmanPsd, (r0, L0))
+        self.assertRaises(Exception, VonKarmanPsd, r0, L0)
 
     def test_r0_single_element_ndarray(self):
         freqs = np.array([0.1, 1, 10])
@@ -42,6 +42,11 @@ class VonKarmannPsdTest(unittest.TestCase):
         psd_arr = VonKarmanPsd(r0, L0).spatial_psd(freqs)
         self.assertTrue(np.allclose(psd_sca, psd_arr[0] + psd_arr[1]),
                         "%s %s" % (psd_sca, psd_arr[0] + psd_arr[1]))
+
+    def test_rms(self):
+        res = rms(39 * u.m, 500 * u.nm, 0.144018 * u.m, 25 * u.m,
+                  freqs=np.logspace(-8, 4, 1000) / u.m)
+        self.assertAlmostEqual(res, 1630 * u.nm, delta=10 * u.nm)
 
 
 if __name__ == "__main__":
