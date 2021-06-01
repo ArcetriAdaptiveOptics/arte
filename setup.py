@@ -90,7 +90,9 @@ setup(name=NAME,
                         "astropy",
                         "synphot",
                         "pytest",
-                        "skycalc-cli"
+                        "skycalc-cli",
+                        "scikit-image",
+                        "scipy"
                         ],
       include_package_data=True,
       test_suite='test',
