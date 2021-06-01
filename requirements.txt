@@ -5,3 +5,5 @@ astropy
 synphot
 pytest
 skycalc-cli
+scikit-image
+scipy
