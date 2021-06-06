@@ -44,15 +44,21 @@ class ShapeFitter(object):
     #     else:
     #         raise ValueError('Wrong fitting method specified')
 
-    def fit_circle_ransac(self, **keywords):
+    def fit_circle_ransac(self,
+                          apply_canny=True,
+                          sigma=3,
+                          display=False,
+                          **keywords):
         '''Perform a circle fitting on the current mask using RANSAC algorithm
 
         Parameters
         ----------
-            applyCanny: bool
-                apply Canny edge detection before perform the fit. Default is True.
-            sigma: if applyCanny is True, you can decide the Canny kernel size. Default is 3.
-            display: it shows the result of the fit.
+            apply_canny: bool, default=True
+                apply Canny edge detection before performing the fit.
+            sigma: float, default=3
+                if apply_canny is True, you can decide the Canny kernel size.
+            display: bool, default=False
+                it shows the result of the fit.
         '''
         self._shape_fitted = 'circle'
         self._method = 'ransac'
@@ -60,8 +66,8 @@ class ShapeFitter(object):
         img[img > 0] = 128
 
         edge = img.copy()
-        if keywords.pop('applyCanny', True):
-            edge = feature.canny(img, keywords.pop('sigma', 3))
+        if apply_canny:
+            edge = feature.canny(img, sigma)
 
         coords = np.column_stack(np.nonzero(edge))
 
@@ -71,7 +77,7 @@ class ShapeFitter(object):
             max_trials=1000)
         cx, cy, r = model.params
 
-        if keywords.pop('display', False):
+        if display is True:
             print(r"Cx-Cy {:.2f}-{:.2f}, R {:.2f}".format(cx, cy, r))
             rr, cc = draw.disk((model.params[0], model.params[1]), model.params[2],
                                shape=img.shape)
@@ -81,57 +87,53 @@ class ShapeFitter(object):
 
         self._params = model.params
         self._success = model.estimate(coords)
-        return
 
-    def fit_circle_correlation(self, display=False, **keywords):
-        '''Perform a circle fitting on the current mask using minimization algorithm with simple correlation merit functions.
-        Tested with following minimizations methods: 'Nelder-Mead', 'Powell', 'CG', 'BFGS','L-BFGS-B',
-              'TNC','COBYLA','SLSQP','trust-constr'
+    def fit_circle_correlation(self,
+                               method='Nelder-Mead',
+                               display=False,
+                               **keywords):
+        '''Perform a circle fitting on the current mask using minimization algorithm  with correlation merit functions.
+
+        Tested with following minimizations methods: 'Nelder-Mead', 'Powell', 
+        'COBYLA'
 
         Parameters
         ----------
-            display: SLOWLY shows the progress of the fit.
-            **keywords  (in particular 'method') inherited from
-            scipy.optimize.minimize
-
-        Note
-        ----------
-            for UNKNOW TO ME reason currently the methods 'CG', 'BFGS','L-BFGS-B
-            ','TNC','SLSQP','trust-constr' give SWAPPED x and y coordinates
-            center and a poor precision on radius of <3pix against <0.01 of the
-            others methods.
+            method: string, default='Nelder-Mead'
+                from scipy.optimize.minimize. Choose among 'Nelder-Mead', 'Powell', 'COBYLA'
+            display: bool, default=False
+                SLOWLY shows the progress of the fit.
+            **keywords: dict, optional
+                passed to scipy.optimize.minimize
         '''
 
         self._shape_fitted = 'circle'
-        method = keywords.pop('method', 'Nelder-Mead')
         self._method = 'correlation ' + method
         img = np.asarray(self._mask.copy(), dtype=int)
         regions = measure.regionprops(img)
         bubble = regions[0]
 
-        y0, x0 = bubble.centroid
+        x0, y0 = bubble.centroid
         r = bubble.major_axis_length / 2.
-        showfit = keywords.pop('display', False)
-        if showfit:
+        if display:
             fign = plt.figure()
+        self._initial_guess = (x0, y0, r)
 
         def _cost_disk(params):
             x0, y0, r = params
             coords = draw.disk((x0, y0), r, shape=img.shape)
             template = np.zeros_like(img)
             template[coords] = 1
-            if showfit:
+            if display:
                 self._dispnobl(template + img, fign)
             return -np.sum(template == img)
 
         res = optimize.minimize(_cost_disk, (x0, y0, r),
                                 method=method, **keywords)
-        print(res.x)
         self._params = res.x
         self._success = res.success
-        # self._params = optimize.fmin(_cost_disk, (x0, y0, r))
-        # self._success = -1
-        return
+        if res.success is False or (method != 'COBYLA' and res.nit == 0):
+            raise Exception("Fit circle didn't converge %s" % res)
 
     def _dispnobl(self, img, fign=None, **kwargs):
 

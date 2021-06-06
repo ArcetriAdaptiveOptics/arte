@@ -10,9 +10,9 @@ class PupilFitterTest(unittest.TestCase):
 
     def setUp(self):
         self.shape = (256, 256)
-        self.radius = 52
-        self.cx = 120.5
-        self.cy = 70.5
+        self.radius = 52.3
+        self.cx = 120.6
+        self.cy = 70.9
         self.inradius = 15
         self.params2check = np.array([
             self.cx - 0.5, self.cy - 0.5, self.radius])
@@ -42,22 +42,23 @@ class PupilFitterTest(unittest.TestCase):
 
     def test_correlation_full(self):
         print("In method %s" % self._testMethodName)
-        mm = ['Nelder-Mead', 'Powell', 'CG', 'BFGS', 'L-BFGS-B',
-              'TNC', 'COBYLA', 'SLSQP', 'trust-constr']
+        mm = ['Nelder-Mead', 'Powell', 'COBYLA']
         for xx in mm:
             print("Tested method %s" % xx)
             ff = ShapeFitter(self.testMask1.asTransmissionValue())
-            ff.fit_circle_correlation(method=xx)
-            ff2 = ShapeFitter(self.testMask2.asTransmissionValue())
-            ff2.fit_circle_correlation(method=xx)
+            ff.fit_circle_correlation(method=xx, options={'disp': True})
             p1 = ff.parameters()
+            print(p1)
+            ff2 = ShapeFitter(self.testMask2.asTransmissionValue())
+            ff2.fit_circle_correlation(method=xx, options={'disp': True})
             p2 = ff2.parameters()
+            print(p2)
             rtol = 0.01
-            if xx == 'CG' or xx == 'BFGS' or xx == 'L-BFGS-B' or xx == 'TNC' \
-                    or xx == 'SLSQP' or xx == 'trust-constr':
-                p1 = p1[[1, 0, 2]]
-                p2 = p2[[1, 0, 2]]
-                rtol = 3
+#           if xx == 'CG' or xx == 'BFGS' or xx == 'L-BFGS-B' or xx == 'TNC' \
+#                     or xx == 'SLSQP' or xx == 'trust-constr':
+#                 p1 = p1[[1, 0, 2]]
+#                 p2 = p2[[1, 0, 2]]
+#                 rtol = 3
 
             np.testing.assert_allclose(p1, self.params2check, rtol=rtol)
             np.testing.assert_allclose(p2, self.params2check, rtol=rtol)
