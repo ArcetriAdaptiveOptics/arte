@@ -14,8 +14,10 @@ class PupilFitterTest(unittest.TestCase):
         self.cx = 120.6
         self.cy = 70.9
         self.inradius = 15
-        self.params2check = np.array([
+        self.params2check_circle = np.array([
             self.cx - 0.5, self.cy - 0.5, self.radius])
+        self.params2check_anular = np.array([
+            self.cx - 0.5, self.cy - 0.5, self.radius, self.inradius])
         self.testMask1 = CircularMask(self.shape,
                                       maskRadius=self.radius,
                                       maskCenter=(self.cx, self.cy))
@@ -33,35 +35,39 @@ class PupilFitterTest(unittest.TestCase):
         print("In method %s" % self._testMethodName)
         ff = ShapeFitter(self.testMask1.asTransmissionValue())
         ff.fit_circle_ransac()
-        ff2 = ShapeFitter(self.testMask2.asTransmissionValue())
-        ff2.fit_circle_ransac()
         np.testing.assert_allclose(
-            ff.parameters(), self.params2check, rtol=1e-2)
-        np.testing.assert_allclose(ff2.parameters(),
-                                   self.params2check, rtol=1e-2)
+            ff.parameters(), self.params2check_circle, rtol=0.01)
 
-    def test_correlation_full(self):
+    def test_circle_correlation(self):
         print("In method %s" % self._testMethodName)
-        mm = ['Nelder-Mead', 'Powell', 'COBYLA']
+        mm = ['Nelder-Mead']
         for xx in mm:
             print("Tested method %s" % xx)
             ff = ShapeFitter(self.testMask1.asTransmissionValue())
-            ff.fit_circle_correlation(method=xx, options={'disp': True})
+            ff.fit_circle_correlation(
+                method=xx, options={'disp': True})
             p1 = ff.parameters()
             print(p1)
+            np.testing.assert_allclose(p1, self.params2check_circle, rtol=0.01)
+
+    def test_anular_correlation(self):
+        print("In method %s" % self._testMethodName)
+        mm = ['Nelder-Mead']
+        for xx in mm:
+            print("Tested method %s" % xx)
             ff2 = ShapeFitter(self.testMask2.asTransmissionValue())
-            ff2.fit_circle_correlation(method=xx, options={'disp': True})
+            ff2.fit_anular_correlation(
+                method=xx, options={'disp': True})
             p2 = ff2.parameters()
             print(p2)
-            rtol = 0.01
+
 #           if xx == 'CG' or xx == 'BFGS' or xx == 'L-BFGS-B' or xx == 'TNC' \
 #                     or xx == 'SLSQP' or xx == 'trust-constr':
 #                 p1 = p1[[1, 0, 2]]
 #                 p2 = p2[[1, 0, 2]]
 #                 rtol = 3
 
-            np.testing.assert_allclose(p1, self.params2check, rtol=rtol)
-            np.testing.assert_allclose(p2, self.params2check, rtol=rtol)
+            np.testing.assert_allclose(p2, self.params2check_anular, rtol=0.01)
 
 
 if __name__ == "__main__":

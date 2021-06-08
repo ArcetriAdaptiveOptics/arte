@@ -1,14 +1,16 @@
 from skimage import feature
 from skimage import measure, draw
 from scipy import optimize
+from scipy.optimize import LinearConstraint
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy import float32
 
 
 class ShapeFitter(object):
     ''' The class will provide a shape fitter on a binary mask. Currently is
     only possible to fit a circular shape by using RANSAC or correlation merit
-    functions
+    functions OR to fit an anular shape by using correlation merit only.
     '''
 
     def __init__(self, binary_mask):
@@ -55,7 +57,7 @@ class ShapeFitter(object):
         ----------
             apply_canny: bool, default=True
                 apply Canny edge detection before performing the fit.
-            sigma: float, default=3
+            sigma: float, default=10
                 if apply_canny is True, you can decide the Canny kernel size.
             display: bool, default=False
                 it shows the result of the fit.
@@ -73,7 +75,7 @@ class ShapeFitter(object):
 
         model, inliers = measure.ransac(
             coords, measure.CircleModel,
-            keywords.pop('min_samples', 10), residual_threshold=0.1,
+            keywords.pop('min_samples', 10), residual_threshold=0.01,
             max_trials=1000)
         cx, cy, r = model.params
 
@@ -92,23 +94,24 @@ class ShapeFitter(object):
                                method='Nelder-Mead',
                                display=False,
                                **keywords):
-        '''Perform a circle fitting on the current mask using minimization algorithm  with correlation merit functions.
+        '''Perform a circle fitting on the current mask using minimization 
+        algorithm  with correlation merit functions.
 
-        Tested with following minimizations methods: 'Nelder-Mead', 'Powell', 
-        'COBYLA'
+        Tested with following minimizations methods: 'Nelder-Mead'. Relative 
+        precision of 1% reached on synthetic images without noise.
 
         Parameters
         ----------
             method: string, default='Nelder-Mead'
-                from scipy.optimize.minimize. Choose among 'Nelder-Mead', 'Powell', 'COBYLA'
+                from scipy.optimize.minimize.
             display: bool, default=False
                 SLOWLY shows the progress of the fit.
             **keywords: dict, optional
                 passed to scipy.optimize.minimize
         '''
 
-        self._shape_fitted = 'circle'
         self._method = 'correlation ' + method
+
         img = np.asarray(self._mask.copy(), dtype=int)
         regions = measure.regionprops(img)
         bubble = regions[0]
@@ -117,6 +120,8 @@ class ShapeFitter(object):
         r = bubble.major_axis_length / 2.
         if display:
             fign = plt.figure()
+
+        self._shape_fitted = 'circle'
         self._initial_guess = (x0, y0, r)
 
         def _cost_disk(params):
@@ -126,14 +131,77 @@ class ShapeFitter(object):
             template[coords] = 1
             if display:
                 self._dispnobl(template + img, fign)
-            return -np.sum(template == img)
+            return -np.sum((template > 0) & (img > 0))
 
-        res = optimize.minimize(_cost_disk, (x0, y0, r),
+        res = optimize.minimize(_cost_disk, self._initial_guess,
                                 method=method, **keywords)
         self._params = res.x
         self._success = res.success
         if res.success is False or (method != 'COBYLA' and res.nit == 0):
             raise Exception("Fit circle didn't converge %s" % res)
+
+    def fit_anular_correlation(self,
+                               method='Nelder-Mead',
+                               display=False,
+                               **keywords):
+        '''Perform a circle fitting on the current mask using minimization 
+        algorithm  with correlation merit functions.
+
+        Tested with following minimizations methods: 'Nelder-Mead'. Relative 
+        precision of 1% reached on synthetic images without noise.
+
+        Parameters
+        ----------
+            method: string, default='Nelder-Mead'
+                from scipy.optimize.minimize. Choose among 'Nelder-Mead'
+            display: bool, default=False
+                SLOWLY shows the progress of the fit.
+            **keywords: dict, optional
+                passed to scipy.optimize.minimize
+        '''
+
+        self._method = 'correlation ' + method
+        img = np.asarray(self._mask.copy(), dtype=int)
+        regions = measure.regionprops(img)
+        bubble = regions[0]
+
+        x0, y0 = bubble.centroid
+        r = bubble.major_axis_length / 2.
+        inr = r / 2
+        if display:
+            fign = plt.figure()
+
+        self._shape_fitted = 'circle with hole'
+        self._initial_guess = (x0, y0, r, inr)
+
+        def _cost_disk(params):
+            x0, y0, r, inr = params
+            coords = draw.disk((x0, y0), r, shape=img.shape)
+            template = np.zeros_like(img)
+            template[coords] = 1
+
+            coords2 = draw.disk((x0, y0), inr, shape=img.shape)
+            template2 = np.zeros_like(img)
+            template2[coords2] = 1
+            template -= template2
+
+            if display:
+                self._dispnobl(template + img, fign)
+
+            merit_fcn = np.sum((template - img)**2)
+
+            return np.sqrt(merit_fcn)
+
+        linear_constraint = LinearConstraint(
+            np.identity(4, float32), np.zeros(4),
+            np.zeros(4) + np.max(img.shape))
+        res = optimize.minimize(_cost_disk, self._initial_guess,
+                                method=method, constraints=linear_constraint,
+                                **keywords)
+        self._params = res.x
+        self._success = res.success
+        if res.success is False or (method != 'COBYLA' and res.nit == 0):
+            raise Exception("Fit circle with hole didn't converge %s" % res)
 
     def _dispnobl(self, img, fign=None, **kwargs):
 
