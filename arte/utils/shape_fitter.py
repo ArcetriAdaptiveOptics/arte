@@ -145,8 +145,8 @@ class ShapeFitter(object):
                                 method='Nelder-Mead',
                                 display=False,
                                 **keywords):
-        '''Perform a circle fitting on the current mask using minimization 
-        algorithm  with correlation merit functions.
+        '''Perform a annular circle fitting on the current mask using 
+        minimization algorithm  with correlation merit functions.
 
         Tested with following minimizations methods: 'Nelder-Mead'. Relative 
         precision of 1% reached on synthetic images without noise.
@@ -172,7 +172,7 @@ class ShapeFitter(object):
         if display:
             fign = plt.figure()
 
-        self._shape_fitted = 'circle with hole'
+        self._shape_fitted = 'annulus'
         self._initial_guess = (x0, y0, r, inr)
 
         def _cost_annular_disk(params):
