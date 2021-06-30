@@ -50,13 +50,13 @@ class PupilFitterTest(unittest.TestCase):
             print(p1)
             np.testing.assert_allclose(p1, self.params2check_circle, rtol=0.01)
 
-    def test_anular_correlation(self):
+    def test_annular_correlation(self):
         print("In method %s" % self._testMethodName)
         mm = ['Nelder-Mead']
         for xx in mm:
             print("Tested method %s" % xx)
             ff2 = ShapeFitter(self.testMask2.asTransmissionValue())
-            ff2.fit_anular_correlation(
+            ff2.fit_annular_correlation(
                 method=xx, options={'disp': True})
             p2 = ff2.parameters()
             print(p2)

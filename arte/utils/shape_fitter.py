@@ -81,7 +81,8 @@ class ShapeFitter(object):
 
         if display is True:
             print(r"Cx-Cy {:.2f}-{:.2f}, R {:.2f}".format(cx, cy, r))
-            rr, cc = draw.disk((model.params[0], model.params[1]), model.params[2],
+            rr, cc = draw.disk((model.params[0], model.params[1]),
+                               model.params[2],
                                shape=img.shape)
             img[rr, cc] += 512
             # plt.figure()
@@ -140,10 +141,10 @@ class ShapeFitter(object):
         if res.success is False or (method != 'COBYLA' and res.nit == 0):
             raise Exception("Fit circle didn't converge %s" % res)
 
-    def fit_anular_correlation(self,
-                               method='Nelder-Mead',
-                               display=False,
-                               **keywords):
+    def fit_annular_correlation(self,
+                                method='Nelder-Mead',
+                                display=False,
+                                **keywords):
         '''Perform a circle fitting on the current mask using minimization 
         algorithm  with correlation merit functions.
 
@@ -174,7 +175,7 @@ class ShapeFitter(object):
         self._shape_fitted = 'circle with hole'
         self._initial_guess = (x0, y0, r, inr)
 
-        def _cost_disk(params):
+        def _cost_annular_disk(params):
             x0, y0, r, inr = params
             coords = draw.disk((x0, y0), r, shape=img.shape)
             template = np.zeros_like(img)
@@ -195,7 +196,7 @@ class ShapeFitter(object):
         linear_constraint = LinearConstraint(
             np.identity(4, float32), np.zeros(4),
             np.zeros(4) + np.max(img.shape))
-        res = optimize.minimize(_cost_disk, self._initial_guess,
+        res = optimize.minimize(_cost_annular_disk, self._initial_guess,
                                 method=method, constraints=linear_constraint,
                                 **keywords)
         self._params = res.x
