@@ -112,7 +112,7 @@ class SurfaceFitter(ZernikeGenerator):
     def _get_zernike_base(self, x, y, mode_list, ordering='noll'):
 
         if min(mode_list) == 0:
-            raise OSError("Zernike index must be greater or equal to 1")
+            raise OSError("Mode index must be greater or equal to 1")
         # rh = np.sqrt(x ** 2 + y ** 2)
         # th = np.arccos(np.transpose(x * 1. / rh))
         # th = np.where(th < 2. * np.pi, th, 0)
@@ -135,6 +135,9 @@ class SurfaceFitter(ZernikeGenerator):
         return u
 
     def _get_poly_base(self, x, y, mode_list):
+
+        if min(mode_list) == 0:
+            raise OSError("Mode index must be greater or equal to 1")
 
         poly_ord = np.ceil(0.5 * (np.sqrt(1 + 8 * mode_list) - 3))
         y_pow = mode_list - (poly_ord * (poly_ord + 1) / 2 + 1)
