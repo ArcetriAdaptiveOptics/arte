@@ -257,12 +257,30 @@ class Cn2Profile(object):
     def number_of_layers(self):
         return Quantity(len(self._layersJs), dtype=int)
 
+    def fractional_j(self):
+        return Quantity(self._layersJs, dtype=int)
+
+    def set_wind_speed(self, windSpeed):
+        if isinstance(windSpeed, Quantity):
+            value = windSpeed.to(u.m / u.s).value
+        else:
+            value = windSpeed
+        self._layersWindSpeed = value
+
     def wind_speed(self):
         """
         Returns:
             (array): windspeed of each layer in m/s
         """
         return self._layersWindSpeed * u.m / u.s
+
+    def mean_wind_speed(self):
+        return (
+            np.sum(
+                self._layersWindSpeed**(5. / 3) * self._layersJs
+            ) / np.sum(
+                self._layersJs)
+        )**(3. / 5) * u.m / u.s
 
     def wind_direction(self):
         """
