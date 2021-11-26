@@ -17,6 +17,13 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: [3.6, 3.7, 3.8]
+        # We need to skip python 3.6 with macos
+        include:
+        - os: macos-latest
+          python-version: 3.7
+        include:
+        - os: macos-latest
+          python-version: 3.8
 
     steps:
     - uses: actions/checkout@v2
