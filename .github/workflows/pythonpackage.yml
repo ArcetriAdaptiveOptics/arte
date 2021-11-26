@@ -21,7 +21,6 @@ jobs:
         include:
         - os: macos-latest
           python-version: 3.7
-        include:
         - os: macos-latest
           python-version: 3.8
 
