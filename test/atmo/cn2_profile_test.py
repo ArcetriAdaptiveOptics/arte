@@ -49,6 +49,13 @@ class Cn2ProfileTest(unittest.TestCase):
         self.assertAlmostEqual(60, pr.zenith_angle().value)
         self.assertAlmostEqual(2, pr.airmass().value)
 
+    def testSetAndGetWindSpeedAndDirection(self):
+        pr = Cn2Profile.from_r0s([0.1], [30], [100], [10], [0.3])
+        pr.set_wind_speed(50)
+        self.assertAlmostEqual(50, pr.wind_speed().value)
+        pr.set_wind_direction(90)
+        self.assertAlmostEqual(90, pr.wind_direction().value)
+
     def testBuildFromFractionalJ(self):
         pr = Cn2Profile.from_fractional_j(0.1, 1.0, 30, 100, 10, 0.3)
         self.assertAlmostEqual(0.1, pr.r0().value)
