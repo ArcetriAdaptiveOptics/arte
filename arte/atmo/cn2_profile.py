@@ -282,6 +282,13 @@ class Cn2Profile(object):
                 self._layersJs)
         )**(3. / 5) * u.m / u.s
 
+    def set_wind_direction(self, windDirection):
+        if isinstance(windDirection, Quantity):
+            value = windDirection.to(u.deg).value
+        else:
+            value = windDirection
+        self._layersWindDirection = value
+
     def wind_direction(self):
         """
         Returns
