@@ -258,7 +258,7 @@ class Cn2Profile(object):
         return Quantity(len(self._layersJs), dtype=int)
 
     def fractional_j(self):
-        return Quantity(self._layersJs, dtype=int)
+        return Quantity(self._layersJs)
 
     def set_wind_speed(self, windSpeed):
         if isinstance(windSpeed, Quantity):
@@ -405,6 +405,49 @@ class MaorySteroScidarProfiles():
         return cls._profileMaker(5, 10)
 
 
+class MaoryStereoScidarProfiles2021():
+
+    L0 = 25
+
+    @staticmethod
+    def _restoreMaoryProfiles():
+        rootDir = dataRootDir()
+        filename = os.path.join(rootDir,
+                                'cn2profiles',
+                                'referenceProfiles35layers_new.fits')
+        return fits.getdata(filename)
+
+    @classmethod
+    def _profileMaker(cls, idxJ, idxW):
+        rr = cls._restoreMaoryProfiles()
+        h = rr[0] * 1e3
+        js = rr[idxJ]
+        L0s = np.ones(len(js)) * cls.L0
+        windSpeed = rr[idxW]
+        windDirection = np.linspace(0, 360, len(js))
+        return Cn2Profile(js, L0s, h, windSpeed, windDirection)
+
+    @classmethod
+    def P10(cls):
+        return cls._profileMaker(1, 6)
+
+    @classmethod
+    def P25(cls):
+        return cls._profileMaker(2, 7)
+
+    @classmethod
+    def P50(cls):
+        return cls._profileMaker(3, 8)
+
+    @classmethod
+    def P75(cls):
+        return cls._profileMaker(4, 9)
+
+    @classmethod
+    def P90(cls):
+        return cls._profileMaker(5, 10)
+
+
 class EsoEltProfiles():
 
     L0 = 25
@@ -424,8 +467,8 @@ class EsoEltProfiles():
         h = rr[0]
         js = rr[idxJ] / 100
         windSpeed = rr[idxWind]
-#         windDirection = np.linspace(0, 360, len(js))
-        windDirection = np.random.uniform(0, 360, len(js))
+        windDirection = np.linspace(0, 360, len(js))
+#         windDirection = np.random.uniform(0, 360, len(js))
         if L0 is None:
             L0 = cls.L0
         L0s = np.ones(len(js)) * L0
