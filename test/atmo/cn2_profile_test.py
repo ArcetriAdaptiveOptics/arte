@@ -2,7 +2,7 @@
 import unittest
 import numpy as np
 from arte.atmo.cn2_profile import Cn2Profile, \
-    MaorySteroScidarProfiles, EsoEltProfiles
+    MaorySteroScidarProfiles, EsoEltProfiles, MaoryStereoScidarProfiles2021
 from arte.utils.constants import Constants
 import astropy.units as u
 from astropy.tests.helper import assert_quantity_allclose
@@ -130,6 +130,42 @@ class Cn2ProfileTest(unittest.TestCase):
         self.assertAlmostEqual(0.92, pr.seeing().value, delta=0.01)
         self.assertAlmostEqual(1.04, pr.theta0().value, delta=0.1)
         self.assertAlmostEqual(6.9, pr.wind_speed()[0].value, delta=0.1)
+
+    def testMaory2021PercentileProfiles(self):
+        pr = MaoryStereoScidarProfiles2021.P10()
+        self.assertAlmostEqual(35, pr.number_of_layers())
+        self.assertAlmostEqual(0.509, pr.seeing().value, delta=0.01)
+        self.assertAlmostEqual(2.82, pr.theta0().value, delta=0.1)
+        self.assertAlmostEqual(8.09, pr.mean_wind_speed().value, delta=0.1)
+        self.assertAlmostEqual(7.72, pr.tau0().value * 1e3, delta=0.1)
+
+        pr = MaoryStereoScidarProfiles2021.P25()
+        self.assertAlmostEqual(35, pr.number_of_layers())
+        self.assertAlmostEqual(0.603, pr.seeing().value, delta=0.01)
+        self.assertAlmostEqual(2.43, pr.theta0().value, delta=0.1)
+        self.assertAlmostEqual(8.94, pr.mean_wind_speed().value, delta=0.1)
+        self.assertAlmostEqual(5.84, pr.tau0().value * 1e3, delta=0.1)
+
+        pr = MaoryStereoScidarProfiles2021.P50()
+        self.assertAlmostEqual(35, pr.number_of_layers())
+        self.assertAlmostEqual(0.725, pr.seeing().value, delta=0.01)
+        self.assertAlmostEqual(2., pr.theta0().value, delta=0.1)
+        self.assertAlmostEqual(10.3, pr.mean_wind_speed().value, delta=0.1)
+        self.assertAlmostEqual(4.21, pr.tau0().value * 1e3, delta=0.1)
+
+        pr = MaoryStereoScidarProfiles2021.P75()
+        self.assertAlmostEqual(35, pr.number_of_layers())
+        self.assertAlmostEqual(0.889, pr.seeing().value, delta=0.01)
+        self.assertAlmostEqual(1.62, pr.theta0().value, delta=0.1)
+        self.assertAlmostEqual(12.2, pr.mean_wind_speed().value, delta=0.1)
+        self.assertAlmostEqual(2.91, pr.tau0().value * 1e3, delta=0.1)
+
+        pr = MaoryStereoScidarProfiles2021.P90()
+        self.assertAlmostEqual(35, pr.number_of_layers())
+        self.assertAlmostEqual(1.05, pr.seeing().value, delta=0.02)
+        self.assertAlmostEqual(1.35, pr.theta0().value, delta=0.1)
+        self.assertAlmostEqual(14.4, pr.mean_wind_speed().value, delta=0.1)
+        self.assertAlmostEqual(2.05, pr.tau0().value * 1e3, delta=0.1)
 
     def testTau0OfSingleLayer(self):
         zenAngle = 10.
