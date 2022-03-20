@@ -5,6 +5,7 @@ from arte.utils.discrete_fourier_transform import \
     BidimensionalFourierTransform as bfft
 from arte.atmo.phase_screen_generator import PhaseScreenGenerator
 from arte.types.mask import CircularMask
+from _operator import le
 
 
 def r0AtLambda(r0At500, wavelenghtInMeters):
@@ -24,9 +25,9 @@ class Test1():
         self._tb = TurbulentPhase()
         self._pxSize = self._pupDiameterInMeters / self._pupDiameterInPixels
         self._spat_freqs = bfft.frequencies_norm_map(self._pupDiameterInPixels,
-                                              self._pxSize)
+                                                     self._pxSize)
         self._dist = bfft.distances_norm_map(self._pupDiameterInPixels,
-                                           self._pxSize)
+                                             self._pxSize)
         self._mapCenter = (np.asarray(self._dist.shape) / 2).astype(np.int)
         self._psd = self._tb.vonKarmanPowerSpectralDensity(self._r0, self._L0,
                                                            self._spat_freqs)
@@ -39,35 +40,6 @@ class Test1():
         # TODO mezzi pixels!
 
 
-class TestPhaseScreens():
-
-    def __init__(self, dPupInMeters, r0At500nm, wavelenghtInMeters):
-        self._dPup = dPupInMeters
-        self._r0 = r0At500nm
-        self._lambda = wavelenghtInMeters
-        self._L0 = 1e6
-        self._howMany = 100
-        self._nPx = 128
-
-    def meanStd(self, ps):
-        return np.mean(np.std(ps, axis=(1, 2)))
-
-    def stdInRad(self, dTele, r0AtLambda):
-        return np.sqrt(1.0299 * (dTele / r0AtLambda)**(5. / 3))
-
-    def test(self):
-        psg = PhaseScreenGenerator(self._nPx, self._dPup, self._L0)
-        psg.generateNormalizedPhaseScreens(self._howMany)
-        mask = CircularMask((self._nPx, self._nPx))
-        got = self.meanStd(np.ma.masked_array(
-            psg.rescaleTo(self._r0).getInRadiansAt(self._lambda),
-            np.tile(mask.mask(), (self._howMany, 1))))
-        want = self.stdInRad(self._dPup,
-                             r0AtLambda(self._r0, self._lambda))
-        print('%g %g %g -> got %g want %g / ratio %f' %
-              (self._dPup, self._r0, self._lambda, got, want, want / got))
-
-
 class TestLongExposure():
 
     def __init__(self, dPupInMeters,
@@ -77,20 +49,23 @@ class TestLongExposure():
         self._howMany = howMany
         self._nPx = dPupInPixels
         self._psg = PhaseScreenGenerator(self._nPx, self._dPup, self._L0)
-        self._psg.generateNormalizedPhaseScreens(self._howMany)
+        self._psg.generate_normalized_phase_screens(self._howMany)
 
     def _doPsf(self, phaseScreenInRadians):
         self._fao.setPhaseMapInMeters(
             phaseScreenInRadians / (2 * np.pi) * self._lambda)
-        return self._fao.psf()
+        return self._fao.psf().values
 
     def test(self, r0At500nm, wavelenghtInMeters):
         self._r0 = r0At500nm
         self._lambda = wavelenghtInMeters
-        extFact = 1
+        extFact = 2
         self._fao = FourierAdaptiveOptics(
-            self._dPup, self._nPx, self._lambda, extFact)
-        ps = self._psg.rescaleTo(self._r0).getInRadiansAt(self._lambda)
+            pupilDiameterInMeters=self._dPup,
+            wavelength=self._lambda,
+            resolutionFactor=extFact)
+        self._psg.rescale_to(self._r0)
+        ps = self._psg.get_in_radians_at(self._lambda)
         aa = np.asarray([self._doPsf(ps[i]) for i in range(self._howMany)])
         longExposurePsf = aa.mean(axis=0)
         freqsX = self._fao.focalPlaneCoordsInArcsec()
@@ -106,10 +81,13 @@ class TestLongExposure():
         import matplotlib
         tle = TestLongExposure(8.0, howMany=1000, dPupInPixels=128,
                                outerScaleInMeters=1e6)
-        le = tle.test(0.1, 2.2e-6)
-        matplotlib.pyplot.plot(le[1][64, :], le[0][64, :])
-        print(ImageMoments(le[0]).semiAxes() * le[1][64, 64:66][1])
+        le = tle.test(0.1, 0.5e-6)
+        sz = le[0].shape[0]
+        matplotlib.pyplot.plot(le[1], le[0][sz // 2, :])
+        print(ImageMoments(le[0]).semiAxes() *
+              le[1][sz // 2 - 1:sz // 2 + 1][1])
         print(tle.seeingLimitedFWHMInArcsec())
+        return tle, le
 
 
 # class SimulationOfResidualPhase():

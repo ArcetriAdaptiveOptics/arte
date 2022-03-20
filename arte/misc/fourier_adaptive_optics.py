@@ -185,14 +185,14 @@ class FourierAdaptiveOptics(object):
         return phase
 
     def _computeField(self):
-        phaseInRadians = self._phaseMapInMeters.values() / \
+        phaseInRadians = self._phaseMapInMeters.values / \
             self._wavelength * 2 * np.pi
         amplitude = np.ones_like(phaseInRadians)
         field = amplitude * np.exp(phaseInRadians * 1j)
         self._field = S2DF(
             field * self._mask.asTransmissionValue(),
-            self._phaseMapInMeters.xCoord(),
-            self._phaseMapInMeters.yCoord())
+            self._phaseMapInMeters.xmap,
+            self._phaseMapInMeters.ymap)
 
     def _extendFieldMap(self, fm, howManyTimes):
         fmExt = np.zeros(np.array(fm.shape) * howManyTimes,
@@ -204,29 +204,29 @@ class FourierAdaptiveOptics(object):
         pupF = self.pupilFunction()
         rescaleCoordFact = 1 / (self.wavelengthInMeters() * self._focalLength)
         self._amplitudeTransferFunction = S2DF(
-            pupF.values(),
-            pupF.xCoord() * rescaleCoordFact,
-            pupF.yCoord() * rescaleCoordFact)
+            pupF.values,
+            pupF.xmap * rescaleCoordFact,
+            pupF.ymap * rescaleCoordFact)
 
     def _createOtf(self):
         ac = self._autoCorrelate(self.amplitudeTransferFunction())
-        self._otf = S2DF(ac.values() / ac.values().max(),
-                         ac.xCoord(),
-                         ac.yCoord())
+        self._otf = S2DF(ac.values / ac.values.max(),
+                         ac.xmap,
+                         ac.ymap)
 
     def _autoCorrelate(self, scalar2dfunct):
         functFT = bfft.direct(scalar2dfunct)
-        aa = S2DF(np.abs(functFT.values() ** 2),
-                  functFT.xCoord(),
-                  functFT.yCoord())
+        aa = S2DF(np.abs(functFT.values ** 2),
+                  functFT.xmap,
+                  functFT.ymap)
         return bfft.inverse(aa)
 
     def _createPsf(self):
         psf = bfft.inverse(self.otf())
         rescaleCoordFact = 1 / self._focalLength
-        self._psf = S2DF(psf.values(),
-                         psf.xCoord() * rescaleCoordFact,
-                         psf.yCoord() * rescaleCoordFact)
+        self._psf = S2DF(np.abs(psf.values),
+                         psf.xmap * rescaleCoordFact,
+                         psf.ymap * rescaleCoordFact)
 
     def _createStructureFunction(self):
         extFieldMap = self._extendFieldMap(self.field(),
@@ -275,4 +275,3 @@ class TurbulentPhase(object):
 
     def dist(self, npx):
         pass
-
