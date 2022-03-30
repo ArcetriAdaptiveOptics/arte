@@ -45,7 +45,7 @@ class ZernikeGenerator(object):
         if (n - m) % 2 != 0:
             raise Exception("n-m must be even. Got %d-%d" % (n, m))
         if abs(m) > n:
-            raise Exception("The following must be true |m|<=n. Got %d, %d" % 
+            raise Exception("The following must be true |m|<=n. Got %d, %d" %
                             (n, m))
         mask = np.where(rho <= 1, False, True)
 
@@ -56,7 +56,7 @@ class ZernikeGenerator(object):
         S = (n - abs(m)) // 2
         for s in range(0, S + 1):
             CR = pow(-1, s) * factorial(n - s) / \
-                (factorial(s) * factorial(-s + (n + abs(m)) / 2) * 
+                (factorial(s) * factorial(-s + (n + abs(m)) / 2) *
                  factorial(-s + (n - abs(m)) / 2))
             p = CR * pow(rho, n - 2 * s)
             Rnm = Rnm + p
@@ -225,7 +225,7 @@ class ZernikeGenerator(object):
 
     @staticmethod
     def radialOrder(j):
-        return np.ceil(0.5 * (np.sqrt(8 * j + 1) - 3))
+        return np.ceil(0.5 * (np.sqrt(8 * np.array(j) + 1) - 3)).astype(int)
 
 
 def _isOdd(num):

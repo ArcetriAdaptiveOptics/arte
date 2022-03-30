@@ -3,6 +3,7 @@
 import unittest
 import numpy as np
 from arte.utils.zernike_generator import ZernikeGenerator
+from numpy.testing import assert_allclose
 
 
 class TestZernikeGenerator(unittest.TestCase):
@@ -139,6 +140,17 @@ class TestZernikeGenerator(unittest.TestCase):
         wanted = 2. * np.ones((self._nPixels, self._nPixels))
         self.assertTrue(np.allclose(wanted, got),
                         "got %s, wanted %s" % (str(got), str(wanted)))
+
+    def test_radial_order(self):
+        self.assertEqual(1, self.generator.radialOrder(2))
+        self.assertEqual(1, self.generator.radialOrder(3))
+        self.assertEqual(2, self.generator.radialOrder(4))
+        self.assertEqual(2, self.generator.radialOrder(5))
+        self.assertEqual(2, self.generator.radialOrder(6))
+        self.assertEqual(4, self.generator.radialOrder(15))
+        assert_allclose(
+            np.array([2, 4]), self.generator.radialOrder(np.array([4, 15])))
+        assert_allclose(np.array([2, 4]), self.generator.radialOrder([4, 15]))
 
 #     def testGetDerivativeOfFocus(self):
 #         got= self.generator.getDerivativeX(4)
