@@ -147,7 +147,7 @@ class ZernikeGenerator(object):
         >>> x[0]
         array([-0.666, 0,  0.666])
 
-        In case of non-integer diameter the 
+        In case of non-integer diameter
 
         >>> zg = ZernikeGenerator(2.5)
         >>> x, y = zg.cartesian_coordinates()
