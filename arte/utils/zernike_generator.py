@@ -3,10 +3,52 @@ from scipy.special.basic import factorial
 
 
 class ZernikeGenerator(object):
+    '''
+    Generator of Zernike polynomials and derivatives
+
+    The generator returns masked arrays representing Zernike polynomials
+    sampled over the array grid.
+
+    The user can specify the diameter of the pupil or specify a CircularMask
+
+    (ToDo) In the case a CircularMask is specified the polynomials are defined
+    as ...
+
+
+    Attributes
+    ----------
+        nPixelOnDiameter: real
+            pupil diameter in pixels. The returned array size is 
+            ceil(nPixelOnDiameter)
+
+
+    Notes
+    -----
+    Polynomials normalization and ordering follows the conventions
+    described in Noll's paper [1]_
+
+    .. [1] Noll, R. J., “Zernike polynomials and atmospheric
+       turbulence.”, Journal of the Optical Society of America
+       (1917-1983), vol. 66, pp. 207–211, 1976.
+
+
+    Examples
+    --------
+
+    Create a Zernike polynomial sampled with unit circle defined over 
+    64 pixels representing tilt
+
+    >>> zg = ZernikeGenerator(64)
+    >>> tip = zg.getZernike(2)
+    >>> tilt = zg.getZernike(3)
+
+
+    '''
 
     def __init__(self, nPixelOnDiameter):
-        self._nPixel = nPixelOnDiameter
-        self._rhoMap, self._thetaMap = self._polar_array(self._nPixel)
+        self._radius = nPixelOnDiameter / 2.
+        self._nPixel = np.ceil(nPixelOnDiameter)
+        self._rhoMap, self._thetaMap = self._polar_array()
         self._dx = None
         self._dy = None
         self._dictCache = {}
@@ -14,7 +56,7 @@ class ZernikeGenerator(object):
         self._dictDyCache = {}
 
     def getRadius(self):
-        return self._nPixel / 2.
+        return self._radius
 
     def _derivativeCoeffX(self, index):
         if (self._dx is None) or (self._dx.shape[0] < index):
@@ -45,7 +87,7 @@ class ZernikeGenerator(object):
         if (n - m) % 2 != 0:
             raise Exception("n-m must be even. Got %d-%d" % (n, m))
         if abs(m) > n:
-            raise Exception("The following must be true |m|<=n. Got %d, %d" % 
+            raise Exception("The following must be true |m|<=n. Got %d, %d" %
                             (n, m))
         mask = np.where(rho <= 1, False, True)
 
@@ -56,7 +98,7 @@ class ZernikeGenerator(object):
         S = (n - abs(m)) // 2
         for s in range(0, S + 1):
             CR = pow(-1, s) * factorial(n - s) / \
-                (factorial(s) * factorial(-s + (n + abs(m)) / 2) * 
+                (factorial(s) * factorial(-s + (n + abs(m)) / 2) *
                  factorial(-s + (n - abs(m)) / 2))
             p = CR * pow(rho, n - 2 * s)
             Rnm = Rnm + p
@@ -76,13 +118,53 @@ class ZernikeGenerator(object):
         else:
             return NC * Rnm * np.sin(m * theta)
 
-    def _polar_array(self, nPixel):
-        X, Y = np.mgrid[-1 + 1. / nPixel: 1 - 1. / nPixel: nPixel * 1j,
-                        -1 + 1. / nPixel: 1 - 1. / nPixel: nPixel * 1j]
+    def cartesian_coordinates(self):
+        '''
+        Return X, Y maps of cartesian coordinates
+
+        Returns
+        -------
+        X,Y: `~numpy.array`
+            coordinates of points of the unit disk where the polynomials
+            are evaluated
+
+        Examples
+        --------
+
+        Create Zernike polynomial sampled with unit disk defined over 
+        4 pixels. The returned arrays have (4,4) shape (corresponding 
+        to the coords [-0.75, -0.25, 0.25, 0.75])
+
+        >>> zg = ZernikeGenerator(4)
+        >>> x, y = zg.cartesian_coordinates()
+        >>> x[0]
+        array([-0.75, -0.25,  0.25,  0.75])
+
+        As above with 3 pixels
+
+        >>> zg = ZernikeGenerator(3)
+        >>> x, y = zg.cartesian_coordinates()
+        >>> x[0]
+        array([-0.666, 0,  0.666])
+
+        In case of non-integer diameter the 
+
+        >>> zg = ZernikeGenerator(2.5)
+        >>> x, y = zg.cartesian_coordinates()
+        >>> x[0]
+        array([-0.8, 0,  0.8])
+
+        '''
+        nPixel = self._nPixel
+        scale = self.getRadius() / (self._nPixel / 2)
+        Y, X = np.mgrid[-1 + 1. / nPixel: 1 - 1. / nPixel: nPixel * 1j,
+                        -1 + 1. / nPixel: 1 - 1. / nPixel: nPixel * 1j] / scale
+        return X, Y
+
+    def _polar_array(self):
+        X, Y = self.cartesian_coordinates()
         r = np.sqrt(X ** 2 + Y ** 2)
-        th = np.arccos(np.transpose(X * 1. / r))
-        th = np.where(th < 2. * np.pi, th, 0)
-        th = np.where(X < 0, 2. * np.pi - th, th)
+        th = np.arctan2(Y, X)
         return r, th
 
     def getZernikeDict(self, indexVector):

@@ -24,6 +24,14 @@ Coding style
 
 More details at https://github.com/ArcetriAdaptiveOptics/arte/blob/master/arte/code_convention.py
 
+that is rendered like this:
+
+.. toctree::
+   :maxdepth: 1
+
+   code_convention
+
+
 Developing guide
 ----------------
 

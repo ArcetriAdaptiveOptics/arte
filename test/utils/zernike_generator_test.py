@@ -23,13 +23,20 @@ class TestZernikeGenerator(unittest.TestCase):
         generator = ZernikeGenerator(nPx)
         tilt = generator[3]
         self.assertAlmostEqual(tilt[-1, nPx // 2], 2. * (1 - 1. / nPx))
+        self.assertAlmostEqual(tilt[0, nPx // 2], -2. * (1 - 1. / nPx))
 
-    def testOdd(self):
-        nPx = 137
+    def testTiltOdd(self):
+        nPx = 127
         generator = ZernikeGenerator(nPx)
-        tilt = generator[17]
-        self.assertAlmostEqual(tilt[int(nPx / 2.),
-                                    int(nPx / 2.)], 0.)
+        tilt = generator[3]
+        self.assertAlmostEqual(tilt[-1, nPx // 2], 2. * (1 - 1. / nPx))
+
+    def testOddShape(self):
+        nPx = 3
+        generator = ZernikeGenerator(nPx)
+        tip = generator[2]
+        self.assertAlmostEqual(tip[1, 1], 0.)
+        self.assertEqual(tip.shape, (nPx, nPx))
 
     def testDegree(self):
         m, n = ZernikeGenerator.degree(1)
@@ -145,6 +152,20 @@ class TestZernikeGenerator(unittest.TestCase):
 #         wanted= np.(self._nPixels)
 #         self.assertTrue(np.allclose(wanted, got),
 #                         "got %s, wanted %s" % (str(got), str(wanted)))
+
+    def testNonIntegerPupilDiameterHasRoundedUpShape(self):
+        nPx = 2.5
+        generator = ZernikeGenerator(nPx)
+        tip = generator[2]
+        self.assertEqual(tip.shape, (3, 3))
+
+    def testNonIntegerPupilDiameterTilt(self):
+        rad = 1.25
+        nPx = np.ceil(2 * rad)
+        generator = ZernikeGenerator(2 * rad)
+        tilt = generator[3]
+        self.assertAlmostEqual(tilt[2, 1], 2. * 0.8)
+        self.assertAlmostEqual(tilt[0, 1], -2. * 0.8)
 
 
 if __name__ == "__main__":
