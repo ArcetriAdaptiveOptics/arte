@@ -43,8 +43,8 @@ class PhaseScreenGeneratorTest(unittest.TestCase):
 class TestPhaseScreens(unittest.TestCase):
 
     def setUp(self):
-        self._dPup = 8
-        self._r0 = 0.2
+        self.pupil_diameter = 8
+        self.r0 = 0.2
         self._lambda = 0.5e-6
         self._L0 = 1e9
         self._howMany = 100
@@ -60,18 +60,18 @@ class TestPhaseScreens(unittest.TestCase):
     def r0AtLambda(r0At500, wavelenghtInMeters):
         return r0At500 * (wavelenghtInMeters / 0.5e-6) ** (6. / 5)
 
-    def test(self):
-        psg = PhaseScreenGenerator(self._nPx, self._dPup, self._L0)
+    def test_kolm_std(self):
+        psg = PhaseScreenGenerator(self._nPx, self.pupil_diameter, self._L0)
         psg.generate_normalized_phase_screens(self._howMany)
         mask = CircularMask((self._nPx, self._nPx))
-        psg.rescale_to(self._r0)
+        psg.rescale_to(self.r0)
         got = self.meanStd(np.ma.masked_array(
             psg.get_in_radians_at(self._lambda),
             np.tile(mask.mask(), (self._howMany, 1, 1))))
-        want = self.stdInRad(self._dPup,
-                             self.r0AtLambda(self._r0, self._lambda))
+        want = self.stdInRad(self.pupil_diameter,
+                             self.r0AtLambda(self.r0, self._lambda))
         print('%g %g %g -> got %g want %g rad  -  ratio %f' %
-              (self._dPup, self._r0, self._lambda, got, want, want / got))
+              (self.pupil_diameter, self.r0, self._lambda, got, want, want / got))
         self.assertAlmostEqual(want, got, delta=0.3 * want)
 
 
