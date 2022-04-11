@@ -4,6 +4,7 @@ import unittest
 import numpy as np
 from arte.utils.zernike_generator import ZernikeGenerator
 from arte.types.mask import CircularMask
+from numpy.testing import assert_allclose
 
 
 class TestZernikeGenerator(unittest.TestCase):
@@ -149,15 +150,15 @@ class TestZernikeGenerator(unittest.TestCase):
                         "got %s, wanted %s" % (str(got), str(wanted)))
 
     def test_radial_order(self):
-        self.assertEqual(1, self.generator.radialOrder(2))
-        self.assertEqual(1, self.generator.radialOrder(3))
-        self.assertEqual(2, self.generator.radialOrder(4))
-        self.assertEqual(2, self.generator.radialOrder(5))
-        self.assertEqual(2, self.generator.radialOrder(6))
-        self.assertEqual(4, self.generator.radialOrder(15))
+        self.assertEqual(1, self.generator.radial_order(2))
+        self.assertEqual(1, self.generator.radial_order(3))
+        self.assertEqual(2, self.generator.radial_order(4))
+        self.assertEqual(2, self.generator.radial_order(5))
+        self.assertEqual(2, self.generator.radial_order(6))
+        self.assertEqual(4, self.generator.radial_order(15))
         assert_allclose(
-            np.array([2, 4]), self.generator.radialOrder(np.array([4, 15])))
-        assert_allclose(np.array([2, 4]), self.generator.radialOrder([4, 15]))
+            np.array([2, 4]), self.generator.radial_order(np.array([4, 15])))
+        assert_allclose(np.array([2, 4]), self.generator.radial_order([4, 15]))
 
 #     def testGetDerivativeOfFocus(self):
 #         got= self.generator.getDerivativeX(4)
