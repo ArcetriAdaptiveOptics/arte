@@ -16,7 +16,7 @@ class PhaseScreenGenerator(object):
         self._phaseScreens = None
         self._nSubHarmonicsToUse = 6
         if seed is None:
-            self._seed = np.random.randint(2**32 - 1)
+            self._seed = np.random.randint(2**32 - 1, dtype=np.uint32)
         else:
             self._seed = seed
 
