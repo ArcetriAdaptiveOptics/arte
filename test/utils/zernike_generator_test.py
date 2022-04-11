@@ -3,6 +3,7 @@
 import unittest
 import numpy as np
 from arte.utils.zernike_generator import ZernikeGenerator
+from arte.types.mask import CircularMask
 
 
 class TestZernikeGenerator(unittest.TestCase):
@@ -160,12 +161,35 @@ class TestZernikeGenerator(unittest.TestCase):
         self.assertEqual(tip.shape, (3, 3))
 
     def testNonIntegerPupilDiameterTilt(self):
-        rad = 1.25
-        nPx = np.ceil(2 * rad)
-        generator = ZernikeGenerator(2 * rad)
+        diameter = 2.5
+        generator = ZernikeGenerator(diameter)
         tilt = generator[3]
         self.assertAlmostEqual(tilt[2, 1], 2. * 0.8)
         self.assertAlmostEqual(tilt[0, 1], -2. * 0.8)
+
+    def testFromCircularMask(self):
+        mask = CircularMask((3, 5), maskRadius=1.25)
+        generator = ZernikeGenerator(mask)
+        tilt = generator[3]
+
+        self.assertEqual(tilt.shape, mask.shape())
+        self.assertAlmostEqual(tilt[2, 2], 2. * 0.8)
+        self.assertAlmostEqual(tilt[0, 2], -2. * 0.8)
+
+    def testCartesianCoordinates(self):
+        nPx = 3
+        zg = ZernikeGenerator(nPx)
+        x, y = zg.cartesian_coordinates()
+        want = np.array([-2 / 3, 0, 2 / 3])
+        np.testing.assert_allclose(x[0], want)
+        want = np.array([-2 / 3, -2 / 3, -2 / 3])
+        np.testing.assert_allclose(y[0], want)
+
+    def testInvalidIndexRaisesException(self):
+        nPx = 16
+        zg = ZernikeGenerator(nPx)
+        self.assertRaises(ValueError, zg.getZernike, 2.5)
+        self.assertRaises(ValueError, zg.getZernike, -1)
 
 
 if __name__ == "__main__":
