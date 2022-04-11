@@ -17,15 +17,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: [3.6, 3.7, 3.8]
-        # We need to skip python 3.6 with macos
-        include:
-        - os: macos-latest
-          python-version: 3.7
-        - os: macos-latest
-          python-version: 3.8
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v2
@@ -52,4 +47,4 @@ jobs:
     - name: "Upload coverage to Codecov"
       uses: codecov/codecov-action@v1
       with:
-        fail_ci_if_error: true
+        fail_ci_if_error: false
