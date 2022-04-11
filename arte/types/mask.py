@@ -81,7 +81,7 @@ class CircularMask():
 
     def radius(self):
         '''
-        Radius of the mask center
+        Radius of the mask 
 
         Returns
         -------
