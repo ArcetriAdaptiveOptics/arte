@@ -5,6 +5,36 @@ from arte.types.region_of_interest import RegionOfInterest
 
 
 class CircularMask():
+    '''
+    Represent a circular mask
+
+    A `~numpy.array` representing a circular pupil. Frame shape, pupil radius
+    and center can be specified.
+
+    Use `mask` method to access the mask as boolean mask (e.g. to be used
+    in a `~numpy.ma.masked_array` object) with False values where the frame is 
+    not masked (i.e. within the pupil) and True values outside
+
+    Use `asTransmissionValue` method to acces the mask as transmission mask, i.e. 
+    1 within the pupil and 0 outside. Fractional transmission for edge pixels
+    is not implemented
+
+    If a `~numpy.ma.masked_array` having a circular mask is available, the static
+    method `fromMaskedArray` can be used to create a `CircularMask` object having
+    the same shape of the masked array and the same pupil center and radius
+
+
+    Parameters
+    ----------
+        frameShape: tuple (2,)
+            shape of the returned array
+
+        maskRadius: real
+            pupil radius in pixel
+
+        maskCenter: list (2,) or `~numpy.array`
+            Y-X coordinates of the pupil center in pixel
+    '''
 
     def __init__(self,
                  frameShape,
@@ -35,18 +65,53 @@ class CircularMask():
             ((x - cc[1])**2 + (y - cc[0])**2) <= r**2, False, True)
 
     def mask(self):
+        '''
+        Boolean mask of the Circular Mask
+
+        Returns
+        -------
+        mask: boolean `~numpy.array`
+            mask of the circular pupil. Array is True outside the pupil,
+            and False inside the pupil
+        '''
         return self._mask
 
     def asTransmissionValue(self):
         return np.logical_not(self._mask).astype(np.int)
 
     def radius(self):
+        '''
+        Radius of the mask center
+
+        Returns
+        -------
+        radius: real
+            mask radius in pixel
+
+        '''
         return self._maskRadius
 
     def center(self):
+        '''
+        Y, X coordinates of the mask center
+
+        Returns
+        -------
+        center: `~numpy.array` of shape (2,)
+            Y, X coordinate of the mask center in the array reference system
+
+        '''
         return self._maskCenter
 
     def shape(self):
+        '''
+        Array shape
+
+        Returns
+        -------
+        shape: list (2,)
+            shape of the mask array
+        '''
         return self._shape
 
     @staticmethod
@@ -75,8 +140,9 @@ class CircularMask():
 
 class AnnularMask(CircularMask):
     '''
-    Inheritance of CicularMask class to provide an annular mask
-    Added inRadius parameter, radius of central obstruction. 
+    Inheritance of CircularMask class to provide an annular mask
+
+    Added inRadius parameter, radius of central obstruction.
     Default inRadius values is 0 with AnnularMask converging to CircularMask
     '''
 
