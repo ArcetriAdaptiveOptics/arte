@@ -3,6 +3,7 @@
 import unittest
 import numpy as np
 from arte.utils.zernike_generator import ZernikeGenerator
+from arte.types.mask import CircularMask
 from numpy.testing import assert_allclose
 
 
@@ -24,13 +25,20 @@ class TestZernikeGenerator(unittest.TestCase):
         generator = ZernikeGenerator(nPx)
         tilt = generator[3]
         self.assertAlmostEqual(tilt[-1, nPx // 2], 2. * (1 - 1. / nPx))
+        self.assertAlmostEqual(tilt[0, nPx // 2], -2. * (1 - 1. / nPx))
 
-    def testOdd(self):
-        nPx = 137
+    def testTiltOdd(self):
+        nPx = 127
         generator = ZernikeGenerator(nPx)
-        tilt = generator[17]
-        self.assertAlmostEqual(tilt[int(nPx / 2.),
-                                    int(nPx / 2.)], 0.)
+        tilt = generator[3]
+        self.assertAlmostEqual(tilt[-1, nPx // 2], 2. * (1 - 1. / nPx))
+
+    def testOddShape(self):
+        nPx = 3
+        generator = ZernikeGenerator(nPx)
+        tip = generator[2]
+        self.assertAlmostEqual(tip[1, 1], 0.)
+        self.assertEqual(tip.shape, (nPx, nPx))
 
     def testDegree(self):
         m, n = ZernikeGenerator.degree(1)
@@ -142,21 +150,58 @@ class TestZernikeGenerator(unittest.TestCase):
                         "got %s, wanted %s" % (str(got), str(wanted)))
 
     def test_radial_order(self):
-        self.assertEqual(1, self.generator.radialOrder(2))
-        self.assertEqual(1, self.generator.radialOrder(3))
-        self.assertEqual(2, self.generator.radialOrder(4))
-        self.assertEqual(2, self.generator.radialOrder(5))
-        self.assertEqual(2, self.generator.radialOrder(6))
-        self.assertEqual(4, self.generator.radialOrder(15))
+        self.assertEqual(1, self.generator.radial_order(2))
+        self.assertEqual(1, self.generator.radial_order(3))
+        self.assertEqual(2, self.generator.radial_order(4))
+        self.assertEqual(2, self.generator.radial_order(5))
+        self.assertEqual(2, self.generator.radial_order(6))
+        self.assertEqual(4, self.generator.radial_order(15))
         assert_allclose(
-            np.array([2, 4]), self.generator.radialOrder(np.array([4, 15])))
-        assert_allclose(np.array([2, 4]), self.generator.radialOrder([4, 15]))
+            np.array([2, 4]), self.generator.radial_order(np.array([4, 15])))
+        assert_allclose(np.array([2, 4]), self.generator.radial_order([4, 15]))
 
 #     def testGetDerivativeOfFocus(self):
 #         got= self.generator.getDerivativeX(4)
 #         wanted= np.(self._nPixels)
 #         self.assertTrue(np.allclose(wanted, got),
 #                         "got %s, wanted %s" % (str(got), str(wanted)))
+
+    def testNonIntegerPupilDiameterHasRoundedUpShape(self):
+        nPx = 2.5
+        generator = ZernikeGenerator(nPx)
+        tip = generator[2]
+        self.assertEqual(tip.shape, (3, 3))
+
+    def testNonIntegerPupilDiameterTilt(self):
+        diameter = 2.5
+        generator = ZernikeGenerator(diameter)
+        tilt = generator[3]
+        self.assertAlmostEqual(tilt[2, 1], 2. * 0.8)
+        self.assertAlmostEqual(tilt[0, 1], -2. * 0.8)
+
+    def testFromCircularMask(self):
+        mask = CircularMask((3, 5), maskRadius=1.25)
+        generator = ZernikeGenerator(mask)
+        tilt = generator[3]
+
+        self.assertEqual(tilt.shape, mask.shape())
+        self.assertAlmostEqual(tilt[2, 2], 2. * 0.8)
+        self.assertAlmostEqual(tilt[0, 2], -2. * 0.8)
+
+    def testCartesianCoordinates(self):
+        nPx = 3
+        zg = ZernikeGenerator(nPx)
+        x, y = zg.cartesian_coordinates()
+        want = np.array([-2 / 3, 0, 2 / 3])
+        np.testing.assert_allclose(x[0], want)
+        want = np.array([-2 / 3, -2 / 3, -2 / 3])
+        np.testing.assert_allclose(y[0], want)
+
+    def testInvalidIndexRaisesException(self):
+        nPx = 16
+        zg = ZernikeGenerator(nPx)
+        self.assertRaises(ValueError, zg.getZernike, 2.5)
+        self.assertRaises(ValueError, zg.getZernike, -1)
 
 
 if __name__ == "__main__":
