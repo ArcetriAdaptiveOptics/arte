@@ -41,7 +41,7 @@ class PhaseScreenGenerator(object):
         Normalized to 1pix/r0
         '''
         freqMap = self._spatial_frequency(self._screenSzInPx)
-        modul = self._kolmogorov_amplitude_map(freqMap)
+        modul = self._kolmogorov_amplitude_map_no_piston(freqMap)
         phaseScreen = np.sqrt(0.0228) * self._screenSzInPx**(5. / 6) * \
             np.fft.fft2(modul * np.exp(self._random_phase() * 1j))
         return phaseScreen
@@ -61,9 +61,11 @@ class PhaseScreenGenerator(object):
     def _random_phase(self):
         return np.random.rand(self._screenSzInPx, self._screenSzInPx) * 2 * np.pi
 
-    def _kolmogorov_amplitude_map(self, freqMap):
-        return (freqMap**2 + (self._screenSzInM / self._outerScaleInM)**2)**(
+    def _kolmogorov_amplitude_map_no_piston(self, freqMap):
+        mappa = (freqMap**2 + (self._screenSzInM / self._outerScaleInM)**2)**(
             -11. / 12)
+        mappa[0, 0] = 0
+        return mappa
 
     def _generate_sub_harmonics(self, numberOfSubHarmonics):
         nSub = 3
@@ -82,7 +84,7 @@ class PhaseScreenGenerator(object):
             freqMod /= nSub
             freqX /= nSub
             freqY /= nSub
-            modul = self._kolmogorov_amplitude_map(freqMod)
+            modul = self._kolmogorov_amplitude_map_no_piston(freqMod)
             for ix in range(nSub):
                 for jx in range(nSub):
                     sh = np.exp(2 * np.pi * 1j *

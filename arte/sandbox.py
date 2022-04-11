@@ -5,7 +5,10 @@ from arte.utils.discrete_fourier_transform import \
     BidimensionalFourierTransform as bfft
 from arte.atmo.phase_screen_generator import PhaseScreenGenerator
 from arte.types.mask import CircularMask
-from _operator import le
+from arte.utils.zernike_generator import ZernikeGenerator
+from arte.utils.modal_decomposer import ModalDecomposer
+from arte.types.wavefront import Wavefront
+from scipy.special import gamma
 
 
 def r0AtLambda(r0At500, wavelenghtInMeters):
@@ -17,7 +20,7 @@ class Test1():
     def __init__(self, dPupInMeters, r0At500nm, wavelenghtInMeters,
                  dPupInPixels=1024, outerScaleInMeter=1e6):
         self._pupDiameterInMeters = dPupInMeters
-        self._r0 = r0At500nm
+        self.r0 = r0At500nm
         self._lambda = wavelenghtInMeters
         self._pupDiameterInPixels = dPupInPixels
         self._L0 = outerScaleInMeter
@@ -29,14 +32,14 @@ class Test1():
         self._dist = bfft.distances_norm_map(self._pupDiameterInPixels,
                                              self._pxSize)
         self._mapCenter = (np.asarray(self._dist.shape) / 2).astype(np.int)
-        self._psd = self._tb.vonKarmanPowerSpectralDensity(self._r0, self._L0,
+        self._psd = self._tb.vonKarmanPowerSpectralDensity(self.r0, self._L0,
                                                            self._spat_freqs)
         self._phaseAC = bfft.direct_transform(self._psd).real
         self._phaseSTF = 2 * (
             self._phaseAC[self._mapCenter[0], self._mapCenter[1]] -
             self._phaseAC)
         self._kolmSTFInRad2 = 6.88 * (
-            self._dist / r0AtLambda(self._r0, self._lambda))**(5 / 3)
+            self._dist / r0AtLambda(self.r0, self._lambda))**(5 / 3)
         # TODO mezzi pixels!
 
 
@@ -44,11 +47,12 @@ class TestLongExposure():
 
     def __init__(self, dPupInMeters,
                  howMany=100, dPupInPixels=128, outerScaleInMeters=1e6):
-        self._dPup = dPupInMeters
+        self.pupil_diameter = dPupInMeters
         self._L0 = outerScaleInMeters
         self._howMany = howMany
         self._nPx = dPupInPixels
-        self._psg = PhaseScreenGenerator(self._nPx, self._dPup, self._L0)
+        self._psg = PhaseScreenGenerator(
+            self._nPx, self.pupil_diameter, self._L0)
         self._psg.generate_normalized_phase_screens(self._howMany)
 
     def _doPsf(self, phaseScreenInRadians):
@@ -57,14 +61,14 @@ class TestLongExposure():
         return self._fao.psf().values
 
     def test(self, r0At500nm, wavelenghtInMeters):
-        self._r0 = r0At500nm
+        self.r0 = r0At500nm
         self._lambda = wavelenghtInMeters
         extFact = 2
         self._fao = FourierAdaptiveOptics(
-            pupilDiameterInMeters=self._dPup,
+            pupilDiameterInMeters=self.pupil_diameter,
             wavelength=self._lambda,
             resolutionFactor=extFact)
-        self._psg.rescale_to(self._r0)
+        self._psg.rescale_to(self.r0)
         ps = self._psg.get_in_radians_at(self._lambda)
         aa = np.asarray([self._doPsf(ps[i]) for i in range(self._howMany)])
         longExposurePsf = aa.mean(axis=0)
@@ -73,7 +77,7 @@ class TestLongExposure():
 
     def seeingLimitedFWHMInArcsec(self):
         return 0.976 * self._lambda / \
-            r0AtLambda(self._r0, self._lambda) / 4.848e-6
+            r0AtLambda(self.r0, self._lambda) / 4.848e-6
 
     @staticmethod
     def run():
@@ -89,6 +93,63 @@ class TestLongExposure():
         print(tle.seeingLimitedFWHMInArcsec())
         return tle, le
 
+
+class AtmosphericPhaseScreenDecomposition():
+
+    def __init__(self):
+        self.n_modes = 1275
+        self.pupil_diameter = 8
+        self.r0 = 0.2
+        self.wavelength = 0.5e-6
+        self.L0 = 1e12
+        self.n_pixel = 64
+        self.how_many = 100
+
+        self._md = ModalDecomposer(self.n_modes)
+        self._psg = PhaseScreenGenerator(
+            self.n_pixel, self.pupil_diameter, self.L0)
+
+        self.compute()
+
+    def compute(self):
+        self.generate()
+        self.decompose()
+
+    def generate(self):
+        self._psg.generate_normalized_phase_screens(self.how_many)
+        mask = CircularMask((self.n_pixel, self.n_pixel))
+        self._psg.rescale_to(self.r0)
+        self._screen_cube = np.ma.masked_array(
+            self._psg.get_in_radians_at(self.wavelength),
+            np.tile(mask.mask(), (self.how_many, 1, 1)))
+
+    def decompose(self):
+        self._zcoeff = np.zeros((self.how_many, self.n_modes))
+        mask = CircularMask.fromMaskedArray(self._screen_cube[0])
+        for i in range(self.how_many):
+            wf = Wavefront.fromNumpyArray(self._screen_cube[i].data)
+            zcoeff = self._md.measureZernikeCoefficientsFromWavefront(
+                wf, mask)
+            self._zcoeff[i] = zcoeff.toNumpyArray()
+        self._zIdx = zcoeff.zernikeIndexes()
+
+    def modal_variance(self):
+        return self._zcoeff.var(axis=0)
+
+    def expected_modal_variance(self):
+        return self.zern_var(self._zIdx) * (self.pupil_diameter / self.r0) ** (5 / 3)
+
+    def zern_var(self, j):
+        n = ZernikeGenerator.radialOrder(j)
+        return 0.7554 * (n + 1) * gamma(n + 1 - 11 / 6) / gamma(n + 1 + 17 / 6)
+
+    def plot_std(self):
+        import matplotlib.pyplot as plt
+        plt.loglog(self._zIdx, self.modal_variance(), '.-')
+        plt.loglog(self._zIdx, self.expected_modal_variance())
+        plt.xlabel("Zernike mode")
+        plt.ylabel("Mode variance [rad**2]")
+        plt.show()
 
 # class SimulationOfResidualPhase():
 #
