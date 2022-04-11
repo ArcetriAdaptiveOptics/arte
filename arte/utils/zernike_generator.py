@@ -70,11 +70,15 @@ class ZernikeGenerator(object):
             self._radius = pupil.radius()
             self._shape = pupil.shape()
             self._center = pupil.center()
+            self._boolean_mask = pupil.mask()
         else:
             self._radius = pupil / 2
             sz = np.ceil(pupil)
             self._shape = (sz, sz)
             self._center = np.ones(2) * (sz / 2)
+            cm = CircularMask(
+                self._shape, maskCenter=self._center, maskRadius=self._radius)
+            self._boolean_mask = cm.mask()
 
         self._rhoMap, self._thetaMap = self._polar_array()
         self._dx = None
@@ -117,9 +121,9 @@ class ZernikeGenerator(object):
             self._dy = self._computeDerivativeCoeffY(index)
         return self._dy[0:index, 0:index]
 
-    @staticmethod
-    def degree(index):
-        n = int(0.5 * (np.sqrt(8 * index - 7) - 3)) + 1
+    @classmethod
+    def degree(cls, index):
+        n = cls.radial_order(index)
         cn = n * (n + 1) / 2 + 1
         if n % 2 == 0:
             m = int(index - cn + 1) // 2 * 2
@@ -138,10 +142,9 @@ class ZernikeGenerator(object):
         if abs(m) > n:
             raise Exception("The following must be true |m|<=n. Got %d, %d" %
                             (n, m))
-        mask = np.where(rho <= 1, False, True)
 
         if(n == 0 and m == 0):
-            return np.ma.masked_array(data=np.ones(rho.shape), mask=mask)
+            return np.ones(rho.shape)
         rho = np.where(rho < 0, 0, rho)
         Rnm = np.zeros(rho.shape)
         S = (n - abs(m)) // 2
@@ -151,10 +154,10 @@ class ZernikeGenerator(object):
                  factorial(-s + (n - abs(m)) / 2))
             p = CR * pow(rho, n - 2 * s)
             Rnm = Rnm + p
-        return np.ma.masked_array(data=Rnm, mask=mask)
+        return Rnm
 
     def _polar(self, index, rhoArray, thetaArray):
-        n, m = ZernikeGenerator.degree(index)
+        n, m = self.degree(index)
         rho = rhoArray
         theta = thetaArray
 
@@ -235,8 +238,10 @@ class ZernikeGenerator(object):
         if index <= 0:
             raise ValueError("Invalid Zernike index %d" % index)
         if index not in list(self._dictCache.keys()):
-            self._dictCache[index] = self._polar(index, self._rhoMap,
-                                                 self._thetaMap)
+            res = self._polar(index, self._rhoMap,
+                              self._thetaMap)
+            self._dictCache[index] = np.ma.masked_array(
+                data=res, mask=self._boolean_mask)
         return self._dictCache[index]
 
     @staticmethod
@@ -373,8 +378,8 @@ class ZernikeGenerator(object):
             dy += coeffY[index - 1, i - 1] * self.getZernike(i)
         return dy
 
-    @staticmethod
-    def radial_order(j):
+    @classmethod
+    def radial_order(cls, j):
         '''
         Return radial order of j-th polynomial
 
