@@ -389,7 +389,7 @@ class ZernikeGenerator(object):
             radial order of the specified indexes
 
         '''
-        return np.ceil(0.5 * (np.sqrt(8 * j + 1) - 3))
+        return np.ceil(0.5 * (np.sqrt(8 * j + 1) - 3)).as_type(int)
 
 
 def _isOdd(num):
