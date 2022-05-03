@@ -64,24 +64,6 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
                                got[2, 1])
         self.assertTrue(got.shape == (3, 2))
 
-#     def testLayerProjectedSeparationOnXYPlane(self):
-#         cn2 = EsoEltProfiles.Median()
-#         source1 = GuideSource((0, 0), np.inf)
-#         source2 = GuideSource((50, 30), 100e3)
-#         aperture = CircularOpticalAperture(10, [0, 0, 0])
-#         spatial_freqs = np.logspace(-2, 2, 100)
-#
-#         vk_cov = VonKarmanSpatioTemporalCovariance(
-#             source1, source2, aperture, aperture, cn2, spatial_freqs)
-#
-#         zCoordOfLayersSeparations = np.array([
-#             vk_cov.layerProjectedAperturesSeparation(n)[2]
-#             for n in range(cn2.number_of_layers())])
-#
-#         want = np.zeros(cn2.number_of_layers())
-#
-#         assert_allclose(want, zCoordOfLayersSeparations, atol=1e-14)
-
     def testZernikeCPSD(self):
         cn2 = Cn2Profile.from_r0s([0.16], [25], [10e3], [10], [-20])
         rho1, theta1 = (0, 0)
@@ -347,7 +329,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
 
         np.testing.assert_allclose(
             cpsd_np, cpsd_cp, atol=1e-14)
-
+        
 
 if __name__ == "__main__":
     unittest.main()
