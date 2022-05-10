@@ -534,3 +534,18 @@ class MiscellaneusProfiles():
         L0s = np.ones(len(js)) * 40.0
         return Cn2Profile.from_fractional_j(
             r0, js, L0s, hs, windSpeed, windDirection)
+
+    @classmethod
+    def ERIS(cls):
+        '''
+        From Doc. No.: VLT-SPE-ESO-11250-4110 
+        '''
+        r0 = 0.12633
+        hs = np.array([0.03, 0.140, 0.281, 0.562, 1.125, 2.250, 4.500,
+                       7.750, 11.000, 14.000]) * 1000
+        js = [0.59, 0.02, 0.04, 0.06, 0.01, 0.05, 0.09, 0.04, 0.05, 0.05]
+        windSpeed = [6.6, 5.9, 5.1, 4.5, 5.1, 8.3, 16.3, 30.2, 34.3, 17.5]
+        windDirection = np.linspace(0, 360, len(js))
+        L0s = np.ones(len(js)) * 22.
+        return Cn2Profile.from_fractional_j(
+            r0, js, L0s, hs, windSpeed, windDirection)
