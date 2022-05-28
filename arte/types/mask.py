@@ -1,5 +1,6 @@
 import numpy as np
 from arte.types.region_of_interest import RegionOfInterest
+from arte.utils.image_moments import ImageMoments
 
 # class BaseMask
 
@@ -77,7 +78,7 @@ class CircularMask():
         return self._mask
 
     def asTransmissionValue(self):
-        return np.logical_not(self._mask).astype(np.int)
+        return np.logical_not(self._mask).astype(int)
 
     def radius(self):
         '''
@@ -116,18 +117,47 @@ class CircularMask():
 
     @staticmethod
     def fromMaskedArray(maskedArray):
+        '''
+        Creates a `CircularMask` roughly corresponding to the mask of a masked
+        array
+        
+        Returns a `CircularMask` object having radius and center guessed from
+        the passed mask using `ImageMoments` centroid and semiAxes.
+        Important note: the created `CircularMask` object 
+        is not guaranteed to have the same set of valid points of the 
+        passed mask, but it is included in the passed mask, i.e. all the 
+        valid points of the created mask are also valid points of the passed 
+        masked array 
+        
+        Parameters
+        ----------
+        maskedArray: `~numpy.ma.MaskedArray` 
+            a masked array with a circular mask
+
+        Returns
+        -------
+        circular_mask: `CircularMask`
+            a circular mask included in the mask of `maskedArray`
+
+        '''
         assert isinstance(maskedArray, np.ma.masked_array)
         shape = maskedArray.shape
-        pointsMasked = np.argwhere(maskedArray.mask == False)
-        diameters = pointsMasked.max(axis=0) - pointsMasked.min(axis=0) + 1
-        assert (diameters[0] == diameters[1]), \
-            'x-diameter and y-diameter differ (%s px)' % str(diameters)
-        radius = 0.5 * diameters[0]
-        center = 0.5 * (pointsMasked.max(axis=0) +
-                        pointsMasked.min(axis=0) + 1)
-        circularMask = CircularMask(shape, radius, center)
-        assert (circularMask.mask() == maskedArray.mask).all(), \
-            'the mask of the maskedArray is not circular'
+        again = 0.995
+        while again:
+            im = ImageMoments(maskedArray.mask.astype(int)*-1 + 1)
+            centerYX = np.roll(im.centroid(),1)
+            radius = again*np.min(im.semiAxes())
+            print(radius)
+            print(centerYX)
+            circularMask = CircularMask(shape, radius, centerYX)
+            if np.in1d(circularMask.in_mask_indices(),
+                       np.argwhere(maskedArray.mask.flatten() == False)).all():
+                again = False
+            if radius < 1:
+                raise Exception("Couldn't estimate a CircularMask")
+            else:
+                again *= 0.9
+
         return circularMask
 
     def regionOfInterest(self):
@@ -137,6 +167,12 @@ class CircularMask():
         return RegionOfInterest(centerX - radius, centerX + radius,
                                 centerY - radius, centerY + radius)
 
+    def as_masked_array(self):
+        return np.ma.array(np.ones(self._shape),
+                           mask=self.mask())
+
+    def in_mask_indices(self):
+        return self.asTransmissionValue().flatten().nonzero()[0]
 
 class AnnularMask(CircularMask):
     '''
