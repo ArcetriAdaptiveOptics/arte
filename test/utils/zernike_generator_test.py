@@ -204,5 +204,12 @@ class TestZernikeGenerator(unittest.TestCase):
         self.assertRaises(ValueError, zg.getZernike, -1)
 
 
+    def testIntegerIndexWithStupidNumpyIntegers(self):
+        nPx = 16
+        zg = ZernikeGenerator(nPx)
+        index_vector = np.arange(2,4)
+        zg.getZernikeDict(index_vector)
+
+
 if __name__ == "__main__":
     unittest.main()

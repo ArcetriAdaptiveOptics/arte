@@ -246,7 +246,7 @@ class ZernikeGenerator(object):
 
     @staticmethod
     def _is_integer_num(n):
-        if isinstance(n, int):
+        if isinstance(n, (int, np.integer)):
             return True
         if isinstance(n, float):
             return n.is_integer()
