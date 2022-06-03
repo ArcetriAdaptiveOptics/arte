@@ -147,8 +147,6 @@ class CircularMask():
             im = ImageMoments(maskedArray.mask.astype(int)*-1 + 1)
             centerYX = np.roll(im.centroid(),1)
             radius = again*np.min(im.semiAxes())
-            print(radius)
-            print(centerYX)
             circularMask = CircularMask(shape, radius, centerYX)
             if np.in1d(circularMask.in_mask_indices(),
                        np.argwhere(maskedArray.mask.flatten() == False)).all():
