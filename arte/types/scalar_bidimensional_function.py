@@ -129,12 +129,14 @@ class ScalarBidimensionalFunction(object):
         return z
 
     def _interp_real(self, nX, nY, nZ, x, y):
-        intp = interpolate.interp2d(nX, nY, nZ)
+        # beware of https://github.com/scipy/scipy/issues/10268 !!! 
+        # use 1D (nX[0] and nY[:,0]) instead of 2D nX and nY
+        intp = interpolate.interp2d(nX[0], nY[:,0], nZ, kind='linear')
         return intp(x, y)[0]
 
     def _interp_complex(self, nX, nY, nZ, x, y):
-        intpr = interpolate.interp2d(nX, nY, nZ.real)
-        intpi = interpolate.interp2d(nX, nY, nZ.imag)
+        intpr = interpolate.interp2d(nX[0], nY[:,0], nZ.real, kind='linear')
+        intpi = interpolate.interp2d(nX[0], nY[:,0], nZ.imag, kind='linear')
         return intpr(x, y)[0] + 1j * intpi(x, y)[0]
 
     def get_roi(self, xmin, xmax, ymin, ymax):
