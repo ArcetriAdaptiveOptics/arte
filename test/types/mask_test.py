@@ -4,7 +4,6 @@ import numpy as np
 from arte.types.mask import CircularMask, AnnularMask
 
 
-__version__ = "$Id: $"
 
 
 class MaskTest(unittest.TestCase):
@@ -32,22 +31,43 @@ class MaskTest(unittest.TestCase):
                         "center is %s" % mask.center())
 
 
-    def testCreateCircularMaskFromMaskedArray(self):
+    def testCreateCircularMaskFromMaskedArrayWithAReallyCircularMask(self):
         shape= (140, 100)
         aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 40))
         maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
         retrievedMask= CircularMask.fromMaskedArray(maskedArray)
-        self.assertEqual(aMask.radius(), retrievedMask.radius())
-        self.assertTrue(np.array_equal(aMask.center(), retrievedMask.center()))
+        np.testing.assert_allclose(
+            aMask.radius(), retrievedMask.radius(), rtol=0.01)
+        np.testing.assert_allclose(
+            aMask.center(), retrievedMask.center(), atol=1)
+        self.assertTrue(np.in1d(retrievedMask.in_mask_indices(),
+                                aMask.in_mask_indices()).all())
 
 
-    def testCreateCircularMaskFromMaskedArrayRaisesIfMaskIsNotCircular(self):
+    def testCreateCircularMaskFromMaskedArrayWithFloats(self):
+        aMask = CircularMask((486, 640), 126.32, (235.419, 309.468))
+        marray = np.ma.array(data = np.zeros((486, 640)), mask=aMask.mask())
+        
+        retrievedMask = CircularMask.fromMaskedArray(marray)
+        
+        np.testing.assert_allclose(
+            aMask.radius(), retrievedMask.radius(), rtol=0.01)
+        np.testing.assert_allclose(
+            aMask.center(), retrievedMask.center(), atol=1)        
+        self.assertTrue(np.in1d(retrievedMask.in_mask_indices(),
+                                aMask.in_mask_indices()).all())
+
+
+    def testCreateCircularMaskFromMaskedArrayWithNonCircularMask(self):
         shape= (140, 100)
         aSquareMask= np.ones((shape))
         aSquareMask[40:80, 20:60]= 0
-        maskedArray= np.ma.masked_array(np.ones(shape), mask=aSquareMask)
-        self.assertRaises(Exception,
-                          CircularMask.fromMaskedArray, maskedArray)
+        maskedArray= np.ma.masked_array(np.ones(shape),
+                                        mask=aSquareMask.astype(bool))
+        retrievedMask= CircularMask.fromMaskedArray(maskedArray)
+        self.assertTrue(
+            np.in1d(retrievedMask.in_mask_indices(),
+                    np.argwhere(aSquareMask.flatten() == False)).all())
 
 
     def testRegionOfInterest(self):
@@ -72,6 +92,10 @@ class MaskTest(unittest.TestCase):
         mask3 = AnnularMask ((10, 10),4,(5,5),2)
         mask4 = mask1.mask() | ~mask2.mask()
         self.assertEqual(mask3.mask().all(), mask4.all())
+        
+        
+
+
 
 if __name__ == "__main__":
     unittest.main()

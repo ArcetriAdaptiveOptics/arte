@@ -257,12 +257,37 @@ class Cn2Profile(object):
     def number_of_layers(self):
         return Quantity(len(self._layersJs), dtype=int)
 
+    def fractional_j(self):
+        return Quantity(self._layersJs)
+
+    def set_wind_speed(self, windSpeed):
+        if isinstance(windSpeed, Quantity):
+            value = windSpeed.to(u.m / u.s).value
+        else:
+            value = windSpeed
+        self._layersWindSpeed = value
+
     def wind_speed(self):
         """
         Returns:
             (array): windspeed of each layer in m/s
         """
         return self._layersWindSpeed * u.m / u.s
+
+    def mean_wind_speed(self):
+        return (
+            np.sum(
+                self._layersWindSpeed**(5. / 3) * self._layersJs
+            ) / np.sum(
+                self._layersJs)
+        )**(3. / 5) * u.m / u.s
+
+    def set_wind_direction(self, windDirectionInDeg):
+        if isinstance(windDirectionInDeg, Quantity):
+            value = windDirectionInDeg.to(u.rad).value
+        else:
+            value = np.deg2rad(windDirectionInDeg)
+        self._layersWindDirection = value
 
     def wind_direction(self):
         """
@@ -380,6 +405,49 @@ class MaorySteroScidarProfiles():
         return cls._profileMaker(5, 10)
 
 
+class MaoryStereoScidarProfiles2021():
+
+    L0 = 25
+
+    @staticmethod
+    def _restoreMaoryProfiles():
+        rootDir = dataRootDir()
+        filename = os.path.join(rootDir,
+                                'cn2profiles',
+                                'referenceProfiles35layers_new.fits')
+        return fits.getdata(filename)
+
+    @classmethod
+    def _profileMaker(cls, idxJ, idxW):
+        rr = cls._restoreMaoryProfiles()
+        h = rr[0] * 1e3
+        js = rr[idxJ]
+        L0s = np.ones(len(js)) * cls.L0
+        windSpeed = rr[idxW]
+        windDirection = np.linspace(0, 360, len(js))
+        return Cn2Profile(js, L0s, h, windSpeed, windDirection)
+
+    @classmethod
+    def P10(cls):
+        return cls._profileMaker(1, 6)
+
+    @classmethod
+    def P25(cls):
+        return cls._profileMaker(2, 7)
+
+    @classmethod
+    def P50(cls):
+        return cls._profileMaker(3, 8)
+
+    @classmethod
+    def P75(cls):
+        return cls._profileMaker(4, 9)
+
+    @classmethod
+    def P90(cls):
+        return cls._profileMaker(5, 10)
+
+
 class EsoEltProfiles():
 
     L0 = 25
@@ -399,8 +467,8 @@ class EsoEltProfiles():
         h = rr[0]
         js = rr[idxJ] / 100
         windSpeed = rr[idxWind]
-#         windDirection = np.linspace(0, 360, len(js))
-        windDirection = np.random.uniform(0, 360, len(js))
+        windDirection = np.linspace(0, 360, len(js))
+#         windDirection = np.random.uniform(0, 360, len(js))
         if L0 is None:
             L0 = cls.L0
         L0s = np.ones(len(js)) * L0
@@ -464,5 +532,20 @@ class MiscellaneusProfiles():
         windSpeed = [2., 4., 6., 25.]
         windDirection = [0., 90., 180., 270.]
         L0s = np.ones(len(js)) * 40.0
+        return Cn2Profile.from_fractional_j(
+            r0, js, L0s, hs, windSpeed, windDirection)
+
+    @classmethod
+    def ERIS(cls):
+        '''
+        From Doc. No.: VLT-SPE-ESO-11250-4110 
+        '''
+        r0 = 0.12633
+        hs = np.array([0.03, 0.140, 0.281, 0.562, 1.125, 2.250, 4.500,
+                       7.750, 11.000, 14.000]) * 1000
+        js = [0.59, 0.02, 0.04, 0.06, 0.01, 0.05, 0.09, 0.04, 0.05, 0.05]
+        windSpeed = [6.6, 5.9, 5.1, 4.5, 5.1, 8.3, 16.3, 30.2, 34.3, 17.5]
+        windDirection = np.linspace(0, 360, len(js))
+        L0s = np.ones(len(js)) * 22.
         return Cn2Profile.from_fractional_j(
             r0, js, L0s, hs, windSpeed, windDirection)

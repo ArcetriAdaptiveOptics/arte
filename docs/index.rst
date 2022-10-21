@@ -11,10 +11,6 @@ Welcome to arte's documentation!
 
 Arcetri Random sTuff collEction (arte, pronounced "àr-te") is open-source software for astronomical adaptive optics.
 
-.. toctree::
-   :maxdepth: 1
-
-   install_upgrade
 
 
 Tutorial

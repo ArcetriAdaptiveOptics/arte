@@ -5,6 +5,7 @@ Created on 13 dic 2019
 '''
 
 import unittest
+import numpy as np
 import astropy.units as u
 from astropy.tests.helper import assert_quantity_allclose
 from arte.types.guide_source import GuideSource
@@ -22,6 +23,23 @@ class GuideSourceTest(unittest.TestCase):
         assert_quantity_allclose(got[0], want[0])
         assert_quantity_allclose(got[1], want[1])
         assert_quantity_allclose(got[2], want[2])
+
+    def testInputsWithWrongUnits(self):
+        rho, theta = (5000 * u.marcsec, np.pi / 4 * u.rad)
+        z = 100e3 * u.cm
+        source = GuideSource((rho, theta), z)
+        want_polar = [5 * u.arcsec, 45 * u.deg, 1000 * u.m]
+        got_polar = source.getSourcePolarCoords()
+        want_cartes = [5 * np.sqrt(2) / 2 * u.arcsec,
+                       5 * np.sqrt(2) / 2 * u.arcsec,
+                       1000 * u.m]
+        got_cartes = source.getSourceCartesianCoords()
+        assert_quantity_allclose(got_polar[0], want_polar[0])
+        assert_quantity_allclose(got_polar[1], want_polar[1])
+        assert_quantity_allclose(got_polar[2], want_polar[2])
+        assert_quantity_allclose(got_cartes[0], want_cartes[0])
+        assert_quantity_allclose(got_cartes[1], want_cartes[1])
+        assert_quantity_allclose(got_cartes[2], want_cartes[2])
 
     def testCartesianCoords(self):
         rho, theta = (50, 90)

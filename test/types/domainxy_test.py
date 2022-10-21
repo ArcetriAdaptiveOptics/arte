@@ -85,7 +85,7 @@ class DomainXYTest(unittest.TestCase):
 
     def test_crop_missing_units(self):
 
-        domain = DomainXY.from_linspace(-1*u.cm, 1*u.cm, 11)
+        domain = DomainXY.from_linspace(-1 * u.cm, 1 * u.cm, 11)
 
         with self.assertRaises(AssertionError):
             _ = domain.cropped(1, 2, 3, 4)
@@ -159,6 +159,16 @@ class DomainXYTest(unittest.TestCase):
         self.assertEqual(2 * u.cm, domain.ymap[4, 9])
         self.assertEqual(4.5 * u.cm, domain.xmap[4, 9])
 
+    def test_from_linspace(self):
+        domain = DomainXY.from_linspace(-10, 10, 21)
+
+        self.assertEqual((21, 21), domain.shape)
+        self.assertEqual(-10, domain.ymap[0, 0])
+        self.assertEqual(-10, domain.xmap[0, 0])
+        self.assertEqual(-8, domain.ymap[2, 5])
+        self.assertEqual(-5, domain.xmap[2, 5])
+        self.assertEqual(0, domain.ymap[10, 10])
+
     def test_from_shape_two_pixel_size(self):
         domain = DomainXY.from_shape(
             (5, 10), pixel_size=(1 * u.cm, 2 * u.km))
@@ -177,10 +187,11 @@ class DomainXYTest(unittest.TestCase):
 
         assert domain.xcoord.unit == u.cm
         assert domain.xmap.unit == u.cm
-        assert isinstance(domain.origin[0], float) # no unit
+        assert isinstance(domain.origin[0], float)  # no unit
         assert domain.step[0].unit == u.cm
         assert domain[2:4, 2:4].xcoord.unit == u.cm
-        assert domain.cropped(1*u.cm, 4*u.cm, 1*u.cm, 4*u.cm).xcoord.unit == u.cm
+        assert domain.cropped(1 * u.cm, 4 * u.cm, 1 * u.cm,
+                              4 * u.cm).xcoord.unit == u.cm
 
     def test_cropping_with_units(self):
 
@@ -210,7 +221,7 @@ class DomainXYTest(unittest.TestCase):
         # Raise if shift with unit
         with self.assertRaises(AssertionError):
             domain.shift(0.1 * u.m, 0.2 * u.m)
-            
+
     def test_shift_w_units(self):
 
         domain = DomainXY.from_shape((100, 100), pixel_size=1 * u.cm)
@@ -277,7 +288,6 @@ class DomainXYTest(unittest.TestCase):
         assert domain2 != domain
         assert not (domain2 == domain)
 
-
     def test_contains(self):
 
         domain = DomainXY.from_linspace(-1, 1, 11)
@@ -285,7 +295,7 @@ class DomainXYTest(unittest.TestCase):
         self.assertTrue(domain.contains(-0.5, 0))
         self.assertFalse(domain.contains(2, 0))
         self.assertFalse(domain.contains(4, 2))
-        
+
         # Raise if we get a with unit
         with self.assertRaises(AssertionError):
             domain.shift(0.1 * u.m, 0.2 * u.m)

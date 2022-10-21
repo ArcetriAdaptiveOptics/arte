@@ -13,7 +13,7 @@ import tempfile
 import subprocess
 import numpy as np
 from scipy.io import readsav
-from collections import Iterable
+from collections.abc import Iterable
 
 
 def compareIDL(idlscript, pyscript, vars_to_compare,
@@ -58,8 +58,8 @@ def compareIDL(idlscript, pyscript, vars_to_compare,
         tmpfile = os.path.join(tempfile.gettempdir(), 'idl_compare.sav')
 
     savecmd = ','.join(['\nSAVE',
-                       *vars_to_compare,
-                       'FILENAME="%s"\n' % tmpfile])
+                        *vars_to_compare,
+                        'FILENAME="%s"\n' % tmpfile])
 
     if isinstance(idlscript, Iterable) and not isinstance(idlscript, str):
         idlscript = '\n'.join(idlscript)

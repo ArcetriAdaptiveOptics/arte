@@ -14,9 +14,8 @@ class ModalDecomposer(object):
         self._nZernikeModes = n_zernike_modes
 
     @cacheResult
-    def _synthZernikeRecFromSlopes(self, nModes, radiusInPixels):
-        diameterInPixels = 2 * radiusInPixels
-        zg = ZernikeGenerator(diameterInPixels)
+    def _synthZernikeRecFromSlopes(self, nModes, circular_mask):
+        zg = ZernikeGenerator(circular_mask)
         dx = zg.getDerivativeXDict(list(range(2, 2 + nModes)))
         dy = zg.getDerivativeYDict(list(range(2, 2 + nModes)))
         im = np.zeros((nModes, 2 * dx[2].compressed().size))
@@ -39,7 +38,7 @@ class ModalDecomposer(object):
             'Mask argument must be of type CircularMask, instead is %s' % \
             mask.__class__.__name__
 
-        reconstructor = self._synthZernikeRecFromSlopes(nModes, mask.radius())
+        reconstructor = self._synthZernikeRecFromSlopes(nModes, mask)
 
         slopesInMaskVector = np.hstack(
             (np.ma.masked_array(slopes.mapX(), mask.mask()).compressed(),
@@ -50,9 +49,8 @@ class ModalDecomposer(object):
             np.dot(slopesInMaskVector, reconstructor))
 
     @cacheResult
-    def _synthZernikeRecFromWavefront(self, nModes, radiusInPixels):
-        diameterInPixels = 2 * radiusInPixels
-        zg = ZernikeGenerator(diameterInPixels)
+    def _synthZernikeRecFromWavefront(self, nModes, mask):
+        zg = ZernikeGenerator(mask)
         wf = zg.getZernikeDict(list(range(2, 2 + nModes)))
         im = np.zeros((nModes, wf[2].compressed().size))
         modesIdx = list(range(2, 2 + nModes))
@@ -78,7 +76,7 @@ class ModalDecomposer(object):
             mask.__class__.__name__
 
         reconstructor = self._synthZernikeRecFromWavefront(nModes,
-                                                           mask.radius())
+                                                           mask)
         wavefrontInMaskVector = \
             np.ma.masked_array(wavefront.toNumpyArray(),
                                mask.mask()).compressed()

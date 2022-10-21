@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.special import binom
 
-__version__ = "$Id: image_moments.py 43 2016-01-05 11:22:52Z lbusoni $"
 
 
 class ImageMoments():

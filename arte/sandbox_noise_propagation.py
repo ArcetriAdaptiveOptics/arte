@@ -43,12 +43,12 @@ class TestNoisePropagation(object):
         plt.show()
 
 
-    def noiseRG(self, radialOrder):
-        return -2.05 * np.log10(radialOrder + 1) - 0.53
+    def noiseRG(self, radial_order):
+        return -2.05 * np.log10(radial_order + 1) - 0.53
 
 
-    def noiseRG2(self, radialOrder):
-        return -2.0 * np.log10(radialOrder + 1) - 0.76
+    def noiseRG2(self, radial_order):
+        return -2.0 * np.log10(radial_order + 1) - 0.76
 
 
     def plotRigautAndGendronNoisePropagation(self, noiseProp):
@@ -57,7 +57,7 @@ class TestNoisePropagation(object):
 
         modesV= noiseProp.modesVector
         pi= np.diag(noiseProp.noisePropagationMatrix)
-        n= zg.ZernikeGenerator.radialOrder(modesV)
+        n= zg.ZernikeGenerator.radial_order(modesV)
         plt.plot(np.log10(n + 1), np.log10(pi / pi[0]))
         plt.plot(np.log10(n + 1), self.noiseRG(n))
         plt.plot(np.log10(n + 1), self.noiseRG2(n))
