@@ -318,6 +318,23 @@ class BidimensionalFourierTransformTest(unittest.TestCase):
         self.assertTrue(spectr.values.unit.is_equivalent((u.V)))
 
 
+    def test_parseval(self):    
+        x = np.random.rand(321, 456)
+        f = bfft.direct_transform(x)
+        want = np.sum(np.abs(x)**2)
+        got = np.sum(np.abs(f)**2)
+        np.testing.assert_allclose(got, want)
+
+        xy = DomainXY.from_shape(x.shape, 0.123)
+        spatial_funct = ScalarBidimensionalFunction(x, domain=xy)
+        spectr = bfft.inverse(spatial_funct)
+
+        want = np.sum(np.abs(spatial_funct.values)**2)
+        got = np.sum(np.abs(spectr.values)**2)
+        np.testing.assert_allclose(got, want)
+        
+        
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
