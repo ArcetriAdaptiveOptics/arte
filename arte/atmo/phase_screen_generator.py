@@ -14,7 +14,7 @@ class PhaseScreenGenerator(object):
         self._screenSzInM = float(screenSizeInMeters)
         self._outerScaleInM = float(outerScaleInMeters)
         self._phaseScreens = None
-        self._nSubHarmonicsToUse = 6
+        self._nSubHarmonicsToUse = 8
         if seed is None:
             self._seed = np.random.randint(2**32 - 1, dtype=np.uint32)
         else:
@@ -32,9 +32,14 @@ class PhaseScreenGenerator(object):
         for i in range(nIters):
             ps = self._generate_phase_screen_with_fft()
             ps += self._generate_sub_harmonics(self._nSubHarmonicsToUse)
-            ret[2 * i, :, :] = np.sqrt(2) * ps.real
-            ret[2 * i + 1, :, :] = np.sqrt(2) * ps.imag
-        self._phaseScreens = ret[:numberOfScreens]
+            ret[2* i, :, :]= self._remove_piston(np.sqrt(2)* ps.real)
+            ret[2* i + 1, :, :]= self._remove_piston(np.sqrt(2)* ps.imag)
+        self._phaseScreens= ret[:numberOfScreens]
+
+
+    def _remove_piston(self, scrn):
+        return scrn-scrn.mean()
+
 
     def _generate_phase_screen_with_fft(self):
         '''
