@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.linalg.basic import pinv2
+from scipy.linalg.basic import pinv
 from arte.utils.decorator import cacheResult, returns
 from arte.utils.zernike_generator import ZernikeGenerator
 from arte.types.zernike_coefficients import ZernikeCoefficients
@@ -25,7 +25,7 @@ class ModalDecomposer(object):
         for idx in modesIdx:
             im[i, :] = np.hstack((dx[idx].compressed(), dy[idx].compressed()))
             i += 1
-        return pinv2(im)
+        return pinv(im)
 
     @returns(ZernikeCoefficients)
     def measureZernikeCoefficientsFromSlopes(self, slopes, mask, nModes=None):
@@ -59,7 +59,7 @@ class ModalDecomposer(object):
         for idx in modesIdx:
             im[i, :] = wf[idx].compressed()
             i += 1
-        return pinv2(im)
+        return pinv(im)
 
     @returns(ZernikeCoefficients)
     def measureZernikeCoefficientsFromWavefront(self,
