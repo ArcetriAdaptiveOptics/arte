@@ -39,17 +39,29 @@ class EltTransmissiveElementsCatalog():
             foldername)
     
     @classmethod
-    def ag_mirror_elt(cls):
+    def ag_mirror_elt_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
         return RestoreTransmissiveElements.restore_transmissive_elements_from_fits(
-            cls._EltFolder('ag_mirror_elt'))
+            cls._EltFolder('ag_mirror_elt_001'))
         
     @classmethod
-    def al_mirror_elt(cls):
+    def al_mirror_elt_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
         return RestoreTransmissiveElements.restore_transmissive_elements_from_fits(
-            cls._EltFolder('al_mirror_elt'))
+            cls._EltFolder('al_mirror_elt_001'))
         
     @classmethod
-    def spider(cls):
+    def spider_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
         a = Bandpass.one() * 0.043
         r = Bandpass.zero()
         te = TransmissiveElement(reflectance=r, absorptance=a)
@@ -66,138 +78,260 @@ class MorfeoTransmissiveElementsCatalog():
             foldername)
         
     @classmethod
-    def lgs_dichroic(cls):
+    def lgs_dichroic_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('lgs_dichroic'), u.um)
+            cls._MorfeoFolder('lgs_dichroic_001'), u.um)
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
-            cls._MorfeoFolder('lgs_dichroic'), u.um)
+            cls._MorfeoFolder('lgs_dichroic_001'), u.um)
         te = TransmissiveElement(transmittance=t, reflectance=r)
         # te.add_spectral_points([200*u.nm, 7*u.um], transmittance=[0,0], reflectance=[1,1])
         return te
     
     @classmethod
-    def visir_dichroic(cls):
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('visir_dichroic'), u.um)
-        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
-            cls._MorfeoFolder('visir_dichroic'), u.um)
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-
-    @classmethod
-    def infrasil_1mm(cls):
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('infrasil_1mm'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-
-    @classmethod
-    def infrasil_1mm_B_coated(cls):
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('infrasil_1mm_B_coated'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
-    @classmethod
-    def infrasil_1mm_C_coated(cls):
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('infrasil_1mm_C_coated'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
-    @classmethod
-    def lgs_lens(cls):
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('lgs_lens'), u.um)
-        a = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, absorptance=a)
-        return te
-    
-    @classmethod
-    def lgs_wfs(cls):
+    def lgs_dichroic_002(cls):
         '''
-        Spiegazione ... ricevuta via email da tizio nella data
-        versione dei dati
+        LGS dichroic: special coating/suprasil 3002 (80mm)/AR coating (@589 nm)
+        
+        Data from Demetrio? 
+        '''
+        
+        pass
+    
+    @classmethod
+    def visir_dichroic_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('visir_dichroic_001'), u.um)
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._MorfeoFolder('visir_dichroic_001'), u.um)
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def schmidt_plate_001(cls):
+        '''
+        Schmidt plate: Infrasil window (Thorlabs).
+        Thickness: 1 mm.
+        
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('infrasil_1mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def schmidt_plate_002(cls):
+        '''
+        Schmidt plate: Suprasil 3002.
+        Thickness: 85 mm.
+        
+        Data from Heraeus website (?)
+        '''
+        
+        pass
+
+    @classmethod
+    def infrasil_1mm_B_coated_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('infrasil_1mm_B_coated_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def infrasil_1mm_C_coated_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('infrasil_1mm_C_coated_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def lgs_lens_001(cls):
+        '''
+        Lens in the LGS Objective (LGSO).
+        
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('lgs_lens_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def lgs_fm_001(cls):
+        '''
+        Folding mirror in the LGS Objective (LGSO).
+        
+        Data assumed.
+        '''
+        
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._MorfeoFolder('lgs_folding_mirror_001'), u.um)
+        t = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def lgs_wfs_001(cls):
+        '''
+        LGS WFS transmission excluding camera QE, detector windows and notch
+        filter.
+        
+        Data from Patrick Rabou (received by email on 23-01-2023).
+        '''
+        
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('lgs_wfs_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def CaF2_lens_C_coated_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('caf2_lens_C_coated_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def adc_coated_001(cls):
+        '''
+        Coated ADC: 2x S-NPH1/N-LAK22/S-NPH1
+        Thickness of S-NPH1 (a): 4 mm.
+        Thickness of N-LAK22: 8 mm.
+        Thickness of S-NPH1 (b): 4 mm.
+        
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('lgs_wfs'), u.um)
-        a = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, absorptance=a)
-        return te
-    
-    @classmethod
-    def CaF2_lens_C_coated(cls):
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('caf2_lens_C_coated'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
-    @classmethod
-    def adc_coated(cls):
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('adc_coated'), u.um)
+            cls._MorfeoFolder('adc_coated_001'), u.um)
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
-            cls._MorfeoFolder('adc_coated'), u.um)
+            cls._MorfeoFolder('adc_coated_001'), u.um)
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
     
     @classmethod
-    def collimator_doublet_coated(cls):
+    def collimator_doublet_coated_001(cls):
+        '''
+        Coated collimator doublet: N-SF15/N-BAK1.
+        Thickness of N-SF15: 3 mm.
+        Thickness of N-BAK1: 5 mm.
+        
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls". 
+        '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('collimator_doublet_coated'), u.um)
+            cls._MorfeoFolder('collimator_doublet_coated_001'), u.um)
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
-            cls._MorfeoFolder('collimator_doublet_coated'), u.um)
+            cls._MorfeoFolder('collimator_doublet_coated_001'), u.um)
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
     
     @classmethod
-    def notch_filter(cls):
+    def collimator_doublet_coated_002(cls):
+        '''
+        Collimator doublet N-SF5/N-BK7.
+        Thickness of N-SF5 = 2.5 mm.
+        Thickness of N-BK7 = 6 mm.
+        
+        Data from ?MB?
+         
+        '''
+        pass
+    
+    @classmethod
+    def notch_filter_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('notch_filter'), u.um)
+            cls._MorfeoFolder('notch_filter_001'), u.um)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
     
     @classmethod
-    def ref_custom_filter(cls):
+    def ref_custom_filter_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('ref_custom_filter'), u.um)
+            cls._MorfeoFolder('ref_custom_filter_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
 
     @classmethod
-    def sapphire_window(cls):
+    def sapphire_window_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('sapphire_window'), u.um)
+            cls._MorfeoFolder('sapphire_window_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
 
     @classmethod
-    def ccd220_qe(cls):
+    def ccd220_qe_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('ccd_220_qe'), u.um)
+            cls._MorfeoFolder('ccd_220_qe_001'), u.um)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
     
     @classmethod
-    def c_red_one_qe(cls):
+    def c_red_one_qe_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('c_red_one_qe'), u.um)
+            cls._MorfeoFolder('c_red_one_qe_001'), u.um)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
 
     @classmethod
-    def c_red_one_filters(cls):
+    def c_red_one_filters_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('c_red_one_filters'), u.um)
+            cls._MorfeoFolder('c_red_one_filters_001'), u.um)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
