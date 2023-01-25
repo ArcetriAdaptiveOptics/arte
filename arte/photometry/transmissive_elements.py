@@ -57,8 +57,12 @@ class Bandpass():
     @classmethod
     def peak(cls, peak_wl, delta_wl, high_ampl, low_ampl):
         '''
-        T=high_ampl for lambda = peak_wl +/- delta_wl
-        T=low_ampl elsewhere
+        T = high_ampl for lambda = peak_wl
+        T = low_ampl for lambda < (peak_wl - delta_wl) and 
+            lambda > (peak_wl + delta_wl)
+        T = linear_interpolation(low_ampl, high_ampl) for 
+            (peak_wl - delta_wl) < lambda < peak_wl and
+            peak_wl < lambda < (peak_wl + delta_wl) 
         '''
         l = peak_wl.to(u.nm).value
         dl = delta_wl.to(u.nm).value
