@@ -6,18 +6,20 @@ from synphot.utils import generate_wavelengths, merge_wavelengths
 from astropy.io import fits
 
 
-def standard_waveset():
+
+class Bandpass():
+    
     _MIN_LAMBDA_NM = 200
     _MAX_LAMBDA_NM = 10000
     _DELTA_LAMBDA_NM = 10
-    return generate_wavelengths(
-        minwave=_MIN_LAMBDA_NM,
-        maxwave=_MAX_LAMBDA_NM,
-        delta=_DELTA_LAMBDA_NM,
-        log=False, wave_unit=u.nm)[0].to(u.angstrom)
 
-
-class Bandpass():
+    @classmethod
+    def standard_waveset(cls):
+        return generate_wavelengths(
+            minwave=cls._MIN_LAMBDA_NM,
+            maxwave=cls._MAX_LAMBDA_NM,
+            delta=cls._DELTA_LAMBDA_NM,
+            log=False, wave_unit=u.nm)[0]
 
     @classmethod
     def one(cls):
@@ -29,7 +31,7 @@ class Bandpass():
 
     @classmethod
     def flat(cls, amplitude):
-        wv = standard_waveset()
+        wv = cls.standard_waveset()
         return SpectralElement(
             Empirical1D, points=wv, lookup_table=amplitude * np.ones(wv.shape))
 
@@ -51,6 +53,21 @@ class Bandpass():
             points=np.array([cls._MIN_LAMBDA_NM, l1, l2, cls._MAX_LAMBDA_NM]
                             ) * u.nm,
             lookup_table=np.array([low_ampl, low_ampl, high_ampl, high_ampl]))
+        
+    @classmethod
+    def peak(cls, peak_wl, delta_wl, high_ampl, low_ampl):
+        '''
+        T=high_ampl for lambda = peak_wl +/- delta_wl
+        T=low_ampl elsewhere
+        '''
+        l = peak_wl.to(u.nm).value
+        dl = delta_wl.to(u.nm).value
+        return SpectralElement(
+            Empirical1D,
+            points=np.array([
+                cls._MIN_LAMBDA_NM, l-dl, l, l+dl,  cls._MAX_LAMBDA_NM]) * u.nm,
+            lookup_table=np.array([
+                low_ampl, low_ampl, high_ampl, low_ampl, low_ampl]))
 
     @classmethod
     def step(cls, wl, low_ampl, high_ampl):
