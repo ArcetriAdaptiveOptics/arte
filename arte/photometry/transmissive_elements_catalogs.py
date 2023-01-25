@@ -42,8 +42,7 @@ class EltTransmissiveElementsCatalog():
     def ag_mirror_elt_001(cls):
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
-        '''
-        
+        ''' 
         return RestoreTransmissiveElements.restore_transmissive_elements_from_fits(
             cls._EltFolder('ag_mirror_elt_001'))
         
@@ -52,7 +51,6 @@ class EltTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         return RestoreTransmissiveElements.restore_transmissive_elements_from_fits(
             cls._EltFolder('al_mirror_elt_001'))
         
@@ -61,7 +59,6 @@ class EltTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         a = Bandpass.one() * 0.043
         r = Bandpass.zero()
         te = TransmissiveElement(reflectance=r, absorptance=a)
@@ -82,7 +79,6 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('lgs_dichroic_001'), u.um)
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
@@ -98,7 +94,6 @@ class MorfeoTransmissiveElementsCatalog():
         
         Data from Demetrio? 
         '''
-        
         pass
     
     @classmethod
@@ -106,7 +101,6 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('visir_dichroic_001'), u.um)
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
@@ -122,7 +116,6 @@ class MorfeoTransmissiveElementsCatalog():
         
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('infrasil_1mm_001'), u.um)
         r = Bandpass.zero()
@@ -137,7 +130,6 @@ class MorfeoTransmissiveElementsCatalog():
         
         Data from Heraeus website (?)
         '''
-        
         pass
 
     @classmethod
@@ -145,7 +137,6 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('infrasil_1mm_B_coated_001'), u.um)
         r = Bandpass.zero()
@@ -157,7 +148,6 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('infrasil_1mm_C_coated_001'), u.um)
         r = Bandpass.zero()
@@ -165,31 +155,36 @@ class MorfeoTransmissiveElementsCatalog():
         return te
     
     @classmethod
-    def lgs_lens_001(cls):
+    def lgso_lens_001(cls):
         '''
         Lens in the LGS Objective (LGSO).
         
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('lgs_lens_001'), u.um)
+            cls._MorfeoFolder('lgso_lens_001'), u.um)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
     
     @classmethod
-    def lgs_fm_001(cls):
+    def lgso_fm_001(cls):
         '''
         Folding mirror in the LGS Objective (LGSO).
+        First approximation: reflectance curve is simply a peak of 0.99 at
+            589 nm.
+        Peak value is taken from Section 3.2.15 of
+            "E-MAO-SF0-INA-DER-001_02 MAORY  System Optical Design and Analysis Report.pdf".
         
-        Data assumed.
         '''
-        
-        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
-            cls._MorfeoFolder('lgs_folding_mirror_001'), u.um)
+        #TODO: Peak wavelength is set to 590 nm instead of 589 nm, in order
+        #to be consistent with TransmissiveElement standard waveset. This 
+        #waveset does not include 589 nm, thus it would interpolate the peak
+        #in a wrong way.
+        #Try to fix this.
+        r = Bandpass.peak(590 * u.nm, 1 * u.nm, 0.99, 0)
         t = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
+        te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
     
     @classmethod
@@ -200,7 +195,6 @@ class MorfeoTransmissiveElementsCatalog():
         
         Data from Patrick Rabou (received by email on 23-01-2023).
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('lgs_wfs_001'), u.um)
         a = Bandpass.zero()
@@ -212,7 +206,6 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('caf2_lens_C_coated_001'), u.um)
         r = Bandpass.zero()
@@ -269,7 +262,6 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('notch_filter_001'), u.um)
         a = Bandpass.zero()
@@ -281,7 +273,6 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('ref_custom_filter_001'), u.um)
         r = Bandpass.zero()
@@ -293,7 +284,6 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('sapphire_window_001'), u.um)
         r = Bandpass.zero()
@@ -305,7 +295,6 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('ccd_220_qe_001'), u.um)
         a = Bandpass.zero()
@@ -317,7 +306,6 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('c_red_one_qe_001'), u.um)
         a = Bandpass.zero()
@@ -329,9 +317,23 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
-        
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('c_red_one_filters_001'), u.um)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
+
+    @classmethod
+    def c_blue_qe_001(cls):
+        '''
+        C-BLUE camera of First Light Imaging with SONY IMX425 detector.
+        First approximation: QE curve is simply a peak of 0.75 at 589 nm.
+        QE value is taken from Section 4.5 of
+            "E-MAO-PL0-IPA-ANR-013_01 MAORY LGS WFS Analysis Report.pdf" and 
+            includes camera and detector windows.
+        '''
+        t = Bandpass.peak(590 * u.nm, 1 * u.nm, 0.75, 0)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+
