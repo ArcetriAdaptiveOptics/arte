@@ -72,6 +72,23 @@ class Bandpass():
                 cls._MIN_LAMBDA_NM, l-dl, l, l+dl,  cls._MAX_LAMBDA_NM]) * u.nm,
             lookup_table=np.array([
                 low_ampl, low_ampl, high_ampl, low_ampl, low_ampl]))
+        
+    @classmethod
+    def top_hat(cls, peak_wl, delta_wl, high_ampl, low_ampl):
+        '''
+        T = high_ampl for lambda = peak_wl +/- delta_wl
+        T = low_ampl elsewhere
+        '''
+        l = peak_wl.to(u.nm).value
+        dl = delta_wl.to(u.nm).value
+        return SpectralElement(
+            Empirical1D,
+            points=np.array([
+                cls._MIN_LAMBDA_NM, l-dl, l-dl + 1e-8, l+dl, 
+                l+dl + 1e-8, cls._MAX_LAMBDA_NM]) * u.nm,
+            lookup_table=np.array([
+                low_ampl, low_ampl, high_ampl, high_ampl, low_ampl, low_ampl]))
+
 
     @classmethod
     def step(cls, wl, low_ampl, high_ampl):
@@ -146,9 +163,12 @@ class TransmissiveElement():
         return c
 
     def plot(self, transmittance=True, reflectance=True,
-             absorptance=True, **kwargs):
+             absorptance=True, wv_unit=None, **kwargs):
         import matplotlib.pyplot as plt
-        wv = self.waveset
+        if wv_unit is None:
+            wv = self.waveset
+        else:
+            wv = self.waveset.to(wv_unit)
         if transmittance:
             plt.plot(wv, self.transmittance(wv), label='t', **kwargs)
         if reflectance:
