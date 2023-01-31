@@ -132,8 +132,8 @@ class MorfeoTransmissiveElementsCatalog():
         589 nm is considered for 2 surfaces with broadband (0.6-2.4 um) AR 
         coating + Suprasil 3002 substrate (thickness = 85 mm).       
         '''
-        r = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.95, 0)
-        t = Bandpass.zero()
+        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.95, 0)
+        r = Bandpass.zero()
         te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
 
