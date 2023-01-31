@@ -77,7 +77,9 @@ class MorfeoTransmissiveElementsCatalog():
     @classmethod
     def lgs_dichroic_001(cls):
         '''
-        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        LGS dichroic.
+        MATERION-like (average) coating.
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls". 
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._MorfeoFolder('lgs_dichroic_001'), u.um)
@@ -125,12 +127,15 @@ class MorfeoTransmissiveElementsCatalog():
     @classmethod
     def schmidt_plate_002(cls):
         '''
-        Schmidt plate: Suprasil 3002.
-        Thickness: 85 mm.
-        
-        Data from Heraeus website (?)
+        Simplified version of Schmidt plate to extract the LGS WFS throughput.
+        Based on E-MAO-SF0-INA-DER-001_02, an overall transmittance of 0.95 at 
+        589 nm is considered for 2 surfaces with broadband (0.6-2.4 um) AR 
+        coating + Suprasil 3002 substrate (thickness = 85 mm).       
         '''
-        pass
+        r = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.95, 0)
+        t = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
+        return te
 
     @classmethod
     def infrasil_1mm_B_coated_001(cls):
@@ -158,7 +163,7 @@ class MorfeoTransmissiveElementsCatalog():
     def lgso_lens_001(cls):
         '''
         Lens in the LGS Objective (LGSO).
-        
+        Narrowband (589 nm) AR coating (CHECK).
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
@@ -177,12 +182,7 @@ class MorfeoTransmissiveElementsCatalog():
             "E-MAO-SF0-INA-DER-001_02 MAORY  System Optical Design and Analysis Report.pdf".
         
         '''
-        #TODO: Peak wavelength is set to 590 nm instead of 589 nm, in order
-        #to be consistent with TransmissiveElement standard waveset. This 
-        #waveset does not include 589 nm, thus it would interpolate the peak
-        #in a wrong way.
-        #Try to fix this.
-        r = Bandpass.peak(590 * u.nm, 1 * u.nm, 0.99, 0)
+        r = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.99, 0)
         t = Bandpass.zero()
         te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
@@ -332,7 +332,7 @@ class MorfeoTransmissiveElementsCatalog():
             "E-MAO-PL0-IPA-ANR-013_01 MAORY LGS WFS Analysis Report.pdf" and 
             includes camera and detector windows.
         '''
-        t = Bandpass.peak(590 * u.nm, 1 * u.nm, 0.75, 0)
+        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.75, 0)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
