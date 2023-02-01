@@ -1,6 +1,7 @@
 import os
 import astropy.units as u
-from arte.photometry.transmissive_elements import Bandpass, TransmissiveElement
+from arte.photometry.transmissive_elements import Bandpass, TransmissiveElement,\
+    TransmissiveSystem, Direction
 from arte.utils.package_data import dataRootDir
 from synphot.spectrum import SpectralElement
 
@@ -92,12 +93,45 @@ class MorfeoTransmissiveElementsCatalog():
     @classmethod
     def lgs_dichroic_002(cls):
         '''
-        LGS dichroic: special coating/suprasil 3002 (80mm)/AR coating (@589 nm)
-        
-        Data from Demetrio? 
+        LGS dichroic:
+            - 1 surface with MATERION-like coating
+            - 85 mm of Suprasil 3002 substrate
+            - 1 surface with AR coating (589 nm)
         '''
-        pass
+        materion_coating = MorfeoTransmissiveElementsCatalog.lgs_dichroic_001()
+        ar_coating = MorfeoTransmissiveElementsCatalog.lgso_lens_001()
+        substrate = cls.suprasil3002_85mm_001()
+        
+        lgs_dichroic = TransmissiveSystem()
+        lgs_dichroic.add(materion_coating, Direction.TRANSMISSION)
+        lgs_dichroic.add(substrate, Direction.TRANSMISSION)
+        lgs_dichroic.add(ar_coating, Direction.TRANSMISSION)
+        return lgs_dichroic.as_transmissive_element()
     
+    @classmethod
+    def suprasil3002_85mm_001(cls):
+        '''
+        Suprasil 3002 substrate of 85 mm thickness.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('suprasil3002_85mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def suprasil3002_80mm_001(cls):
+        '''
+        Suprasil 3002 substrate of 80 mm thickness.
+        Data extrapolated from 85 mm. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('suprasil3002_80mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+        
     @classmethod
     def visir_dichroic_001(cls):
         '''
@@ -163,7 +197,7 @@ class MorfeoTransmissiveElementsCatalog():
     def lgso_lens_001(cls):
         '''
         Lens in the LGS Objective (LGSO).
-        Narrowband (589 nm) AR coating (CHECK).
+        One surface with narrowband (589 nm) AR coating.
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
@@ -171,6 +205,24 @@ class MorfeoTransmissiveElementsCatalog():
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
+    
+    @classmethod
+    def lgso_lens_002(cls):
+        '''
+        Lens in the LGS Objective (LGSO).
+        Two surfaces, both with narrowband (589 nm) AR coating.
+        Data of the AR coating from Cedric's spreadsheet
+        "background_calc_maory_v12.xls".
+        '''
+        t1 = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('lgso_lens_001'), u.um)
+        a1 = Bandpass.zero()
+        sup1 = TransmissiveElement(transmittance=t1, absorptance=a1)
+        sup2 = sup1
+        lgso_l = TransmissiveSystem()
+        lgso_l.add(sup1, Direction.TRANSMISSION)
+        lgso_l.add(sup2, Direction.TRANSMISSION)
+        return lgso_l.as_transmissive_element()
     
     @classmethod
     def lgso_fm_001(cls):
