@@ -11,7 +11,7 @@ class RestoreTransmissiveElements(object):
     @classmethod
     def transmissive_elements_folder(cls):
         rootDir = dataRootDir()
-        dirname = os.path.join(rootDir, 'photometry', 'optical_elements')
+        dirname = os.path.join(rootDir, 'photometry', 'transmissive_elements')
         return dirname
 
     @classmethod
@@ -66,6 +66,185 @@ class EltTransmissiveElementsCatalog():
         return te
 
 
+class CoatingsTransmissiveElementsCatalog():
+    
+    @classmethod
+    def _CoatingsFolder(cls, foldername):
+        return os.path.join(
+            RestoreTransmissiveElements.transmissive_elements_folder(),
+            'coatings',
+            foldername)
+        
+    @classmethod
+    def materion_average_001(cls):
+        '''
+        MATERION-like coating.
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls". 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('materion_average_001'), u.um)
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('materion_average_001'), u.um)
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def ar_coating_589nm_001(cls):
+        '''
+        Narrowband (589 nm) AR coating. This is a simplified version, i.e.
+        a peak at 589 nm.
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('ar_589nm_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+
+
+class GlassesTransmissiveElementsCatalog():
+    
+    @classmethod
+    def _GlassesFolder(cls, foldername):
+        return os.path.join(
+            RestoreTransmissiveElements.transmissive_elements_folder(),
+            'glasses',
+            foldername)
+        
+    @classmethod
+    def _CoatedGlassesFolder(cls, foldername):
+        return os.path.join(
+            RestoreTransmissiveElements.transmissive_elements_folder(),
+            'coated_glasses',
+            foldername)
+        
+    @classmethod
+    def infrasil_1mm_001(cls):
+        '''
+        Infrasil window.
+        Thickness: 1 mm.
+        
+        Data from Thorlabs website.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('infrasil_1mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def infrasil_1mm_B_coated_001(cls):
+        '''
+        Infrasil window B-coated.
+        Thickness: 1 mm.
+        
+        Data from Thorlabs website.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatedGlassesFolder('infrasil_1mm_B_coated_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def infrasil_1mm_C_coated_001(cls):
+        '''
+        Infrasil window C-coated.
+        Thickness: 1 mm.
+        
+        Data from Thorlabs website.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatedGlassesFolder('infrasil_1mm_C_coated_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def suprasil3002_10mm_001(cls):
+        '''
+        Suprasil 3002 substrate of 10 mm thickness.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_10mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def suprasil3002_40mm_001(cls):
+        '''
+        Suprasil 3002 substrate of 40 mm thickness.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_40mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def suprasil3002_60mm_001(cls):
+        '''
+        Suprasil 3002 substrate of 60 mm thickness.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_60mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def suprasil3002_70mm_001(cls):
+        '''
+        Suprasil 3002 substrate of 70 mm thickness.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_70mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def suprasil3002_80mm_001(cls):
+        '''
+        Suprasil 3002 substrate of 80 mm thickness.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_80mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def suprasil3002_85mm_001(cls):
+        '''
+        Suprasil 3002 substrate of 85 mm thickness.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_85mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+        
+    @classmethod
+    def suprasil3002_108mm_001(cls):
+        '''
+        Suprasil 3002 substrate of 108 mm thickness.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_108mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+
 class MorfeoTransmissiveElementsCatalog():
     
     @classmethod
@@ -78,60 +257,30 @@ class MorfeoTransmissiveElementsCatalog():
     @classmethod
     def lgs_dichroic_001(cls):
         '''
-        LGS dichroic.
-        MATERION-like (average) coating.
-        Data from Cedric's spreadsheet "background_calc_maory_v12.xls". 
+        LGS dichroic. This is a simplified version: one surface only with 
+        MATERION-like average coating.
         '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('lgs_dichroic_001'), u.um)
-        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
-            cls._MorfeoFolder('lgs_dichroic_001'), u.um)
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        # te.add_spectral_points([200*u.nm, 7*u.um], transmittance=[0,0], reflectance=[1,1])
+        te = CoatingsTransmissiveElementsCatalog.materion_average_001()
         return te
     
     @classmethod
     def lgs_dichroic_002(cls):
         '''
-        LGS dichroic:
+        LGS dichroic. The element is composed by:
             - 1 surface with MATERION-like coating
             - 85 mm of Suprasil 3002 substrate
             - 1 surface with AR coating (589 nm)
         '''
-        materion_coating = MorfeoTransmissiveElementsCatalog.lgs_dichroic_001()
-        ar_coating = MorfeoTransmissiveElementsCatalog.lgso_lens_001()
-        substrate = cls.suprasil3002_85mm_001()
+        materion_coating = CoatingsTransmissiveElementsCatalog.materion_average_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_001()
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
         
         lgs_dichroic = TransmissiveSystem()
         lgs_dichroic.add(materion_coating, Direction.TRANSMISSION)
         lgs_dichroic.add(substrate, Direction.TRANSMISSION)
         lgs_dichroic.add(ar_coating, Direction.TRANSMISSION)
         return lgs_dichroic.as_transmissive_element()
-    
-    @classmethod
-    def suprasil3002_85mm_001(cls):
-        '''
-        Suprasil 3002 substrate of 85 mm thickness.
-        Data from Heraeus website. 
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('suprasil3002_85mm_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
-    @classmethod
-    def suprasil3002_80mm_001(cls):
-        '''
-        Suprasil 3002 substrate of 80 mm thickness.
-        Data extrapolated from 85 mm. 
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('suprasil3002_80mm_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-        
+
     @classmethod
     def visir_dichroic_001(cls):
         '''
@@ -147,15 +296,9 @@ class MorfeoTransmissiveElementsCatalog():
     @classmethod
     def schmidt_plate_001(cls):
         '''
-        Schmidt plate: Infrasil window (Thorlabs).
-        Thickness: 1 mm.
-        
-        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        Schmidt plate: we assume an Infrasil window of thickness = 1 mm.
         '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('infrasil_1mm_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
+        te = GlassesTransmissiveElementsCatalog.infrasil_1mm_001()
         return te
     
     @classmethod
@@ -170,58 +313,99 @@ class MorfeoTransmissiveElementsCatalog():
         r = Bandpass.zero()
         te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
-
-    @classmethod
-    def infrasil_1mm_B_coated_001(cls):
-        '''
-        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('infrasil_1mm_B_coated_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
-    @classmethod
-    def infrasil_1mm_C_coated_001(cls):
-        '''
-        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('infrasil_1mm_C_coated_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
     
     @classmethod
     def lgso_lens_001(cls):
         '''
-        Lens in the LGS Objective (LGSO).
-        One surface with narrowband (589 nm) AR coating.
-        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        Lens in the LGS Objective (LGSO). This is a simplified version: one
+        surface with narrowband (589 nm) AR coating.
         '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('lgso_lens_001'), u.um)
-        a = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, absorptance=a)
+        te = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
         return te
     
     @classmethod
     def lgso_lens_002(cls):
         '''
-        Lens in the LGS Objective (LGSO).
-        Two surfaces, both with narrowband (589 nm) AR coating.
-        Data of the AR coating from Cedric's spreadsheet
-        "background_calc_maory_v12.xls".
+        Lens in the LGS Objective (LGSO). This is a simplified version: two
+        surfaces, both with narrowband (589 nm) AR coating.
         '''
-        t1 = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('lgso_lens_001'), u.um)
-        a1 = Bandpass.zero()
-        sup1 = TransmissiveElement(transmittance=t1, absorptance=a1)
+        sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
         sup2 = sup1
         lgso_l = TransmissiveSystem()
         lgso_l.add(sup1, Direction.TRANSMISSION)
         lgso_l.add(sup2, Direction.TRANSMISSION)
+        return lgso_l.as_transmissive_element()
+    
+    @classmethod
+    def lgso_lens1_001(cls):
+        '''
+        First lens in the LGS Objective (LGSO), composed by:
+            - 1 surface with narrowband AR coating (589 nm)
+            - Fused silica substrate of thickness = 108 mm (we assume here
+                a Suprasil3002 slab)
+            - 1 surface with narrowband AR coating (589 nm)
+        '''
+        sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_108mm_001()
+        sup3 = sup1
+        lgso_l = TransmissiveSystem()
+        lgso_l.add(sup1, Direction.TRANSMISSION)
+        lgso_l.add(sup2, Direction.TRANSMISSION)
+        lgso_l.add(sup3, Direction.TRANSMISSION)
+        return lgso_l.as_transmissive_element()
+    
+    @classmethod
+    def lgso_lens2_001(cls):
+        '''
+        Second lens in the LGS Objective (LGSO), composed by:
+            - 1 surface with narrowband AR coating (589 nm)
+            - Fused silica substrate of thickness = 70 mm (we assume here
+                a Suprasil3002 slab)
+            - 1 surface with narrowband AR coating (589 nm)
+        '''
+        sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_70mm_001()
+        sup3 = sup1
+        lgso_l = TransmissiveSystem()
+        lgso_l.add(sup1, Direction.TRANSMISSION)
+        lgso_l.add(sup2, Direction.TRANSMISSION)
+        lgso_l.add(sup3, Direction.TRANSMISSION)
+        return lgso_l.as_transmissive_element()
+    
+    @classmethod
+    def lgso_lens3_001(cls):
+        '''
+        Third lens in the LGS Objective (LGSO), composed by:
+            - 1 surface with narrowband AR coating (589 nm)
+            - Fused silica substrate of thickness = 40 mm (we assume here
+                a Suprasil3002 slab)
+            - 1 surface with narrowband AR coating (589 nm)
+        '''
+        sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_40mm_001()
+        sup3 = sup1
+        lgso_l = TransmissiveSystem()
+        lgso_l.add(sup1, Direction.TRANSMISSION)
+        lgso_l.add(sup2, Direction.TRANSMISSION)
+        lgso_l.add(sup3, Direction.TRANSMISSION)
+        return lgso_l.as_transmissive_element()
+    
+    @classmethod
+    def lgso_lens4_001(cls):
+        '''
+        Fourth lens in the LGS Objective (LGSO), composed by:
+            - 1 surface with narrowband AR coating (589 nm)
+            - Fused silica substrate of thickness = 60 mm (we assume here
+                a Suprasil3002 slab)
+            - 1 surface with narrowband AR coating (589 nm)
+        '''
+        sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_60mm_001()
+        sup3 = sup1
+        lgso_l = TransmissiveSystem()
+        lgso_l.add(sup1, Direction.TRANSMISSION)
+        lgso_l.add(sup2, Direction.TRANSMISSION)
+        lgso_l.add(sup3, Direction.TRANSMISSION)
         return lgso_l.as_transmissive_element()
     
     @classmethod
