@@ -4,14 +4,15 @@ from arte.photometry.transmissive_elements import TransmissiveSystem, Direction
 
 
 def EltTransmissiveSystem():
-    spider = EltTransmissiveElementsCatalog.spider_001()
+    # spider = EltTransmissiveElementsCatalog.spider_001()
     m1 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m2 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m3 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m4 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
     m5 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     ts = TransmissiveSystem()
-    ts.add(spider, Direction.TRANSMISSION)
+    #TODO: remove spider in transmission
+    # ts.add(spider, Direction.TRANSMISSION)
     ts.add(m1, Direction.REFLECTION)
     ts.add(m2, Direction.REFLECTION)
     ts.add(m3, Direction.REFLECTION)
@@ -80,16 +81,15 @@ def MorfeoLgsChannelTransmissiveSystem_002():
     C-BLUE camera is considered.
       
     '''
-    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_001()
+    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_002()
     m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
-    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_001()
+    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_002()
     fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
-    lgs_lens = MorfeoTransmissiveElementsCatalog.lgso_lens_001()
-    notch_filter = MorfeoTransmissiveElementsCatalog.notch_filter_001()
+    lgs_lens = MorfeoTransmissiveElementsCatalog.lgso_lens_002()
     lgs_wfs = MorfeoTransmissiveElementsCatalog.lgs_wfs_001()
     c_blue = MorfeoTransmissiveElementsCatalog.c_blue_qe_001()
     
@@ -108,12 +108,49 @@ def MorfeoLgsChannelTransmissiveSystem_002():
     ts.add(lgs_lens, Direction.TRANSMISSION)
     ts.add(fm, Direction.REFLECTION)
     ts.add(fm, Direction.REFLECTION)
-    ts.add(notch_filter, Direction.TRANSMISSION)
     ts.add(lgs_wfs, Direction.TRANSMISSION)
     ts.add(c_blue, Direction.TRANSMISSION)
     
     return ts
 
+
+def MorfeoLgsChannelTransmissiveSystem_003():
+    '''
+    '''
+    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_002()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
+    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_002()
+    fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
+    lgs_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
+    lgs_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
+    lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
+    lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
+    lgs_wfs = MorfeoTransmissiveElementsCatalog.lgs_wfs_001()
+    c_blue = MorfeoTransmissiveElementsCatalog.c_blue_qe_001()
+    
+    ts = EltTransmissiveSystem()   
+    ts.add(schmidt_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.TRANSMISSION)
+    ts.add(lgs_l1, Direction.TRANSMISSION)
+    ts.add(lgs_l2, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_l3, Direction.TRANSMISSION)
+    ts.add(lgs_l4, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_wfs, Direction.TRANSMISSION)
+    ts.add(c_blue, Direction.TRANSMISSION)
+    
+    return ts
 
 def MorfeoLowOrderChannelTransmissiveSystem_001():
     '''
