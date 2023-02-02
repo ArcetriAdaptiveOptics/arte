@@ -15,6 +15,7 @@ from synphot.units import FLAM
 from arte.photometry import get_normalized_star_spectrum
 from arte.photometry.eso_sky_calc import EsoSkyCalc
 import numpy as np
+from arte.photometry.transmissive_elements_catalogs import MorfeoTransmissiveElementsCatalog
 
 
 def misc():
@@ -107,6 +108,164 @@ def check_zeropoints_ESO():
 
 
 
+def transmittance_calculator(l1, l2, t1, a):
+    '''
+    Use transmittance data of a glass with thickness l2 to compute transmittance
+     of a same glass but with different thickness l1.
+    The computation is based on the equation for the external transmittance:
+    
+    T = (1 - R**2) * exp(-a * l)
+    
+    where R is the reflectance, a is the attenuation coefficient and l is the
+    thickness of the glass. If we consider two different values of thickness, 
+    thus of transmittance, we can compute the unknown transmittance T2 as:
+    
+    T2 = T1 *  exp(-a * (l2 - l1))
+
+    '''
+    t2 = t1 * np.exp(-a * (l2 - l1))
+    return t2
 
 
+def attenuation_coefficient_calculator(l1, l2, t1, t2):
+    '''
+    Compute attenuation coefficient of a glass from transmittance data
+    of two different values of thickness.
+    The computation is based on the equation for the external transmittance
+    of a glass:
+    
+    T = (1 - R**2) * exp(-a * l)
+    
+    where R is the reflectance, a is the attenuation coefficient and l is the
+    thickness of the glass. If we consider two different values of thickness, 
+    thus of transmittance, we can compute the ratio between the transmittances:
+    
+    T1 / T2 = exp(-a * (l1 - l2))
+    
+    and from this equation we can derive the attenuation coefficient as:
+    
+    a = (lnT2 - lnT1) / (l1 - l2)
+    '''
+    a = (np.log(t2) - np.log(t1)) / (l1 - l2)
+    return a
+    
 
+def main230202_compute_attenuation_coefficient_of_suprasil():
+    supra10 = MorfeoTransmissiveElementsCatalog.suprasil3002_10mm_001()
+    supra85 = MorfeoTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    wv = supra10.waveset
+    t1 = supra85.transmittance(wv)
+    t2 = supra10.transmittance(wv)
+    l1 = 85 * u.mm
+    l2 = 10 * u.mm
+    a_supra = attenuation_coefficient_calculator(l1, l2, t1, t2)
+    plt.plot(wv.to(u.um), a_supra)
+    plt.grid()
+    plt.xlabel('Wavelength [$\mu$m]')
+    plt.ylabel('a [mm$^{-1}]$')
+    return a_supra, wv
+
+
+def main230202_compute_transmittance_of_suprasil3002_80mm_and_save_dat():
+    supra10 = MorfeoTransmissiveElementsCatalog.suprasil3002_10mm_001()
+    supra85 = MorfeoTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    wv = supra10.waveset
+    t1 = supra85.transmittance(wv)
+    t2 = supra10.transmittance(wv)
+    l1 = 85 * u.mm
+    l2 = 10 * u.mm
+    a_supra = attenuation_coefficient_calculator(l1, l2, t1, t2)
+    l3 = 80 * u.mm
+    t3 = transmittance_calculator(l1, l3, t1, a_supra)
+    plt.plot(wv.to(u.um), t3)
+    plt.grid()
+    plt.xlabel('Wavelength [$\mu$m]')
+    plt.ylabel('Transmittance')
+    to_save = np.stack((wv.to(u.um).value, t3), axis=1).value
+    folder = '/Users/giuliacarla/git/arte/arte/data/photometry/optical_elements/morfeo/suprasil3002_80mm_001/'
+    np.savetxt(folder + 't.dat', to_save)
+    return t3, wv
+
+
+def main230202_compute_transmittance_of_suprasil3002_108mm_and_save_dat():
+    supra10 = MorfeoTransmissiveElementsCatalog.suprasil3002_10mm_001()
+    supra85 = MorfeoTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    wv = supra10.waveset
+    t1 = supra85.transmittance(wv)
+    t2 = supra10.transmittance(wv)
+    l1 = 85 * u.mm
+    l2 = 10 * u.mm
+    a_supra = attenuation_coefficient_calculator(l1, l2, t1, t2)
+    l3 = 108 * u.mm
+    t3 = transmittance_calculator(l1, l3, t1, a_supra)
+    plt.plot(wv.to(u.um), t3)
+    plt.grid()
+    plt.xlabel('Wavelength [$\mu$m]')
+    plt.ylabel('Transmittance')
+    to_save = np.stack((wv.to(u.um).value, t3), axis=1).value
+    folder = '/Users/giuliacarla/git/arte/arte/data/photometry/optical_elements/morfeo/suprasil3002_108mm_001/'
+    np.savetxt(folder + 't.dat', to_save)
+    return t3, wv
+
+
+def main230202_compute_transmittance_of_suprasil3002_40mm_and_save_dat():
+    supra10 = MorfeoTransmissiveElementsCatalog.suprasil3002_10mm_001()
+    supra85 = MorfeoTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    wv = supra10.waveset
+    t1 = supra85.transmittance(wv)
+    t2 = supra10.transmittance(wv)
+    l1 = 85 * u.mm
+    l2 = 10 * u.mm
+    a_supra = attenuation_coefficient_calculator(l1, l2, t1, t2)
+    l3 = 40 * u.mm
+    t3 = transmittance_calculator(l1, l3, t1, a_supra)
+    plt.plot(wv.to(u.um), t3)
+    plt.grid()
+    plt.xlabel('Wavelength [$\mu$m]')
+    plt.ylabel('Transmittance')
+    to_save = np.stack((wv.to(u.um).value, t3), axis=1).value
+    folder = '/Users/giuliacarla/git/arte/arte/data/photometry/optical_elements/morfeo/suprasil3002_40mm_001/'
+    np.savetxt(folder + 't.dat', to_save)
+    return t3, wv
+
+
+def main230202_compute_transmittance_of_suprasil3002_60mm_and_save_dat():
+    supra10 = MorfeoTransmissiveElementsCatalog.suprasil3002_10mm_001()
+    supra85 = MorfeoTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    wv = supra10.waveset
+    t1 = supra85.transmittance(wv)
+    t2 = supra10.transmittance(wv)
+    l1 = 85 * u.mm
+    l2 = 10 * u.mm
+    a_supra = attenuation_coefficient_calculator(l1, l2, t1, t2)
+    l3 = 60 * u.mm
+    t3 = transmittance_calculator(l1, l3, t1, a_supra)
+    plt.plot(wv.to(u.um), t3)
+    plt.grid()
+    plt.xlabel('Wavelength [$\mu$m]')
+    plt.ylabel('Transmittance')
+    to_save = np.stack((wv.to(u.um).value, t3), axis=1).value
+    folder = '/Users/giuliacarla/git/arte/arte/data/photometry/optical_elements/morfeo/suprasil3002_60mm_001/'
+    np.savetxt(folder + 't.dat', to_save)
+    return t3, wv
+
+
+def main230202_compute_transmittance_of_suprasil3002_70mm_and_save_dat():
+    supra10 = MorfeoTransmissiveElementsCatalog.suprasil3002_10mm_001()
+    supra85 = MorfeoTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    wv = supra10.waveset
+    t1 = supra85.transmittance(wv)
+    t2 = supra10.transmittance(wv)
+    l1 = 85 * u.mm
+    l2 = 10 * u.mm
+    a_supra = attenuation_coefficient_calculator(l1, l2, t1, t2)
+    l3 = 70 * u.mm
+    t3 = transmittance_calculator(l1, l3, t1, a_supra)
+    plt.plot(wv.to(u.um), t3)
+    plt.grid()
+    plt.xlabel('Wavelength [$\mu$m]')
+    plt.ylabel('Transmittance')
+    to_save = np.stack((wv.to(u.um).value, t3), axis=1).value
+    folder = '/Users/giuliacarla/git/arte/arte/data/photometry/optical_elements/morfeo/suprasil3002_70mm_001/'
+    np.savetxt(folder + 't.dat', to_save)
+    return t3, wv
