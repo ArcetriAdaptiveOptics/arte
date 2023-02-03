@@ -102,15 +102,65 @@ class CoatingsTransmissiveElementsCatalog():
         return te
 
 
-class GlassesTransmissiveElementsCatalog():
+class DetectorsTransmissiveElementsCatalog():
     
     @classmethod
-    def _GlassesFolder(cls, foldername):
+    def _DetectorsFolder(cls, foldername):
         return os.path.join(
             RestoreTransmissiveElements.transmissive_elements_folder(),
-            'glasses',
+            'detectors',
             foldername)
         
+    @classmethod
+    def ccd220_qe_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._DetectorsFolder('ccd_220_qe_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def c_red_one_qe_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._DetectorsFolder('c_red_one_qe_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+
+    @classmethod
+    def c_red_one_filters_001(cls):
+        '''
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._DetectorsFolder('c_red_one_filters_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+
+    @classmethod
+    def c_blue_qe_001(cls):
+        '''
+        C-BLUE camera of First Light Imaging with SONY IMX425 detector.
+        First approximation: QE curve is simply a peak of 0.75 at 589 nm.
+        QE value is taken from Section 4.5 of
+            "E-MAO-PL0-IPA-ANR-013_01 MAORY LGS WFS Analysis Report.pdf" and 
+            includes camera and detector windows.
+        '''
+        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.75, 0)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+
+class CoatedGlassesTransmissiveElementsCatalog():
+    
     @classmethod
     def _CoatedGlassesFolder(cls, foldername):
         return os.path.join(
@@ -118,20 +168,6 @@ class GlassesTransmissiveElementsCatalog():
             'coated_glasses',
             foldername)
         
-    @classmethod
-    def infrasil_1mm_001(cls):
-        '''
-        Infrasil window.
-        Thickness: 1 mm.
-        
-        Data from Thorlabs website.
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('infrasil_1mm_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-
     @classmethod
     def infrasil_1mm_B_coated_001(cls):
         '''
@@ -159,15 +195,56 @@ class GlassesTransmissiveElementsCatalog():
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
+        
+
+class GlassesTransmissiveElementsCatalog():
+    
+    @classmethod
+    def _GlassesFolder(cls, foldername):
+        return os.path.join(
+            RestoreTransmissiveElements.transmissive_elements_folder(),
+            'glasses',
+            foldername)
+        
+    @classmethod
+    def infrasil_1mm_001(cls):
+        '''
+        Infrasil window.
+        Thickness: 1 mm.
+        Transmittance is external.
+        
+        Data from Thorlabs website.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('infrasil_1mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
 
     @classmethod
     def suprasil3002_10mm_001(cls):
         '''
         Suprasil 3002 substrate of 10 mm thickness.
-        Data from Heraeus website. 
+        Transmittance is external.
+        Data from Heraeus website.
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._GlassesFolder('suprasil3002_10mm_001'), u.um)
+        #TODO: Assuming reflectance equal to zero is wrong in case of 
+        #external transmittance data. Fix it.
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def suprasil3002_10mm_internal_001(cls):
+        '''
+        Suprasil 3002 substrate of 10 mm thickness.
+        Transmittance is internal.
+        Data from Heraeus website.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_10mm_internal_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
@@ -176,10 +253,24 @@ class GlassesTransmissiveElementsCatalog():
     def suprasil3002_40mm_001(cls):
         '''
         Suprasil 3002 substrate of 40 mm thickness.
+        Transmittance is external.
         Data from Heraeus website. 
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._GlassesFolder('suprasil3002_40mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def suprasil3002_40mm_internal_001(cls):
+        '''
+        Suprasil 3002 substrate of 40 mm thickness.
+        Transmittance is internal.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_40mm_internal_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
@@ -188,6 +279,7 @@ class GlassesTransmissiveElementsCatalog():
     def suprasil3002_60mm_001(cls):
         '''
         Suprasil 3002 substrate of 60 mm thickness.
+        Transmittance is external.
         Data from Heraeus website. 
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
@@ -197,13 +289,40 @@ class GlassesTransmissiveElementsCatalog():
         return te
     
     @classmethod
+    def suprasil3002_60mm_internal_001(cls):
+        '''
+        Suprasil 3002 substrate of 60 mm thickness.
+        Transmittance is internal.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_60mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
     def suprasil3002_70mm_001(cls):
         '''
         Suprasil 3002 substrate of 70 mm thickness.
+        Transmittance is external.
         Data from Heraeus website. 
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._GlassesFolder('suprasil3002_70mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def suprasil3002_70mm_internal_001(cls):
+        '''
+        Suprasil 3002 substrate of 70 mm thickness.
+        Transmittance is internal.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_70mm_internal_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
@@ -221,6 +340,18 @@ class GlassesTransmissiveElementsCatalog():
         return te
     
     @classmethod
+    def suprasil3002_80mm_internal_001(cls):
+        '''
+        Suprasil 3002 substrate of 80 mm thickness.
+        Transmittance is internal.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_80mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
     def suprasil3002_85mm_001(cls):
         '''
         Suprasil 3002 substrate of 85 mm thickness.
@@ -231,11 +362,24 @@ class GlassesTransmissiveElementsCatalog():
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
+    
+    @classmethod
+    def suprasil3002_85mm_internal_001(cls):
+        '''
+        Suprasil 3002 substrate of 85 mm thickness.
+        Transmittance is internal.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_85mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
         
     @classmethod
     def suprasil3002_108mm_001(cls):
         '''
         Suprasil 3002 substrate of 108 mm thickness.
+        Transmittance is external.
         Data from Heraeus website. 
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
@@ -244,6 +388,19 @@ class GlassesTransmissiveElementsCatalog():
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
     
+    @classmethod
+    def suprasil3002_108mm_internal_001(cls):
+        '''
+        Suprasil 3002 substrate of 108 mm thickness.
+        Transmittance is internal.
+        Data from Heraeus website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('suprasil3002_108mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
 
 class MorfeoTransmissiveElementsCatalog():
     
@@ -272,7 +429,7 @@ class MorfeoTransmissiveElementsCatalog():
             - 1 surface with AR coating (589 nm)
         '''
         materion_coating = CoatingsTransmissiveElementsCatalog.materion_average_001()
-        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
         ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
         
         lgs_dichroic = TransmissiveSystem()
@@ -346,7 +503,7 @@ class MorfeoTransmissiveElementsCatalog():
             - 1 surface with narrowband AR coating (589 nm)
         '''
         sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_108mm_001()
+        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_108mm_internal_001()
         sup3 = sup1
         lgso_l = TransmissiveSystem()
         lgso_l.add(sup1, Direction.TRANSMISSION)
@@ -364,7 +521,7 @@ class MorfeoTransmissiveElementsCatalog():
             - 1 surface with narrowband AR coating (589 nm)
         '''
         sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_70mm_001()
+        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_70mm_internal_001()
         sup3 = sup1
         lgso_l = TransmissiveSystem()
         lgso_l.add(sup1, Direction.TRANSMISSION)
@@ -382,7 +539,7 @@ class MorfeoTransmissiveElementsCatalog():
             - 1 surface with narrowband AR coating (589 nm)
         '''
         sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_40mm_001()
+        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_40mm_internal_001()
         sup3 = sup1
         lgso_l = TransmissiveSystem()
         lgso_l.add(sup1, Direction.TRANSMISSION)
@@ -400,7 +557,7 @@ class MorfeoTransmissiveElementsCatalog():
             - 1 surface with narrowband AR coating (589 nm)
         '''
         sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_60mm_001()
+        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_60mm_internal_001()
         sup3 = sup1
         lgso_l = TransmissiveSystem()
         lgso_l.add(sup1, Direction.TRANSMISSION)
@@ -525,51 +682,3 @@ class MorfeoTransmissiveElementsCatalog():
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
-
-    @classmethod
-    def ccd220_qe_001(cls):
-        '''
-        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('ccd_220_qe_001'), u.um)
-        a = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, absorptance=a)
-        return te
-    
-    @classmethod
-    def c_red_one_qe_001(cls):
-        '''
-        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('c_red_one_qe_001'), u.um)
-        a = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, absorptance=a)
-        return te
-
-    @classmethod
-    def c_red_one_filters_001(cls):
-        '''
-        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('c_red_one_filters_001'), u.um)
-        a = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, absorptance=a)
-        return te
-
-    @classmethod
-    def c_blue_qe_001(cls):
-        '''
-        C-BLUE camera of First Light Imaging with SONY IMX425 detector.
-        First approximation: QE curve is simply a peak of 0.75 at 589 nm.
-        QE value is taken from Section 4.5 of
-            "E-MAO-PL0-IPA-ANR-013_01 MAORY LGS WFS Analysis Report.pdf" and 
-            includes camera and detector windows.
-        '''
-        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.75, 0)
-        a = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, absorptance=a)
-        return te
-
