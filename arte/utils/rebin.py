@@ -70,8 +70,10 @@ def rebin(a, new_shape, sample=False):
         return a
 
     M, N = a.shape
+    print(M,N)
+    print(m,n)
 
-    if m <= M and n <= M:
+    if m <= M and n <= N:
         if (M//m != M/m) or (N//n != N/n):
             raise ValueError('Cannot downsample by non-integer factors')
 
