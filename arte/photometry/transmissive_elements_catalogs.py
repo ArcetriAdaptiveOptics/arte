@@ -153,7 +153,7 @@ class DetectorsTransmissiveElementsCatalog():
             "E-MAO-PL0-IPA-ANR-013_01 MAORY LGS WFS Analysis Report.pdf" and 
             includes camera and detector windows.
         '''
-        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.75, 0)
+        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.7, 0)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
@@ -368,6 +368,8 @@ class GlassesTransmissiveElementsCatalog():
         '''
         Suprasil 3002 substrate of 85 mm thickness.
         Transmittance is internal.
+        Data has been extrapolated from 10 mm Suprasil 3002 data that has been
+        collected from Heraeus website.
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._GlassesFolder('suprasil3002_85mm_internal_001'), u.um)
