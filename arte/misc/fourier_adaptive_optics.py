@@ -232,7 +232,7 @@ class FourierAdaptiveOptics(object):
         extFieldMap = self._extendFieldMap(self.field(),
                                            self._resolutionFactor)
         ac = self._autoCorrelate(extFieldMap)
-        cc = (np.asarray(ac.shape) / 2).astype(np.int)
+        cc = (np.asarray(ac.shape) / 2).astype(np.int64)
         self._stf = 2 * (ac[cc[0], cc[1]] - ac)
 
     def _createFocalPlaneCoordinatesInArcSec(self):

@@ -3,9 +3,11 @@
 
 # who       when        what
 # -------  ----------  ---------------------------------
-#           2012-11-20  Created from git://gist.github.com/1348792.git
+# apuglisi  2022-02-30  Fixed bug in detecting downsampling
+#                       on just one axis
 # apuglisi  2020-04-15  Added sample option, added exceptions,
 #                       allow any kind of sequence for new_shape
+#           2012-11-20  Created from git://gist.github.com/1348792.git
 '''
 import numpy as np
 
@@ -71,7 +73,7 @@ def rebin(a, new_shape, sample=False):
 
     M, N = a.shape
 
-    if m <= M and n <= M:
+    if m <= M and n <= N:
         if (M//m != M/m) or (N//n != N/n):
             raise ValueError('Cannot downsample by non-integer factors')
 
