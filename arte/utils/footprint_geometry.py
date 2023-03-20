@@ -170,7 +170,7 @@ class FootprintGeometry():
                 self._addAnnularFootprint(
                     l.x, l.y, l.r, 0.99 * l.r, color='k')
         for l in self._dmsL:
-            self._addDmFootprint(l, color='k', alpha=0.1)
+            self._addDmFootprint(l, color='k', alpha=0.3)
 
     def scienceFieldRadius(self, rTel, fovInArcsec, hInMeter):
         return rTel + fovInArcsec / 2 * 4.848e-6 * hInMeter

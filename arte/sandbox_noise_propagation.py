@@ -1,47 +1,68 @@
 import numpy as np
 from arte.utils.zernike_generator import ZernikeGenerator
-from arte.utils.noise_propagation import NoisePropagation
+from arte.utils.noise_propagation import NoisePropagationZernikeGradientWFS
 
 class TestNoisePropagation(object):
 
     def one(self):
         import matplotlib.pyplot as plt
-        np1_2= NoisePropagation(1, np.arange(1, 3))
-        np1_3= NoisePropagation(1, np.arange(1, 4))
-        np1_4= NoisePropagation(1, np.arange(1, 5))
-        np1_5= NoisePropagation(1, np.arange(1, 6))
-        plt.plot(np.diag(np1_5.noisePropagationMatrix))
-        plt.plot(np.diag(np1_4.noisePropagationMatrix))
-        plt.plot(np.diag(np1_3.noisePropagationMatrix))
-        plt.plot(np.diag(np1_2.noisePropagationMatrix))
+        np1_3= NoisePropagationZernikeGradientWFS(1, np.arange(2, 3))
+        np1_4= NoisePropagationZernikeGradientWFS(1, np.arange(2, 4))
+        np1_5= NoisePropagationZernikeGradientWFS(1, np.arange(2, 5))
+        np1_6= NoisePropagationZernikeGradientWFS(1, np.arange(2, 6))
+        plt.plot(np.diag(np1_6.noise_covariance_matrix))
+        plt.plot(np.diag(np1_5.noise_covariance_matrix))
+        plt.plot(np.diag(np1_4.noise_covariance_matrix))
+        plt.plot(np.diag(np1_3.noise_covariance_matrix))
         plt.show()
+        print("1 subap 1 modes : %g" % np1_3.noise_total_variance)
+        print("1 subap 2 modes : %g" % np1_4.noise_total_variance)
+        print("1 subap 3 modes : %g" % np1_5.noise_total_variance)
+        print("1 subap 4 modes : %g" % np1_6.noise_total_variance)
 
 
 
     def two(self, sigmas=4):
         import matplotlib.pyplot as plt
-        np2_2= NoisePropagation(2, np.arange(1, 3))
-        np2_3= NoisePropagation(2, np.arange(1, 4))
-        np2_4= NoisePropagation(2, np.arange(1, 5))
-        np2_5= NoisePropagation(2, np.arange(1, 6))
-        np2_6= NoisePropagation(2, np.arange(1, 7))
-        np2_7= NoisePropagation(2, np.arange(1, 8))
-        np2_8= NoisePropagation(2, np.arange(1, 9))
-        np2_9= NoisePropagation(2, np.arange(1, 10))
-        np2_10= NoisePropagation(2, np.arange(1, 11))
-        np2_20= NoisePropagation(2, np.arange(1, 21))
-        plt.plot(np.diag(np2_20.noisePropagationMatrix) * sigmas)
-        plt.plot(np.diag(np2_10.noisePropagationMatrix) * sigmas)
-        plt.plot(np.diag(np2_9.noisePropagationMatrix) * sigmas)
-        plt.plot(np.diag(np2_8.noisePropagationMatrix) * sigmas)
-        plt.plot(np.diag(np2_7.noisePropagationMatrix) * sigmas)
-        plt.plot(np.diag(np2_6.noisePropagationMatrix) * sigmas)
-        plt.plot(np.diag(np2_5.noisePropagationMatrix) * sigmas)
-        plt.plot(np.diag(np2_4.noisePropagationMatrix) * sigmas)
-        plt.plot(np.diag(np2_3.noisePropagationMatrix) * sigmas)
-        plt.plot(np.diag(np2_2.noisePropagationMatrix) * sigmas)
+        np2_2= NoisePropagationZernikeGradientWFS(2, np.arange(2, 3))
+        np2_3= NoisePropagationZernikeGradientWFS(2, np.arange(2, 4))
+        np2_4= NoisePropagationZernikeGradientWFS(2, np.arange(2, 5))
+        np2_5= NoisePropagationZernikeGradientWFS(2, np.arange(2, 6))
+        np2_6= NoisePropagationZernikeGradientWFS(2, np.arange(2, 7))
+        np2_7= NoisePropagationZernikeGradientWFS(2, np.arange(2, 8))
+        np2_8= NoisePropagationZernikeGradientWFS(2, np.arange(2, 9))
+        np2_9= NoisePropagationZernikeGradientWFS(2, np.arange(2, 10))
+        np2_10= NoisePropagationZernikeGradientWFS(2, np.arange(2, 11))
+        np2_20= NoisePropagationZernikeGradientWFS(2, np.arange(2, 21))
+        plt.plot(np.diag(np2_20.noise_covariance_matrix) * sigmas)
+        plt.plot(np.diag(np2_10.noise_covariance_matrix) * sigmas)
+        plt.plot(np.diag(np2_9.noise_covariance_matrix) * sigmas)
+        plt.plot(np.diag(np2_8.noise_covariance_matrix) * sigmas)
+        plt.plot(np.diag(np2_7.noise_covariance_matrix) * sigmas)
+        plt.plot(np.diag(np2_6.noise_covariance_matrix) * sigmas)
+        plt.plot(np.diag(np2_5.noise_covariance_matrix) * sigmas)
+        plt.plot(np.diag(np2_4.noise_covariance_matrix) * sigmas)
+        plt.plot(np.diag(np2_3.noise_covariance_matrix) * sigmas)
+        plt.plot(np.diag(np2_2.noise_covariance_matrix) * sigmas)
         plt.show()
+        print("2 subap 1 modes : %g" % np2_2.noise_total_variance)
+        print("2 subap 2 modes : %g" % np2_3.noise_total_variance)
+        print("2 subap 3 modes : %g" % np2_4.noise_total_variance)
+        print("2 subap 4 modes : %g" % np2_5.noise_total_variance)
+        print("2 subap 5 modes : %g" % np2_6.noise_total_variance)
+        print("2 subap 6 modes : %g" % np2_7.noise_total_variance)
+        print("2 subap 7 modes : %g" % np2_8.noise_total_variance)
+        print("2 subap 8 modes : %g" % np2_9.noise_total_variance)
+        print("2 subap 9 modes : %g" % np2_10.noise_total_variance)
+        print("2 subap 19 modes : %g" % np2_20.noise_total_variance)
 
+
+    def total_variance(self, n_subaps):
+        for i in np.arange(3, 2*n_subaps**2):
+            modesV = np.arange(2, i)
+            noip = NoisePropagationZernikeGradientWFS(n_subaps, modesV)
+            print("%d %d: %g" % (
+                n_subaps, len(modesV), noip.noise_total_variance))
 
     def noiseRG(self, radial_order):
         return -2.05 * np.log10(radial_order + 1) - 0.53
@@ -56,11 +77,11 @@ class TestNoisePropagation(object):
         from arte.utils import zernike_generator as zg
 
         modesV= noiseProp.modesVector
-        pi= np.diag(noiseProp.noisePropagationMatrix)
+        pi= np.diag(noiseProp.noise_covariance_matrix)
         n= zg.ZernikeGenerator.radial_order(modesV)
         plt.plot(np.log10(n + 1), np.log10(pi / pi[0]))
-        plt.plot(np.log10(n + 1), self.noiseRG(n))
-        plt.plot(np.log10(n + 1), self.noiseRG2(n))
+        plt.plot(np.log10(n + 1), self.noiseRG(n), '.-')
+        plt.plot(np.log10(n + 1), self.noiseRG2(n), '.-')
 
 
 
