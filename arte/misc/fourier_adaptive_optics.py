@@ -219,10 +219,10 @@ class FourierAdaptiveOptics(object):
         aa = S2DF(np.abs(functFT.values ** 2),
                   functFT.xmap,
                   functFT.ymap)
-        return bfft.inverse(aa)
+        return bfft.reverse(aa)
 
     def _createPsf(self):
-        psf = bfft.inverse(self.otf())
+        psf = bfft.reverse(self.otf())
         rescaleCoordFact = 1 / self._focalLength
         self._psf = S2DF(np.abs(psf.values),
                          psf.xmap * rescaleCoordFact,
