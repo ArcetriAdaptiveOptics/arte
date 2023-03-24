@@ -69,11 +69,15 @@ class ScalarBidimensionalFunctionTest(unittest.TestCase):
         cutOut = xyFunc.get_roi(xmin, xmax, ymin, ymax)
         self.assertEqual((2, 2), cutOut.shape)
 
-    def testInterpolate(self):
+    def _funct_to_interpolate(self):
         x = np.tile(np.linspace(-1, 1, 11), (11, 1))
         v = 42 * x
         xyFunc = ScalarBidimensionalFunction(
             v, domain=DomainXY.from_linspace(-1, 1, 11))
+        return xyFunc
+
+    def testInterpolate(self):
+        xyFunc = self._funct_to_interpolate()
 
         want = np.array([0, 4.2, 8.4])
         got = xyFunc.interpolate_in_xy([0, 0.1, 0.2], [0, 0, 0])
@@ -84,6 +88,29 @@ class ScalarBidimensionalFunctionTest(unittest.TestCase):
         self.assertTrue(np.allclose(want, got),
                         "%s %s" % (want, got))
 
+    def testInterpolateScalar(self):
+        xyFunc = self._funct_to_interpolate()
+
+        want = np.array([4.2])
+        got = xyFunc.interpolate_in_xy(0.1, 0)
+        self.assertTrue(np.allclose(want, got),
+                        "%s %s" % (want, got))
+        want = np.array([42])
+        got = xyFunc.interpolate_in_xy(1, -0.5)
+        self.assertTrue(np.allclose(want, got),
+                        "%s %s" % (want, got))
+
+    def testInterpolateSingleElementVector(self):
+        xyFunc = self._funct_to_interpolate()
+
+        want = np.array([4.2])
+        got = xyFunc.interpolate_in_xy([0.1], [0])
+        self.assertTrue(np.allclose(want, got),
+                        "%s %s" % (want, got))
+        want = np.array([42])
+        got = xyFunc.interpolate_in_xy([1], [-0.5])
+        self.assertTrue(np.allclose(want, got),
+                        "%s %s" % (want, got))
 
     def testInterpolateMaskedArray(self):
         x = np.tile(np.linspace(-1, 1, 11), (11, 1))
