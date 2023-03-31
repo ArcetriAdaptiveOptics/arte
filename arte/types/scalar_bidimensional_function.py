@@ -92,7 +92,7 @@ class ScalarBidimensionalFunction(object):
 
     def interpolate_in_xy(self, x, y, span=3):
         '''Interpolate the function value at x,y'''
-        return self._my_interp(x, y, span=3)
+        return self._my_interp(x, y, span=span)
 
     def get_radial_profile(self):
         '''Get the radial profile around the domain origin.
