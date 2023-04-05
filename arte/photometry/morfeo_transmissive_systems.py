@@ -1,6 +1,6 @@
-from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog,\
-    MorfeoTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog,\
-    GlassesTransmissiveElementsCatalog, CoatedGlassesTransmissiveElementsCatalog
+from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
+    MorfeoTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog, \
+    CoatedGlassesTransmissiveElementsCatalog
 from arte.photometry.transmissive_elements import TransmissiveSystem, Direction
 
 
@@ -12,7 +12,7 @@ def EltTransmissiveSystem():
     m4 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
     m5 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     ts = TransmissiveSystem()
-    #TODO: remove spider in transmission
+    # TODO: remove spider in transmission
     # ts.add(spider, Direction.TRANSMISSION)
     ts.add(m1, Direction.REFLECTION)
     ts.add(m2, Direction.REFLECTION)
@@ -117,6 +117,9 @@ def MorfeoLgsChannelTransmissiveSystem_002():
 
 def MorfeoLgsChannelTransmissiveSystem_003():
     '''
+    LGS lenses have been updated with respect to version 002: the fused silica
+    substrate is now considered between the AR coatings. The substrate
+    thickness for each lens is taken from 'E-MAO-SF0-INA-DER-001_02'.
     '''
     schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_002()
     m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
@@ -152,6 +155,7 @@ def MorfeoLgsChannelTransmissiveSystem_003():
     ts.add(c_blue, Direction.TRANSMISSION)
     
     return ts
+
 
 def MorfeoLowOrderChannelTransmissiveSystem_001():
     '''
