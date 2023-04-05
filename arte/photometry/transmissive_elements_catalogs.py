@@ -1,6 +1,6 @@
 import os
 import astropy.units as u
-from arte.photometry.transmissive_elements import Bandpass, TransmissiveElement,\
+from arte.photometry.transmissive_elements import Bandpass, TransmissiveElement, \
     TransmissiveSystem, Direction
 from arte.utils.package_data import dataRootDir
 from synphot.spectrum import SpectralElement
@@ -48,12 +48,56 @@ class EltTransmissiveElementsCatalog():
             cls._EltFolder('ag_mirror_elt_001'))
         
     @classmethod
+    def ag_mirror_elt_002(cls):
+        '''
+        Measured data (Advanced Silver Coating development contract by ESO
+        with Fraunhofer IOF).
+        
+        Received from Demetrio by email on 16/03/2023 (filename:
+        "ProtectedSilver_ESO_Measured_1.0".
+        ''' 
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._EltFolder('ag_mirror_elt_002'), u.nm)
+        a = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, absorptance=a)
+        return te
+
+    @classmethod
+    def ag_mirror_elt_003(cls):
+        '''
+        The single silver surface reflectivity has been extracted by telescope
+        model throughput (fresh clean ELT) done by R. Holzloehner.
+        
+        Received from Demetrio by email on 16/03/2023 (filename:
+        "ProtectedSilver_ESO_ExtrapolatedModel_1.0").
+        
+        Same data as version 001.
+        ''' 
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._EltFolder('ag_mirror_elt_003'), u.nm)
+        a = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, absorptance=a)
+        return te
+        
+    @classmethod
     def al_mirror_elt_001(cls):
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
         return RestoreTransmissiveElements.restore_transmissive_elements_from_fits(
             cls._EltFolder('al_mirror_elt_001'))
+
+    @classmethod
+    def al_mirror_elt_002(cls):
+        '''
+        Data from Demetrio: "OxidizedAluminium_ESO_Model_1.0".
+        Received by email on 16/03/2023.
+        '''
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._EltFolder('al_mirror_elt_002'), u.nm)
+        a = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, absorptance=a)
+        return te
         
     @classmethod
     def spider_001(cls):
@@ -85,6 +129,23 @@ class CoatingsTransmissiveElementsCatalog():
             cls._CoatingsFolder('materion_average_001'), u.um)
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
             cls._CoatingsFolder('materion_average_001'), u.um)
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def materion_average_002(cls):
+        '''
+        MATERION-like coating.
+        Data (average) from Andrea Bianco.
+        
+        Received from Demetrio by email on 16/03/2023 (filename:
+        "DichroicFilter_Design1_ABI_reflectance_1.0",
+        "DichroicFilter_Design1_ABI_transmittance_1.0").
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('materion_average_002'), u.nm)
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('materion_average_002'), u.nm)
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
     
@@ -230,8 +291,8 @@ class GlassesTransmissiveElementsCatalog():
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._GlassesFolder('suprasil3002_10mm_001'), u.um)
-        #TODO: Assuming reflectance equal to zero is wrong in case of 
-        #external transmittance data. Fix it.
+        # TODO: Assuming reflectance equal to zero is wrong in case of 
+        # external transmittance data. Fix it.
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
@@ -439,6 +500,26 @@ class MorfeoTransmissiveElementsCatalog():
         lgs_dichroic.add(substrate, Direction.TRANSMISSION)
         lgs_dichroic.add(ar_coating, Direction.TRANSMISSION)
         return lgs_dichroic.as_transmissive_element()
+    
+    @classmethod
+    def lgs_dichroic_003(cls):
+        '''
+        LGS dichroic. The element is composed by:
+            - 1 surface with MATERION-like coating
+            - 85 mm of Suprasil 3002 substrate
+            - 1 surface with AR coating (589 nm)
+            
+        Difference wrt version 002: materion-like coating is from A. Bianco.
+        '''
+        materion_coating = CoatingsTransmissiveElementsCatalog.materion_average_002()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        
+        lgs_dichroic = TransmissiveSystem()
+        lgs_dichroic.add(materion_coating, Direction.TRANSMISSION)
+        lgs_dichroic.add(substrate, Direction.TRANSMISSION)
+        lgs_dichroic.add(ar_coating, Direction.TRANSMISSION)
+        return lgs_dichroic.as_transmissive_element()
 
     @classmethod
     def visir_dichroic_001(cls):
@@ -498,7 +579,8 @@ class MorfeoTransmissiveElementsCatalog():
     @classmethod
     def lgso_lens1_001(cls):
         '''
-        First lens in the LGS Objective (LGSO), composed by:
+        First lens in the LGS Objective (LGSO), composed by (ref.
+        E-MAO-SF0-INA-DER-001_02):
             - 1 surface with narrowband AR coating (589 nm)
             - Fused silica substrate of thickness = 108 mm (we assume here
                 a Suprasil3002 slab)
@@ -516,7 +598,8 @@ class MorfeoTransmissiveElementsCatalog():
     @classmethod
     def lgso_lens2_001(cls):
         '''
-        Second lens in the LGS Objective (LGSO), composed by:
+        Second lens in the LGS Objective (LGSO), composed by (ref.
+        E-MAO-SF0-INA-DER-001_02):
             - 1 surface with narrowband AR coating (589 nm)
             - Fused silica substrate of thickness = 70 mm (we assume here
                 a Suprasil3002 slab)
@@ -534,7 +617,8 @@ class MorfeoTransmissiveElementsCatalog():
     @classmethod
     def lgso_lens3_001(cls):
         '''
-        Third lens in the LGS Objective (LGSO), composed by:
+        Third lens in the LGS Objective (LGSO), composed by (ref.
+        E-MAO-SF0-INA-DER-001_02):
             - 1 surface with narrowband AR coating (589 nm)
             - Fused silica substrate of thickness = 40 mm (we assume here
                 a Suprasil3002 slab)
@@ -552,7 +636,8 @@ class MorfeoTransmissiveElementsCatalog():
     @classmethod
     def lgso_lens4_001(cls):
         '''
-        Fourth lens in the LGS Objective (LGSO), composed by:
+        Fourth lens in the LGS Objective (LGSO), composed by (ref.
+        E-MAO-SF0-INA-DER-001_02):
             - 1 surface with narrowband AR coating (589 nm)
             - Fused silica substrate of thickness = 60 mm (we assume here
                 a Suprasil3002 slab)
