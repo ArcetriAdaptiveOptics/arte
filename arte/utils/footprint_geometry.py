@@ -133,8 +133,6 @@ class FootprintGeometry():
 #                 self._dmsL.append(FootprintXYRadius(
 #                     ll[0] + cc[0], ll[1] + cc[1], ra))
 
-        self._computePatches()
-
     def getNgsFootprint(self):
         return self._ngsL
 
@@ -242,6 +240,7 @@ class FootprintGeometry():
             0.5 * np.linalg.norm(np.array([sideX, sideY])))
 
     def plot(self):
+        self._computePatches()
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
         ax.set_xlim(-self._xlim, self._xlim)
