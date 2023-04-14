@@ -475,6 +475,32 @@ class GlassesTransmissiveElementsCatalog():
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
+    
+    @classmethod
+    def ohara_quartz_SK1300_10mm_internal_001(cls):
+        '''
+        Ohara quartz SK-1300 substrate of 10 mm thickness.
+        Transmittance is internal.
+        Data from Ohara website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_quartz_SK1300_10mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def ohara_quartz_SK1300_85mm_internal_001(cls):
+        '''
+        Ohara quartz SK-1300 substrate of 85 mm thickness.
+        Transmittance is internal.
+        Data derived from transmittance data for 10 mm thickness. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_quartz_SK1300_85mm_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
 
 
 class MorfeoTransmissiveElementsCatalog():
@@ -565,6 +591,23 @@ class MorfeoTransmissiveElementsCatalog():
         r = Bandpass.zero()
         te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
+    
+    @classmethod
+    def schmidt_plate_003(cls):
+        '''
+        Correcting plate (CPM). The element is composed by:
+            - 1 surface with broadband (0.6-2.4 um) AR coating
+            - 85 mm of Ohara quartz SK-1300 substrate
+            - 1 surface with broadband (0.6-2.4 um) AR coating        
+        '''
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
+        substrate = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_85mm_internal_001()
+        
+        cpm = TransmissiveSystem()
+        cpm.add(ar_coating, Direction.TRANSMISSION)
+        cpm.add(substrate, Direction.TRANSMISSION)
+        cpm.add(ar_coating, Direction.TRANSMISSION)
+        return cpm.as_transmissive_element()
     
     @classmethod
     def lgso_lens_001(cls):
