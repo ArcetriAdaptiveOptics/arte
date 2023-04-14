@@ -157,6 +157,46 @@ def MorfeoLgsChannelTransmissiveSystem_003():
     return ts
 
 
+def MorfeoLgsChannelTransmissiveSystem_004():
+    '''
+    The Schmidt Plate has been updated with respect to version 003.    
+    '''
+    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
+    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_002()
+    fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
+    lgs_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
+    lgs_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
+    lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
+    lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
+    lgs_wfs = MorfeoTransmissiveElementsCatalog.lgs_wfs_001()
+    c_blue = DetectorsTransmissiveElementsCatalog.c_blue_qe_001()
+    
+    ts = EltTransmissiveSystem()   
+    ts.add(schmidt_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.TRANSMISSION)
+    ts.add(lgs_l1, Direction.TRANSMISSION)
+    ts.add(lgs_l2, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_l3, Direction.TRANSMISSION)
+    ts.add(lgs_l4, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_wfs, Direction.TRANSMISSION)
+    ts.add(c_blue, Direction.TRANSMISSION)
+    
+    return ts
+
+
 def MorfeoLowOrderChannelTransmissiveSystem_001():
     '''
     Configuration from Cedric's spreadsheet: "background_calc_maory_v12.xls"
