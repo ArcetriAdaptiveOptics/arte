@@ -162,6 +162,18 @@ class CoatingsTransmissiveElementsCatalog():
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
 
+    @classmethod
+    def ar_coating_broadband_001(cls):
+        '''
+        Broadband AR coating.
+        Data from Demetrio, received by email on 12/04/2023.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('ar_broadband_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+
 
 class DetectorsTransmissiveElementsCatalog():
     
