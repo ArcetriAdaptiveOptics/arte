@@ -15,8 +15,9 @@ from synphot.units import FLAM
 from arte.photometry import get_normalized_star_spectrum
 from arte.photometry.eso_sky_calc import EsoSkyCalc
 import numpy as np
-from arte.photometry.transmissive_elements_catalogs import MorfeoTransmissiveElementsCatalog,\
+from arte.photometry.transmissive_elements_catalogs import MorfeoTransmissiveElementsCatalog, \
     GlassesTransmissiveElementsCatalog
+from scipy import interpolate
 
 
 def misc():
@@ -108,7 +109,6 @@ def check_zeropoints_ESO():
               f"{filt.waveset.to(u.nm)[0]:g} {filt.waveset.to(u.nm)[-1]:g}")
 
 
-
 def external_transmittance_calculator(l1, l2, t1, a):
     '''
     Use external transmittance data of a glass with thickness l2 to compute
@@ -136,7 +136,7 @@ def internal_transmittance_calculator(l1, l2, t1):
     
         t2 = t1**(l2/l1)
     '''
-    t2 = t1**(l2 / l1)
+    t2 = t1 ** (l2 / l1)
     return t2
 
 
@@ -161,7 +161,28 @@ def attenuation_coefficient_calculator(l1, l2, t1, t2):
     '''
     a = (np.log(t2) - np.log(t1)) / (l1 - l2)
     return a
-    
+   
+   
+def main230414_derive_CPM_transmittance_from_Demetrio_plot():
+    data = np.array(
+        [[0.50, 0.98], [0.52, 0.985], [0.55, 0.99], [0.58, 0.985], [0.6, 0.984],
+          [0.65, 0.982], [0.7, 0.985], [0.78, 0.984], [0.8, 0.985],
+          [0.85, 0.985], [0.9, 0.984], [0.95, 0.982], [1., 0.9825],
+          [1.1, 0.985], [1.2, 0.986], [1.3, 0.987], [1.4, 0.989], [1.5, 0.99],
+          [1.6, 0.989], [1.7, 0.987], [1.8, 0.988], [1.9, 0.989], [2.0, 0.99],
+          [2.1, 0.992], [2.2, 0.993], [2.3, 0.99], [2.4, 0.987]])
+    f_interp = interpolate.interp1d(data[:, 0], data[:, 1], kind='cubic')
+    new_wv = np.linspace(0.5, 2.4, 96)
+    data_interp = f_interp(new_wv)
+    plt.plot(new_wv, data_interp, label='Interp')
+    plt.plot(data[:, 0], data[:, 1], '-.', label='From plot')
+    plt.grid()
+    plt.legend()
+    # tosave = np.stack((new_wv, data_interp), axis=1)
+    # folder = '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/ar_broadband_001/'
+    # np.savetxt(folder + 't.dat', tosave, fmt='%1.4f')
+    return new_wv, data_interp
+
 
 def main230202_compute_attenuation_coefficient_of_suprasil():
     supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_001()
@@ -318,7 +339,6 @@ def main230203_compute_internal_transmittance_of_suprasil3002_85mm_and_save_dat(
     folder = '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/glasses/suprasil3002_85mm_internal_001/'
     np.savetxt(folder + 't.dat', to_save)
     return t2, wv
-
 
 
 def main230203_compute_internal_transmittance_of_suprasil3002_108mm_and_save_dat(
