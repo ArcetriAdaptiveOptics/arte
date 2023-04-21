@@ -173,7 +173,7 @@ class CoatingsTransmissiveElementsCatalog():
     @classmethod
     def ar_coating_broadband_001(cls):
         '''
-        Broadband AR coating.
+        Broadband AR coating for CPM.
         Data from Demetrio, received by email on 12/04/2023.
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
@@ -192,6 +192,19 @@ class CoatingsTransmissiveElementsCatalog():
             cls._CoatingsFolder('ar_swir_001'), u.um)
         a = Bandpass.zero()
         te = TransmissiveElement(reflectance=r, absorptance=a)
+        return te
+
+    @classmethod
+    def ar_coating_amus_001(cls):
+        '''
+        AR coating for LO WFS lenslet array. This is a simplified version based
+        on Amus saying that the average transmission over 1500-1800 nm range is
+        98%.
+        NOTE: 98% is assumed over the whole range defined in Bandpass.
+        '''
+        t = Bandpass.one() * 0.98
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
 
 
@@ -230,6 +243,7 @@ class DetectorsTransmissiveElementsCatalog():
     def c_red_one_filters_001(cls):
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        2H + 2K filters are considered.
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._DetectorsFolder('c_red_one_filters_001'), u.um)
@@ -943,6 +957,24 @@ class MorfeoTransmissiveElementsCatalog():
         adc.add(substrate1, Direction.TRANSMISSION)
         adc.add(swir_coating, Direction.TRANSMISSION)
         return adc.as_transmissive_element()
+    
+    @classmethod
+    def lowfs_lenslet_001(cls):
+        '''
+        Lenslet array in the LO WFS path. The design is taken from Aµs and it is
+        as follows:
+            - AR coating
+            - Suprasil 3001 3 mm substrate
+            - AR coating
+        '''
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_amus_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
+        
+        la = TransmissiveSystem()
+        la.add(ar_coating, Direction.TRANSMISSION)
+        la.add(substrate, Direction.TRANSMISSION)
+        la.add(ar_coating, Direction.TRANSMISSION)
+        return la.as_transmissive_element()
    
     @classmethod
     def lowfs_collimator_doublet_coated_001(cls):
