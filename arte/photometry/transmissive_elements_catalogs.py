@@ -4,6 +4,9 @@ from arte.photometry.transmissive_elements import Bandpass, TransmissiveElement,
     TransmissiveSystem, Direction
 from arte.utils.package_data import dataRootDir
 from synphot.spectrum import SpectralElement
+from arte.photometry.transmittance_calculator import interface_glass_to_glass, \
+    internal_transmittance_calculator
+from synphot.models import Empirical1D
 
 
 class RestoreTransmissiveElements(object):
@@ -28,7 +31,12 @@ class RestoreTransmissiveElements(object):
     def restore_reflectance_from_dat(cls, foldername, wavelength_unit):
         filename = os.path.join(foldername, 'r.dat')
         return SpectralElement.from_file(filename, wave_unit=wavelength_unit)
-    
+
+    @classmethod
+    def restore_refractive_index_from_dat(cls, foldername, wavelength_unit):
+        filename = os.path.join(foldername, 'n.dat')
+        return SpectralElement.from_file(filename, wave_unit=wavelength_unit)    
+
 
 class EltTransmissiveElementsCatalog():
     
@@ -174,6 +182,18 @@ class CoatingsTransmissiveElementsCatalog():
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
 
+    @classmethod
+    def ar_coating_swir_001(cls):
+        '''
+        SWIR AR coating.
+        Data from Edmund Optics Website.
+        '''
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('ar_swir_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, absorptance=a)
+        return te
+
 
 class DetectorsTransmissiveElementsCatalog():
     
@@ -309,6 +329,26 @@ class GlassesTransmissiveElementsCatalog():
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
 
+    @classmethod
+    def suprasil3001_3mm_internal_001(cls):
+        '''
+        Suprasil 3001 substrate of 3 mm thickness.
+        Transmittance is internal.
+        Data extrapolated from 10 mm curves.
+        '''
+        supra10mm = cls.suprasil3002_10mm_001()
+        wv = supra10mm.waveset
+        t1 = supra10mm.transmittance(wv)
+        l1 = 10
+        l2 = 3
+        t2 = internal_transmittance_calculator(l1, l2, t1)
+        t = SpectralElement(
+            Empirical1D, points=wv,
+            lookup_table=t2)
+        r = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
+        return te
+        
     @classmethod
     def suprasil3002_10mm_internal_001(cls):
         '''
@@ -484,7 +524,7 @@ class GlassesTransmissiveElementsCatalog():
         Data from Ohara website. 
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('ohara_quartz_SK1300_10mm_001'), u.um)
+            cls._GlassesFolder('ohara_quartz_SK1300_10mm_internal_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
@@ -497,9 +537,110 @@ class GlassesTransmissiveElementsCatalog():
         Data derived from transmittance data for 10 mm thickness. 
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('ohara_quartz_SK1300_85mm_001'), u.um)
+            cls._GlassesFolder('ohara_quartz_SK1300_85mm_internal_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def ohara_SFPL51_10mm_internal_001(cls):
+        '''
+        Ohara SFPL-51 substrate of 10 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_SFPL51_10mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def ohara_PBL35Y_10mm_internal_001(cls):
+        '''
+        Ohara PBL-35Y substrate of 10 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_PBL35Y_10mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def ohara_PBL35Y_3mm_internal_001(cls):
+        '''
+        Ohara PBL-35Y substrate of 3 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_PBL35Y_3mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def schott_NSF2_9dot8_mm_internal_001(cls):
+        '''
+        Schott N-SF2 substrate of 9.8 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('schott_NSF2_9.8mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def schott_NPSK53A_10_mm_internal_001(cls):
+        '''
+        Schott N-PSK53A substrate of 10 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('schott_NPSK53A_10mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def interface_ohara_SFPL51_to_ohara_PBL35Y_001(cls):
+        '''
+        Interface between Ohara SFPL-51 and Ohara PBL-35Y.
+        Data from RefractiveInfo website. 
+        '''
+        n_sfpl51 = RestoreTransmissiveElements.restore_refractive_index_from_dat(
+            cls._GlassesFolder('ohara_SFPL51_10mm_internal_001'), u.um)
+        n_pbl35y = RestoreTransmissiveElements.restore_refractive_index_from_dat(
+            cls._GlassesFolder('ohara_PBL35Y_10mm_internal_001'), u.um)
+        wv = n_sfpl51.waveset
+        r = SpectralElement(
+            Empirical1D, points=wv,
+            lookup_table=interface_glass_to_glass(n_sfpl51(wv), n_pbl35y(wv)))
+        a = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, absorptance=a)
+        return te
+    
+    @classmethod
+    def interface_schott_NSF2_to_schott_NPSK53A_001(cls):
+        '''
+        Interface between Schott N-SF2 and Schott N-PSK53A.
+        Data from RefractiveInfo website. 
+        '''
+        n_sf2 = RestoreTransmissiveElements.restore_refractive_index_from_dat(
+            cls._GlassesFolder('schott_NSF2_9.8mm_internal_001'), u.um)
+        n_npsk53a = RestoreTransmissiveElements.restore_refractive_index_from_dat(
+            cls._GlassesFolder('schott_NPSK53A_10mm_internal_001'), u.um)
+        wv = n_sf2.waveset
+        r = SpectralElement(
+            Empirical1D, points=wv,
+            lookup_table=interface_glass_to_glass(n_sf2(wv), n_npsk53a(wv)))
+        a = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, absorptance=a)
         return te
 
 
@@ -569,6 +710,17 @@ class MorfeoTransmissiveElementsCatalog():
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
             cls._MorfeoFolder('visir_dichroic_001'), u.um)
         te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def visir_dichroic_002(cls):
+        '''
+        Data from LZH plots (MBO slides).
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('visir_dichroic_002'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
 
     @classmethod
@@ -748,7 +900,7 @@ class MorfeoTransmissiveElementsCatalog():
         return te
     
     @classmethod
-    def adc_coated_001(cls):
+    def lowfs_adc_001(cls):
         '''
         Coated ADC: 2x S-NPH1/N-LAK22/S-NPH1
         Thickness of S-NPH1 (a): 4 mm.
@@ -765,7 +917,57 @@ class MorfeoTransmissiveElementsCatalog():
         return te
     
     @classmethod
-    def collimator_doublet_coated_001(cls):
+    def lowfs_adc_002(cls):
+        '''
+        ADC in the LO WFS path. The design is taken from
+        E-MAO-PN0-INA-ANR-001 MAORY LOR WFS Module Analysis Report_3D1 and it
+        includes a first prism composed of the following surfaces:
+            - SWIR AR coating
+            - Schott N-SF2 9.8 mm substrate
+            - Schott N-PSK53A 10 mm substrate
+            - SWIR AR coating
+        and a second prism that is identical and symmetric wrt the first.
+        '''
+        swir_coating = CoatingsTransmissiveElementsCatalog.ar_coating_swir_001()
+        substrate1 = GlassesTransmissiveElementsCatalog.schott_NSF2_9dot8_mm_internal_001()
+        substrate2 = GlassesTransmissiveElementsCatalog.schott_NPSK53A_10_mm_internal_001()
+        
+        adc = TransmissiveSystem()
+        adc.add(swir_coating, Direction.TRANSMISSION)
+        adc.add(substrate1, Direction.TRANSMISSION)
+        adc.add(substrate2, Direction.TRANSMISSION)
+        adc.add(swir_coating, Direction.TRANSMISSION)
+        
+        adc.add(swir_coating, Direction.TRANSMISSION)
+        adc.add(substrate2, Direction.TRANSMISSION)
+        adc.add(substrate1, Direction.TRANSMISSION)
+        adc.add(swir_coating, Direction.TRANSMISSION)
+        return adc.as_transmissive_element()
+   
+    @classmethod
+    def lowfs_collimator_doublet_coated_001(cls):
+        '''
+        Collimator doublet in the LO WFS path. The design is taken from
+        E-MAO-PN0-INA-ANR-001 MAORY LOR WFS Module Analysis Report_3D1 and it is
+        as follows:
+            - SWIR AR coating
+            - SFPL-51 10 mm substrate
+            - PBL-35Y 3 mm substrate
+            - SWIR AR coating
+        '''
+        swir_coating = CoatingsTransmissiveElementsCatalog.ar_coating_swir_001()
+        substrate1 = GlassesTransmissiveElementsCatalog.ohara_SFPL51_10mm_internal_001()
+        substrate2 = GlassesTransmissiveElementsCatalog.ohara_PBL35Y_3mm_internal_001()
+        
+        lowfs_collimator = TransmissiveSystem()
+        lowfs_collimator.add(swir_coating, Direction.TRANSMISSION)
+        lowfs_collimator.add(substrate1, Direction.TRANSMISSION)
+        lowfs_collimator.add(substrate2, Direction.TRANSMISSION)
+        lowfs_collimator.add(swir_coating, Direction.TRANSMISSION)
+        return lowfs_collimator.as_transmissive_element()
+    
+    @classmethod
+    def refwfs_collimator_doublet_coated_001(cls):
         '''
         Coated collimator doublet: N-SF15/N-BAK1.
         Thickness of N-SF15: 3 mm.
@@ -781,7 +983,7 @@ class MorfeoTransmissiveElementsCatalog():
         return te
     
     @classmethod
-    def collimator_doublet_coated_002(cls):
+    def refwfs_collimator_doublet_coated_002(cls):
         '''
         Collimator doublet N-SF5/N-BK7.
         Thickness of N-SF5 = 2.5 mm.
