@@ -211,7 +211,7 @@ def MorfeoLowOrderChannelTransmissiveSystem_001():
     m11up = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     visir_dichroic = MorfeoTransmissiveElementsCatalog.visir_dichroic_001()
     caf2_lens = MorfeoTransmissiveElementsCatalog.CaF2_lens_C_coated_001()
-    adc = MorfeoTransmissiveElementsCatalog.adc_coated_001()
+    adc = MorfeoTransmissiveElementsCatalog.lowfs_adc_001()
     fused_silica_lenslets = CoatedGlassesTransmissiveElementsCatalog.infrasil_1mm_C_coated_001()
     fused_silica_window = MorfeoTransmissiveElementsCatalog.schmidt_plate_001()
     c_red1_filters = DetectorsTransmissiveElementsCatalog.c_red_one_filters_001()
@@ -244,6 +244,52 @@ def MorfeoLowOrderChannelTransmissiveSystem_001():
     return ts
 
 
+def MorfeoLowOrderChannelTransmissiveSystem_002():
+    '''
+    Configuration from E-MAO-PN0-INA-ANR-001 MAORY LOR WFS Module Analysis Report_3D1
+    '''  
+    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
+    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_003()
+    m11up = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    visir_dichroic = MorfeoTransmissiveElementsCatalog.visir_dichroic_002()
+    doublet_collimator = MorfeoTransmissiveElementsCatalog.lowfs_collimator_doublet_coated_001()
+    adc = MorfeoTransmissiveElementsCatalog.lowfs_adc_002()
+    lenslet_array = MorfeoTransmissiveElementsCatalog.lowfs_lenslet_001()
+    # fused_silica_window = MorfeoTransmissiveElementsCatalog.schmidt_plate_001()
+    c_red1_filters = DetectorsTransmissiveElementsCatalog.c_red_one_filters_001()
+    c_red1 = DetectorsTransmissiveElementsCatalog.c_red_one_qe_001()
+    
+    ts = EltTransmissiveSystem()
+    ts.add(schmidt_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.REFLECTION)
+    ts.add(m11up, Direction.REFLECTION)
+    ts.add(m11up, Direction.REFLECTION)
+    ts.add(m11up, Direction.REFLECTION)
+    ts.add(m11up, Direction.REFLECTION)
+    ts.add(m11up, Direction.REFLECTION)
+    ts.add(m11up, Direction.REFLECTION)
+    ts.add(m11up, Direction.REFLECTION)
+    ts.add(visir_dichroic, Direction.REFLECTION)
+    ts.add(doublet_collimator, Direction.TRANSMISSION)
+    ts.add(adc, Direction.TRANSMISSION)
+    ts.add(lenslet_array, Direction.TRANSMISSION)
+    
+    ts.add(c_red1_filters, Direction.TRANSMISSION)
+    ts.add(c_red1, Direction.TRANSMISSION)
+    
+    return ts
+
+
 def MorfeoReferenceChannelTransmissiveSystem_001():
     '''
     Configuration from Cedric's spreadsheet: "background_calc_maory_v12.xls"
@@ -257,7 +303,7 @@ def MorfeoReferenceChannelTransmissiveSystem_001():
     lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_001()
     m11up = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     visir_dichroic = MorfeoTransmissiveElementsCatalog.visir_dichroic_001()
-    collimator = MorfeoTransmissiveElementsCatalog.collimator_doublet_coated_001()
+    collimator = MorfeoTransmissiveElementsCatalog.refwfs_collimator_doublet_coated_001()
     custom_filter = MorfeoTransmissiveElementsCatalog.ref_custom_filter_001()  
     fused_silica_window = MorfeoTransmissiveElementsCatalog.schmidt_plate_001()  
     fused_silica_lenslets = CoatedGlassesTransmissiveElementsCatalog.infrasil_1mm_B_coated_001()
