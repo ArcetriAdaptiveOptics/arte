@@ -206,6 +206,18 @@ class CoatingsTransmissiveElementsCatalog():
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
+    
+    @classmethod
+    def lzh_coating_for_visir_dichroic_001(cls):
+        '''
+        Coating for VISIR dichroic from LZH. Data extrapolated from LZH plot.
+        No information from ~1000 to 1450 nm.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('lzh_visir_dichroic_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
 
 
 class DetectorsTransmissiveElementsCatalog():
@@ -729,13 +741,21 @@ class MorfeoTransmissiveElementsCatalog():
     @classmethod
     def visir_dichroic_002(cls):
         '''
-        Data from LZH plots (MBO slides).
+        VISIR dichroic. The design is from "E-MAO-PN0-INA-DER-001 MAORY LOR WFS
+        Module Design Report":
+            - Coating from LZH
+            - 3 mm of fused silica substrate
+            - AR coating (we assume here the same coating as for the LO lenslet)
         '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('visir_dichroic_002'), u.um)
-        a = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, absorptance=a)
-        return te
+        lzh_coating = CoatingsTransmissiveElementsCatalog.lzh_coating_for_visir_dichroic_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_amus_001()
+        
+        visir_dich = TransmissiveSystem()
+        visir_dich.add(lzh_coating, Direction.TRANSMISSION)
+        visir_dich.add(substrate, Direction.TRANSMISSION)
+        visir_dich.add(ar_coating, Direction.TRANSMISSION)
+        return visir_dich.as_transmissive_element()
 
     @classmethod
     def schmidt_plate_001(cls):
