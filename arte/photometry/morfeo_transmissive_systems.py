@@ -1,6 +1,7 @@
 from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
     MorfeoTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog, \
-    CoatedGlassesTransmissiveElementsCatalog
+    CoatedGlassesTransmissiveElementsCatalog, \
+    CoatingsTransmissiveElementsCatalog
 from arte.photometry.transmissive_elements import TransmissiveSystem, Direction
 
 
@@ -254,7 +255,7 @@ def MorfeoLowOrderChannelTransmissiveSystem_002():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
-    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_003()
+    lgs_dichroic = CoatingsTransmissiveElementsCatalog.materion_average_002()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
@@ -262,7 +263,7 @@ def MorfeoLowOrderChannelTransmissiveSystem_002():
     focus_compensator1 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     focus_compensator2 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     pup_steer_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001() 
-    visir_dichroic = MorfeoTransmissiveElementsCatalog.visir_dichroic_002()
+    visir_dichroic = CoatingsTransmissiveElementsCatalog.lzh_coating_for_visir_dichroic_001()
     doublet_collimator = MorfeoTransmissiveElementsCatalog.lowfs_collimator_doublet_coated_001()
     adc = MorfeoTransmissiveElementsCatalog.lowfs_adc_002()
     lenslet_array = MorfeoTransmissiveElementsCatalog.lowfs_lenslet_001()
