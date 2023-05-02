@@ -252,6 +252,30 @@ class DetectorsTransmissiveElementsCatalog():
         return te
 
     @classmethod
+    def c_red_one_H_filter_001(cls):
+        '''
+        C-RED One cold filter (H). 
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._DetectorsFolder('c_red_one_H_filter_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def c_red_one_K_filter_001(cls):
+        '''
+        C-RED One cold filter (K). 
+        Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._DetectorsFolder('c_red_one_K_filter_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
     def c_red_one_filters_001(cls):
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
@@ -324,6 +348,32 @@ class GlassesTransmissiveElementsCatalog():
             RestoreTransmissiveElements.transmissive_elements_folder(),
             'glasses',
             foldername)
+        
+    @classmethod
+    def cdgm_HQK3L_7mm_internal_001(cls):
+        '''
+        CDGM H-QK3L substrate of 7 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveIndex website.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('cdgm_HQK3L_7mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te    
+
+    @classmethod
+    def ohara_SFTM16_3mm_internal_001(cls):
+        '''
+        Ohara S-FTM16 substrate of 3 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveIndex website.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_SFTM16_3mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te    
         
     @classmethod
     def infrasil_1mm_001(cls):
