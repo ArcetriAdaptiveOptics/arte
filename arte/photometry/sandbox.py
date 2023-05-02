@@ -18,6 +18,8 @@ import numpy as np
 from arte.photometry.transmissive_elements_catalogs import MorfeoTransmissiveElementsCatalog, \
     GlassesTransmissiveElementsCatalog
 from scipy import interpolate
+from arte.photometry.transmittance_calculator import internal_transmittance_calculator, \
+    attenuation_coefficient_calculator, external_transmittance_calculator
 
 
 def misc():
@@ -109,59 +111,85 @@ def check_zeropoints_ESO():
               f"{filt.waveset.to(u.nm)[0]:g} {filt.waveset.to(u.nm)[-1]:g}")
 
 
-def external_transmittance_calculator(l1, l2, t1, a):
-    '''
-    Use external transmittance data of a glass with thickness l2 to compute
-    external transmittance of a same glass but with different thickness l1.
-    The computation is based on the equation for the external transmittance:
-    
-    T = (1 - R**2) * exp(-a * l)
-    
-    where R is the reflectance, a is the attenuation coefficient and l is the
-    thickness of the glass. If we consider two different values of thickness, 
-    thus of transmittance, we can compute the unknown transmittance T2 as:
-    
-    T2 = T1 *  exp(-a * (l2 - l1))
-
-    '''
-    t2 = t1 * np.exp(-a * (l2 - l1))
-    return t2
-
-
-def internal_transmittance_calculator(l1, l2, t1):
-    '''
-    Use internal transmittance data t1 of a glass with thickness l1 to compute 
-    internal transmittance t2 of a same glass but with different thickness l2.
-    The transmittance is computed with the following equation:
-    
-        t2 = t1**(l2/l1)
-    '''
-    t2 = t1 ** (l2 / l1)
-    return t2
+def main230420_derive_VISIR_dichroic_transmittance_from_LZH():
+    data = np.array(
+        [[0.590, 0.95], [0.594, 0.988], [0.600, 0.978], [0.605, 0.979],
+         [0.610, 0.996], [0.614, 0.978], [0.618, 0.995], [0.621, 0.977],
+         [0.625, 0.999], [0.630, 0.973], [0.635, 0.999], [0.640, 0.975],
+         [0.645, 0.997], [0.650, 0.976], [0.655, 0.996], [0.660, 0.975],
+         [0.665, 0.998], [0.670, 0.979], [0.675, 0.992], [0.680, 0.979],
+         [0.685, 0.992], [0.690, 0.976], [0.695, 0.993], [0.705, 0.978],
+         [0.710, 0.995], [0.720, 0.978], [0.725, 0.982], [0.730, 0.979],
+         [0.735, 0.985], [0.740, 0.978], [0.750, 0.995], [0.757, 0.990],
+         [0.763, 0.994], [0.770, 0.979], [0.778, 0.991], [0.786, 0.979],
+         [0.795, 0.991], [0.800, 0.978], [0.810, 0.995], [0.820, 0.979],
+         [0.825, 0.993], [0.835, 0.979], [0.843, 0.995], [0.855, 0.978],
+         [0.863, 0.993], [0.872, 0.979], [0.881, 0.994], [0.892, 0.979],
+         [0.901, 0.995], [0.912, 0.979], [0.922, 0.995], [0.934, 0.978],
+         [0.944, 0.990], [0.955, 0.979], [0.965, 0.992], [0.975, 0.978],
+         [0.987, 0.996], [1.00, 0.978], [1.01, 0.997], [1.02, 0.95]
+         ])
+    plt.plot(data[:, 0], data[:, 1], '.-')
+    plt.grid()
+    tosave = np.stack((data[:, 0], data[:, 1]), axis=1)
+    folder = '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/morfeo/visir_dichroic_002/'
+    np.savetxt(folder + 't.dat', tosave, fmt='%1.4f')
 
 
-def attenuation_coefficient_calculator(l1, l2, t1, t2):
-    '''
-    Compute attenuation coefficient of a glass from external transmittance data
-    of two different values of thickness.
-    The computation is based on the equation for the external transmittance
-    of a glass:
-    
-    T = (1 - R**2) * exp(-a * l)
-    
-    where R is the reflectance, a is the attenuation coefficient and l is the
-    thickness of the glass. If we consider two different values of thickness, 
-    thus of transmittance, we can compute the ratio between the transmittances:
-    
-    T1 / T2 = exp(-a * (l1 - l2))
-    
-    and from this equation we can derive the attenuation coefficient as:
-    
-    a = (lnT2 - lnT1) / (l1 - l2)
-    '''
-    a = (np.log(t2) - np.log(t1)) / (l1 - l2)
-    return a
-   
+def main230420_derive_SWIR_AR_coating_from_EdmundOptics_plot():
+    data_perc = np.array(
+        [[0.90, 0.40], [0.95, 0.25], [1.0, 0.35], [1.1, 0.50], [1.2, 0.49],
+          [1.25, 0.45], [1.3, 0.40], [1.35, 0.38], [1.4, 0.35],
+          [1.45, 0.40], [1.5, 0.44], [1.55, 0.5], [1.60, 0.7],
+          [1.65, 0.75], [1.7, 1]])
+    f_interp = interpolate.interp1d(data_perc[:, 0], data_perc[:, 1] / 100, kind='cubic')
+    new_wv = np.linspace(0.9, 1.7, 81)
+    data_interp = f_interp(new_wv)
+    plt.plot(new_wv, data_interp, label='Interp')
+    plt.plot(data_perc[:, 0], data_perc[:, 1] / 100, '-.', label='From plot')
+    plt.grid()
+    plt.legend()
+    tosave = np.stack((new_wv, data_interp), axis=1)
+    folder = '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/ar_swir_001/'
+    np.savetxt(folder + 'r.dat', tosave, fmt='%1.4f')
+    return new_wv, data_interp
+
+
+def main230419_compute_internal_transmittance_of_ohara_PBL35Y_3mm_and_save_dat(
+        ):
+    pbl_10mm = GlassesTransmissiveElementsCatalog.ohara_PBL35Y_10mm_internal_001()
+    wv = pbl_10mm.waveset
+    t1 = pbl_10mm.transmittance(wv)
+    l1 = 10 * u.mm
+    l2 = 3 * u.mm
+    t2 = internal_transmittance_calculator(l1, l2, t1)
+    plt.plot(wv.to(u.um), t2)
+    plt.grid()
+    plt.xlabel('Wavelength [$\mu$m]')
+    plt.ylabel('Transmittance')
+    to_save = np.stack((wv.to(u.um).value, t2), axis=1).value
+    folder = '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/glasses/ohara_PBL35Y_3mm_internal_001/'
+    np.savetxt(folder + 't.dat', to_save, fmt='%1.4f')
+    return t1, t2, wv 
+
+
+def main230414_compute_internal_transmittance_of_ohara_quartz_SK1300_85mm_and_save_dat(
+        ):
+    sk1300_10mm = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_10mm_internal_001()
+    wv = sk1300_10mm.waveset
+    t1 = sk1300_10mm.transmittance(wv)
+    l1 = 10 * u.mm
+    l2 = 85 * u.mm
+    t2 = internal_transmittance_calculator(l1, l2, t1)
+    plt.plot(wv.to(u.um), t2)
+    plt.grid()
+    plt.xlabel('Wavelength [$\mu$m]')
+    plt.ylabel('Transmittance')
+    to_save = np.stack((wv.to(u.um).value, t2), axis=1).value
+    folder = '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/glasses/ohara_quartz_SK1300_85mm_001/'
+    np.savetxt(folder + 't.dat', to_save, fmt='%1.4f')
+    return t1, t2, wv 
+
    
 def main230414_derive_CPM_transmittance_from_Demetrio_plot():
     data = np.array(
