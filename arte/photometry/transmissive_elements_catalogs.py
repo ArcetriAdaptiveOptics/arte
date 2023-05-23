@@ -195,6 +195,18 @@ class CoatingsTransmissiveElementsCatalog():
         return te
 
     @classmethod
+    def ar_coating_nir_i_001(cls):
+        '''
+        NIR I AR coating.
+        Data from Edmund Optics Website.
+        '''
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('ar_nir_i_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, absorptance=a)
+        return te
+
+    @classmethod
     def ar_coating_amus_001(cls):
         '''
         AR coating for LO WFS lenslet array. This is a simplified version based
@@ -1047,7 +1059,7 @@ class MorfeoTransmissiveElementsCatalog():
         return la.as_transmissive_element()
    
     @classmethod
-    def lowfs_collimator_doublet_coated_001(cls):
+    def lowfs_collimator_doublet_001(cls):
         '''
         Collimator doublet in the LO WFS path. The design is taken from
         E-MAO-PN0-INA-ANR-001 MAORY LOR WFS Module Analysis Report_3D1 and it is
@@ -1069,7 +1081,7 @@ class MorfeoTransmissiveElementsCatalog():
         return lowfs_collimator.as_transmissive_element()
     
     @classmethod
-    def refwfs_collimator_doublet_coated_001(cls):
+    def refwfs_collimator_doublet_001(cls):
         '''
         Coated collimator doublet: N-SF15/N-BAK1.
         Thickness of N-SF15: 3 mm.
@@ -1085,16 +1097,46 @@ class MorfeoTransmissiveElementsCatalog():
         return te
     
     @classmethod
-    def refwfs_collimator_doublet_coated_002(cls):
+    def refwfs_collimator_doublet_002(cls):
         '''
-        Collimator doublet N-SF5/N-BK7.
-        Thickness of N-SF5 = 2.5 mm.
-        Thickness of N-BK7 = 6 mm.
-        
-        Data from ?MB?
+        Collimator doublet in the R WFS path. The design is taken from 
+        E-MAO-PN0-INA-ANR-001 MAORY LOR WFS Module Analysis Report_3D1 and it is
+        as follows:
+            - NIR I AR coating
+            - Ohara S-FTM16 3 mm substrate
+            - CDGM H-QK3L 7 mm substrate
+            - NIR I AR coating
          
         '''
-        pass
+        nir_i_coating = CoatingsTransmissiveElementsCatalog.ar_coating_nir_i_001()
+        substrate1 = GlassesTransmissiveElementsCatalog.ohara_SFTM16_3mm_internal_001()
+        substrate2 = GlassesTransmissiveElementsCatalog.cdgm_HQK3L_7mm_internal_001()
+        
+        rwfs_collimator = TransmissiveSystem()
+        rwfs_collimator.add(nir_i_coating, Direction.TRANSMISSION)
+        rwfs_collimator.add(substrate1, Direction.TRANSMISSION)
+        rwfs_collimator.add(substrate2, Direction.TRANSMISSION)
+        rwfs_collimator.add(nir_i_coating, Direction.TRANSMISSION)
+        return rwfs_collimator.as_transmissive_element()
+    
+    @classmethod
+    def rwfs_lenslet_001(cls):
+        '''
+        Lenslet array in the R WFS path. The design is taken from 
+        E-MAO-PN0-INA-ANR-001 MAORY LOR WFS Module Analysis Report_3D1 and it is
+        as follows:
+            - NIR I AR coating
+            - Fused silica 2.15 mm substrate (we use 3 mm of Suprasil3001)
+            - NIR I AR coating
+        '''
+        nir_i_ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_nir_i_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
+        
+        la = TransmissiveSystem()
+        la.add(nir_i_ar_coating, Direction.TRANSMISSION)
+        la.add(substrate, Direction.TRANSMISSION)
+        la.add(nir_i_ar_coating, Direction.TRANSMISSION)
+        return la.as_transmissive_element()
     
     @classmethod
     def notch_filter_001(cls):
@@ -1127,4 +1169,19 @@ class MorfeoTransmissiveElementsCatalog():
             cls._MorfeoFolder('sapphire_window_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def alice_entrance_window_001(cls):
+        '''
+        Entrance window of ALICE camera. This is a simplified version based on 
+        ESO-322090: "the transmission of the window with anti-reflection coating
+        applied on both surfaces shall be >97% for an angle of incidence between
+        0° and 20°, over wavelength range specified in [REQ-EW-010]."
+        
+        NOTE: 97% is assumed over the whole range defined in Bandpass.
+        '''
+        t = Bandpass.one() * 0.97
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
