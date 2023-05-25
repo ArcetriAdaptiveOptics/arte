@@ -245,9 +245,35 @@ class DetectorsTransmissiveElementsCatalog():
     def ccd220_qe_001(cls):
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
+        Standard silicon data.
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._DetectorsFolder('ccd_220_qe_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def ccd220_qe_002(cls):
+        '''
+        Data from Teledyne e2v website.
+        Deep depleted silicon data.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._DetectorsFolder('ccd_220_qe_002'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def ccd220_qe_003(cls):
+        '''
+        Data from ESO doc: 'ESO-287869_2 ALICE Camera Technical Requirements
+        Specifications.pdf'.
+        Deep depleted silicon data.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._DetectorsFolder('ccd_220_qe_003'), u.um)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te

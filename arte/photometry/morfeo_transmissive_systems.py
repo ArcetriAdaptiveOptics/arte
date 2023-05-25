@@ -370,7 +370,7 @@ def MorfeoReferenceChannelTransmissiveSystem_002():
     lenslet_array = MorfeoTransmissiveElementsCatalog.rwfs_lenslet_001()
     # TODO: stessi dati della sapphire window di FREDA
     # ccd220_sapphire_window = 
-    ccd220_qe = DetectorsTransmissiveElementsCatalog.ccd220_qe_001()
+    ccd220_qe = DetectorsTransmissiveElementsCatalog.ccd220_qe_002()
     
     ts = EltTransmissiveSystem()
     ts.add(schmidt_plate, Direction.TRANSMISSION)
