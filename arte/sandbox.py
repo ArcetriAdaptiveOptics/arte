@@ -225,3 +225,14 @@ class AtmosphericPhaseScreenDecomposition():
 #
 #     def _getPhaseOfDMUntilStepN(self, ):
 #         pass
+
+
+
+    
+    
+    # Parsevals theorem with proper sample points
+    
+    #energy_t = np.sum(abs(f)**2, x=t)
+    #energy_f = np.trapz(abs(FFT)**2, x=frq) / N
+    
+    #print('Parsevals theorem NOT fulfilled: ' + str(energy_t - energy_f))

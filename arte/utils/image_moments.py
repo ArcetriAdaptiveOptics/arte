@@ -19,11 +19,11 @@ class ImageMoments():
 
 
     def centralNormalizedMoment(self, iord, jord):
-        return self.centralMoment(iord, jord) / self._m00
+        return self.central_moment(iord, jord) / self._m00
 
 
     # TODO: (lb) 20160104 make it faster if needed, it is easy!
-    def centralMoment(self, iord, jord):
+    def central_moment(self, iord, jord):
         if iord == 0 and jord == 0:
             return self._m00
         if (iord == 0 and jord == 1) or (iord == 1 and jord == 0):

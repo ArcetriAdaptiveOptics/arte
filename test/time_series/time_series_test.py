@@ -38,7 +38,7 @@ class ATimeSeries(TimeSeries):
     @staticmethod
     def _sine(frequency, length, rate):
         length = int(length * rate)
-        factor = np.float(frequency) * (math.pi * 2) / rate
+        factor = float(frequency) * (math.pi * 2) / rate
         return np.sin(np.arange(length) * factor)
 
 

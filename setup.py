@@ -91,7 +91,7 @@ setup(name=NAME,
                         "synphot",
                         "pytest",
                         "skycalc-cli",
-                        "scikit-image",
+                        "scikit-image>=0.17",
                         "scipy",
                         "mpmath"
                         ],

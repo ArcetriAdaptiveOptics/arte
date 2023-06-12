@@ -75,7 +75,7 @@ class PhaseScreenGenerator(object):
     def _generate_sub_harmonics(self, numberOfSubHarmonics):
         nSub = 3
         lowFreqScreen = np.zeros((self._screenSzInPx, self._screenSzInPx),
-                                 dtype=np.complex)
+                                 dtype=np.complex128)
         freqX = bfft.frequencies_x_map(nSub, 1. / nSub)
         freqY = bfft.frequencies_y_map(nSub, 1. / nSub)
         freqMod = bfft.frequencies_norm_map(nSub, 1. / nSub)

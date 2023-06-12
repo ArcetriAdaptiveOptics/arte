@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.linalg.basic import pinv
+from scipy.linalg import pinv
 from arte.utils.decorator import cacheResult, returns
 from arte.utils.zernike_generator import ZernikeGenerator
 from arte.types.zernike_coefficients import ZernikeCoefficients

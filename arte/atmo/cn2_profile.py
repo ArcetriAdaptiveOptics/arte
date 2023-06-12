@@ -26,7 +26,7 @@ the i-th layer and the airmass is :math:`X=\sec z`.
 '''
 import numpy as np
 from astropy.units.quantity import Quantity
-from arte.utils.constants import Constants
+from arte.utils.constants import DEG2RAD, RAD2ARCSEC
 from arte.utils.package_data import dataRootDir
 import os
 from astropy.io import fits
@@ -229,7 +229,7 @@ class Cn2Profile(object):
             value = zenithAngleInDeg.to(u.deg).value
         else:
             value = zenithAngleInDeg
-        zenithInRad = value * Constants.DEG2RAD
+        zenithInRad = value * DEG2RAD
         return 1. / np.cos(zenithInRad)
 
     def airmass(self):
@@ -309,7 +309,7 @@ class Cn2Profile(object):
             seeing value at specified lambda and zenith angle
             defined as 0.98 * lambda / r0
         """
-        return 0.98 * self.wavelength() / self.r0() * Constants.RAD2ARCSEC * \
+        return 0.98 * self.wavelength() / self.r0() * RAD2ARCSEC * \
             u.arcsec
 
     def r0(self):
@@ -344,7 +344,7 @@ class Cn2Profile(object):
                 (2 * np.pi / self._lambda) ** 2 *
                 np.sum(self._layersJs *
                        self._layersAltitudeInMeterAtZenith ** (5. / 3))
-                ) ** (-3. / 5) * Constants.RAD2ARCSEC * u.arcsec
+                ) ** (-3. / 5) * RAD2ARCSEC * u.arcsec
 
     def tau0(self):
         '''
