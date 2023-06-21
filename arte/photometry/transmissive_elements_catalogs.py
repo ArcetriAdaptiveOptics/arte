@@ -158,6 +158,32 @@ class CoatingsTransmissiveElementsCatalog():
         return te
     
     @classmethod
+    def lma_env_min_001(cls):
+        '''
+        LGS dichroic coating measured from LMA.
+        Data received from A. Bianco by email on 12/06/2023. 
+        '''
+        # t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+        #     cls._CoatingsFolder('lgs_dichroic_lma_env_min_001'), u.um)
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_env_min_001'), u.um)
+        te = TransmissiveElement(reflectance=r, absorptance=Bandpass.zero())
+        return te
+    
+    @classmethod
+    def lma_exp_min_001(cls):
+        '''
+        LGS dichroic coating measured from LMA.
+        Data received from A. Bianco by email on 12/06/2023. 
+        '''
+        # t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+        #     cls._CoatingsFolder('lgs_dichroic_lma_exp_min_001'), u.um)
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_exp_min_001'), u.um)
+        te = TransmissiveElement(reflectance=r, absorptance=Bandpass.zero())
+        return te
+    
+    @classmethod
     def ar_coating_589nm_001(cls):
         '''
         Narrowband (589 nm) AR coating. This is a simplified version, i.e.
@@ -813,6 +839,42 @@ class MorfeoTransmissiveElementsCatalog():
         lgs_dichroic.add(substrate, Direction.TRANSMISSION)
         lgs_dichroic.add(ar_coating, Direction.TRANSMISSION)
         return lgs_dichroic.as_transmissive_element()
+    
+    @classmethod
+    def lgs_dichroic_004(cls):
+        '''
+        LGS dichroic. The element is composed by:
+            - 1 surface with LMA-coating measured as "env_min"
+            - 80 mm of Suprasil 3002 substrate
+            - 1 surface with AR coating (589 nm)
+        '''
+        lma_coating = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_80mm_internal_001()
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        
+        lgs_dichroic = TransmissiveSystem()
+        lgs_dichroic.add(lma_coating, Direction.TRANSMISSION)
+        lgs_dichroic.add(substrate, Direction.TRANSMISSION)
+        lgs_dichroic.add(ar_coating, Direction.TRANSMISSION)
+        return lgs_dichroic.as_transmissive_element()
+    
+    @classmethod
+    def lgs_dichroic_005(cls):
+        '''
+        LGS dichroic. The element is composed by:
+            - 1 surface with LMA-coating measured as "exp_min"
+            - 80 mm of Suprasil 3002 substrate
+            - 1 surface with AR coating (589 nm)
+        '''
+        lma_coating = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_80mm_internal_001()
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        
+        lgs_dichroic = TransmissiveSystem()
+        lgs_dichroic.add(lma_coating, Direction.TRANSMISSION)
+        lgs_dichroic.add(substrate, Direction.TRANSMISSION)
+        lgs_dichroic.add(ar_coating, Direction.TRANSMISSION)
+        return lgs_dichroic.as_transmissive_element()
 
     @classmethod
     def visir_dichroic_001(cls):
@@ -876,6 +938,23 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
         substrate = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_85mm_internal_001()
+        
+        cpm = TransmissiveSystem()
+        cpm.add(ar_coating, Direction.TRANSMISSION)
+        cpm.add(substrate, Direction.TRANSMISSION)
+        cpm.add(ar_coating, Direction.TRANSMISSION)
+        return cpm.as_transmissive_element()
+    
+    @classmethod
+    def schmidt_plate_004(cls):
+        '''
+        Correcting plate (CPM). The element is composed by:
+            - 1 surface with broadband (0.6-2.4 um) AR coating
+            - 85 mm of Suprasil 3002 substrate
+            - 1 surface with broadband (0.6-2.4 um) AR coating        
+        '''
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
         
         cpm = TransmissiveSystem()
         cpm.add(ar_coating, Direction.TRANSMISSION)

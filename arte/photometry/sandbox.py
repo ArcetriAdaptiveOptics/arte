@@ -112,6 +112,32 @@ def check_zeropoints_ESO():
               f"{filt.waveset.to(u.nm)[0]:g} {filt.waveset.to(u.nm)[-1]:g}")
 
 
+def main230620_get_dichroic_reflectance_from_LAM_data():
+    t_abi = np.loadtxt(
+        '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/From_AndreaBianco/Dichroic_MORFEOtransmittancedesign_march22v3.txt')
+    env_min = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 5]), axis=1)
+    exp_min = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 6]), axis=1)
+    np.savetxt(
+        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_env_min_001/t.dat',
+        env_min)
+    np.savetxt(
+        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_exp_min_001/t.dat',
+        exp_min)
+
+
+def main230620_get_dichroic_transmittance_from_LAM_data():
+    t_abi = np.loadtxt(
+        '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/From_AndreaBianco/Dichroic_MORFEOtransmittancedesign_march22v3.txt')
+    env_min = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 5]), axis=1)
+    exp_min = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 6]), axis=1)
+    np.savetxt(
+        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_env_min_001/t.dat',
+        env_min)
+    np.savetxt(
+        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_exp_min_001/t.dat',
+        exp_min)
+
+
 def main230614_check_expected_flux_at_LO_with_SA0():
     '''
     In SA0 the throughput considered for the telescope + MORFEO system (up to

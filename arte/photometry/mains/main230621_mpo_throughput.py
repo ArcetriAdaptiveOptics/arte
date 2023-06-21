@@ -1,0 +1,218 @@
+import numpy as np
+import astropy.units as u
+import matplotlib.pyplot as plt
+from arte.photometry.morfeo_transmissive_systems import MorfeoMainPathOptics_001, \
+    MorfeoMainPathOptics_002, MorfeoMainPathOptics_003, MorfeoMainPathOptics_004, \
+    MorfeoLGSO_001, MorfeoLGSO_002, MorfeoLGSO_003, MorfeoLGSO_004, \
+    MorfeoMainPathOptics_005, MorfeoLGSO_005
+from arte.photometry.transmissive_elements_catalogs import GlassesTransmissiveElementsCatalog, \
+    CoatingsTransmissiveElementsCatalog
+
+
+def main230621_sk1300_vs_suprasil3002_10mm():
+    sk1300 = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_10mm_internal_001()
+    suprasil3002 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_internal_001()
+    wv_sk = sk1300.waveset
+    wv_supra = suprasil3002.waveset
+    plt.plot(wv_sk.to(u.um), sk1300.transmittance(wv_sk), label='SK-1300')
+    plt.plot(wv_supra.to(u.um), suprasil3002.transmittance(wv_supra),
+             label='Suprasil 3002')
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.2, 2.6)
+    plt.grid()
+    plt.legend()
+    
+    dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
+    tosave_sk1300 = np.stack(
+        (wv_sk.value * 1e-4, sk1300.transmittance(wv_sk).value), axis=1)
+    np.savetxt(dirpath + 'sk1300_10mm.txt', tosave_sk1300)
+    tosave_suprasil3002 = np.stack(
+        (wv_supra.value * 1e-4, suprasil3002.transmittance(wv_supra).value
+         ), axis=1)
+    np.savetxt(dirpath + 'suprasil3002_10mm.txt', tosave_suprasil3002)
+
+
+def main230621_sk1300_vs_suprasil3002():
+    sk1300 = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_85mm_internal_001()
+    suprasil3002 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
+    wv_sk = sk1300.waveset
+    wv_supra = suprasil3002.waveset
+    plt.plot(wv_sk.to(u.um), sk1300.transmittance(wv_sk), label='SK-1300')
+    plt.plot(wv_supra.to(u.um), suprasil3002.transmittance(wv_supra),
+             label='Suprasil 3002')
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.2, 2.6)
+    plt.grid()
+    plt.legend()
+
+    
+def main230621_lgs_dichroic_coating_env_min_vs_exp_min():
+    env_min = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
+    exp_min = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    wv_env = env_min.waveset
+    wv_exp = exp_min.waveset
+    plt.plot(wv_env.to(u.um), env_min.reflectance(wv_env), label='Env min')
+    plt.plot(wv_exp.to(u.um), exp_min.reflectance(wv_exp),
+             label='Exp min')
+    plt.ylabel('Reflectance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.3, 2.6)
+    plt.grid()
+    plt.legend()
+    
+
+def main230621_mpo_v1():
+    mpo = MorfeoMainPathOptics_001()
+    t = mpo.transmittance
+    wv = t.waveset
+    plt.plot(wv.to(u.um), t(wv))
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.2, 2.6)
+    plt.ylim(-1e-1, 1)
+    plt.grid()
+    plt.title('MPO v1')
+    
+    tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
+    dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
+    np.savetxt(dirpath + 'mpo_v1.txt', tosave)
+
+
+def main230621_mpo_v2():
+    mpo = MorfeoMainPathOptics_002()
+    t = mpo.transmittance
+    wv = t.waveset
+    plt.plot(wv.to(u.um), t(wv))
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.2, 2.6)
+    plt.ylim(-1e-1, 1)
+    plt.grid()
+    plt.title('MPO v2')
+    
+    tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
+    dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
+    np.savetxt(dirpath + 'mpo_v2.txt', tosave)
+
+    
+def main230621_mpo_v3():
+    mpo = MorfeoMainPathOptics_003()
+    t = mpo.transmittance
+    wv = t.waveset
+    plt.plot(wv.to(u.um), t(wv))
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.2, 2.6)
+    plt.ylim(-1e-1, 1)
+    plt.grid()
+    plt.title('MPO v3')
+    
+    tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
+    dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
+    np.savetxt(dirpath + 'mpo_v3.txt', tosave)
+
+    
+def main230621_mpo_v4():
+    mpo = MorfeoMainPathOptics_004()
+    t = mpo.transmittance
+    wv = t.waveset
+    plt.plot(wv.to(u.um), t(wv))
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.2, 2.6)
+    plt.ylim(-1e-1, 1)
+    plt.grid()
+    plt.title('MPO v4')
+
+    tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
+    dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
+    np.savetxt(dirpath + 'mpo_v4.txt', tosave)
+
+
+def main230621_mpo_v5():
+    mpo = MorfeoMainPathOptics_005()
+    t = mpo.transmittance
+    wv = t.waveset
+    plt.plot(wv.to(u.um), t(wv))
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.2, 2.6)
+    plt.ylim(-1e-1, 1)
+    plt.grid()
+    plt.title('MPO v5')
+
+    tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
+    dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
+    np.savetxt(dirpath + 'mpo_v5.txt', tosave)
+
+    
+def main230621_lgso_v1():
+    lgso = MorfeoLGSO_001()
+    t = lgso.transmittance
+    wv = t.waveset
+    plt.plot(wv.to(u.um), t(wv))
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.4, 0.8)
+    plt.ylim(-5e-2, 0.7)
+    plt.grid()
+    plt.title('LGSO v1')
+    print(t(wv).max())
+
+
+def main230621_lgso_v2():
+    lgso = MorfeoLGSO_002()
+    t = lgso.transmittance
+    wv = t.waveset
+    plt.plot(wv.to(u.um), t(wv))
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.4, 0.8)
+    plt.ylim(-5e-2, 0.7)
+    plt.grid()
+    plt.title('LGSO v2')
+    print(t(wv).max())
+
+    
+def main230621_lgso_v3():
+    lgso = MorfeoLGSO_003()
+    t = lgso.transmittance
+    wv = t.waveset
+    plt.plot(wv.to(u.um), t(wv))
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.4, 0.8)
+    plt.ylim(-5e-2, 0.7)
+    plt.grid()
+    plt.title('LGSO v3')
+    print(t(wv).max())
+
+    
+def main230621_lgso_v4():
+    lgso = MorfeoLGSO_004()
+    t = lgso.transmittance
+    wv = t.waveset
+    plt.plot(wv.to(u.um), t(wv))
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.4, 0.8)
+    plt.ylim(-5e-2, 0.7)
+    plt.grid()
+    plt.title('LGSO v4')
+    print(t(wv).max())
+
+    
+def main230621_lgso_v5():
+    lgso = MorfeoLGSO_005()
+    t = lgso.transmittance
+    wv = t.waveset
+    plt.plot(wv.to(u.um), t(wv))
+    plt.ylabel('Transmittance')
+    plt.xlabel('Wavelength [µm]')
+    plt.xlim(0.4, 0.8)
+    plt.ylim(-5e-2, 0.71)
+    plt.grid()
+    plt.title('LGSO v5')
+    print(t(wv).max())

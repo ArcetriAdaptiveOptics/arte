@@ -397,3 +397,323 @@ def MorfeoReferenceChannelTransmissiveSystem_002():
     ts.add(ccd220_qe, Direction.TRANSMISSION)
     
     return ts
+
+
+def MorfeoMainPathOptics_001():
+    '''
+    The correcting plate is with Ohara SK-1300 substrate and the LGS dichroic
+    coating is the "env_min".     
+    '''
+    correcting_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
+    m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    
+    ts = TransmissiveSystem()   
+    ts.add(correcting_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.REFLECTION)
+    ts.add(m11, Direction.REFLECTION)
+    ts.add(m12, Direction.REFLECTION)    
+    return ts
+
+
+def MorfeoMainPathOptics_002():
+    '''
+    The correcting plate is with Suprasil 3002 substrate and the LGS dichroic
+    coating is the "env_min".     
+    '''
+    correcting_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
+    m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    
+    ts = TransmissiveSystem()   
+    ts.add(correcting_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.REFLECTION)
+    ts.add(m11, Direction.REFLECTION)
+    ts.add(m12, Direction.REFLECTION)    
+    return ts
+
+
+def MorfeoMainPathOptics_003():
+    '''
+    The correcting plate is with Suprasil 3002 substrate and the LGS dichroic
+    coating is the "exp_min".     
+    '''
+    correcting_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    
+    ts = TransmissiveSystem()   
+    ts.add(correcting_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.REFLECTION)
+    ts.add(m11, Direction.REFLECTION)
+    ts.add(m12, Direction.REFLECTION)    
+    return ts
+
+
+def MorfeoMainPathOptics_004():
+    '''
+    The correcting plate is with Ohara SK-1300 substrate and the LGS dichroic
+    coating is the "exp_min".     
+    '''
+    correcting_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    
+    ts = TransmissiveSystem()   
+    ts.add(correcting_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.REFLECTION)
+    ts.add(m11, Direction.REFLECTION)
+    ts.add(m12, Direction.REFLECTION)    
+    return ts
+
+
+def MorfeoMainPathOptics_005():
+    '''
+    The correcting plate is with Suprasil 3002 substrate and the LGS dichroic
+    coating is the "exp_min". DMs are assumed silver-coated.     
+    '''
+    correcting_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    
+    ts = TransmissiveSystem()   
+    ts.add(correcting_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.REFLECTION)
+    ts.add(m11, Direction.REFLECTION)
+    ts.add(m12, Direction.REFLECTION)    
+    return ts
+
+
+def MorfeoLGSO_001():
+    '''
+    The correcting plate is with Ohara SK-1300 substrate and the LGS dichroic
+    coating is the "env_min".     
+    '''
+    correcting_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_004()
+    fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
+    lgs_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
+    lgs_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
+    lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
+    lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
+    
+    ts = TransmissiveSystem()   
+    ts.add(correcting_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.TRANSMISSION)
+    ts.add(lgs_l1, Direction.TRANSMISSION)
+    ts.add(lgs_l2, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_l3, Direction.TRANSMISSION)
+    ts.add(lgs_l4, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(fm, Direction.REFLECTION) 
+    return ts
+
+
+def MorfeoLGSO_002():
+    '''
+    The correcting plate is with Ohara SK-1300 substrate and the LGS dichroic
+    coating is the "exp_min".     
+    '''
+    correcting_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_005()
+    fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
+    lgs_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
+    lgs_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
+    lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
+    lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
+    
+    ts = TransmissiveSystem()   
+    ts.add(correcting_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.TRANSMISSION)
+    ts.add(lgs_l1, Direction.TRANSMISSION)
+    ts.add(lgs_l2, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_l3, Direction.TRANSMISSION)
+    ts.add(lgs_l4, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(fm, Direction.REFLECTION) 
+    return ts
+
+
+def MorfeoLGSO_003():
+    '''
+    The correcting plate is with Suprasil 3002 substrate and the LGS dichroic
+    coating is the "exp_min".     
+    '''
+    correcting_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_005()
+    fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
+    lgs_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
+    lgs_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
+    lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
+    lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
+    
+    ts = TransmissiveSystem()   
+    ts.add(correcting_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.TRANSMISSION)
+    ts.add(lgs_l1, Direction.TRANSMISSION)
+    ts.add(lgs_l2, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_l3, Direction.TRANSMISSION)
+    ts.add(lgs_l4, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(fm, Direction.REFLECTION) 
+    return ts
+
+
+def MorfeoLGSO_004():
+    '''
+    The correcting plate is with Suprasil 3002 substrate and the LGS dichroic
+    coating is the "env_min".     
+    '''
+    correcting_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_004()
+    fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
+    lgs_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
+    lgs_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
+    lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
+    lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
+    
+    ts = TransmissiveSystem()   
+    ts.add(correcting_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.TRANSMISSION)
+    ts.add(lgs_l1, Direction.TRANSMISSION)
+    ts.add(lgs_l2, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_l3, Direction.TRANSMISSION)
+    ts.add(lgs_l4, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(fm, Direction.REFLECTION) 
+    return ts
+
+
+def MorfeoLGSO_005():
+    '''
+    The correcting plate is with Suprasil 3002 substrate and the LGS dichroic
+    coating is the "exp_min". DMs are assumed silver-coated.  
+    '''
+    correcting_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_005()
+    fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
+    lgs_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
+    lgs_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
+    lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
+    lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
+    
+    ts = TransmissiveSystem()   
+    ts.add(correcting_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.TRANSMISSION)
+    ts.add(lgs_l1, Direction.TRANSMISSION)
+    ts.add(lgs_l2, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_l3, Direction.TRANSMISSION)
+    ts.add(lgs_l4, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(fm, Direction.REFLECTION) 
+    return ts
