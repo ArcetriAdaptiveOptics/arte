@@ -6,7 +6,98 @@ from arte.photometry.morfeo_transmissive_systems import MorfeoMainPathOptics_001
     MorfeoLGSO_001, MorfeoLGSO_002, MorfeoLGSO_003, MorfeoLGSO_004, \
     MorfeoMainPathOptics_005, MorfeoLGSO_005
 from arte.photometry.transmissive_elements_catalogs import GlassesTransmissiveElementsCatalog, \
-    CoatingsTransmissiveElementsCatalog
+    CoatingsTransmissiveElementsCatalog, MorfeoTransmissiveElementsCatalog, \
+    EltTransmissiveElementsCatalog
+
+
+def main230623_throughput_of_CPM_with_SK1300_in_Ks():
+    wv_min = 1.97 * u.um
+    wv_max = 2.33 * u.um
+    cpm_sk1300 = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
+    waveset = cpm_sk1300.waveset
+    id_min = np.where(np.isclose(np.array(waveset), wv_min.to(u.Angstrom).value,
+                                 atol=10))[0][0]
+    id_max = np.where(np.isclose(np.array(waveset), wv_max.to(u.Angstrom).value,
+                                 atol=50))[0][0]
+    print(waveset[id_min])
+    print(waveset[id_max])                             
+    print('Average throughput in Ks band: %s'
+           % np.mean(cpm_sk1300.transmittance(waveset)[id_min:id_max]))
+
+    
+def main230623_throughput_of_CPM_with_Suprasil3002_in_Ks():
+    wv_min = 1.97 * u.um
+    wv_max = 2.33 * u.um
+    cpm_supra = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
+    waveset = cpm_supra.waveset
+    id_min = np.where(np.isclose(np.array(waveset), wv_min.to(u.Angstrom).value,
+                                 atol=10))[0][0]
+    id_max = np.where(np.isclose(np.array(waveset), wv_max.to(u.Angstrom).value,
+                                 atol=50))[0][0]
+    print(waveset[id_min])
+    print(waveset[id_max])                             
+    print('Average throughput in Ks band: %s'
+           % np.mean(cpm_supra.transmittance(waveset)[id_min:id_max]))
+
+
+def main230623_throughput_of_silver_coating_in_Ks():
+    wv_min = 1.97 * u.um
+    wv_max = 2.33 * u.um
+    ag = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    waveset = ag.waveset
+    id_min = np.where(np.isclose(np.array(waveset), wv_min.to(u.Angstrom).value,
+                                 atol=1))[0][0]
+    id_max = np.where(np.isclose(np.array(waveset), wv_max.to(u.Angstrom).value,
+                                 atol=1))[0][0]
+    print(waveset[id_min])
+    print(waveset[id_max])                             
+    print('Average throughput in Ks band: %s'
+           % np.mean(ag.reflectance(waveset)[id_min:id_max]))
+
+
+def main230623_throughput_of_aluminium_coating_in_Ks():
+    wv_min = 1.97 * u.um
+    wv_max = 2.33 * u.um
+    al = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    waveset = al.waveset
+    id_min = np.where(np.isclose(np.array(waveset), wv_min.to(u.Angstrom).value,
+                                 atol=100))[0][0]
+    id_max = np.where(np.isclose(np.array(waveset), wv_max.to(u.Angstrom).value,
+                                 atol=40))[0][0]
+    print(waveset[id_min])
+    print(waveset[id_max])                             
+    print('Average throughput in Ks band: %s'
+           % np.mean(al.reflectance(waveset)[id_min:id_max]))
+
+
+def main230623_throughput_of_LGS_dichroic_coating_exp_in_Ks():
+    wv_min = 1.97 * u.um
+    wv_max = 2.33 * u.um
+    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    waveset = lgs_dichroic.waveset
+    id_min = np.where(np.isclose(np.array(waveset), wv_min.to(u.Angstrom).value,
+                                 atol=1))[0][0]
+    id_max = np.where(np.isclose(np.array(waveset), wv_max.to(u.Angstrom).value,
+                                 atol=1))[0][0]
+    print(waveset[id_min])
+    print(waveset[id_max])                             
+    print('Average throughput in Ks band: %s'
+           % np.mean(lgs_dichroic.reflectance(waveset)[id_min:id_max]))
+
+    
+def main230623_throughput_of_LGS_dichroic_coating_env_in_Ks():
+    wv_min = 1.97 * u.um
+    wv_max = 2.33 * u.um
+    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
+    waveset = lgs_dichroic.waveset
+    id_min = np.where(np.isclose(np.array(waveset), wv_min.to(u.Angstrom).value,
+                                 atol=1))[0][0]
+    id_max = np.where(np.isclose(np.array(waveset), wv_max.to(u.Angstrom).value,
+                                 atol=1))[0][0]
+    print(waveset[id_min])
+    print(waveset[id_max])                             
+    print('Average throughput in Ks band: %s'
+           % np.mean(lgs_dichroic.reflectance(waveset)[id_min:id_max]))
 
 
 def main230621_sk1300_vs_suprasil3002_10mm():
