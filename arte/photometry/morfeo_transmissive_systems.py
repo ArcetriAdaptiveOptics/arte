@@ -399,6 +399,61 @@ def MorfeoReferenceChannelTransmissiveSystem_002():
     return ts
 
 
+def MorfeoReferenceChannelTransmissiveSystem_003():
+    '''
+    Configuration from E-MAO-PN0-INA-ANR-001 MAORY LOR WFS Module Analysis Report_3D1.
+    For what concerns the CCD220 QE, we consider here the minimum QE required in
+    ESO-287869_2 ALICE Camera Technical Requirements Specifications ([REQ-ALI-039]).
+    '''    
+    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
+    lgs_dichroic = CoatingsTransmissiveElementsCatalog.materion_average_002()
+    m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    fold_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    focus_compensator1 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    focus_compensator2 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
+    pup_steer_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001() 
+    visir_dichroic = MorfeoTransmissiveElementsCatalog.visir_dichroic_002()
+    collimator = MorfeoTransmissiveElementsCatalog.refwfs_collimator_doublet_002()
+    alice_entrance_window = MorfeoTransmissiveElementsCatalog.alice_entrance_window_001()
+    lenslet_array = MorfeoTransmissiveElementsCatalog.rwfs_lenslet_001()
+    # TODO: stessi dati della sapphire window di FREDA
+    # ccd220_sapphire_window = 
+    ccd220_qe = DetectorsTransmissiveElementsCatalog.ccd220_qe_003()
+    
+    ts = EltTransmissiveSystem()
+    ts.add(schmidt_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.REFLECTION)
+    ts.add(m11, Direction.REFLECTION)
+    ts.add(m12, Direction.REFLECTION)
+    ts.add(pickoff_mirror, Direction.REFLECTION)
+    ts.add(fold_mirror, Direction.REFLECTION)
+    ts.add(focus_compensator1, Direction.REFLECTION)
+    ts.add(focus_compensator2, Direction.REFLECTION)
+    ts.add(pup_steer_mirror, Direction.REFLECTION)
+    ts.add(visir_dichroic, Direction.TRANSMISSION)
+    ts.add(fold_mirror, Direction.REFLECTION)
+    ts.add(collimator, Direction.TRANSMISSION)
+    ts.add(fold_mirror, Direction.REFLECTION)
+    ts.add(alice_entrance_window, Direction.TRANSMISSION)
+    ts.add(lenslet_array, Direction.TRANSMISSION)
+    # ts.add(ccd220_window, Direction.TRANSMISSION)
+    ts.add(ccd220_qe, Direction.TRANSMISSION)
+    
+    return ts
+
+
 def MorfeoMainPathOptics_001():
     '''
     The correcting plate is with Ohara SK-1300 substrate and the LGS dichroic
