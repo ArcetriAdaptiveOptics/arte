@@ -160,9 +160,9 @@ def MorfeoLgsChannelTransmissiveSystem_003():
 
 def MorfeoLgsChannelTransmissiveSystem_004():
     '''
-    The Schmidt Plate has been updated with respect to version 003.    
+    The Schmidt Plate has been updated with respect to version 002.    
     '''
-    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
+    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
     m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
@@ -248,21 +248,25 @@ def MorfeoLowOrderChannelTransmissiveSystem_001():
 def MorfeoLowOrderChannelTransmissiveSystem_002():
     '''
     Configuration from E-MAO-PN0-INA-ANR-001 MAORY LOR WFS Module Analysis Report_3D1
+    (design for FDR).
+    - Protected silver coating data has been updated with ESO shared measurements
+      made by Fraunhofer (see E-MAO-SF0-INA-ANR-001 OFDR MORFEO Analysis Report.pdf,
+      sec. 3.14.2).
     '''  
-    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
-    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
-    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
+    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     lgs_dichroic = CoatingsTransmissiveElementsCatalog.materion_average_002()
-    m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    fold_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    focus_compensator1 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    focus_compensator2 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    pup_steer_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001() 
+    m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    fold_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    focus_compensator1 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    focus_compensator2 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    pup_steer_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002() 
     visir_dichroic = CoatingsTransmissiveElementsCatalog.lzh_coating_for_visir_dichroic_001()
     doublet_collimator = MorfeoTransmissiveElementsCatalog.lowfs_collimator_doublet_001()
     adc = MorfeoTransmissiveElementsCatalog.lowfs_adc_002()
@@ -401,24 +405,29 @@ def MorfeoReferenceChannelTransmissiveSystem_002():
 
 def MorfeoReferenceChannelTransmissiveSystem_003():
     '''
-    Configuration from E-MAO-PN0-INA-ANR-001 MAORY LOR WFS Module Analysis Report_3D1.
-    For what concerns the CCD220 QE, we consider here the minimum QE required in
-    ESO-287869_2 ALICE Camera Technical Requirements Specifications ([REQ-ALI-039]).
+    Configuration from E-MAO-PN0-INA-ANR-001 MAORY LOR WFS Module Analysis Report_3D1
+    (design for FDR).
+    - Protected silver coating data has been updated with ESO shared measurements
+      made by Fraunhofer (see E-MAO-SF0-INA-ANR-001 OFDR MORFEO Analysis Report.pdf,
+      sec. 3.14.2).
+    - For what concerns the CCD220 QE, we consider here the minimum QE required
+      in ESO-287869_2 ALICE Camera Technical Requirements Specifications
+      ([REQ-ALI-039]).
     '''    
-    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
-    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
-    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
+    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     lgs_dichroic = CoatingsTransmissiveElementsCatalog.materion_average_002()
-    m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    fold_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    focus_compensator1 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    focus_compensator2 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    pup_steer_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001() 
+    m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    fold_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    focus_compensator1 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    focus_compensator2 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    pup_steer_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002() 
     visir_dichroic = MorfeoTransmissiveElementsCatalog.visir_dichroic_002()
     collimator = MorfeoTransmissiveElementsCatalog.refwfs_collimator_doublet_002()
     alice_entrance_window = MorfeoTransmissiveElementsCatalog.alice_entrance_window_001()
