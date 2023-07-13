@@ -95,9 +95,9 @@ def silver_mirror_throughput():
     
 
 def correcting_plate_throughput():
-    c_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_003()
+    c_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
     ar_coating_broad = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
-    sk1300 = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_85mm_internal_001()
+    supra3002 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
     
     wv = c_plate.waveset
     id_RI_min = np.where(np.isclose(np.array(wv),
@@ -111,8 +111,8 @@ def correcting_plate_throughput():
           % np.mean(c_plate.transmittance(wv)[id_RI_min:id_RI_max + 1]))
     print('\nR+I band average transmission of AR coating: %s' % 
           np.mean(ar_coating_broad.transmittance(wv)[id_RI_min:id_RI_max + 1]))
-    print('\nR+I band average transmission of Ohara SK1300: %s'
-          % np.mean(sk1300.transmittance(wv)[id_RI_min:id_RI_max + 1]))
+    print('\nR+I band average transmission of Suprasil 3002: %s'
+          % np.mean(supra3002.transmittance(wv)[id_RI_min:id_RI_max + 1]))
     
     
 def lgs_dichroic_throughput():
@@ -268,8 +268,8 @@ def plot_throughput():
                  label='Sky/ELT/R-WFS up to LA', alpha=0.4)
     plot_between(wv, sky_no_moon.trans * rwfs.transmittance_from_to(0, 26)(wv),
                  label='Sky/ELT/R-WFS', alpha=0.4)
-    plt.legend(loc='upper right', fontsize='x-small')
+    plt.legend(loc='lower right', fontsize='x-small')
     plt.xlabel('Wavelength [μm]')
-    plt.ylabel('Transmittance')
+    plt.ylabel('Throughput')
     plt.grid()
     plt.xlim(0.3, 2.5)
