@@ -161,26 +161,55 @@ class CoatingsTransmissiveElementsCatalog():
     def lma_env_min_001(cls):
         '''
         LGS dichroic coating measured from LMA.
+        
         Data received from A. Bianco by email on 12/06/2023. 
+        
+        These data corresponds to the envelope of the worst MC (Montecarlo
+        simulation) occurrences, considering an AOI (angle of incidence) of
+        11.3 deg.
         '''
-        # t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-        #     cls._CoatingsFolder('lgs_dichroic_lma_env_min_001'), u.um)
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_env_min_aoi_11.3deg_001'), u.um)
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
-            cls._CoatingsFolder('lgs_dichroic_lma_env_min_001'), u.um)
-        te = TransmissiveElement(reflectance=r, absorptance=Bandpass.zero())
+            cls._CoatingsFolder('lgs_dichroic_lma_env_min_aoi_11.3deg_001'), u.um)
+        te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
     
     @classmethod
     def lma_exp_min_001(cls):
         '''
         LGS dichroic coating measured from LMA.
-        Data received from A. Bianco by email on 12/06/2023. 
+        
+        Data received from A. Bianco by email on 12/06/2023.
+        
+        These data corresponds to the expected profile, assuming systematic
+        errors and the minimum value of the random error distributions (is it
+        correct?) for AOI = 11.3 deg.
         '''
-        # t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-        #     cls._CoatingsFolder('lgs_dichroic_lma_exp_min_001'), u.um)
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_exp_min_aoi_11.3deg_001'), u.um)
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
-            cls._CoatingsFolder('lgs_dichroic_lma_exp_min_001'), u.um)
-        te = TransmissiveElement(reflectance=r, absorptance=Bandpass.zero())
+            cls._CoatingsFolder('lgs_dichroic_lma_exp_min_aoi_11.3deg_001'), u.um)
+        te = TransmissiveElement(reflectance=r, transmittance=t)
+        return te
+    
+    @classmethod
+    def lma_exp_ave_001(cls):
+        '''
+        LGS dichroic coating measured from LMA.
+        
+        Data received from A. Bianco by email on 12/06/2023. 
+        
+        These data corresponds to the expected profile, assuming systematic
+        errors and the average value of the random error distributions (is it
+        correct?) for AOI = 11.3 deg.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_exp_min_aoi_11.3deg_001'), u.um)
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_exp_ave_aoi_11.3deg_001'),
+            u.um)
+        te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
     
     @classmethod
@@ -194,6 +223,18 @@ class CoatingsTransmissiveElementsCatalog():
             cls._CoatingsFolder('ar_589nm_001'), u.um)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def ar_coating_589nm_002(cls):
+        '''
+        Narrowband (589 nm) AR coating. This is a simplified version, i.e.
+        a peak of 0.995 (as indicated in E-MAO-SF0-INA-DER-001_02 MAORY  System
+        Optical Design and Analysis Report) at 589 nm.
+        '''
+        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.995, 0)
+        a = Bandpass.zero()
+        te = TransmissiveElement(absorptance=a, transmittance=t)
         return te
 
     @classmethod
@@ -845,12 +886,12 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         LGS dichroic. The element is composed by:
             - 1 surface with LMA-coating measured as "env_min"
-            - 80 mm of Suprasil 3002 substrate
+            - 80 mm of Suprasil 312 (same as 3002) substrate
             - 1 surface with AR coating (589 nm)
         '''
         lma_coating = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
         substrate = GlassesTransmissiveElementsCatalog.suprasil3002_80mm_internal_001()
-        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_002()
         
         lgs_dichroic = TransmissiveSystem()
         lgs_dichroic.add(lma_coating, Direction.TRANSMISSION)
@@ -863,12 +904,12 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         LGS dichroic. The element is composed by:
             - 1 surface with LMA-coating measured as "exp_min"
-            - 80 mm of Suprasil 3002 substrate
+            - 80 mm of Suprasil 312 (same as 3002) substrate
             - 1 surface with AR coating (589 nm)
         '''
         lma_coating = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
         substrate = GlassesTransmissiveElementsCatalog.suprasil3002_80mm_internal_001()
-        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_002()
         
         lgs_dichroic = TransmissiveSystem()
         lgs_dichroic.add(lma_coating, Direction.TRANSMISSION)

@@ -7,30 +7,61 @@ from arte.photometry.transmittance_calculator import internal_transmittance_calc
     attenuation_coefficient_calculator, external_transmittance_calculator
 
 
-def main230620_get_dichroic_reflectance_from_LAM_data():
-    t_abi = np.loadtxt(
-        '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/From_AndreaBianco/Dichroic_MORFEOtransmittancedesign_march22v3.txt')
-    env_min = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 5]), axis=1)
-    exp_min = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 6]), axis=1)
+def main230620_get_dichroic_reflectance_from_LAM_data_AOI_11dot3deg():
+    r_abi = np.loadtxt(
+        '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/From_AndreaBianco/Dichroic_MORFEO_reflectance_design_march22v3.txt')
+    env_min = np.stack((r_abi[:, 0] * 1e-3, r_abi[:, 5] * 1e-2), axis=1)
+    exp_min = np.stack((r_abi[:, 0] * 1e-3, r_abi[:, 6] * 1e-2), axis=1)
+    exp_ave = np.stack((r_abi[:, 0] * 1e-3, r_abi[:, 7] * 1e-2), axis=1)
     np.savetxt(
-        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_env_min_001/t.dat',
+        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_env_min_aoi_11.3deg_001/r.dat',
         env_min)
     np.savetxt(
-        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_exp_min_001/t.dat',
+        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_exp_min_aoi_11.3deg_001/r.dat',
         exp_min)
+    np.savetxt(
+        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_exp_ave_aoi_11.3deg_001/r.dat',
+        exp_ave)
 
 
-def main230620_get_dichroic_transmittance_from_LAM_data():
+def main230620_get_dichroic_transmittance_from_LAM_data_AOI_11dot3deg():
     t_abi = np.loadtxt(
-        '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/From_AndreaBianco/Dichroic_MORFEOtransmittancedesign_march22v3.txt')
-    env_min = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 5]), axis=1)
-    exp_min = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 6]), axis=1)
+        '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/From_AndreaBianco/Dichroic_MORFEO_transmittancedesign_march22v3.txt')
+    env_min = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 5] * 1e-2), axis=1)
+    exp_min = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 6] * 1e-2), axis=1)
+    exp_ave = np.stack((t_abi[:, 0] * 1e-3, t_abi[:, 7] * 1e-2), axis=1)
+    
+    # Add dummy data to be consistent with the wavelength range of reflectance data:
+    wvset1 = np.arange(0.400, 0.580, 0.001)
+    wvset2 = np.arange(0.601, 2.501, 0.001)
+    data1 = np.zeros(wvset1.shape)
+    data2 = np.zeros(wvset2.shape)
+    
+    env_min_final = np.vstack((
+        np.vstack(
+            (np.stack((wvset1, data1), axis=1), env_min)),
+        np.stack((wvset2, data2), axis=1)
+        ))
+    exp_min_final = np.vstack((
+        np.vstack(
+            (np.stack((wvset1, data1), axis=1), exp_min)),
+        np.stack((wvset2, data2), axis=1)
+        ))
+    exp_ave_final = np.vstack((
+        np.vstack(
+            (np.stack((wvset1, data1), axis=1), exp_ave)),
+        np.stack((wvset2, data2), axis=1)
+        ))
+    
     np.savetxt(
-        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_env_min_001/t.dat',
-        env_min)
+        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_env_min_aoi_11.3deg_001/t.dat',
+        env_min_final)
     np.savetxt(
-        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_exp_min_001/t.dat',
-        exp_min)
+        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_exp_min_aoi_11.3deg_001/t.dat',
+        exp_min_final)
+    np.savetxt(
+        '/Users/giuliacarla/git/arte/arte/data/photometry/transmissive_elements/coatings/lgs_dichroic_lma_exp_ave_aoi_11.3deg_001/t.dat',
+        exp_ave_final)
     
     
 def main230420_derive_VISIR_dichroic_transmittance_from_LZH():
