@@ -6,7 +6,7 @@ from arte.photometry.morfeo_transmissive_systems import MorfeoLgsChannelTransmis
     MorfeoLgsChannelTransmissiveSystem_004
 from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
     MorfeoTransmissiveElementsCatalog, CoatingsTransmissiveElementsCatalog, \
-    GlassesTransmissiveElementsCatalog
+    GlassesTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog
 
 WV_589NM = 0.589 * u.um
 
@@ -106,28 +106,101 @@ def lgs_dichroic_throughput():
 
 
 def lgso_l1_throughput():
-    pass
+    lgso_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
+    wv = lgso_l1.waveset
+    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+    suprasil = GlassesTransmissiveElementsCatalog.suprasil3002_108mm_internal_001()
+    id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
+                                    atol=10))[0][0]
+                                    
+    print(wv[id_589nm])
+    print('\nLGSO-L1 throughput at 589 nm: %s'
+          % (lgso_l1.transmittance(wv)[id_589nm]))
+    print('\nAR coating throughput at 589 nm: %s'
+          % (ar_coating.transmittance(wv)[id_589nm]))
+    print('\nSuprasil 3002 (108 mm) throughput at 589 nm: %s'
+          % (suprasil.transmittance(wv)[id_589nm]))
 
 
 def lgso_l2_throughput():
-    pass
+    lgso_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
+    wv = lgso_l2.waveset
+    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+    suprasil = GlassesTransmissiveElementsCatalog.suprasil3002_70mm_internal_001()
+    id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
+                                    atol=10))[0][0]
+                                    
+    print(wv[id_589nm])
+    print('\nLGSO-L2 throughput at 589 nm: %s'
+          % (lgso_l2.transmittance(wv)[id_589nm]))
+    print('\nAR coating throughput at 589 nm: %s'
+          % (ar_coating.transmittance(wv)[id_589nm]))
+    print('\nSuprasil 3002 (70 mm) throughput at 589 nm: %s'
+          % (suprasil.transmittance(wv)[id_589nm]))
 
 
 def lgso_l3_throughput():
-    pass
+    lgso_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
+    wv = lgso_l3.waveset
+    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+    suprasil = GlassesTransmissiveElementsCatalog.suprasil3002_40mm_internal_001()
+    id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
+                                    atol=10))[0][0]
+                                    
+    print(wv[id_589nm])
+    print('\nLGSO-L2 throughput at 589 nm: %s'
+          % (lgso_l3.transmittance(wv)[id_589nm]))
+    print('\nAR coating throughput at 589 nm: %s'
+          % (ar_coating.transmittance(wv)[id_589nm]))
+    print('\nSuprasil 3002 (40 mm) throughput at 589 nm: %s'
+          % (suprasil.transmittance(wv)[id_589nm]))
 
 
 def lgso_l4_throughput():
-    pass
+    lgso_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
+    wv = lgso_l4.waveset
+    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+    suprasil = GlassesTransmissiveElementsCatalog.suprasil3002_60mm_internal_001()
+    id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
+                                    atol=10))[0][0]
+                                    
+    print(wv[id_589nm])
+    print('\nLGSO-L2 throughput at 589 nm: %s'
+          % (lgso_l4.transmittance(wv)[id_589nm]))
+    print('\nAR coating throughput at 589 nm: %s'
+          % (ar_coating.transmittance(wv)[id_589nm]))
+    print('\nSuprasil 3002 (60 mm) throughput at 589 nm: %s'
+          % (suprasil.transmittance(wv)[id_589nm]))
 
 
 def lgso_fm_throughput():
-    pass
+    lgso_fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
+    wv = lgso_fm.waveset
+    id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
+                                    atol=10))[0][0]
+                                    
+    print(wv[id_589nm])
+    print('\nLGSO-FM throughput at 589 nm: %s'
+          % (lgso_fm.reflectance(wv)[id_589nm]))
 
 
 def lgs_wfs_throughput():
-    pass
+    lgs_wfs = MorfeoTransmissiveElementsCatalog.lgs_wfs_001()
+    wv = lgs_wfs.waveset
+    id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
+                                    atol=10))[0][0]
+                                    
+    print(wv[id_589nm])
+    print('\nLGS WFS throughput at 589 nm: %s'
+          % (lgs_wfs.transmittance(wv)[id_589nm]))
 
 
 def c_blue_qe():
-    pass
+    c_blue = DetectorsTransmissiveElementsCatalog.c_blue_qe_001()
+    wv = c_blue.waveset
+    id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
+                                    atol=10))[0][1]
+                                    
+    print(wv[id_589nm])
+    print('\nC-BLUE QE at 589 nm: %s'
+          % (c_blue.transmittance(wv)[id_589nm]))

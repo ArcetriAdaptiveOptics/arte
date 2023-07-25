@@ -3,7 +3,8 @@ import astropy.units as u
 import matplotlib.pyplot as plt
 from arte.photometry.morfeo_transmissive_systems import MorfeoReferenceChannelTransmissiveSystem_001, \
     MorfeoReferenceChannelTransmissiveSystem_002, \
-    MorfeoReferenceChannelTransmissiveSystem_003
+    MorfeoReferenceChannelTransmissiveSystem_003, \
+    MorfeoReferenceChannelTransmissiveSystem_004
 from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
     MorfeoTransmissiveElementsCatalog, CoatingsTransmissiveElementsCatalog, \
     GlassesTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog
@@ -66,6 +67,25 @@ def R_WFS_003_throughput():
     id_max = np.argwhere(wv == WV_MAX_RI.to(u.Angstrom))[0][0]
     t_RI = t[id_min:id_max]
     print('\nR+I band average transmission: %s' % np.mean(t_RI))
+    
+    
+def R_WFS_004_throughput():
+    '''
+    Design for FDR. CCD220 QE is conservative (minimum ESO requirement).
+    The coating for the LGS dichroic is the "exp min" curve of LMA data.
+    '''
+    r_wfs_te = MorfeoReferenceChannelTransmissiveSystem_004().as_transmissive_element()
+    wv = r_wfs_te.waveset
+    t = r_wfs_te.transmittance(wv)
+    plt.plot(wv.to(u.um), t)
+    plt.xlabel('Wavelength [µm]')
+    plt.ylabel('Throughput')
+    plt.grid()
+    plt.xlim(0.2, 1.5)
+    id_min = np.argwhere(wv == WV_MIN_RI.to(u.Angstrom))[0][0]
+    id_max = np.argwhere(wv == WV_MAX_RI.to(u.Angstrom))[0][0]
+    t_RI = t[id_min:id_max]
+    print('\nR+I band average transmission: %s' % np.mean(t_RI))
 
     
 def aluminium_mirror_throughput():
@@ -116,7 +136,7 @@ def correcting_plate_throughput():
     
     
 def lgs_dichroic_throughput():
-    lgs_dich = CoatingsTransmissiveElementsCatalog.materion_average_002()
+    lgs_dich = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
     wv = lgs_dich.waveset
     r = lgs_dich.reflectance(wv)
     id_RI_min = np.where(np.isclose(np.array(wv),
@@ -251,7 +271,7 @@ def plot_throughput():
     import warnings
     warnings.filterwarnings('ignore')
     
-    rwfs = morfeo_transmissive_systems.MorfeoReferenceChannelTransmissiveSystem_002()
+    rwfs = morfeo_transmissive_systems.MorfeoReferenceChannelTransmissiveSystem_004()
 
     def plot_between(x, y, label, alpha):
         plt.plot(x, y, label=label)

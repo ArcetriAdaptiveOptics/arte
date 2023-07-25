@@ -2,15 +2,16 @@ import numpy as np
 import astropy.units as u
 import matplotlib.pyplot as plt
 from arte.photometry.morfeo_transmissive_systems import MorfeoLowOrderChannelTransmissiveSystem_002, \
-    MorfeoLowOrderChannelTransmissiveSystem_001
+    MorfeoLowOrderChannelTransmissiveSystem_001, \
+    MorfeoLowOrderChannelTransmissiveSystem_003
 from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
     MorfeoTransmissiveElementsCatalog, CoatingsTransmissiveElementsCatalog, \
-    GlassesTransmissiveElementsCatalog
+    GlassesTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog
 from arte.photometry.eso_sky_calc import EsoSkyCalc
 from arte.photometry import morfeo_transmissive_systems
 
-WV_MIN_H = 1.5 * u.um
-WV_MAX_H = 1.8 * u.um
+WV_MIN_H = 1.490 * u.um
+WV_MAX_H = 1.780 * u.um
 
 
 def LO_WFS_throughput_001():
@@ -47,6 +48,25 @@ def LO_WFS_throughput_002():
     id_max = np.argwhere(wv == WV_MAX_H.to(u.Angstrom))[0][0]
     t_H = t[id_min:id_max]
     print('\nH band average transmission: %s' % np.mean(t_H))
+    
+
+def LO_WFS_throughput_003():
+    '''
+    Design for FDR with coating from LMA for the LGS dichroic.
+    '''
+    lo_wfs_te = MorfeoLowOrderChannelTransmissiveSystem_003().as_transmissive_element()
+    wv = lo_wfs_te.waveset
+    t = lo_wfs_te.transmittance(wv)
+    plt.plot(wv.to(u.um), t)
+    plt.xlabel('Wavelength [µm]')
+    plt.ylabel('Throughput')
+    plt.grid()
+    plt.xlim(0.8, 2.)
+    id_min = np.argwhere(wv == WV_MIN_H.to(u.Angstrom))[0][0]
+    id_max = np.argwhere(wv == WV_MAX_H.to(u.Angstrom))[0][0]
+    t_H = t[id_min:id_max + 1]
+    print(wv[id_min:id_max + 1])
+    print('\nH band average transmission: %s' % np.mean(t_H))
 
 
 def aluminium_mirror_throughput():
@@ -54,7 +74,7 @@ def aluminium_mirror_throughput():
     wv = al_mirror.waveset
     r = al_mirror.reflectance(wv)
     id_min = np.where(np.isclose(np.array(wv), WV_MIN_H.to(u.Angstrom).value,
-                                 atol=10))[0][0]
+                                 atol=100))[0][0]
     id_max = np.where(np.isclose(np.array(wv), WV_MAX_H.to(u.Angstrom).value,
                                  atol=100))[0][0]
     r_H = r[id_min:id_max + 1]   
@@ -97,7 +117,7 @@ def correcting_plate_throughput():
     
     
 def lgs_dichroic_throughput():
-    lgs_dich = CoatingsTransmissiveElementsCatalog.materion_average_002()
+    lgs_dich = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
     wv = lgs_dich.waveset
     r = lgs_dich.reflectance(wv)
     id_min = np.where(np.isclose(np.array(wv),
@@ -109,6 +129,13 @@ def lgs_dichroic_throughput():
     print(wv[id_min:id_max + 2])
     print('\nH band average reflectance of LGS dichroic: %s'
           % np.mean(r[id_min:id_max + 2]))
+    
+    plt.figure()
+    plt.plot(wv.to(u.um), r)
+    plt.xlabel('Wavelength [µm]')
+    plt.ylabel('Throughput')
+    plt.grid()
+    # plt.xlim(0.8, 2.)
 
 
 def visir_dichroic_throughput():
@@ -125,6 +152,13 @@ def visir_dichroic_throughput():
     print('\nH band average transmission of VISIR LZH coating: %s'
           % np.mean(lzh_coating.reflectance(wv)[id_min:id_max + 1]))
     
+    plt.figure()
+    plt.plot(wv.to(u.um), lzh_coating.reflectance(wv))
+    plt.xlabel('Wavelength [µm]')
+    plt.ylabel('Throughput')
+    plt.grid()
+    # plt.xlim(0.8, 2.)
+    
     
 def collimator_throughput():
     coll = MorfeoTransmissiveElementsCatalog.lowfs_collimator_doublet_001()
@@ -137,7 +171,7 @@ def collimator_throughput():
                                     atol=10))[0][0]
     id_max = np.where(np.isclose(np.array(wv),
                                     WV_MAX_H.to(u.Angstrom).value,
-                                    atol=10))[0][0]
+                                    atol=200))[0][0]
     print(wv[id_min:id_max + 1])
     print('\nH band average transmission of LO WFS collimator: %s'
           % np.mean(coll.transmittance(wv)[id_min:id_max + 1]))
@@ -160,7 +194,7 @@ def adc_throughput():
                                     atol=10))[0][0]
     id_max = np.where(np.isclose(np.array(wv),
                                     WV_MAX_H.to(u.Angstrom).value,
-                                    atol=1000))[0][0]
+                                    atol=800))[0][0]
     print(wv[id_min:id_max + 1])
     print('\nH band average transmission of LO WFS ADC: %s'
           % np.mean(adc.transmittance(wv)[id_min:id_max + 1]))
@@ -172,7 +206,7 @@ def adc_throughput():
           % np.mean(substrate2.transmittance(wv)[id_min:id_max + 1]))
     
     
-def lenslet_array():
+def lenslet_array_throughput():
     lenslet = MorfeoTransmissiveElementsCatalog.lowfs_lenslet_001()
     ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_amus_001()
     substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()  
@@ -190,7 +224,49 @@ def lenslet_array():
           % np.mean(ar_coating.transmittance(wv)[id_min:id_max + 1]))
     print('\nH band average transmission of Suprasil 3001 (3 mm): %s'
           % np.mean(substrate.transmittance(wv)[id_min:id_max + 1]))
+
+
+def cold_filters_throughput():
+    c_red1_filters = DetectorsTransmissiveElementsCatalog.c_red_one_filters_001()
+    wv = c_red1_filters.waveset
+    id_min = np.where(np.isclose(np.array(wv),
+                                WV_MIN_H.to(u.Angstrom).value,
+                                atol=10))[0][0]
+    id_max = np.where(np.isclose(np.array(wv),
+                                WV_MAX_H.to(u.Angstrom).value,
+                                atol=10))[0][0]
+    print(wv[id_min:id_max + 1])
+    print('\nH band average transmission of cold filters: %s'
+          % np.mean(c_red1_filters.transmittance(wv)[id_min:id_max + 1]))
     
+    plt.figure()
+    plt.plot(wv.to(u.um), c_red1_filters.transmittance(wv))
+    plt.xlabel('Wavelength [µm]')
+    plt.ylabel('Throughput')
+    plt.grid()
+    # plt.xlim(0.8, 2.)
+
+    
+def c_red1_qe():
+    c_red1 = DetectorsTransmissiveElementsCatalog.c_red_one_qe_001()
+    wv = c_red1.waveset
+    id_min = np.where(np.isclose(np.array(wv),
+                                WV_MIN_H.to(u.Angstrom).value,
+                                atol=10))[0][0]
+    id_max = np.where(np.isclose(np.array(wv),
+                                WV_MAX_H.to(u.Angstrom).value,
+                                atol=10))[0][0]
+    print(wv[id_min:id_max + 1])
+    print('\nH band average QE of C-RED1: %s'
+          % np.mean(c_red1.transmittance(wv)[id_min:id_max + 1]))
+    
+    plt.figure()
+    plt.plot(wv.to(u.um), c_red1.transmittance(wv))
+    plt.xlabel('Wavelength [µm]')
+    plt.ylabel('Throughput')
+    plt.grid()
+    # plt.xlim(0.8, 2.)
+
 
 def plot_throughput():
     zenith_angle = 30 * u.deg
@@ -200,7 +276,7 @@ def plot_throughput():
     import warnings
     warnings.filterwarnings('ignore')
     
-    lowfs = morfeo_transmissive_systems.MorfeoLowOrderChannelTransmissiveSystem_002()
+    lowfs = morfeo_transmissive_systems.MorfeoLowOrderChannelTransmissiveSystem_003()
 
     def plot_between(x, y, label, alpha):
         plt.plot(x, y, label=label)
@@ -217,7 +293,7 @@ def plot_throughput():
                  label='Sky/ELT/LO-WFS up to LA', alpha=0.4)
     plot_between(wv, sky_no_moon.trans * lowfs.transmittance_from_to(0, 25)(wv),
                  label='Sky/ELT/LO-WFS', alpha=0.4)
-    plt.legend(loc='lower left', fontsize='x-small')
+    plt.legend(loc='upper left', fontsize='x-small')
     plt.xlabel('Wavelength [μm]')
     plt.ylabel('Throughput')
     plt.grid()
