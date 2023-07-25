@@ -517,7 +517,7 @@ class GlassesTransmissiveElementsCatalog():
         Transmittance is internal.
         Data extrapolated from 10 mm curves.
         '''
-        supra10mm = cls.suprasil3002_10mm_001()
+        supra10mm = cls.suprasil3002_10mm_internal_001()
         wv = supra10mm.waveset
         t1 = supra10mm.transmittance(wv)
         l1 = 10
