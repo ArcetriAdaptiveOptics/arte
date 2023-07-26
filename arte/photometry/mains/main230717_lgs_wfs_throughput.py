@@ -174,7 +174,7 @@ def lgso_l4_throughput():
 
 
 def lgso_fm_throughput():
-    lgso_fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
+    lgso_fm = MorfeoTransmissiveElementsCatalog.lgso_fm_002()
     wv = lgso_fm.waveset
     id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
                                     atol=10))[0][0]
