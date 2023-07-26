@@ -206,6 +206,8 @@ def MorfeoLgsChannelTransmissiveSystem_005():
     - The LGS dichroic has been updated considering the FDR design. In particular,
       the substrate thickness is 80 mm and the coating here considered is the
       "exp min" profile from LMA measurements.
+    - The laser-line coating for the LGSO-FMs has now a peak value of 0.995
+        instead of the old 0.990.
     '''
     schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
     m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
@@ -214,7 +216,7 @@ def MorfeoLgsChannelTransmissiveSystem_005():
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_005()
-    fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
+    fm = MorfeoTransmissiveElementsCatalog.lgso_fm_002()
     lgs_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
     lgs_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
     lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
