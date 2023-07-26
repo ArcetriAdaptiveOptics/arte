@@ -1117,6 +1117,21 @@ class MorfeoTransmissiveElementsCatalog():
         return te
     
     @classmethod
+    def lgso_fm_002(cls):
+        '''
+        Folding mirror in the LGS Objective (LGSO).
+        First approximation: reflectance curve is simply a peak of 0.995 at
+            589 nm.
+        Peak value is taken from Section 3.2.15 of
+            "E-MAO-SF0-INA-ANR-001 OFDR MORFEO Analysis Report.pdf".
+        
+        '''
+        r = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.995, 0)
+        t = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
+        return te
+    
+    @classmethod
     def lgs_wfs_001(cls):
         '''
         LGS WFS transmission excluding camera QE, detector windows and notch
