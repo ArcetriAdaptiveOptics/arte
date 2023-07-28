@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import astropy.units as u
 from arte.photometry.filters import Filters
 from arte.photometry.normalized_star_spectrum import get_normalized_star_spectrum
@@ -60,7 +61,7 @@ def main230725_estimate_expected_flux_at_LO_WFS_J_cut_included():
     return f_vega, f_K5V, obs_vega, obs_K5V
 
 
-def main230711_estimate_expected_flux_at_R_WFS():
+def main230711_estimate_expected_flux_at_R_WFS(star_spectral_type='K5V'):
     '''
     Estimate the expected flux at the R WFS considering the throughput curve
     reported in 'E-MAO-SA0-INA-TNO-005 WFS Flux budget'.
@@ -71,8 +72,9 @@ def main230711_estimate_expected_flux_at_R_WFS():
     airmass = 1 / np.cos(zenith_angle.to(u.rad))
     f_vega = get_normalized_star_spectrum(spectral_type='vega', magnitude=0,
                                           filter_name=filt_R_name)
-    f_K5V = get_normalized_star_spectrum(spectral_type='K5V', magnitude=0,
-                                          filter_name=filt_R_name)
+    f_source = get_normalized_star_spectrum(spectral_type=star_spectral_type,
+                                         magnitude=0,
+                                         filter_name=filt_R_name)
     
     sky = EsoSkyCalc(airmass=airmass, incl_moon='N')
     sky_se = SpectralElement(Empirical1D, points=sky.lam,
@@ -85,21 +87,21 @@ def main230711_estimate_expected_flux_at_R_WFS():
     
     obs_vega = Observation(spec=f_vega, band=filt, force='taper',
                       binset=f_vega.waveset)
-    obs_K5V = Observation(spec=f_K5V, band=filt, force='taper',
-                          binset=f_vega.waveset)
+    obs_source = Observation(spec=f_source, band=filt, force='taper',
+                          binset=f_source.waveset)
     
     area_subap = 1 * u.m ** 2
     exp_time = 1 * u.s
     counts_vega = obs_vega.countrate(area=area_subap)
-    print('Expected flux for Vega star at R WFS in e-/s/m2 (x1e8): %s'
+    print('\nExpected flux for Vega star at R WFS in e-/s/m2 (x1e8): %s'
           % ((counts_vega * exp_time).decompose() / 1e8))
-    counts_K5V = obs_K5V.countrate(area=area_subap)
-    print('Expected flux for K5V star (m=0 in Vega system) at R WFS in e-/s/m2 (x1e8): %s'
-          % ((counts_K5V * exp_time).decompose() / 1e8))
-    return f_vega, f_K5V, obs_vega, obs_K5V
+    counts_source = obs_source.countrate(area=area_subap)
+    print('\nExpected flux for %s star (m=0 in Vega system) at R WFS in e-/s/m2 (x1e8): %s'
+          % (star_spectral_type, (counts_source * exp_time).decompose() / 1e8))
+    return f_vega, f_source, obs_vega, obs_source
 
 
-def main230711_estimate_expected_flux_at_LO_WFS():
+def main230711_estimate_expected_flux_at_LO_WFS(star_spectral_type='K5V'):
     '''
     Estimate the expected flux for a K5V star with m=0 (Vega system) at the LO
     WFS considering the throughput curve reported in
@@ -112,8 +114,9 @@ def main230711_estimate_expected_flux_at_LO_WFS():
     airmass = 1 / np.cos(zenith_angle.to(u.rad))
     f_vega = get_normalized_star_spectrum(spectral_type='vega', magnitude=0,
                                           filter_name=filt_LO_name)
-    f_K5V = get_normalized_star_spectrum(spectral_type='K5V', magnitude=0,
-                                          filter_name=filt_LO_name)
+    f_source = get_normalized_star_spectrum(spectral_type=star_spectral_type,
+                                            magnitude=0,
+                                            filter_name=filt_LO_name)
     
     sky = EsoSkyCalc(airmass=airmass, incl_moon='N')
     sky_se = SpectralElement(Empirical1D, points=sky.lam,
@@ -124,20 +127,27 @@ def main230711_estimate_expected_flux_at_LO_WFS():
     
     filt = sky_se * lo_wfs.transmittance
     
+    plt.semilogy(f_source.waveset.to(u.um), f_source(f_source.waveset))
+    plt.semilogy(sky_se.waveset.to(u.um), sky_se(sky_se.waveset))
+    plt.semilogy(lo_wfs.transmittance.waveset.to(u.um),
+                 lo_wfs.transmittance(lo_wfs.transmittance.waveset))
+    plt.xlim(0.2, 2.5)
+    plt.grid()
+    
     obs_vega = Observation(spec=f_vega, band=filt, force='taper',
                       binset=f_vega.waveset)
-    obs_K5V = Observation(spec=f_K5V, band=filt, force='taper',
-                          binset=f_vega.waveset)
+    obs_source = Observation(spec=f_source, band=filt, force='taper',
+                             binset=f_source.waveset)
     
     area_subap = 1 * u.m ** 2
     exp_time = 1 * u.s
     counts_vega = obs_vega.countrate(area=area_subap)
-    print('Expected flux for Vega star at LO WFS in e-/s/m2 (x1e8): %s'
+    print('\nExpected flux for Vega star at LO WFS in e-/s/m2 (x1e8): %s'
           % ((counts_vega * exp_time).decompose() / 1e8))
-    counts_K5V = obs_K5V.countrate(area=area_subap)
-    print('Expected flux for K5V star (m=0 in Vega system) at LO WFS in e-/s/m2 (x1e8): %s'
-          % ((counts_K5V * exp_time).decompose() / 1e8))
-    return f_vega, f_K5V, obs_vega, obs_K5V
+    counts_source = obs_source.countrate(area=area_subap)
+    print('\nExpected flux for %s star (m=0 in Vega system) at LO WFS in e-/s/m2 (x1e8): %s'
+          % (star_spectral_type, (counts_source * exp_time).decompose() / 1e8))
+    return f_vega, f_source, obs_vega, obs_source
 
 
 def main230614_check_expected_flux_at_LO_with_SA0():

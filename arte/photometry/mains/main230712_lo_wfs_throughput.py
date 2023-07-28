@@ -291,7 +291,7 @@ def plot_throughput():
                  label='Sky/ELT/LOR up to VISIR dichroic', alpha=0.4)
     plot_between(wv, sky_no_moon.trans * lowfs.transmittance_from_to(0, 23)(wv),
                  label='Sky/ELT/LO-WFS up to LA', alpha=0.4)
-    plot_between(wv, sky_no_moon.trans * lowfs.transmittance_from_to(0, 25)(wv),
+    plot_between(wv, sky_no_moon.trans * lowfs.transmittance_from_to(0, 26)(wv),
                  label='Sky/ELT/LO-WFS', alpha=0.4)
     plt.legend(loc='upper left', fontsize='x-small')
     plt.xlabel('Wavelength [μm]')
