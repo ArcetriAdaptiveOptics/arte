@@ -127,13 +127,6 @@ def main230711_estimate_expected_flux_at_LO_WFS(star_spectral_type='K5V'):
     
     filt = sky_se * lo_wfs.transmittance
     
-    plt.semilogy(f_source.waveset.to(u.um), f_source(f_source.waveset))
-    plt.semilogy(sky_se.waveset.to(u.um), sky_se(sky_se.waveset))
-    plt.semilogy(lo_wfs.transmittance.waveset.to(u.um),
-                 lo_wfs.transmittance(lo_wfs.transmittance.waveset))
-    plt.xlim(0.2, 2.5)
-    plt.grid()
-    
     obs_vega = Observation(spec=f_vega, band=filt, force='taper',
                       binset=f_vega.waveset)
     obs_source = Observation(spec=f_source, band=filt, force='taper',
