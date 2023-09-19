@@ -406,6 +406,24 @@ class DetectorsTransmissiveElementsCatalog():
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
     
+    @classmethod
+    def c_blue_qe_002(cls):
+        '''
+        QE of FLI C-BLUE. Camera (and detector??) window is included and has
+        been changed from uncoated silica to AR-coated BK7 glass wrt to version
+        001.
+        
+        FLI data received by email from Patrick Rabou on 15/03/2023.
+        We added a point at 589 nm considering the new measurements from FLI at
+        that specific wavelength (see FLI datasheet received by Philippe
+        Feautrier -> email from Lorenzo on 18/09/2023). 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._DetectorsFolder('c_blue_qe_002'), u.nm)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
 
 class CoatedGlassesTransmissiveElementsCatalog():
     
