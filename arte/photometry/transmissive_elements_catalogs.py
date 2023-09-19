@@ -66,8 +66,8 @@ class EltTransmissiveElementsCatalog():
         ''' 
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
             cls._EltFolder('ag_mirror_elt_002'), u.nm)
-        a = Bandpass.zero()
-        te = TransmissiveElement(reflectance=r, absorptance=a)
+        t = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
 
     @classmethod
@@ -83,8 +83,8 @@ class EltTransmissiveElementsCatalog():
         ''' 
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
             cls._EltFolder('ag_mirror_elt_003'), u.nm)
-        a = Bandpass.zero()
-        te = TransmissiveElement(reflectance=r, absorptance=a)
+        t = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
         
     @classmethod
@@ -103,8 +103,8 @@ class EltTransmissiveElementsCatalog():
         '''
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
             cls._EltFolder('al_mirror_elt_002'), u.nm)
-        a = Bandpass.zero()
-        te = TransmissiveElement(reflectance=r, absorptance=a)
+        t = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
         
     @classmethod
@@ -396,7 +396,7 @@ class DetectorsTransmissiveElementsCatalog():
     def c_blue_qe_001(cls):
         '''
         C-BLUE camera of First Light Imaging with SONY IMX425 detector.
-        First approximation: QE curve is simply a peak of 0.75 at 589 nm.
+        First approximation: QE curve is simply a peak of 0.7 at 589 nm.
         QE value is taken from Section 4.5 of
             "E-MAO-PL0-IPA-ANR-013_01 MAORY LGS WFS Analysis Report.pdf" and 
             includes camera and detector windows.
