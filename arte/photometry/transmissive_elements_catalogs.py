@@ -396,10 +396,11 @@ class DetectorsTransmissiveElementsCatalog():
     def c_blue_qe_001(cls):
         '''
         C-BLUE camera of First Light Imaging with SONY IMX425 detector.
-        First approximation: QE curve is simply a peak of 0.7 at 589 nm.
+        First approximation: QE curve is simply a peak of 0.75 at 589 nm.
         QE value is taken from Section 4.5 of
             "E-MAO-PL0-IPA-ANR-013_01 MAORY LGS WFS Analysis Report.pdf" and 
-            includes camera and detector windows.
+            includes camera and detector windows. Update to 0.7 after new info
+            from Patrick.
         '''
         t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.7, 0)
         a = Bandpass.zero()
@@ -409,17 +410,30 @@ class DetectorsTransmissiveElementsCatalog():
     @classmethod
     def c_blue_qe_002(cls):
         '''
-        QE of FLI C-BLUE. Camera (and detector??) window is included and has
-        been changed from uncoated silica to AR-coated BK7 glass wrt to version
-        001.
+        QE of FLI C-BLUE. Camera and detector windows are included.
         
-        FLI data received by email from Patrick Rabou on 15/03/2023.
-        We added a point at 589 nm considering the new measurements from FLI at
-        that specific wavelength (see FLI datasheet received by Philippe
-        Feautrier -> email from Lorenzo on 18/09/2023). 
+        FLI data received by email from Patrick on 15/03/2023 and reported in
+        E-MAO-PLO-IPA-ANR-013_02, Section 4.1.5.7 -> "The QE measurement
+        includes the transmission of the 2 C-Blue One windows: uncoated Infrasil
+        camera window and uncoated detector package window
+        (refractive index 1.5)".
+         
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._DetectorsFolder('c_blue_qe_002'), u.nm)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def c_blue_qe_003(cls):
+        '''
+        QE of FLI C-BLUE. Camera (and detector??) window is included.
+        
+        FLI measurements at 589 nm, reported in a FLI datasheet sent by Philippe
+        (email from Lorenzo on 18/09/2023).
+        '''
+        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.6559, 0)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
