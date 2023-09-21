@@ -36,7 +36,7 @@ def MorfeoLgsChannelTransmissiveSystem_001():
     lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_001()
     lgs_lens = MorfeoTransmissiveElementsCatalog.lgso_lens_001()
     fm = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
-    notch_filter = MorfeoTransmissiveElementsCatalog.notch_filter_001()
+    notch_filter = MorfeoTransmissiveElementsCatalog.lgs_wfs_notch_filter_001()
     lenslets = MorfeoTransmissiveElementsCatalog.lgso_lens_001() 
     sapphire_window = MorfeoTransmissiveElementsCatalog.sapphire_window_001()
     ccd220 = DetectorsTransmissiveElementsCatalog.ccd220_qe_001()
@@ -240,6 +240,50 @@ def MorfeoLgsChannelTransmissiveSystem_005():
     ts.add(fm, Direction.REFLECTION)
     ts.add(fm, Direction.REFLECTION)
     ts.add(lgs_wfs, Direction.TRANSMISSION)
+    ts.add(c_blue, Direction.TRANSMISSION)
+    
+    return ts
+
+
+def MorfeoLgsChannelTransmissiveSystem_006():
+    '''
+    - Data on FLI C-BLUE QE have been updated, considering FLI 2023 measurements
+    on C-BLUE having a camera window of AR-coated BK7.    
+    - Notch filter was missing in the previous versions and it is here included.
+    '''
+    schmidt_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
+    m6 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m7 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
+    m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
+    lgs_dichroic = MorfeoTransmissiveElementsCatalog.lgs_dichroic_005()
+    fm = MorfeoTransmissiveElementsCatalog.lgso_fm_002()
+    lgs_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
+    lgs_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
+    lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
+    lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
+    lgs_wfs = MorfeoTransmissiveElementsCatalog.lgs_wfs_001()
+    notch_filter = MorfeoTransmissiveElementsCatalog.lgs_wfs_notch_filter_003()
+    c_blue = DetectorsTransmissiveElementsCatalog.c_blue_qe_003()
+    
+    ts = EltTransmissiveSystem()   
+    ts.add(schmidt_plate, Direction.TRANSMISSION)
+    ts.add(m6, Direction.REFLECTION)
+    ts.add(m7, Direction.REFLECTION)
+    ts.add(m8, Direction.REFLECTION)
+    ts.add(m9, Direction.REFLECTION)
+    ts.add(m10, Direction.REFLECTION)
+    ts.add(lgs_dichroic, Direction.TRANSMISSION)
+    ts.add(lgs_l1, Direction.TRANSMISSION)
+    ts.add(lgs_l2, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_l3, Direction.TRANSMISSION)
+    ts.add(lgs_l4, Direction.TRANSMISSION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(fm, Direction.REFLECTION)
+    ts.add(lgs_wfs, Direction.TRANSMISSION)
+    ts.add(notch_filter, Direction.TRANSMISSION)
     ts.add(c_blue, Direction.TRANSMISSION)
     
     return ts
