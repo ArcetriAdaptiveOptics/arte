@@ -154,7 +154,7 @@ def main230621_lgs_dichroic_coating_env_min_vs_exp_min():
     plt.legend()
     
 
-def main230621_mpo_v1():
+def main230621_mpo_v1(save=False):
     mpo = MorfeoMainPathOptics_001()
     t = mpo.transmittance
     wv = t.waveset
@@ -166,12 +166,13 @@ def main230621_mpo_v1():
     plt.grid()
     plt.title('MPO v1')
     
-    tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
-    dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
-    np.savetxt(dirpath + 'mpo_v1.txt', tosave)
+    if save is True:
+        tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
+        dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
+        np.savetxt(dirpath + 'mpo_v1.txt', tosave)
 
 
-def main230621_mpo_v2():
+def main230621_mpo_v2(save=False):
     mpo = MorfeoMainPathOptics_002()
     t = mpo.transmittance
     wv = t.waveset
@@ -183,12 +184,13 @@ def main230621_mpo_v2():
     plt.grid()
     plt.title('MPO v2')
     
-    tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
-    dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
-    np.savetxt(dirpath + 'mpo_v2.txt', tosave)
+    if save is True:
+        tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
+        dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
+        np.savetxt(dirpath + 'mpo_v2.txt', tosave)
 
     
-def main230621_mpo_v3():
+def main230621_mpo_v3(save=False):
     mpo = MorfeoMainPathOptics_003()
     t = mpo.transmittance
     wv = t.waveset
@@ -200,9 +202,10 @@ def main230621_mpo_v3():
     plt.grid()
     plt.title('MPO v3')
     
-    tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
-    dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
-    np.savetxt(dirpath + 'mpo_v3.txt', tosave)
+    if save is True:
+        tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
+        dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
+        np.savetxt(dirpath + 'mpo_v3.txt', tosave)
 
     
 def main230621_mpo_v4():
@@ -222,7 +225,7 @@ def main230621_mpo_v4():
     np.savetxt(dirpath + 'mpo_v4.txt', tosave)
 
 
-def main230621_mpo_v5():
+def main230621_mpo_v5(save=False):
     mpo = MorfeoMainPathOptics_005()
     t = mpo.transmittance
     wv = t.waveset
@@ -234,9 +237,10 @@ def main230621_mpo_v5():
     plt.grid()
     plt.title('MPO v5')
 
-    tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
-    dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
-    np.savetxt(dirpath + 'mpo_v5.txt', tosave)
+    if save is True:
+        tosave = np.stack((wv.value * 1e-4, t(wv).value), axis=1)
+        dirpath = '/Users/giuliacarla/Documents/INAF/Lavoro/Progetti/MORFEO/Throughput_BUTTA/Data/Throughput/ToDemetrioMagrin/'
+        np.savetxt(dirpath + 'mpo_v5.txt', tosave)
 
     
 def main230621_lgso_v1():

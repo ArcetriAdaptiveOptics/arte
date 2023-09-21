@@ -3,7 +3,8 @@ import astropy.units as u
 import matplotlib.pyplot as plt
 from arte.photometry.morfeo_transmissive_systems import MorfeoLgsChannelTransmissiveSystem_003, \
     MorfeoLgsChannelTransmissiveSystem_005, \
-    MorfeoLgsChannelTransmissiveSystem_004
+    MorfeoLgsChannelTransmissiveSystem_004, \
+    MorfeoLgsChannelTransmissiveSystem_006
 from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
     MorfeoTransmissiveElementsCatalog, CoatingsTransmissiveElementsCatalog, \
     GlassesTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog
@@ -37,6 +38,18 @@ def LGS_WFS_004_throughput():
 
 def LGS_WFS_005_throughput():
     lgs_wfs_te = MorfeoLgsChannelTransmissiveSystem_005().as_transmissive_element()
+    wv = lgs_wfs_te.waveset
+    t = lgs_wfs_te.transmittance(wv)
+    plt.plot(wv.to(u.um), t)
+    plt.xlabel('Wavelength [µm]')
+    plt.ylabel('Throughput')
+    plt.grid()
+    plt.xlim(0.2, 1.5)
+    print('\nThroughput at 589 nm: %s' % t.max())
+    
+
+def LGS_WFS_006_throughput():
+    lgs_wfs_te = MorfeoLgsChannelTransmissiveSystem_006().as_transmissive_element()
     wv = lgs_wfs_te.waveset
     t = lgs_wfs_te.transmittance(wv)
     plt.plot(wv.to(u.um), t)
