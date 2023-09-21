@@ -5,8 +5,8 @@ from arte.photometry.morfeo_transmissive_systems import MorfeoLowOrderChannelTra
     MorfeoLowOrderChannelTransmissiveSystem_001, \
     MorfeoLowOrderChannelTransmissiveSystem_003
 from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
-    MorfeoTransmissiveElementsCatalog, CoatingsTransmissiveElementsCatalog, \
-    GlassesTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog
+    MorfeoTransmissiveElementsCatalog, CoatingsCatalog, \
+    GlassesCatalog, DetectorsCatalog
 from arte.photometry.eso_sky_calc import EsoSkyCalc
 from arte.photometry import morfeo_transmissive_systems
 
@@ -97,8 +97,8 @@ def silver_mirror_throughput():
 
 def correcting_plate_throughput():
     c_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
-    ar_coating_broad = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
-    supra3002 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
+    ar_coating_broad = CoatingsCatalog.ar_coating_broadband_001()
+    supra3002 = GlassesCatalog.suprasil3002_85mm_internal_001()
     
     wv = c_plate.waveset
     id_min = np.where(np.isclose(np.array(wv),
@@ -117,7 +117,7 @@ def correcting_plate_throughput():
     
     
 def lgs_dichroic_throughput():
-    lgs_dich = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    lgs_dich = CoatingsCatalog.lma_exp_min_001()
     wv = lgs_dich.waveset
     r = lgs_dich.reflectance(wv)
     id_min = np.where(np.isclose(np.array(wv),
@@ -139,7 +139,7 @@ def lgs_dichroic_throughput():
 
 
 def visir_dichroic_throughput():
-    lzh_coating = CoatingsTransmissiveElementsCatalog.lzh_coating_for_visir_dichroic_001()
+    lzh_coating = CoatingsCatalog.lzh_coating_for_visir_dichroic_001()
     wv = lzh_coating.waveset
     
     id_min = np.where(np.isclose(np.array(wv),
@@ -162,9 +162,9 @@ def visir_dichroic_throughput():
     
 def collimator_throughput():
     coll = MorfeoTransmissiveElementsCatalog.lowfs_collimator_doublet_001()
-    swir_coating = CoatingsTransmissiveElementsCatalog.ar_coating_swir_001()
-    substrate1 = GlassesTransmissiveElementsCatalog.ohara_SFPL51_10mm_internal_001()
-    substrate2 = GlassesTransmissiveElementsCatalog.ohara_PBL35Y_3mm_internal_001()    
+    swir_coating = CoatingsCatalog.ar_coating_swir_001()
+    substrate1 = GlassesCatalog.ohara_SFPL51_10mm_internal_001()
+    substrate2 = GlassesCatalog.ohara_PBL35Y_3mm_internal_001()    
     wv = coll.waveset
     id_min = np.where(np.isclose(np.array(wv),
                                     WV_MIN_H.to(u.Angstrom).value,
@@ -185,9 +185,9 @@ def collimator_throughput():
 
 def adc_throughput():
     adc = MorfeoTransmissiveElementsCatalog.lowfs_adc_002()
-    swir_coating = CoatingsTransmissiveElementsCatalog.ar_coating_swir_001()
-    substrate1 = GlassesTransmissiveElementsCatalog.schott_NSF2_9dot8_mm_internal_001()
-    substrate2 = GlassesTransmissiveElementsCatalog.schott_NPSK53A_10_mm_internal_001()  
+    swir_coating = CoatingsCatalog.ar_coating_swir_001()
+    substrate1 = GlassesCatalog.schott_NSF2_9dot8_mm_internal_001()
+    substrate2 = GlassesCatalog.schott_NPSK53A_10_mm_internal_001()  
     wv = adc.waveset
     id_min = np.where(np.isclose(np.array(wv),
                                     WV_MIN_H.to(u.Angstrom).value,
@@ -208,8 +208,8 @@ def adc_throughput():
     
 def lenslet_array_throughput():
     lenslet = MorfeoTransmissiveElementsCatalog.lowfs_lenslet_001()
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_amus_001()
-    substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()  
+    ar_coating = CoatingsCatalog.ar_coating_amus_001()
+    substrate = GlassesCatalog.suprasil3001_3mm_internal_001()  
     wv = lenslet.waveset
     id_min = np.where(np.isclose(np.array(wv),
                                     WV_MIN_H.to(u.Angstrom).value,
@@ -227,7 +227,7 @@ def lenslet_array_throughput():
 
 
 def cold_filters_throughput():
-    c_red1_filters = DetectorsTransmissiveElementsCatalog.c_red_one_filters_001()
+    c_red1_filters = DetectorsCatalog.c_red_one_filters_001()
     wv = c_red1_filters.waveset
     id_min = np.where(np.isclose(np.array(wv),
                                 WV_MIN_H.to(u.Angstrom).value,
@@ -248,7 +248,7 @@ def cold_filters_throughput():
 
     
 def c_red1_qe():
-    c_red1 = DetectorsTransmissiveElementsCatalog.c_red_one_qe_001()
+    c_red1 = DetectorsCatalog.c_red_one_qe_001()
     wv = c_red1.waveset
     id_min = np.where(np.isclose(np.array(wv),
                                 WV_MIN_H.to(u.Angstrom).value,

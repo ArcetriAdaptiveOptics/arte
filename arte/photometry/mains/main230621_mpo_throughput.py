@@ -5,8 +5,8 @@ from arte.photometry.morfeo_transmissive_systems import MorfeoMainPathOptics_001
     MorfeoMainPathOptics_002, MorfeoMainPathOptics_003, MorfeoMainPathOptics_004, \
     MorfeoLGSO_001, MorfeoLGSO_002, MorfeoLGSO_003, MorfeoLGSO_004, \
     MorfeoMainPathOptics_005, MorfeoLGSO_005
-from arte.photometry.transmissive_elements_catalogs import GlassesTransmissiveElementsCatalog, \
-    CoatingsTransmissiveElementsCatalog, MorfeoTransmissiveElementsCatalog, \
+from arte.photometry.transmissive_elements_catalogs import GlassesCatalog, \
+    CoatingsCatalog, MorfeoTransmissiveElementsCatalog, \
     EltTransmissiveElementsCatalog
 
 
@@ -73,7 +73,7 @@ def main230623_throughput_of_aluminium_coating_in_Ks():
 def main230623_throughput_of_LGS_dichroic_coating_exp_in_Ks():
     wv_min = 1.97 * u.um
     wv_max = 2.33 * u.um
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    lgs_dichroic = CoatingsCatalog.lma_exp_min_001()
     waveset = lgs_dichroic.waveset
     id_min = np.where(np.isclose(np.array(waveset), wv_min.to(u.Angstrom).value,
                                  atol=1))[0][0]
@@ -88,7 +88,7 @@ def main230623_throughput_of_LGS_dichroic_coating_exp_in_Ks():
 def main230623_throughput_of_LGS_dichroic_coating_env_in_Ks():
     wv_min = 1.97 * u.um
     wv_max = 2.33 * u.um
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
+    lgs_dichroic = CoatingsCatalog.lma_env_min_001()
     waveset = lgs_dichroic.waveset
     id_min = np.where(np.isclose(np.array(waveset), wv_min.to(u.Angstrom).value,
                                  atol=1))[0][0]
@@ -101,8 +101,8 @@ def main230623_throughput_of_LGS_dichroic_coating_env_in_Ks():
 
 
 def main230621_sk1300_vs_suprasil3002_10mm():
-    sk1300 = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_10mm_internal_001()
-    suprasil3002 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_internal_001()
+    sk1300 = GlassesCatalog.ohara_quartz_SK1300_10mm_internal_001()
+    suprasil3002 = GlassesCatalog.suprasil3002_10mm_internal_001()
     wv_sk = sk1300.waveset
     wv_supra = suprasil3002.waveset
     plt.plot(wv_sk.to(u.um), sk1300.transmittance(wv_sk), label='SK-1300')
@@ -125,8 +125,8 @@ def main230621_sk1300_vs_suprasil3002_10mm():
 
 
 def main230621_sk1300_vs_suprasil3002():
-    sk1300 = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_85mm_internal_001()
-    suprasil3002 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
+    sk1300 = GlassesCatalog.ohara_quartz_SK1300_85mm_internal_001()
+    suprasil3002 = GlassesCatalog.suprasil3002_85mm_internal_001()
     wv_sk = sk1300.waveset
     wv_supra = suprasil3002.waveset
     plt.plot(wv_sk.to(u.um), sk1300.transmittance(wv_sk), label='SK-1300')
@@ -140,8 +140,8 @@ def main230621_sk1300_vs_suprasil3002():
 
     
 def main230621_lgs_dichroic_coating_env_min_vs_exp_min():
-    env_min = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
-    exp_min = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    env_min = CoatingsCatalog.lma_env_min_001()
+    exp_min = CoatingsCatalog.lma_exp_min_001()
     wv_env = env_min.waveset
     wv_exp = exp_min.waveset
     plt.plot(wv_env.to(u.um), env_min.reflectance(wv_env), label='Env min')

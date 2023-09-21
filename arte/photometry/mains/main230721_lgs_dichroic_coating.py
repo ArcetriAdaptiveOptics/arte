@@ -1,14 +1,14 @@
 import astropy.units as u
 import matplotlib.pyplot as plt
-from arte.photometry.transmissive_elements_catalogs import CoatingsTransmissiveElementsCatalog
+from arte.photometry.transmissive_elements_catalogs import CoatingsCatalog
 
 
 def main230721_comparison_of_LMA_coating_curves():
     '''
     '''
-    exp_ave = CoatingsTransmissiveElementsCatalog.lma_exp_ave_001()
-    exp_min = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
-    env_min = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
+    exp_ave = CoatingsCatalog.lma_exp_ave_001()
+    exp_min = CoatingsCatalog.lma_exp_min_001()
+    env_min = CoatingsCatalog.lma_env_min_001()
     
     wv = exp_ave.waveset
     plt.figure()

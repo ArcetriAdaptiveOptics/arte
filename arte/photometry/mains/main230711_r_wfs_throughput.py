@@ -6,8 +6,8 @@ from arte.photometry.morfeo_transmissive_systems import MorfeoReferenceChannelTr
     MorfeoReferenceChannelTransmissiveSystem_003, \
     MorfeoReferenceChannelTransmissiveSystem_004
 from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
-    MorfeoTransmissiveElementsCatalog, CoatingsTransmissiveElementsCatalog, \
-    GlassesTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog
+    MorfeoTransmissiveElementsCatalog, CoatingsCatalog, \
+    GlassesCatalog, DetectorsCatalog
 from arte.photometry import morfeo_transmissive_systems
 from arte.photometry.eso_sky_calc import EsoSkyCalc
 
@@ -116,8 +116,8 @@ def silver_mirror_throughput():
 
 def correcting_plate_throughput():
     c_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
-    ar_coating_broad = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
-    supra3002 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
+    ar_coating_broad = CoatingsCatalog.ar_coating_broadband_001()
+    supra3002 = GlassesCatalog.suprasil3002_85mm_internal_001()
     
     wv = c_plate.waveset
     id_RI_min = np.where(np.isclose(np.array(wv),
@@ -136,7 +136,7 @@ def correcting_plate_throughput():
     
     
 def lgs_dichroic_throughput():
-    lgs_dich = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    lgs_dich = CoatingsCatalog.lma_exp_min_001()
     wv = lgs_dich.waveset
     r = lgs_dich.reflectance(wv)
     id_RI_min = np.where(np.isclose(np.array(wv),
@@ -153,9 +153,9 @@ def lgs_dichroic_throughput():
 def visir_dichroic_throughput():
     visir_dich = MorfeoTransmissiveElementsCatalog.visir_dichroic_002()
     wv = visir_dich.waveset
-    lzh_coating = CoatingsTransmissiveElementsCatalog.lzh_coating_for_visir_dichroic_001()
-    fused_silica_3mm = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_amus_001()
+    lzh_coating = CoatingsCatalog.lzh_coating_for_visir_dichroic_001()
+    fused_silica_3mm = GlassesCatalog.suprasil3001_3mm_internal_001()
+    ar_coating = CoatingsCatalog.ar_coating_amus_001()
     
     id_RI_min = np.where(np.isclose(np.array(wv),
                                     WV_MIN_RI.to(u.Angstrom).value,
@@ -176,9 +176,9 @@ def visir_dichroic_throughput():
   
 def collimator_throughput():
     r_collimator = MorfeoTransmissiveElementsCatalog.refwfs_collimator_doublet_002()
-    nir_ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_nir_i_001()
-    sftm_3mm = GlassesTransmissiveElementsCatalog.ohara_SFTM16_3mm_internal_001()
-    cdgm_7mm = GlassesTransmissiveElementsCatalog.cdgm_HQK3L_7mm_internal_001()
+    nir_ar_coating = CoatingsCatalog.ar_coating_nir_i_001()
+    sftm_3mm = GlassesCatalog.ohara_SFTM16_3mm_internal_001()
+    cdgm_7mm = GlassesCatalog.cdgm_HQK3L_7mm_internal_001()
     wv = r_collimator.waveset
     
     id_RI_min = np.where(np.isclose(np.array(wv),
@@ -214,8 +214,8 @@ def ALICE_entrance_window_throughput():
     
 def lenslet_array_throughput():
     r_la = MorfeoTransmissiveElementsCatalog.rwfs_lenslet_001()
-    nir_ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_nir_i_001()
-    supra3001_3mm = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
+    nir_ar_coating = CoatingsCatalog.ar_coating_nir_i_001()
+    supra3001_3mm = GlassesCatalog.suprasil3001_3mm_internal_001()
     
     wv = r_la.waveset
     id_RI_min = np.where(np.isclose(np.array(wv),
@@ -234,7 +234,7 @@ def lenslet_array_throughput():
 
     
 def ccd220_QE_001():
-    ccd220_qe = DetectorsTransmissiveElementsCatalog.ccd220_qe_001()   
+    ccd220_qe = DetectorsCatalog.ccd220_qe_001()   
     wv = ccd220_qe.waveset
     id_min = np.argwhere(wv == WV_MIN_RI.to(u.Angstrom))[0][0]
     id_max = np.argwhere(wv == WV_MAX_RI.to(u.Angstrom))[0][0]
@@ -244,7 +244,7 @@ def ccd220_QE_001():
     
     
 def ccd220_QE_002():
-    ccd220_qe = DetectorsTransmissiveElementsCatalog.ccd220_qe_002()   
+    ccd220_qe = DetectorsCatalog.ccd220_qe_002()   
     wv = ccd220_qe.waveset
     id_min = np.argwhere(wv == WV_MIN_RI.to(u.Angstrom))[0][0]
     id_max = np.argwhere(wv == WV_MAX_RI.to(u.Angstrom))[0][0]
@@ -254,7 +254,7 @@ def ccd220_QE_002():
     
     
 def ccd220_QE_003():
-    ccd220_qe = DetectorsTransmissiveElementsCatalog.ccd220_qe_003()   
+    ccd220_qe = DetectorsCatalog.ccd220_qe_003()   
     wv = ccd220_qe.waveset
     id_min = np.argwhere(wv == WV_MIN_RI.to(u.Angstrom))[0][0]
     id_max = np.argwhere(wv == WV_MAX_RI.to(u.Angstrom))[0][0]

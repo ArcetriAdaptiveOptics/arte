@@ -1,6 +1,6 @@
 import astropy.units as u
 from arte.photometry.morfeo_transmissive_systems import MorfeoLowOrderChannelTransmissiveSystem_003
-from arte.photometry.transmissive_elements_catalogs import DetectorsTransmissiveElementsCatalog
+from arte.photometry.transmissive_elements_catalogs import DetectorsCatalog
 from arte.photometry.thermal_flux import ThermalFluxOnWFS
 from morfeo.utils.constants import MORFEO
 
@@ -12,7 +12,7 @@ def thermal_flux_on_LO_WFS():
     lo_wfs_transmissive_system.remove(-1)
     # remove cold filters from the path
     lo_wfs_transmissive_system.remove(-1)
-    cred1_qe = DetectorsTransmissiveElementsCatalog.c_red_one_qe_001()    
+    cred1_qe = DetectorsCatalog.c_red_one_qe_001()    
     
     th_fl = ThermalFluxOnWFS(
         temperature_in_K=T,

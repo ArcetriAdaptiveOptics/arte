@@ -6,8 +6,8 @@ from arte.photometry.morfeo_transmissive_systems import MorfeoLgsChannelTransmis
     MorfeoLgsChannelTransmissiveSystem_004, \
     MorfeoLgsChannelTransmissiveSystem_006
 from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
-    MorfeoTransmissiveElementsCatalog, CoatingsTransmissiveElementsCatalog, \
-    GlassesTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog
+    MorfeoTransmissiveElementsCatalog, CoatingsCatalog, \
+    GlassesCatalog, DetectorsCatalog
 
 WV_589NM = 0.589 * u.um
 
@@ -82,8 +82,8 @@ def silver_mirror_throughput():
 
 def correcting_plate_throughput():
     c_plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
-    ar_coating_broad = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
-    supra3002 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
+    ar_coating_broad = CoatingsCatalog.ar_coating_broadband_001()
+    supra3002 = GlassesCatalog.suprasil3002_85mm_internal_001()
     
     wv = c_plate.waveset
     id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
@@ -100,9 +100,9 @@ def correcting_plate_throughput():
 def lgs_dichroic_throughput():
     lgs_dich = MorfeoTransmissiveElementsCatalog.lgs_dichroic_005()
     wv = lgs_dich.waveset
-    lma_coating = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
-    substrate = GlassesTransmissiveElementsCatalog.suprasil3002_80mm_internal_001()
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_002() 
+    lma_coating = CoatingsCatalog.lma_exp_min_001()
+    substrate = GlassesCatalog.suprasil3002_80mm_internal_001()
+    ar_coating = CoatingsCatalog.ar_coating_589nm_002() 
     
     id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
                                     atol=1))[0][0]
@@ -121,8 +121,8 @@ def lgs_dichroic_throughput():
 def lgso_l1_throughput():
     lgso_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
     wv = lgso_l1.waveset
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-    suprasil = GlassesTransmissiveElementsCatalog.suprasil3002_108mm_internal_001()
+    ar_coating = CoatingsCatalog.ar_coating_589nm_001()
+    suprasil = GlassesCatalog.suprasil3002_108mm_internal_001()
     id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
                                     atol=10))[0][0]
                                     
@@ -138,8 +138,8 @@ def lgso_l1_throughput():
 def lgso_l2_throughput():
     lgso_l2 = MorfeoTransmissiveElementsCatalog.lgso_lens2_001()
     wv = lgso_l2.waveset
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-    suprasil = GlassesTransmissiveElementsCatalog.suprasil3002_70mm_internal_001()
+    ar_coating = CoatingsCatalog.ar_coating_589nm_001()
+    suprasil = GlassesCatalog.suprasil3002_70mm_internal_001()
     id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
                                     atol=10))[0][0]
                                     
@@ -155,8 +155,8 @@ def lgso_l2_throughput():
 def lgso_l3_throughput():
     lgso_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
     wv = lgso_l3.waveset
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-    suprasil = GlassesTransmissiveElementsCatalog.suprasil3002_40mm_internal_001()
+    ar_coating = CoatingsCatalog.ar_coating_589nm_001()
+    suprasil = GlassesCatalog.suprasil3002_40mm_internal_001()
     id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
                                     atol=10))[0][0]
                                     
@@ -172,8 +172,8 @@ def lgso_l3_throughput():
 def lgso_l4_throughput():
     lgso_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
     wv = lgso_l4.waveset
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-    suprasil = GlassesTransmissiveElementsCatalog.suprasil3002_60mm_internal_001()
+    ar_coating = CoatingsCatalog.ar_coating_589nm_001()
+    suprasil = GlassesCatalog.suprasil3002_60mm_internal_001()
     id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
                                     atol=10))[0][0]
                                     
@@ -209,7 +209,7 @@ def lgs_wfs_throughput():
 
 
 def c_blue_qe():
-    c_blue = DetectorsTransmissiveElementsCatalog.c_blue_qe_001()
+    c_blue = DetectorsCatalog.c_blue_qe_001()
     wv = c_blue.waveset
     id_589nm = np.where(np.isclose(np.array(wv), WV_589NM.to(u.Angstrom).value,
                                     atol=10))[0][1]

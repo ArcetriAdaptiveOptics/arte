@@ -1,8 +1,8 @@
 import astropy.units as u
 import matplotlib.pyplot as plt
 from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
-    MorfeoTransmissiveElementsCatalog, CoatingsTransmissiveElementsCatalog, \
-    GlassesTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog
+    MorfeoTransmissiveElementsCatalog, CoatingsCatalog, \
+    GlassesCatalog, DetectorsCatalog
 
 
 def plot_aluminium_mirror_v002():
@@ -29,8 +29,8 @@ def plot_silver_mirror_v002():
     
 def plot_schmidt_plate_v004():
     plate = MorfeoTransmissiveElementsCatalog.schmidt_plate_004()
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
-    substrate = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
+    ar_coating = CoatingsCatalog.ar_coating_broadband_001()
+    substrate = GlassesCatalog.suprasil3002_85mm_internal_001()
     wv = plate.waveset
     plt.plot(wv.to(u.um), plate.transmittance(wv), label='Correcting plate')
     plt.plot(wv.to(u.um), ar_coating.transmittance(wv),
@@ -46,9 +46,9 @@ def plot_schmidt_plate_v004():
     
 def plot_lgs_dichroic_v005():
     lgs_dich = MorfeoTransmissiveElementsCatalog.lgs_dichroic_005()
-    lma_coating = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
-    substrate = GlassesTransmissiveElementsCatalog.suprasil3002_80mm_internal_001()
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_002()
+    lma_coating = CoatingsCatalog.lma_exp_min_001()
+    substrate = GlassesCatalog.suprasil3002_80mm_internal_001()
+    ar_coating = CoatingsCatalog.ar_coating_589nm_002()
 
     wv = lgs_dich.waveset
     plt.plot(wv.to(u.um), lgs_dich.transmittance(wv), label='LGS dichroic')
@@ -66,7 +66,7 @@ def plot_lgs_dichroic_v005():
 
 
 def plot_lma_coating_v001():
-    lma_coating = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    lma_coating = CoatingsCatalog.lma_exp_min_001()
     wv = lma_coating.waveset
     plt.plot(wv.to(u.um), lma_coating.transmittance(wv),
         label='Transmittance')
@@ -92,8 +92,8 @@ def plot_lgso_fm_v002():
 def plot_lgso_l1_v001():
     lgso_l1 = MorfeoTransmissiveElementsCatalog.lgso_lens1_001()
     wv = lgso_l1.waveset
-    ar_coat = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-    supra = GlassesTransmissiveElementsCatalog.suprasil3002_108mm_internal_001()
+    ar_coat = CoatingsCatalog.ar_coating_589nm_001()
+    supra = GlassesCatalog.suprasil3002_108mm_internal_001()
     plt.plot(wv.to(u.um), supra.transmittance(wv),
         label='Suprasil 3002 (108 mm)')
     plt.plot(wv.to(u.um), ar_coat.transmittance(wv),
@@ -120,9 +120,9 @@ def plot_lgs_wfs_v001():
 def plot_visir_dichroic_v002():
     visir_dich = MorfeoTransmissiveElementsCatalog.visir_dichroic_002()
     wv = visir_dich.waveset
-    lzh_coating = CoatingsTransmissiveElementsCatalog.lzh_coating_for_visir_dichroic_001()
-    substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_amus_001()
+    lzh_coating = CoatingsCatalog.lzh_coating_for_visir_dichroic_001()
+    substrate = GlassesCatalog.suprasil3001_3mm_internal_001()
+    ar_coating = CoatingsCatalog.ar_coating_amus_001()
     
     plt.plot(wv.to(u.um), visir_dich.transmittance(wv),
         label='VISIR dichroic')
@@ -142,9 +142,9 @@ def plot_visir_dichroic_v002():
 def plot_lo_collimator_v001():
     lo_coll = MorfeoTransmissiveElementsCatalog.lowfs_collimator_doublet_001()
     wv = lo_coll.waveset
-    swir_coating = CoatingsTransmissiveElementsCatalog.ar_coating_swir_001()
-    substrate1 = GlassesTransmissiveElementsCatalog.ohara_SFPL51_10mm_internal_001()
-    substrate2 = GlassesTransmissiveElementsCatalog.ohara_PBL35Y_3mm_internal_001()
+    swir_coating = CoatingsCatalog.ar_coating_swir_001()
+    substrate1 = GlassesCatalog.ohara_SFPL51_10mm_internal_001()
+    substrate2 = GlassesCatalog.ohara_PBL35Y_3mm_internal_001()
     
     plt.plot(wv.to(u.um), lo_coll.transmittance(wv),
         label='LO collimator')
@@ -165,9 +165,9 @@ def plot_lo_collimator_v001():
 def plot_rwfs_collimator_v002():
     r_coll = MorfeoTransmissiveElementsCatalog.refwfs_collimator_doublet_002()
     wv = r_coll.waveset
-    nir_i_coating = CoatingsTransmissiveElementsCatalog.ar_coating_nir_i_001()
-    substrate1 = GlassesTransmissiveElementsCatalog.ohara_SFTM16_3mm_internal_001()
-    substrate2 = GlassesTransmissiveElementsCatalog.cdgm_HQK3L_7mm_internal_001()
+    nir_i_coating = CoatingsCatalog.ar_coating_nir_i_001()
+    substrate1 = GlassesCatalog.ohara_SFTM16_3mm_internal_001()
+    substrate2 = GlassesCatalog.cdgm_HQK3L_7mm_internal_001()
     
     plt.plot(wv.to(u.um), r_coll.transmittance(wv),
         label='R WFS collimator')
@@ -188,9 +188,9 @@ def plot_rwfs_collimator_v002():
 def plot_lo_adc_v002():
     lo_adc = MorfeoTransmissiveElementsCatalog.lowfs_adc_002()
     wv = lo_adc.waveset    
-    swir_coating = CoatingsTransmissiveElementsCatalog.ar_coating_swir_001()
-    substrate1 = GlassesTransmissiveElementsCatalog.schott_NSF2_9dot8_mm_internal_001()
-    substrate2 = GlassesTransmissiveElementsCatalog.schott_NPSK53A_10_mm_internal_001()
+    swir_coating = CoatingsCatalog.ar_coating_swir_001()
+    substrate1 = GlassesCatalog.schott_NSF2_9dot8_mm_internal_001()
+    substrate2 = GlassesCatalog.schott_NPSK53A_10_mm_internal_001()
 
     plt.plot(wv.to(u.um), lo_adc.transmittance(wv),
         label='LO ADC')
@@ -211,8 +211,8 @@ def plot_lo_adc_v002():
 def plot_lo_lenslet_array_v001():
     lo_lenslet = MorfeoTransmissiveElementsCatalog.lowfs_lenslet_001()
     wv = lo_lenslet.waveset
-    ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_amus_001()
-    substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
+    ar_coating = CoatingsCatalog.ar_coating_amus_001()
+    substrate = GlassesCatalog.suprasil3001_3mm_internal_001()
     
     plt.plot(wv.to(u.um), lo_lenslet.transmittance(wv),
         label='LO lenslet array')
@@ -231,8 +231,8 @@ def plot_lo_lenslet_array_v001():
 def plot_rwfs_lenslet_array_v001():
     r_lenslet = MorfeoTransmissiveElementsCatalog.rwfs_lenslet_001()
     wv = r_lenslet.waveset
-    nir_i_ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_nir_i_001()
-    substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
+    nir_i_ar_coating = CoatingsCatalog.ar_coating_nir_i_001()
+    substrate = GlassesCatalog.suprasil3001_3mm_internal_001()
     
     plt.plot(wv.to(u.um), r_lenslet.transmittance(wv),
         label='R WFS lenslet array')
@@ -249,10 +249,10 @@ def plot_rwfs_lenslet_array_v001():
 
     
 def plot_cred1_cold_filters_v001():
-    filt = DetectorsTransmissiveElementsCatalog.c_red_one_filters_001()
+    filt = DetectorsCatalog.c_red_one_filters_001()
     wv = filt.waveset
-    filtH = DetectorsTransmissiveElementsCatalog.c_red_one_H_filter_001()
-    filtK = DetectorsTransmissiveElementsCatalog.c_red_one_K_filter_001()
+    filtH = DetectorsCatalog.c_red_one_H_filter_001()
+    filtK = DetectorsCatalog.c_red_one_K_filter_001()
 
     plt.plot(wv.to(u.um), filt.transmittance(wv),
         label='2H + 2K')
@@ -268,7 +268,7 @@ def plot_cred1_cold_filters_v001():
 
     
 def plot_cred1_qe():
-    c_red1 = DetectorsTransmissiveElementsCatalog.c_red_one_qe_001()
+    c_red1 = DetectorsCatalog.c_red_one_qe_001()
     wv = c_red1.waveset
     plt.plot(wv.to(u.um), c_red1.transmittance(wv))
     plt.xlabel('Wavelength [µm]')
@@ -277,7 +277,7 @@ def plot_cred1_qe():
     
 
 def plot_ccd220_qe():
-    ccd220 = DetectorsTransmissiveElementsCatalog.ccd220_qe_003()
+    ccd220 = DetectorsCatalog.ccd220_qe_003()
     wv = ccd220.waveset
     plt.plot(wv.to(u.um), ccd220.transmittance(wv))
     plt.xlabel('Wavelength [µm]')

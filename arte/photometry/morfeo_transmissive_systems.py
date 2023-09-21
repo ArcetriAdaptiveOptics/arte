@@ -1,7 +1,7 @@
 from arte.photometry.transmissive_elements_catalogs import EltTransmissiveElementsCatalog, \
-    MorfeoTransmissiveElementsCatalog, DetectorsTransmissiveElementsCatalog, \
-    CoatedGlassesTransmissiveElementsCatalog, \
-    CoatingsTransmissiveElementsCatalog
+    MorfeoTransmissiveElementsCatalog, DetectorsCatalog, \
+    CoatedGlassesCatalog, \
+    CoatingsCatalog
 from arte.photometry.transmissive_elements import TransmissiveSystem, Direction
 
 
@@ -39,7 +39,7 @@ def MorfeoLgsChannelTransmissiveSystem_001():
     notch_filter = MorfeoTransmissiveElementsCatalog.lgs_wfs_notch_filter_001()
     lenslets = MorfeoTransmissiveElementsCatalog.lgso_lens_001() 
     sapphire_window = MorfeoTransmissiveElementsCatalog.sapphire_window_001()
-    ccd220 = DetectorsTransmissiveElementsCatalog.ccd220_qe_001()
+    ccd220 = DetectorsCatalog.ccd220_qe_001()
     
     ts = EltTransmissiveSystem()
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -93,7 +93,7 @@ def MorfeoLgsChannelTransmissiveSystem_002():
     fm = MorfeoTransmissiveElementsCatalog.lgso_fm_001()
     lgs_lens = MorfeoTransmissiveElementsCatalog.lgso_lens_002()
     lgs_wfs = MorfeoTransmissiveElementsCatalog.lgs_wfs_001()
-    c_blue = DetectorsTransmissiveElementsCatalog.c_blue_qe_001()
+    c_blue = DetectorsCatalog.c_blue_qe_001()
     
     ts = EltTransmissiveSystem()   
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -135,7 +135,7 @@ def MorfeoLgsChannelTransmissiveSystem_003():
     lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
     lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
     lgs_wfs = MorfeoTransmissiveElementsCatalog.lgs_wfs_001()
-    c_blue = DetectorsTransmissiveElementsCatalog.c_blue_qe_001()
+    c_blue = DetectorsCatalog.c_blue_qe_001()
     
     ts = EltTransmissiveSystem()   
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -175,7 +175,7 @@ def MorfeoLgsChannelTransmissiveSystem_004():
     lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
     lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
     lgs_wfs = MorfeoTransmissiveElementsCatalog.lgs_wfs_001()
-    c_blue = DetectorsTransmissiveElementsCatalog.c_blue_qe_001()
+    c_blue = DetectorsCatalog.c_blue_qe_001()
     
     ts = EltTransmissiveSystem()   
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -222,7 +222,7 @@ def MorfeoLgsChannelTransmissiveSystem_005():
     lgs_l3 = MorfeoTransmissiveElementsCatalog.lgso_lens3_001()
     lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
     lgs_wfs = MorfeoTransmissiveElementsCatalog.lgs_wfs_001()
-    c_blue = DetectorsTransmissiveElementsCatalog.c_blue_qe_001()
+    c_blue = DetectorsCatalog.c_blue_qe_001()
     
     ts = EltTransmissiveSystem()   
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -265,7 +265,7 @@ def MorfeoLgsChannelTransmissiveSystem_006():
     lgs_l4 = MorfeoTransmissiveElementsCatalog.lgso_lens4_001()
     lgs_wfs = MorfeoTransmissiveElementsCatalog.lgs_wfs_001()
     notch_filter = MorfeoTransmissiveElementsCatalog.lgs_wfs_notch_filter_003()
-    c_blue = DetectorsTransmissiveElementsCatalog.c_blue_qe_003()
+    c_blue = DetectorsCatalog.c_blue_qe_003()
     
     ts = EltTransmissiveSystem()   
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -304,10 +304,10 @@ def MorfeoLowOrderChannelTransmissiveSystem_001():
     visir_dichroic = MorfeoTransmissiveElementsCatalog.visir_dichroic_001()
     caf2_lens = MorfeoTransmissiveElementsCatalog.CaF2_lens_C_coated_001()
     adc = MorfeoTransmissiveElementsCatalog.lowfs_adc_001()
-    fused_silica_lenslets = CoatedGlassesTransmissiveElementsCatalog.infrasil_1mm_C_coated_001()
+    fused_silica_lenslets = CoatedGlassesCatalog.infrasil_1mm_C_coated_001()
     fused_silica_window = MorfeoTransmissiveElementsCatalog.schmidt_plate_001()
-    c_red1_filters = DetectorsTransmissiveElementsCatalog.c_red_one_filters_001()
-    c_red1 = DetectorsTransmissiveElementsCatalog.c_red_one_qe_001()
+    c_red1_filters = DetectorsCatalog.c_red_one_filters_001()
+    c_red1 = DetectorsCatalog.c_red_one_qe_001()
     
     ts = EltTransmissiveSystem()
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -350,7 +350,7 @@ def MorfeoLowOrderChannelTransmissiveSystem_002():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.materion_average_002()
+    lgs_dichroic = CoatingsCatalog.materion_average_002()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
@@ -358,14 +358,14 @@ def MorfeoLowOrderChannelTransmissiveSystem_002():
     focus_compensator1 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     focus_compensator2 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     pup_steer_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002() 
-    visir_dichroic = CoatingsTransmissiveElementsCatalog.lzh_coating_for_visir_dichroic_001()
+    visir_dichroic = CoatingsCatalog.lzh_coating_for_visir_dichroic_001()
     doublet_collimator = MorfeoTransmissiveElementsCatalog.lowfs_collimator_doublet_001()
     adc = MorfeoTransmissiveElementsCatalog.lowfs_adc_002()
     lenslet_array = MorfeoTransmissiveElementsCatalog.lowfs_lenslet_001()
     # TODO: data for sapphire window
     # sapphire_window = 
-    c_red1_filters = DetectorsTransmissiveElementsCatalog.c_red_one_filters_001()
-    c_red1 = DetectorsTransmissiveElementsCatalog.c_red_one_qe_001()
+    c_red1_filters = DetectorsCatalog.c_red_one_filters_001()
+    c_red1 = DetectorsCatalog.c_red_one_qe_001()
     
     ts = EltTransmissiveSystem()
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -410,7 +410,7 @@ def MorfeoLowOrderChannelTransmissiveSystem_003():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    lgs_dichroic = CoatingsCatalog.lma_exp_min_001()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
@@ -418,14 +418,14 @@ def MorfeoLowOrderChannelTransmissiveSystem_003():
     focus_compensator1 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     focus_compensator2 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     pup_steer_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002() 
-    visir_dichroic = CoatingsTransmissiveElementsCatalog.lzh_coating_for_visir_dichroic_001()
+    visir_dichroic = CoatingsCatalog.lzh_coating_for_visir_dichroic_001()
     doublet_collimator = MorfeoTransmissiveElementsCatalog.lowfs_collimator_doublet_001()
     adc = MorfeoTransmissiveElementsCatalog.lowfs_adc_002()
     lenslet_array = MorfeoTransmissiveElementsCatalog.lowfs_lenslet_001()
     # TODO: data for sapphire window
     # sapphire_window = 
-    c_red1_filters = DetectorsTransmissiveElementsCatalog.c_red_one_filters_001()
-    c_red1 = DetectorsTransmissiveElementsCatalog.c_red_one_qe_001()
+    c_red1_filters = DetectorsCatalog.c_red_one_filters_001()
+    c_red1 = DetectorsCatalog.c_red_one_qe_001()
     
     ts = EltTransmissiveSystem()
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -470,9 +470,9 @@ def MorfeoReferenceChannelTransmissiveSystem_001():
     collimator = MorfeoTransmissiveElementsCatalog.refwfs_collimator_doublet_001()
     custom_filter = MorfeoTransmissiveElementsCatalog.ref_custom_filter_001()  
     fused_silica_window = MorfeoTransmissiveElementsCatalog.schmidt_plate_001()  
-    fused_silica_lenslets = CoatedGlassesTransmissiveElementsCatalog.infrasil_1mm_B_coated_001()
+    fused_silica_lenslets = CoatedGlassesCatalog.infrasil_1mm_B_coated_001()
     sapphire_window = MorfeoTransmissiveElementsCatalog.sapphire_window_001()
-    ccd220 = DetectorsTransmissiveElementsCatalog.ccd220_qe_001()
+    ccd220 = DetectorsCatalog.ccd220_qe_001()
     
     ts = EltTransmissiveSystem()
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -511,7 +511,7 @@ def MorfeoReferenceChannelTransmissiveSystem_002():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_001()
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.materion_average_002()
+    lgs_dichroic = CoatingsCatalog.materion_average_002()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
     pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_001()
@@ -525,7 +525,7 @@ def MorfeoReferenceChannelTransmissiveSystem_002():
     lenslet_array = MorfeoTransmissiveElementsCatalog.rwfs_lenslet_001()
     # TODO: stessi dati della sapphire window di FREDA
     # ccd220_sapphire_window = 
-    ccd220_qe = DetectorsTransmissiveElementsCatalog.ccd220_qe_002()
+    ccd220_qe = DetectorsCatalog.ccd220_qe_002()
     
     ts = EltTransmissiveSystem()
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -571,7 +571,7 @@ def MorfeoReferenceChannelTransmissiveSystem_003():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.materion_average_002()
+    lgs_dichroic = CoatingsCatalog.materion_average_002()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
@@ -585,7 +585,7 @@ def MorfeoReferenceChannelTransmissiveSystem_003():
     lenslet_array = MorfeoTransmissiveElementsCatalog.rwfs_lenslet_001()
     # TODO: stessi dati della sapphire window di FREDA
     # ccd220_sapphire_window = 
-    ccd220_qe = DetectorsTransmissiveElementsCatalog.ccd220_qe_003()
+    ccd220_qe = DetectorsCatalog.ccd220_qe_003()
     
     ts = EltTransmissiveSystem()
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -629,7 +629,7 @@ def MorfeoReferenceChannelTransmissiveSystem_004():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    lgs_dichroic = CoatingsCatalog.lma_exp_min_001()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     pickoff_mirror = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
@@ -643,7 +643,7 @@ def MorfeoReferenceChannelTransmissiveSystem_004():
     lenslet_array = MorfeoTransmissiveElementsCatalog.rwfs_lenslet_001()
     # TODO: stessi dati della sapphire window di FREDA
     # ccd220_sapphire_window = 
-    ccd220_qe = DetectorsTransmissiveElementsCatalog.ccd220_qe_003()
+    ccd220_qe = DetectorsCatalog.ccd220_qe_003()
     
     ts = EltTransmissiveSystem()
     ts.add(schmidt_plate, Direction.TRANSMISSION)
@@ -683,7 +683,7 @@ def MorfeoMainPathOptics_001():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
+    lgs_dichroic = CoatingsCatalog.lma_env_min_001()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     
@@ -711,7 +711,7 @@ def MorfeoMainPathOptics_002():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
+    lgs_dichroic = CoatingsCatalog.lma_env_min_001()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     
@@ -739,7 +739,7 @@ def MorfeoMainPathOptics_003():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    lgs_dichroic = CoatingsCatalog.lma_exp_min_001()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     
@@ -767,7 +767,7 @@ def MorfeoMainPathOptics_004():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m9 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
     m10 = EltTransmissiveElementsCatalog.al_mirror_elt_002()
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    lgs_dichroic = CoatingsCatalog.lma_exp_min_001()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     
@@ -795,7 +795,7 @@ def MorfeoMainPathOptics_005():
     m8 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m9 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m10 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
-    lgs_dichroic = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+    lgs_dichroic = CoatingsCatalog.lma_exp_min_001()
     m11 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     m12 = EltTransmissiveElementsCatalog.ag_mirror_elt_002()
     

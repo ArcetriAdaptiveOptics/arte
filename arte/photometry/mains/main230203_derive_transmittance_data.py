@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import astropy.units as u
 from scipy import interpolate
-from arte.photometry.transmissive_elements_catalogs import GlassesTransmissiveElementsCatalog
+from arte.photometry.transmissive_elements_catalogs import GlassesCatalog
 from arte.photometry.transmittance_calculator import internal_transmittance_calculator, \
     attenuation_coefficient_calculator, external_transmittance_calculator
 
@@ -110,7 +110,7 @@ def main230420_derive_SWIR_AR_coating_from_EdmundOptics_plot():
 
 def main230419_compute_internal_transmittance_of_ohara_PBL35Y_3mm_and_save_dat(
         ):
-    pbl_10mm = GlassesTransmissiveElementsCatalog.ohara_PBL35Y_10mm_internal_001()
+    pbl_10mm = GlassesCatalog.ohara_PBL35Y_10mm_internal_001()
     wv = pbl_10mm.waveset
     t1 = pbl_10mm.transmittance(wv)
     l1 = 10 * u.mm
@@ -128,7 +128,7 @@ def main230419_compute_internal_transmittance_of_ohara_PBL35Y_3mm_and_save_dat(
 
 def main230414_compute_internal_transmittance_of_ohara_quartz_SK1300_85mm_and_save_dat(
         ):
-    sk1300_10mm = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_10mm_internal_001()
+    sk1300_10mm = GlassesCatalog.ohara_quartz_SK1300_10mm_internal_001()
     wv = sk1300_10mm.waveset
     t1 = sk1300_10mm.transmittance(wv)
     l1 = 10 * u.mm
@@ -166,8 +166,8 @@ def main230414_derive_CPM_transmittance_from_Demetrio_plot():
 
 
 def main230202_compute_attenuation_coefficient_of_suprasil():
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_001()
-    supra85 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_001()
+    supra85 = GlassesCatalog.suprasil3002_85mm_001()
     wv = supra10.waveset
     t1 = supra85.transmittance(wv)
     t2 = supra10.transmittance(wv)
@@ -182,8 +182,8 @@ def main230202_compute_attenuation_coefficient_of_suprasil():
 
 
 def main230202_compute_transmittance_of_suprasil3002_80mm_and_save_dat():
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_001()
-    supra85 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_001()
+    supra85 = GlassesCatalog.suprasil3002_85mm_001()
     wv = supra10.waveset
     t1 = supra85.transmittance(wv)
     t2 = supra10.transmittance(wv)
@@ -203,8 +203,8 @@ def main230202_compute_transmittance_of_suprasil3002_80mm_and_save_dat():
 
 
 def main230202_compute_transmittance_of_suprasil3002_108mm_and_save_dat():
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_001()
-    supra85 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_001()
+    supra85 = GlassesCatalog.suprasil3002_85mm_001()
     wv = supra10.waveset
     t1 = supra85.transmittance(wv)
     t2 = supra10.transmittance(wv)
@@ -224,8 +224,8 @@ def main230202_compute_transmittance_of_suprasil3002_108mm_and_save_dat():
 
 
 def main230202_compute_transmittance_of_suprasil3002_40mm_and_save_dat():
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_001()
-    supra85 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_001()
+    supra85 = GlassesCatalog.suprasil3002_85mm_001()
     wv = supra10.waveset
     t1 = supra85.transmittance(wv)
     t2 = supra10.transmittance(wv)
@@ -245,8 +245,8 @@ def main230202_compute_transmittance_of_suprasil3002_40mm_and_save_dat():
 
 
 def main230202_compute_transmittance_of_suprasil3002_60mm_and_save_dat():
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_001()
-    supra85 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_001()
+    supra85 = GlassesCatalog.suprasil3002_85mm_001()
     wv = supra10.waveset
     t1 = supra85.transmittance(wv)
     t2 = supra10.transmittance(wv)
@@ -266,8 +266,8 @@ def main230202_compute_transmittance_of_suprasil3002_60mm_and_save_dat():
 
 
 def main230202_compute_transmittance_of_suprasil3002_70mm_and_save_dat():
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_001()
-    supra85 = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_001()
+    supra85 = GlassesCatalog.suprasil3002_85mm_001()
     wv = supra10.waveset
     t1 = supra85.transmittance(wv)
     t2 = supra10.transmittance(wv)
@@ -288,7 +288,7 @@ def main230202_compute_transmittance_of_suprasil3002_70mm_and_save_dat():
 
 def main230203_compute_internal_transmittance_of_suprasil3002_80mm_and_save_dat(
         ):
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_internal_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_internal_001()
     wv = supra10.waveset
     t1 = supra10.transmittance(wv)
     l1 = 10 * u.mm
@@ -306,7 +306,7 @@ def main230203_compute_internal_transmittance_of_suprasil3002_80mm_and_save_dat(
 
 def main230203_compute_internal_transmittance_of_suprasil3002_85mm_and_save_dat(
         ):
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_internal_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_internal_001()
     wv = supra10.waveset
     t1 = supra10.transmittance(wv)
     l1 = 10 * u.mm
@@ -324,7 +324,7 @@ def main230203_compute_internal_transmittance_of_suprasil3002_85mm_and_save_dat(
 
 def main230203_compute_internal_transmittance_of_suprasil3002_108mm_and_save_dat(
         ):
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_internal_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_internal_001()
     wv = supra10.waveset
     t1 = supra10.transmittance(wv)
     l1 = 10 * u.mm
@@ -342,7 +342,7 @@ def main230203_compute_internal_transmittance_of_suprasil3002_108mm_and_save_dat
 
 def main230203_compute_internal_transmittance_of_suprasil3002_40mm_and_save_dat(
         ):
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_internal_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_internal_001()
     wv = supra10.waveset
     t1 = supra10.transmittance(wv)
     l1 = 10 * u.mm
@@ -360,7 +360,7 @@ def main230203_compute_internal_transmittance_of_suprasil3002_40mm_and_save_dat(
 
 def main230203_compute_internal_transmittance_of_suprasil3002_60mm_and_save_dat(
         ):
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_internal_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_internal_001()
     wv = supra10.waveset
     t1 = supra10.transmittance(wv)
     l1 = 10 * u.mm
@@ -378,7 +378,7 @@ def main230203_compute_internal_transmittance_of_suprasil3002_60mm_and_save_dat(
 
 def main230203_compute_internal_transmittance_of_suprasil3002_70mm_and_save_dat(
         ):
-    supra10 = GlassesTransmissiveElementsCatalog.suprasil3002_10mm_internal_001()
+    supra10 = GlassesCatalog.suprasil3002_10mm_internal_001()
     wv = supra10.waveset
     t1 = supra10.transmittance(wv)
     l1 = 10 * u.mm

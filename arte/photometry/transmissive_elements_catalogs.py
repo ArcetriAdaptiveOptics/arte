@@ -118,7 +118,7 @@ class EltTransmissiveElementsCatalog():
         return te
 
 
-class CoatingsTransmissiveElementsCatalog():
+class CoatingsCatalog():
     
     @classmethod
     def _CoatingsFolder(cls, foldername):
@@ -299,7 +299,7 @@ class CoatingsTransmissiveElementsCatalog():
         return te
 
 
-class DetectorsTransmissiveElementsCatalog():
+class DetectorsCatalog():
     
     @classmethod
     def _DetectorsFolder(cls, foldername):
@@ -439,7 +439,7 @@ class DetectorsTransmissiveElementsCatalog():
         return te
     
 
-class CoatedGlassesTransmissiveElementsCatalog():
+class CoatedGlassesCatalog():
     
     @classmethod
     def _CoatedGlassesFolder(cls, foldername):
@@ -477,7 +477,7 @@ class CoatedGlassesTransmissiveElementsCatalog():
         return te
         
 
-class GlassesTransmissiveElementsCatalog():
+class GlassesCatalog():
     
     @classmethod
     def _GlassesFolder(cls, foldername):
@@ -872,7 +872,7 @@ class MorfeoTransmissiveElementsCatalog():
         LGS dichroic. This is a simplified version: one surface only with 
         MATERION-like average coating.
         '''
-        te = CoatingsTransmissiveElementsCatalog.materion_average_001()
+        te = CoatingsCatalog.materion_average_001()
         return te
     
     @classmethod
@@ -883,9 +883,9 @@ class MorfeoTransmissiveElementsCatalog():
             - 85 mm of Suprasil 3002 substrate
             - 1 surface with AR coating (589 nm)
         '''
-        materion_coating = CoatingsTransmissiveElementsCatalog.materion_average_001()
-        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
-        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        materion_coating = CoatingsCatalog.materion_average_001()
+        substrate = GlassesCatalog.suprasil3002_85mm_internal_001()
+        ar_coating = CoatingsCatalog.ar_coating_589nm_001()
         
         lgs_dichroic = TransmissiveSystem()
         lgs_dichroic.add(materion_coating, Direction.TRANSMISSION)
@@ -903,9 +903,9 @@ class MorfeoTransmissiveElementsCatalog():
             
         Difference wrt version 002: materion-like coating is from A. Bianco.
         '''
-        materion_coating = CoatingsTransmissiveElementsCatalog.materion_average_002()
-        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
-        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        materion_coating = CoatingsCatalog.materion_average_002()
+        substrate = GlassesCatalog.suprasil3002_85mm_internal_001()
+        ar_coating = CoatingsCatalog.ar_coating_589nm_001()
         
         lgs_dichroic = TransmissiveSystem()
         lgs_dichroic.add(materion_coating, Direction.TRANSMISSION)
@@ -921,9 +921,9 @@ class MorfeoTransmissiveElementsCatalog():
             - 80 mm of Suprasil 312 (same as 3002) substrate
             - 1 surface with AR coating (589 nm)
         '''
-        lma_coating = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
-        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_80mm_internal_001()
-        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_002()
+        lma_coating = CoatingsCatalog.lma_env_min_001()
+        substrate = GlassesCatalog.suprasil3002_80mm_internal_001()
+        ar_coating = CoatingsCatalog.ar_coating_589nm_002()
         
         lgs_dichroic = TransmissiveSystem()
         lgs_dichroic.add(lma_coating, Direction.TRANSMISSION)
@@ -939,9 +939,9 @@ class MorfeoTransmissiveElementsCatalog():
             - 80 mm of Suprasil 312 (same as 3002) substrate
             - 1 surface with AR coating (589 nm)
         '''
-        lma_coating = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
-        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_80mm_internal_001()
-        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_002()
+        lma_coating = CoatingsCatalog.lma_exp_min_001()
+        substrate = GlassesCatalog.suprasil3002_80mm_internal_001()
+        ar_coating = CoatingsCatalog.ar_coating_589nm_002()
         
         lgs_dichroic = TransmissiveSystem()
         lgs_dichroic.add(lma_coating, Direction.TRANSMISSION)
@@ -970,9 +970,9 @@ class MorfeoTransmissiveElementsCatalog():
             - 3 mm of fused silica substrate
             - AR coating (we assume here the same coating as for the LO lenslet)
         '''
-        lzh_coating = CoatingsTransmissiveElementsCatalog.lzh_coating_for_visir_dichroic_001()
-        substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
-        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_amus_001()
+        lzh_coating = CoatingsCatalog.lzh_coating_for_visir_dichroic_001()
+        substrate = GlassesCatalog.suprasil3001_3mm_internal_001()
+        ar_coating = CoatingsCatalog.ar_coating_amus_001()
         
         visir_dich = TransmissiveSystem()
         visir_dich.add(lzh_coating, Direction.TRANSMISSION)
@@ -985,7 +985,7 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         Schmidt plate: we assume an Infrasil window of thickness = 1 mm.
         '''
-        te = GlassesTransmissiveElementsCatalog.infrasil_1mm_001()
+        te = GlassesCatalog.infrasil_1mm_001()
         return te
     
     @classmethod
@@ -1009,8 +1009,8 @@ class MorfeoTransmissiveElementsCatalog():
             - 85 mm of Ohara quartz SK-1300 substrate
             - 1 surface with broadband (0.6-2.4 um) AR coating        
         '''
-        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
-        substrate = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_85mm_internal_001()
+        ar_coating = CoatingsCatalog.ar_coating_broadband_001()
+        substrate = GlassesCatalog.ohara_quartz_SK1300_85mm_internal_001()
         
         cpm = TransmissiveSystem()
         cpm.add(ar_coating, Direction.TRANSMISSION)
@@ -1026,8 +1026,8 @@ class MorfeoTransmissiveElementsCatalog():
             - 85 mm of Suprasil 3002 substrate
             - 1 surface with broadband (0.6-2.4 um) AR coating        
         '''
-        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
-        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
+        ar_coating = CoatingsCatalog.ar_coating_broadband_001()
+        substrate = GlassesCatalog.suprasil3002_85mm_internal_001()
         
         cpm = TransmissiveSystem()
         cpm.add(ar_coating, Direction.TRANSMISSION)
@@ -1041,7 +1041,7 @@ class MorfeoTransmissiveElementsCatalog():
         Lens in the LGS Objective (LGSO). This is a simplified version: one
         surface with narrowband (589 nm) AR coating.
         '''
-        te = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        te = CoatingsCatalog.ar_coating_589nm_001()
         return te
     
     @classmethod
@@ -1050,7 +1050,7 @@ class MorfeoTransmissiveElementsCatalog():
         Lens in the LGS Objective (LGSO). This is a simplified version: two
         surfaces, both with narrowband (589 nm) AR coating.
         '''
-        sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
+        sup1 = CoatingsCatalog.ar_coating_589nm_001()
         sup2 = sup1
         lgso_l = TransmissiveSystem()
         lgso_l.add(sup1, Direction.TRANSMISSION)
@@ -1067,8 +1067,8 @@ class MorfeoTransmissiveElementsCatalog():
                 a Suprasil3002 slab)
             - 1 surface with narrowband AR coating (589 nm)
         '''
-        sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_108mm_internal_001()
+        sup1 = CoatingsCatalog.ar_coating_589nm_001()
+        sup2 = GlassesCatalog.suprasil3002_108mm_internal_001()
         sup3 = sup1
         lgso_l = TransmissiveSystem()
         lgso_l.add(sup1, Direction.TRANSMISSION)
@@ -1086,8 +1086,8 @@ class MorfeoTransmissiveElementsCatalog():
                 a Suprasil3002 slab)
             - 1 surface with narrowband AR coating (589 nm)
         '''
-        sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_70mm_internal_001()
+        sup1 = CoatingsCatalog.ar_coating_589nm_001()
+        sup2 = GlassesCatalog.suprasil3002_70mm_internal_001()
         sup3 = sup1
         lgso_l = TransmissiveSystem()
         lgso_l.add(sup1, Direction.TRANSMISSION)
@@ -1105,8 +1105,8 @@ class MorfeoTransmissiveElementsCatalog():
                 a Suprasil3002 slab)
             - 1 surface with narrowband AR coating (589 nm)
         '''
-        sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_40mm_internal_001()
+        sup1 = CoatingsCatalog.ar_coating_589nm_001()
+        sup2 = GlassesCatalog.suprasil3002_40mm_internal_001()
         sup3 = sup1
         lgso_l = TransmissiveSystem()
         lgso_l.add(sup1, Direction.TRANSMISSION)
@@ -1124,8 +1124,8 @@ class MorfeoTransmissiveElementsCatalog():
                 a Suprasil3002 slab)
             - 1 surface with narrowband AR coating (589 nm)
         '''
-        sup1 = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_001()
-        sup2 = GlassesTransmissiveElementsCatalog.suprasil3002_60mm_internal_001()
+        sup1 = CoatingsCatalog.ar_coating_589nm_001()
+        sup2 = GlassesCatalog.suprasil3002_60mm_internal_001()
         sup3 = sup1
         lgso_l = TransmissiveSystem()
         lgso_l.add(sup1, Direction.TRANSMISSION)
@@ -1217,9 +1217,9 @@ class MorfeoTransmissiveElementsCatalog():
             - SWIR AR coating
         and a second prism that is identical and symmetric wrt the first.
         '''
-        swir_coating = CoatingsTransmissiveElementsCatalog.ar_coating_swir_001()
-        substrate1 = GlassesTransmissiveElementsCatalog.schott_NSF2_9dot8_mm_internal_001()
-        substrate2 = GlassesTransmissiveElementsCatalog.schott_NPSK53A_10_mm_internal_001()
+        swir_coating = CoatingsCatalog.ar_coating_swir_001()
+        substrate1 = GlassesCatalog.schott_NSF2_9dot8_mm_internal_001()
+        substrate2 = GlassesCatalog.schott_NPSK53A_10_mm_internal_001()
         
         adc = TransmissiveSystem()
         adc.add(swir_coating, Direction.TRANSMISSION)
@@ -1242,8 +1242,8 @@ class MorfeoTransmissiveElementsCatalog():
             - Suprasil 3001 3 mm substrate
             - AR coating
         '''
-        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_amus_001()
-        substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
+        ar_coating = CoatingsCatalog.ar_coating_amus_001()
+        substrate = GlassesCatalog.suprasil3001_3mm_internal_001()
         
         la = TransmissiveSystem()
         la.add(ar_coating, Direction.TRANSMISSION)
@@ -1262,9 +1262,9 @@ class MorfeoTransmissiveElementsCatalog():
             - PBL-35Y 3 mm substrate
             - SWIR AR coating
         '''
-        swir_coating = CoatingsTransmissiveElementsCatalog.ar_coating_swir_001()
-        substrate1 = GlassesTransmissiveElementsCatalog.ohara_SFPL51_10mm_internal_001()
-        substrate2 = GlassesTransmissiveElementsCatalog.ohara_PBL35Y_3mm_internal_001()
+        swir_coating = CoatingsCatalog.ar_coating_swir_001()
+        substrate1 = GlassesCatalog.ohara_SFPL51_10mm_internal_001()
+        substrate2 = GlassesCatalog.ohara_PBL35Y_3mm_internal_001()
         
         lowfs_collimator = TransmissiveSystem()
         lowfs_collimator.add(swir_coating, Direction.TRANSMISSION)
@@ -1301,9 +1301,9 @@ class MorfeoTransmissiveElementsCatalog():
             - NIR I AR coating
          
         '''
-        nir_i_coating = CoatingsTransmissiveElementsCatalog.ar_coating_nir_i_001()
-        substrate1 = GlassesTransmissiveElementsCatalog.ohara_SFTM16_3mm_internal_001()
-        substrate2 = GlassesTransmissiveElementsCatalog.cdgm_HQK3L_7mm_internal_001()
+        nir_i_coating = CoatingsCatalog.ar_coating_nir_i_001()
+        substrate1 = GlassesCatalog.ohara_SFTM16_3mm_internal_001()
+        substrate2 = GlassesCatalog.cdgm_HQK3L_7mm_internal_001()
         
         rwfs_collimator = TransmissiveSystem()
         rwfs_collimator.add(nir_i_coating, Direction.TRANSMISSION)
@@ -1322,8 +1322,8 @@ class MorfeoTransmissiveElementsCatalog():
             - Fused silica 2.15 mm substrate (we use 3 mm of Suprasil3001)
             - NIR I AR coating
         '''
-        nir_i_ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_nir_i_001()
-        substrate = GlassesTransmissiveElementsCatalog.suprasil3001_3mm_internal_001()
+        nir_i_ar_coating = CoatingsCatalog.ar_coating_nir_i_001()
+        substrate = GlassesCatalog.suprasil3001_3mm_internal_001()
         
         la = TransmissiveSystem()
         la.add(nir_i_ar_coating, Direction.TRANSMISSION)
