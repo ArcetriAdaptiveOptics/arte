@@ -2,6 +2,7 @@ import numpy as np
 import astropy.units as u
 from synphot.spectrum import SourceSpectrum
 from synphot.models import BlackBody1D
+from synphot import units
 
     
 class ThermalFluxOnWFS():
@@ -53,8 +54,10 @@ class ThermalFluxOnWFS():
         '''
         self._compute_blackbody_spectrum()
         self._compute_solid_angle()
-        # TODO: ricontrollare le units
-        th_flux = (self.bb_spectrum * self._emissivity * self._qe.transmittance
-                   )(self.waveset) * self.solid_angle.value * (
-                       self._px_size.to(u.cm)) ** 2
+        th_flux = (
+            self.bb_spectrum * self._emissivity * self._qe.transmittance
+            )(self.waveset) * self.solid_angle / u.sr * (
+                self._px_size.to(u.cm / u.pix)
+                ) ** 2 * u.electron / u.s / u.cm ** 2 / u.Angstrom / units.PHOTLAM
+        
         return th_flux
