@@ -6,7 +6,6 @@ from synphot.utils import generate_wavelengths, merge_wavelengths
 from astropy.io import fits
 
 
-
 class Bandpass():
     
     _MIN_LAMBDA_NM = 200
@@ -69,7 +68,7 @@ class Bandpass():
         return SpectralElement(
             Empirical1D,
             points=np.array([
-                cls._MIN_LAMBDA_NM, l-dl, l, l+dl,  cls._MAX_LAMBDA_NM]) * u.nm,
+                cls._MIN_LAMBDA_NM, l - dl, l, l + dl, cls._MAX_LAMBDA_NM]) * u.nm,
             lookup_table=np.array([
                 low_ampl, low_ampl, high_ampl, low_ampl, low_ampl]))
         
@@ -84,11 +83,10 @@ class Bandpass():
         return SpectralElement(
             Empirical1D,
             points=np.array([
-                cls._MIN_LAMBDA_NM, l-dl, l-dl + 1e-8, l+dl, 
-                l+dl + 1e-8, cls._MAX_LAMBDA_NM]) * u.nm,
+                cls._MIN_LAMBDA_NM, l - dl, l - dl + 1e-8, l + dl,
+                l + dl + 1e-8, cls._MAX_LAMBDA_NM]) * u.nm,
             lookup_table=np.array([
                 low_ampl, low_ampl, high_ampl, high_ampl, low_ampl, low_ampl]))
-
 
     @classmethod
     def step(cls, wl, low_ampl, high_ampl):
@@ -254,10 +252,15 @@ class TransmissiveSystem():
 
     def add(self, transmissive_element, direction):
         self._elements.append(
-            {'element': transmissive_element, 'direction': direction})
+            {'element': transmissive_element,
+             # 'name': f'{transmissive_element = }'.split()[0],
+             'direction': direction})
         self._waveset = merge_wavelengths(
             self._waveset.to(u.nm).value,
             transmissive_element.waveset.to(u.nm).value) * u.nm
+
+    def remove(self, element_index):
+        del self._elements[element_index]
 
     @property
     def transmittance(self):
@@ -296,6 +299,10 @@ class TransmissiveSystem():
         return Bandpass.from_array(self._waveset,
                                    a(self._waveset) + b(self._waveset))
 
+    @property
+    def number_of_transmissive_elements(self):
+        return len(self._elements)
+    
     def as_transmissive_element(self):
         return TransmissiveElement(transmittance=self.transmittance,
                                    absorptance=self.emissivity)

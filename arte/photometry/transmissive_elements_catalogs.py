@@ -66,8 +66,8 @@ class EltTransmissiveElementsCatalog():
         ''' 
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
             cls._EltFolder('ag_mirror_elt_002'), u.nm)
-        a = Bandpass.zero()
-        te = TransmissiveElement(reflectance=r, absorptance=a)
+        t = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
 
     @classmethod
@@ -83,8 +83,8 @@ class EltTransmissiveElementsCatalog():
         ''' 
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
             cls._EltFolder('ag_mirror_elt_003'), u.nm)
-        a = Bandpass.zero()
-        te = TransmissiveElement(reflectance=r, absorptance=a)
+        t = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
         
     @classmethod
@@ -103,8 +103,8 @@ class EltTransmissiveElementsCatalog():
         '''
         r = RestoreTransmissiveElements.restore_reflectance_from_dat(
             cls._EltFolder('al_mirror_elt_002'), u.nm)
-        a = Bandpass.zero()
-        te = TransmissiveElement(reflectance=r, absorptance=a)
+        t = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
         
     @classmethod
@@ -158,6 +158,61 @@ class CoatingsTransmissiveElementsCatalog():
         return te
     
     @classmethod
+    def lma_env_min_001(cls):
+        '''
+        LGS dichroic coating measured from LMA.
+        
+        Data received from A. Bianco by email on 12/06/2023. 
+        
+        These data corresponds to the envelope of the worst MC (Montecarlo
+        simulation) occurrences, considering an AOI (angle of incidence) of
+        11.3 deg.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_env_min_aoi_11.3deg_001'), u.um)
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_env_min_aoi_11.3deg_001'), u.um)
+        te = TransmissiveElement(reflectance=r, transmittance=t)
+        return te
+    
+    @classmethod
+    def lma_exp_min_001(cls):
+        '''
+        LGS dichroic coating measured from LMA.
+        
+        Data received from A. Bianco by email on 12/06/2023.
+        
+        These data corresponds to the expected profile, assuming systematic
+        errors and the minimum value of the random error distributions (is it
+        correct?) for AOI = 11.3 deg.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_exp_min_aoi_11.3deg_001'), u.um)
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_exp_min_aoi_11.3deg_001'), u.um)
+        te = TransmissiveElement(reflectance=r, transmittance=t)
+        return te
+    
+    @classmethod
+    def lma_exp_ave_001(cls):
+        '''
+        LGS dichroic coating measured from LMA.
+        
+        Data received from A. Bianco by email on 12/06/2023. 
+        
+        These data corresponds to the expected profile, assuming systematic
+        errors and the average value of the random error distributions (is it
+        correct?) for AOI = 11.3 deg.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_exp_min_aoi_11.3deg_001'), u.um)
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('lgs_dichroic_lma_exp_ave_aoi_11.3deg_001'),
+            u.um)
+        te = TransmissiveElement(reflectance=r, transmittance=t)
+        return te
+    
+    @classmethod
     def ar_coating_589nm_001(cls):
         '''
         Narrowband (589 nm) AR coating. This is a simplified version, i.e.
@@ -168,6 +223,18 @@ class CoatingsTransmissiveElementsCatalog():
             cls._CoatingsFolder('ar_589nm_001'), u.um)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def ar_coating_589nm_002(cls):
+        '''
+        Narrowband (589 nm) AR coating. This is a simplified version, i.e.
+        a peak of 0.995 (as indicated in E-MAO-SF0-INA-DER-001_02 MAORY  System
+        Optical Design and Analysis Report) at 589 nm.
+        '''
+        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.995, 0)
+        a = Bandpass.zero()
+        te = TransmissiveElement(absorptance=a, transmittance=t)
         return te
 
     @classmethod
@@ -332,9 +399,41 @@ class DetectorsTransmissiveElementsCatalog():
         First approximation: QE curve is simply a peak of 0.75 at 589 nm.
         QE value is taken from Section 4.5 of
             "E-MAO-PL0-IPA-ANR-013_01 MAORY LGS WFS Analysis Report.pdf" and 
-            includes camera and detector windows.
+            includes camera and detector windows. Update to 0.7 after new info
+            from Patrick.
         '''
         t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.7, 0)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def c_blue_qe_002(cls):
+        '''
+        QE of FLI C-BLUE. Camera and detector windows are included.
+        
+        FLI data received by email from Patrick on 15/03/2023 and reported in
+        E-MAO-PLO-IPA-ANR-013_02, Section 4.1.5.7 -> "The QE measurement
+        includes the transmission of the 2 C-Blue One windows: uncoated Infrasil
+        camera window and uncoated detector package window
+        (refractive index 1.5)".
+         
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._DetectorsFolder('c_blue_qe_002'), u.nm)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def c_blue_qe_003(cls):
+        '''
+        QE of FLI C-BLUE. Camera (and detector??) window is included.
+        
+        FLI measurements at 589 nm, reported in a FLI datasheet sent by Philippe
+        (email from Lorenzo on 18/09/2023).
+        '''
+        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.6559, 0)
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
@@ -450,7 +549,7 @@ class GlassesTransmissiveElementsCatalog():
         Transmittance is internal.
         Data extrapolated from 10 mm curves.
         '''
-        supra10mm = cls.suprasil3002_10mm_001()
+        supra10mm = cls.suprasil3002_10mm_internal_001()
         wv = supra10mm.waveset
         t1 = supra10mm.transmittance(wv)
         l1 = 10
@@ -813,6 +912,42 @@ class MorfeoTransmissiveElementsCatalog():
         lgs_dichroic.add(substrate, Direction.TRANSMISSION)
         lgs_dichroic.add(ar_coating, Direction.TRANSMISSION)
         return lgs_dichroic.as_transmissive_element()
+    
+    @classmethod
+    def lgs_dichroic_004(cls):
+        '''
+        LGS dichroic. The element is composed by:
+            - 1 surface with LMA-coating measured as "env_min"
+            - 80 mm of Suprasil 312 (same as 3002) substrate
+            - 1 surface with AR coating (589 nm)
+        '''
+        lma_coating = CoatingsTransmissiveElementsCatalog.lma_env_min_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_80mm_internal_001()
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_002()
+        
+        lgs_dichroic = TransmissiveSystem()
+        lgs_dichroic.add(lma_coating, Direction.TRANSMISSION)
+        lgs_dichroic.add(substrate, Direction.TRANSMISSION)
+        lgs_dichroic.add(ar_coating, Direction.TRANSMISSION)
+        return lgs_dichroic.as_transmissive_element()
+    
+    @classmethod
+    def lgs_dichroic_005(cls):
+        '''
+        LGS dichroic. The element is composed by:
+            - 1 surface with LMA-coating measured as "exp_min"
+            - 80 mm of Suprasil 312 (same as 3002) substrate
+            - 1 surface with AR coating (589 nm)
+        '''
+        lma_coating = CoatingsTransmissiveElementsCatalog.lma_exp_min_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_80mm_internal_001()
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_589nm_002()
+        
+        lgs_dichroic = TransmissiveSystem()
+        lgs_dichroic.add(lma_coating, Direction.TRANSMISSION)
+        lgs_dichroic.add(substrate, Direction.TRANSMISSION)
+        lgs_dichroic.add(ar_coating, Direction.TRANSMISSION)
+        return lgs_dichroic.as_transmissive_element()
 
     @classmethod
     def visir_dichroic_001(cls):
@@ -876,6 +1011,23 @@ class MorfeoTransmissiveElementsCatalog():
         '''
         ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
         substrate = GlassesTransmissiveElementsCatalog.ohara_quartz_SK1300_85mm_internal_001()
+        
+        cpm = TransmissiveSystem()
+        cpm.add(ar_coating, Direction.TRANSMISSION)
+        cpm.add(substrate, Direction.TRANSMISSION)
+        cpm.add(ar_coating, Direction.TRANSMISSION)
+        return cpm.as_transmissive_element()
+    
+    @classmethod
+    def schmidt_plate_004(cls):
+        '''
+        Correcting plate (CPM). The element is composed by:
+            - 1 surface with broadband (0.6-2.4 um) AR coating
+            - 85 mm of Suprasil 3002 substrate
+            - 1 surface with broadband (0.6-2.4 um) AR coating        
+        '''
+        ar_coating = CoatingsTransmissiveElementsCatalog.ar_coating_broadband_001()
+        substrate = GlassesTransmissiveElementsCatalog.suprasil3002_85mm_internal_001()
         
         cpm = TransmissiveSystem()
         cpm.add(ar_coating, Direction.TRANSMISSION)
@@ -992,6 +1144,21 @@ class MorfeoTransmissiveElementsCatalog():
         
         '''
         r = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.99, 0)
+        t = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
+        return te
+    
+    @classmethod
+    def lgso_fm_002(cls):
+        '''
+        Folding mirror in the LGS Objective (LGSO).
+        First approximation: reflectance curve is simply a peak of 0.995 at
+            589 nm.
+        Peak value is taken from Section 3.2.15 of
+            "E-MAO-SF0-INA-ANR-001 OFDR MORFEO Analysis Report.pdf".
+        
+        '''
+        r = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.995, 0)
         t = Bandpass.zero()
         te = TransmissiveElement(reflectance=r, transmittance=t)
         return te
@@ -1165,12 +1332,42 @@ class MorfeoTransmissiveElementsCatalog():
         return la.as_transmissive_element()
     
     @classmethod
-    def notch_filter_001(cls):
+    def lgs_wfs_notch_filter_001(cls):
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('notch_filter_001'), u.um)
+            cls._MorfeoFolder('lgs_wfs_notch_filter_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def lgs_wfs_notch_filter_002(cls):
+        '''
+        Notch filter (OD4), which is part of the Collimator Module in the LGS
+        WFS (mounted after the field stop). 
+        
+        Alluxa data, received from Patrick (email: 14/02/2023).
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('lgs_wfs_notch_filter_002'), u.nm) / 100
+        # TODO: r = Bandpass.zero() ?
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def lgs_wfs_notch_filter_003(cls):
+        '''
+        Notch filter (OD4), which is part of the Collimator Module in the LGS
+        WFS (mounted after the field stop). 
+        
+        Andover data, received from Patrick (email: 14/02/2023).
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('lgs_wfs_notch_filter_003'), u.nm) / 100
+        # TODO: r = Bandpass.zero() ?
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
