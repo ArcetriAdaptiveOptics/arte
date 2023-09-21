@@ -1332,12 +1332,42 @@ class MorfeoTransmissiveElementsCatalog():
         return la.as_transmissive_element()
     
     @classmethod
-    def notch_filter_001(cls):
+    def lgs_wfs_notch_filter_001(cls):
         '''
         Data from Cedric's spreadsheet "background_calc_maory_v12.xls".
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._MorfeoFolder('notch_filter_001'), u.um)
+            cls._MorfeoFolder('lgs_wfs_notch_filter_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def lgs_wfs_notch_filter_002(cls):
+        '''
+        Notch filter (OD4), which is part of the Collimator Module in the LGS
+        WFS (mounted after the field stop). 
+        
+        Alluxa data, received from Patrick (email: 14/02/2023).
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('lgs_wfs_notch_filter_002'), u.nm) / 100
+        # TODO: r = Bandpass.zero() ?
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+    
+    @classmethod
+    def lgs_wfs_notch_filter_003(cls):
+        '''
+        Notch filter (OD4), which is part of the Collimator Module in the LGS
+        WFS (mounted after the field stop). 
+        
+        Andover data, received from Patrick (email: 14/02/2023).
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._MorfeoFolder('lgs_wfs_notch_filter_003'), u.nm) / 100
+        # TODO: r = Bandpass.zero() ?
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
