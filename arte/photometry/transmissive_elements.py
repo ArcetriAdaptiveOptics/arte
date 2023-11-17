@@ -220,6 +220,24 @@ class TransmissiveElement():
 
         self._initialize(transmittance=new_t, reflectance=new_r,
                          absorptance=new_a)
+        
+    def to_dat(self, filepath, data_type):
+        if data_type == 'transmittance':
+            data = self.transmittance(self.waveset).value
+            title = np.array([['Wavelength [um]', 'Transmittance']])
+        elif data_type == 'reflectance':
+            data = self.reflectance(self.waveset).value
+            title = np.array([['Wavelength [um]', 'Reflectance']])
+        elif data_type == 'absorptance':
+            data = self.absorptance(self.waveset).value
+            title = np.array([['Wavelength [um]', 'Absorptance']])
+        to_write = np.stack((
+            self.waveset.to(u.um).value,
+            data), axis=1)
+        with open(filepath, 'a') as datafile:
+            np.savetxt(datafile,
+                       np.vstack((title, to_write)),
+                       fmt=['%-30s', '%-30s'])
 
     def to_fits(self, filename, **kwargs):
         wv = self.waveset
