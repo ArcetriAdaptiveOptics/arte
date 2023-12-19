@@ -523,8 +523,8 @@ class GlassesTransmissiveElementsCatalog():
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._GlassesFolder('infrasil_1mm_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
 
     @classmethod
