@@ -2,6 +2,7 @@ import numpy as np
 from arte.utils.discrete_fourier_transform \
     import BidimensionalFourierTransform as bfft
 
+from astropy.io import fits
 
 class PhaseScreenGenerator(object):
 
@@ -103,3 +104,32 @@ class PhaseScreenGenerator(object):
     def _determineNumberOfSubHarmonics(self):
         maxNoOfSubHarm = 8
         pass
+    
+    def save_normalized_phase_screens(self, fname):
+        hdr = fits.Header()
+        hdr['SZ_IN_PX'] =  self._screenSzInPx
+        hdr['SZ_IN_M'] = self._screenSzInM
+        hdr['OS_IN_M'] = self._outerScaleInM
+        hdr['SEED'] = self._seed
+        
+        fits.writeto(fname, self._phaseScreens, hdr)
+        
+    
+    @staticmethod 
+    def load_normalized_phase_screens(fname):
+        header = fits.getheader(fname)
+        screenSizeInPixels = header['SZ_IN_PX'] 
+        screenSizeInMeters = header['SZ_IN_M'] 
+        outerScaleInMeters = header['OS_IN_M'] 
+        seed = header['SEED'] 
+        
+        psg = PhaseScreenGenerator(
+            screenSizeInPixels,
+            screenSizeInMeters,
+            outerScaleInMeters,
+            seed)
+        
+        hduList = fits.open(fname)
+        psg._phaseScreens = hduList[0].data
+        
+        return psg
