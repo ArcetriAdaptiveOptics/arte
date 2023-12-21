@@ -18,4 +18,4 @@ def quadraticSum(arrayOfErrorsWithSign):
     total = 0.
     for err in arrayOfErrorsWithSign:
         total += np.sign(err) * err ** 2
-    return np.sqrt(total)
+    return np.sign(total) * np.sqrt(np.abs(total))
