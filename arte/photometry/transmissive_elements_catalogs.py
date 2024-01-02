@@ -198,21 +198,6 @@ class GlassesCatalog():
         return te
 
     @classmethod
-    def suprasil3002_10mm_001(cls):
-        '''
-        Suprasil 3002 substrate of 10 mm thickness.
-        Transmittance is external.
-        Data from Heraeus website.
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('suprasil3002_10mm_001'), u.um)
-        # TODO: Assuming reflectance equal to zero is wrong in case of 
-        # external transmittance data. Fix it.
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-
-    @classmethod
     def suprasil3001_3mm_internal_001(cls):
         '''
         Suprasil 3001 substrate of 3 mm thickness.
@@ -246,19 +231,6 @@ class GlassesCatalog():
         return te
 
     @classmethod
-    def suprasil3002_40mm_001(cls):
-        '''
-        Suprasil 3002 substrate of 40 mm thickness.
-        Transmittance is external.
-        Data from Heraeus website. 
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('suprasil3002_40mm_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
-    @classmethod
     def suprasil3002_40mm_internal_001(cls):
         '''
         Suprasil 3002 substrate of 40 mm thickness.
@@ -272,19 +244,6 @@ class GlassesCatalog():
         return te
 
     @classmethod
-    def suprasil3002_60mm_001(cls):
-        '''
-        Suprasil 3002 substrate of 60 mm thickness.
-        Transmittance is external.
-        Data from Heraeus website. 
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('suprasil3002_60mm_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
-    @classmethod
     def suprasil3002_60mm_internal_001(cls):
         '''
         Suprasil 3002 substrate of 60 mm thickness.
@@ -293,19 +252,6 @@ class GlassesCatalog():
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._GlassesFolder('suprasil3002_60mm_internal_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
-    @classmethod
-    def suprasil3002_70mm_001(cls):
-        '''
-        Suprasil 3002 substrate of 70 mm thickness.
-        Transmittance is external.
-        Data from Heraeus website. 
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('suprasil3002_70mm_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
@@ -324,18 +270,6 @@ class GlassesCatalog():
         return te
 
     @classmethod
-    def suprasil3002_80mm_001(cls):
-        '''
-        Suprasil 3002 substrate of 80 mm thickness.
-        Data from Heraeus website. 
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('suprasil3002_80mm_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
-    @classmethod
     def suprasil3002_80mm_internal_001(cls):
         '''
         Suprasil 3002 substrate of 80 mm thickness.
@@ -343,18 +277,6 @@ class GlassesCatalog():
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._GlassesFolder('suprasil3002_80mm_internal_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
-    @classmethod
-    def suprasil3002_85mm_001(cls):
-        '''
-        Suprasil 3002 substrate of 85 mm thickness.
-        Data from Heraeus website. 
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('suprasil3002_85mm_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
@@ -373,19 +295,6 @@ class GlassesCatalog():
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
         
-    @classmethod
-    def suprasil3002_108mm_001(cls):
-        '''
-        Suprasil 3002 substrate of 108 mm thickness.
-        Transmittance is external.
-        Data from Heraeus website. 
-        '''
-        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('suprasil3002_108mm_001'), u.um)
-        r = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, reflectance=r)
-        return te
-    
     @classmethod
     def suprasil3002_108mm_internal_001(cls):
         '''
