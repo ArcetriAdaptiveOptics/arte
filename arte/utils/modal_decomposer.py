@@ -58,7 +58,7 @@ class ModalDecomposer(object):
 
         i = 0
         for idx in modesIdx:
-            wf_masked = np.ma.masked_array(wf[idx], mask=user_mask.mask())
+            wf_masked = np.ma.masked_array(wf[idx].data, mask=user_mask.mask())
             im[i,:] = wf_masked.compressed()
             i += 1
         return pinv(im)
