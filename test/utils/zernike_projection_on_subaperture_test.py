@@ -26,8 +26,8 @@ class TestZernikeProjectionOnSubaperture(unittest.TestCase):
         negro_matrix = zp.get_projection_matrix()
         got = np.diagonal(negro_matrix)
         want = np.array([
-            ratio, ratio, ratio**2, ratio**2, ratio**2,
-            ratio**3, ratio**3, ratio**3, ratio**3, ratio**4])
+            ratio, ratio, ratio ** 2, ratio ** 2, ratio ** 2,
+            ratio ** 3, ratio ** 3, ratio ** 3, ratio ** 3, ratio ** 4])
         np.testing.assert_equal(got, want)
 
     def testComparisonWithModalDecomposition(self):
@@ -47,13 +47,14 @@ class TestZernikeProjectionOnSubaperture(unittest.TestCase):
         spup_wf = Wavefront(zern_in_mask)
         md = ModalDecomposer(n_zernike_modes=j - 1)
         spup_zern = md.measureZernikeCoefficientsFromWavefront(
-            wavefront=spup_wf, mask=spup).toNumpyArray()
+            wavefront=spup_wf, circular_mask=spup, user_mask=spup
+            ).toNumpyArray()
 
         y, x = spup_center - zg.center()
-        rho = np.sqrt(x**2 + y**2)
+        rho = np.sqrt(x ** 2 + y ** 2)
         theta_deg = np.rad2deg(np.arctan2(y, x))
         zp = ZernikeProjectionOnSubaperture(
             mpup_radius, spup_radius, rho, theta_deg)
-        negro_matrix = zp.get_projection_matrix()[j - 2, :j - 1]
+        negro_matrix = zp.get_projection_matrix()[j - 2,:j - 1]
         np.testing.assert_allclose(
             negro_matrix, spup_zern, rtol=0.01, atol=1e-8)

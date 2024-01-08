@@ -3,7 +3,7 @@ from scipy.linalg import pinv
 from arte.utils.decorator import cacheResult, returns
 from arte.utils.zernike_generator import ZernikeGenerator
 from arte.types.zernike_coefficients import ZernikeCoefficients
-from arte.types.mask import CircularMask
+from arte.types.mask import CircularMask, BaseMask
 from arte.types.wavefront import Wavefront
 from arte.types.slopes import Slopes
 
@@ -23,7 +23,7 @@ class ModalDecomposer(object):
 
         i = 0
         for idx in modesIdx:
-            im[i, :] = np.hstack((dx[idx].compressed(), dy[idx].compressed()))
+            im[i,:] = np.hstack((dx[idx].compressed(), dy[idx].compressed()))
             i += 1
         return pinv(im)
 
@@ -49,37 +49,45 @@ class ModalDecomposer(object):
             np.dot(slopesInMaskVector, reconstructor))
 
     @cacheResult
-    def _synthZernikeRecFromWavefront(self, nModes, mask):
-        zg = ZernikeGenerator(mask)
+    def _synthZernikeRecFromWavefront(self, nModes, circular_mask,
+                                      user_mask):
+        zg = ZernikeGenerator(circular_mask)
         wf = zg.getZernikeDict(list(range(2, 2 + nModes)))
-        im = np.zeros((nModes, wf[2].compressed().size))
+        im = np.zeros((nModes, user_mask.as_masked_array().compressed().size))
         modesIdx = list(range(2, 2 + nModes))
 
         i = 0
         for idx in modesIdx:
-            im[i, :] = wf[idx].compressed()
+            wf_masked = np.ma.masked_array(wf[idx], mask=user_mask.mask())
+            im[i,:] = wf_masked.compressed()
             i += 1
         return pinv(im)
 
     @returns(ZernikeCoefficients)
     def measureZernikeCoefficientsFromWavefront(self,
                                                 wavefront,
-                                                mask,
+                                                circular_mask,
+                                                user_mask,
                                                 nModes=None):
         if nModes is None:
             nModes = self._nZernikeModes
         assert isinstance(wavefront, Wavefront), \
             'wavefront argument must be of type Wavefront, instead is %s' % \
             wavefront.__class__.__name__
-        assert isinstance(mask, CircularMask), \
-            'Mask argument must be of type CircularMask, instead is %s' % \
-            mask.__class__.__name__
+        assert isinstance(circular_mask, CircularMask), \
+            'Circular mask argument must be of type CircularMask, instead is %s' % \
+            circular_mask.__class__.__name__
+        assert isinstance(user_mask, BaseMask), \
+            'User mask argument must be of type BaseMask, instead is %s' % \
+            user_mask.__class__.__name__
+        # TODO: user_mask deve essere sottoinsieme della circular_mask
 
         reconstructor = self._synthZernikeRecFromWavefront(nModes,
-                                                           mask)
+                                                           circular_mask,
+                                                           user_mask)
         wavefrontInMaskVector = \
             np.ma.masked_array(wavefront.toNumpyArray(),
-                               mask.mask()).compressed()
+                               user_mask.mask()).compressed()
         wavefrontInMaskVectorNoPiston = wavefrontInMaskVector - \
             wavefrontInMaskVector.mean()
         return ZernikeCoefficients.fromNumpyArray(

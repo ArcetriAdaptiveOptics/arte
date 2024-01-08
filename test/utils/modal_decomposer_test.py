@@ -82,7 +82,7 @@ class ModalDecomposerTest(unittest.TestCase):
 
         modalDecomposer = ModalDecomposer(5)
         zernike = modalDecomposer.measureZernikeCoefficientsFromWavefront(
-            Wavefront.fromNumpyArray(wavefront), mask)
+            Wavefront.fromNumpyArray(wavefront), mask, mask)
         self.assertTrue(np.allclose(np.array([2.5, -4, 0, 3.0]),
                                     zernike.toNumpyArray()[0:4]),
                         "zernike decomposition is %s" % str(zernike))
@@ -94,7 +94,7 @@ class ModalDecomposerTest(unittest.TestCase):
         mask = CircularMask((2 * radius, 2 * radius), radius)
         modalDecomposer = ModalDecomposer(4)
         zernike = modalDecomposer.measureZernikeCoefficientsFromWavefront(
-            Wavefront.fromNumpyArray(wavefront), mask)
+            Wavefront.fromNumpyArray(wavefront), mask, mask)
         self.assertAlmostEqual(1, zernike.getZ(2))
         self.assertAlmostEqual(
             0, zernike.toNumpyArray()[1:].sum(),
