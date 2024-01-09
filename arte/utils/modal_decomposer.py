@@ -80,7 +80,10 @@ class ModalDecomposer(object):
         assert isinstance(user_mask, BaseMask), \
             'User mask argument must be of type BaseMask, instead is %s' % \
             user_mask.__class__.__name__
-        # TODO: user_mask deve essere sottoinsieme della circular_mask
+        if not np.all(
+            circular_mask.as_masked_array() * user_mask.as_masked_array()
+            == user_mask.as_masked_array()):
+            raise Exception('User mask must be fully contained in circular mask')
 
         reconstructor = self._synthZernikeRecFromWavefront(nModes,
                                                            circular_mask,
