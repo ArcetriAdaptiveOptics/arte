@@ -86,6 +86,21 @@ class ModalDecomposerTest(unittest.TestCase):
         self.assertTrue(np.allclose(np.array([2.5, -4, 0, 3.0]),
                                     zernike.toNumpyArray()[0:4]),
                         "zernike decomposition is %s" % str(zernike))
+        
+    def testMeasureZernikeCoefficientsFromWavefrontUsingDifferentMasks(self):
+        radius = 4
+        zg = ZernikeGenerator(2 * radius)
+        mask1 = CircularMask((2 * radius, 2 * radius), radius)
+        mask2 = CircularMask((2 * radius, 2 * radius), radius / 2)
+        zernModes = zg.getZernikeDict(list(range(2, 6)))
+        wavefront = 2.5 * zernModes[2] - 4 * zernModes[3] + 3 * zernModes[5]
+
+        modalDecomposer = ModalDecomposer(5)
+        zernike = modalDecomposer.measureZernikeCoefficientsFromWavefront(
+            Wavefront.fromNumpyArray(wavefront), mask1, mask2)
+        self.assertTrue(np.allclose(np.array([2.5, -4, 0, 3.0]),
+                                    zernike.toNumpyArray()[0:4]),
+                        "zernike decomposition is %s" % str(zernike))
 
     def testZernikeCoefficientsFromWfRejectsPiston(self):
         radius = 4
