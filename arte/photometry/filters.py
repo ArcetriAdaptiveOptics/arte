@@ -9,8 +9,8 @@ class Filters(object):
     BESSEL_J = 'bessel_j'
     BESSEL_H = 'bessel_h'
     BESSEL_K = 'bessel_k'
-    COUSIN_R = 'cousin_r'
-    COUSIN_I = 'cousin_i'
+    COUSINS_R = 'cousins_r'
+    COUSINS_I = 'cousins_i'
     JOHNSON_U = 'johnson_u'
     JOHNSON_B = 'johnson_b'
     JOHNSON_V = 'johnson_v'
@@ -35,13 +35,12 @@ class Filters(object):
     C_RED_ONE = 'c_red_one'
     CCD_220 = 'ccd_220'
 
-
     SYNPHOT = [
         BESSEL_J,
         BESSEL_H,
         BESSEL_K,
-        COUSIN_R,
-        COUSIN_I,
+        COUSINS_R,
+        COUSINS_I,
         JOHNSON_U,
         JOHNSON_B,
         JOHNSON_V,
@@ -68,7 +67,7 @@ class Filters(object):
         ESO_ETC_Q
     ]
 
-    ALL = SYNPHOT+ESO_ETC
+    ALL = SYNPHOT + ESO_ETC
 
     @classmethod
     def names(cls):
@@ -166,11 +165,9 @@ class Filters(object):
             os.path.join(cls._DetectorsFolder(), 'c_red_one.dat'),
             wave_unit=u.nm)
 
-
     @classmethod
     def _eso_etc(cls, filter_name, wavelength_unit):
         return SpectralElement.from_file(
             os.path.join(cls._EsoEtcFiltersFolder(),
                          'phot_%s.dat' % filter_name),
             wave_unit=wavelength_unit)
-

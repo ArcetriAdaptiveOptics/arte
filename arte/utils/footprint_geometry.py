@@ -73,7 +73,8 @@ class FootprintGeometry():
                                         self._layerAltitudeInMeter)
                 ra = self._lgsRadius()
                 self._lgsL.append(FootprintXYRadius(
-                    ll[0] + cc[0], ll[1] + cc[1], ra))
+                    ll[0] + cc[0], ll[1] + cc[1], ra,
+                    self._layerAltitudeInMeter))
 
         self._ngsL = []
         if self._ngs:
@@ -81,14 +82,16 @@ class FootprintGeometry():
                 cc = self._centerOffset(l['skyTheta'], l['skyAz'],
                                         self._layerAltitudeInMeter)
                 ra = self._telescopeRadiusInMeter
-                self._ngsL.append(FootprintXYRadius(cc[0], cc[1], ra))
+                self._ngsL.append(FootprintXYRadius(cc[0], cc[1], ra,
+                                                    self._layerAltitudeInMeter))
 
         self._targetsL = []
         for l in self._targets:
             cc = self._centerOffset(l['skyTheta'], l['skyAz'],
                                     self._layerAltitudeInMeter)
             ra = self._telescopeRadiusInMeter
-            self._targetsL.append(FootprintXYRadius(cc[0], cc[1], ra))
+            self._targetsL.append(FootprintXYRadius(cc[0], cc[1], ra,
+                                                    self._layerAltitudeInMeter))
 
         self._sciL = []
         if self._instrFoVInArcsec:
@@ -120,7 +123,8 @@ class FootprintGeometry():
             raTargets = 0
         ra = np.max([raLgs, raNgs, raTargets])
 
-        self._metapupilL.append(FootprintXYRadius(0, 0, ra))
+        self._metapupilL.append(FootprintXYRadius(0, 0, ra,
+                                                  self._layerAltitudeInMeter))
 
         self._dmsL = []
         if self._dms:
@@ -133,8 +137,6 @@ class FootprintGeometry():
 #                 self._dmsL.append(FootprintXYRadius(
 #                     ll[0] + cc[0], ll[1] + cc[1], ra))
 
-        self._computePatches()
-
     def getNgsFootprint(self):
         return self._ngsL
 
@@ -146,6 +148,9 @@ class FootprintGeometry():
 
     def getMetapupilFootprint(self):
         return self._metapupilL
+
+    # def getLayerAltitudeInMeter(self):
+    #     return self._layerAltitudeInMeter
 
     def _computePatches(self):
         self._patches = []
@@ -170,7 +175,7 @@ class FootprintGeometry():
                 self._addAnnularFootprint(
                     l.x, l.y, l.r, 0.99 * l.r, color='k')
         for l in self._dmsL:
-            self._addDmFootprint(l, color='k', alpha=0.1)
+            self._addDmFootprint(l, color='k', alpha=0.3)
 
     def scienceFieldRadius(self, rTel, fovInArcsec, hInMeter):
         return rTel + fovInArcsec / 2 * 4.848e-6 * hInMeter
@@ -238,10 +243,11 @@ class FootprintGeometry():
             Polygon(vertexes, closed=True, color=color, alpha=alpha))
         self._xlim = np.maximum(
             self._xlim,
-            np.linalg.norm(np.array([centerX, centerY])) +
+            np.linalg.norm(np.array([centerX, centerY])) + 
             0.5 * np.linalg.norm(np.array([sideX, sideY])))
 
     def plot(self):
+        self._computePatches()
         fig, ax = plt.subplots()
         ax.set_aspect('equal')
         ax.set_xlim(-self._xlim, self._xlim)
@@ -316,8 +322,13 @@ def mainFootprintGeometry(h=12000, lgsTh=15, lgsN=4, ngsTh=60, ngsN=3,
 
 
 class FootprintXYRadius():
+    '''
+    Return (x, y) coordinates and radius of a footprint at altitude z.
+    The altitude is also returned. 
+    '''
 
-    def __init__(self, x, y, r):
+    def __init__(self, x, y, r, z):
         self.x = x
         self.y = y
         self.r = r
+        self.z = z

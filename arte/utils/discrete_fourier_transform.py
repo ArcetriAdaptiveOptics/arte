@@ -91,7 +91,7 @@ class BidimensionalFourierTransform(object):
         )
 
     @staticmethod
-    def inverse(xyFunct):
+    def reverse(xyFunct):
         sizeY, sizeX = xyFunct.values.shape
         pxSizeX, pxSizeY = xyFunct.domain.step
         return ScalarBidimensionalFunction(

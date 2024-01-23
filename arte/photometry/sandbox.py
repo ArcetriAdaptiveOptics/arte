@@ -15,6 +15,7 @@ from synphot.units import FLAM
 from arte.photometry import get_normalized_star_spectrum
 from arte.photometry.eso_sky_calc import EsoSkyCalc
 import numpy as np
+from arte.photometry.transmissive_elements import TransmissiveElement, Bandpass
 
 
 def misc():
@@ -104,9 +105,4 @@ def check_zeropoints_ESO():
         cnts = obs.countrate(area=1 * u.m ** 2, wavelengths=filt.waveset)
         print(f"{filt_name:10s} | {zp:10.3e} | {err:+7.3f}% | {cnts:10.3e} |"
               f"{filt.waveset.to(u.nm)[0]:g} {filt.waveset.to(u.nm)[-1]:g}")
-
-
-
-
-
 

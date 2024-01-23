@@ -91,8 +91,31 @@ class ScalarBidimensionalFunction(object):
         return self._values.shape
 
     def interpolate_in_xy(self, x, y, span=3):
-        '''Interpolate the function value at x,y'''
-        return self._my_interp(x, y, span=3)
+        '''
+        Interpolate the function at points x,y
+
+        Returns an array of z[i] corresponding to the values interpolated
+        at points x[i], y[i]
+
+        The interpolation algorithm is linear and uses a box of 3x3 points
+        centered on the closest point to the interpolation coordinate
+
+
+        Parameters
+        ----------
+        x: numpy.ndarray or tuple with size N
+            1D array of the x coordinates of the sampling points
+
+        y: numpy.ndarray or tuple with size N
+            1D array of the y coordinates of the sampling points
+
+        Returns
+        -------
+        z: numpy.ndarray
+            array of shape (N,) of the sampled values. z[i] = interp(f, x[i], y[i]) 
+
+        '''
+        return self._my_interp(x, y, span=span)
 
     def get_radial_profile(self):
         '''Get the radial profile around the domain origin.
@@ -111,7 +134,7 @@ class ScalarBidimensionalFunction(object):
         plt.show()
 
     def _my_interp(self, x, y, span=3):
-        xs, ys = map(np.array, (x, y))
+        xs, ys = map(np.array, (np.atleast_1d(x), np.atleast_1d(y)))
         z = np.zeros(xs.shape)
         for i, (x, y) in enumerate(zip(xs, ys)):
             # get the indices of the nearest x,y
@@ -129,14 +152,14 @@ class ScalarBidimensionalFunction(object):
         return z
 
     def _interp_real(self, nX, nY, nZ, x, y):
-        # beware of https://github.com/scipy/scipy/issues/10268 !!! 
+        # beware of https://github.com/scipy/scipy/issues/10268 !!!
         # use 1D (nX[0] and nY[:,0]) instead of 2D nX and nY
-        intp = interpolate.interp2d(nX[0], nY[:,0], nZ, kind='linear')
+        intp = interpolate.interp2d(nX[0], nY[:, 0], nZ, kind='linear')
         return intp(x, y)[0]
 
     def _interp_complex(self, nX, nY, nZ, x, y):
-        intpr = interpolate.interp2d(nX[0], nY[:,0], nZ.real, kind='linear')
-        intpi = interpolate.interp2d(nX[0], nY[:,0], nZ.imag, kind='linear')
+        intpr = interpolate.interp2d(nX[0], nY[:, 0], nZ.real, kind='linear')
+        intpi = interpolate.interp2d(nX[0], nY[:, 0], nZ.imag, kind='linear')
         return intpr(x, y)[0] + 1j * intpi(x, y)[0]
 
     def get_roi(self, xmin, xmax, ymin, ymax):
@@ -146,4 +169,3 @@ class ScalarBidimensionalFunction(object):
         cropped_domain = self._domain[box]
         return ScalarBidimensionalFunction(cropped_values,
                                            domain=cropped_domain)
-

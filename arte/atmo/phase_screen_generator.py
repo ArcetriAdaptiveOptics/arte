@@ -2,6 +2,7 @@ import numpy as np
 from arte.utils.discrete_fourier_transform \
     import BidimensionalFourierTransform as bfft
 
+from astropy.io import fits
 
 class PhaseScreenGenerator(object):
 
@@ -14,7 +15,7 @@ class PhaseScreenGenerator(object):
         self._screenSzInM = float(screenSizeInMeters)
         self._outerScaleInM = float(outerScaleInMeters)
         self._phaseScreens = None
-        self._nSubHarmonicsToUse = 6
+        self._nSubHarmonicsToUse = 8
         if seed is None:
             self._seed = np.random.randint(2**32 - 1, dtype=np.uint32)
         else:
@@ -32,9 +33,14 @@ class PhaseScreenGenerator(object):
         for i in range(nIters):
             ps = self._generate_phase_screen_with_fft()
             ps += self._generate_sub_harmonics(self._nSubHarmonicsToUse)
-            ret[2 * i, :, :] = np.sqrt(2) * ps.real
-            ret[2 * i + 1, :, :] = np.sqrt(2) * ps.imag
-        self._phaseScreens = ret[:numberOfScreens]
+            ret[2* i, :, :]= self._remove_piston(np.sqrt(2)* ps.real)
+            ret[2* i + 1, :, :]= self._remove_piston(np.sqrt(2)* ps.imag)
+        self._phaseScreens= ret[:numberOfScreens]
+
+
+    def _remove_piston(self, scrn):
+        return scrn-scrn.mean()
+
 
     def _generate_phase_screen_with_fft(self):
         '''
@@ -70,7 +76,7 @@ class PhaseScreenGenerator(object):
     def _generate_sub_harmonics(self, numberOfSubHarmonics):
         nSub = 3
         lowFreqScreen = np.zeros((self._screenSzInPx, self._screenSzInPx),
-                                 dtype=np.complex)
+                                 dtype=np.complex128)
         freqX = bfft.frequencies_x_map(nSub, 1. / nSub)
         freqY = bfft.frequencies_y_map(nSub, 1. / nSub)
         freqMod = bfft.frequencies_norm_map(nSub, 1. / nSub)
@@ -98,3 +104,32 @@ class PhaseScreenGenerator(object):
     def _determineNumberOfSubHarmonics(self):
         maxNoOfSubHarm = 8
         pass
+    
+    def save_normalized_phase_screens(self, fname):
+        hdr = fits.Header()
+        hdr['SZ_IN_PX'] =  self._screenSzInPx
+        hdr['SZ_IN_M'] = self._screenSzInM
+        hdr['OS_IN_M'] = self._outerScaleInM
+        hdr['SEED'] = self._seed
+        
+        fits.writeto(fname, self._phaseScreens, hdr)
+        
+    
+    @staticmethod 
+    def load_normalized_phase_screens(fname):
+        header = fits.getheader(fname)
+        screenSizeInPixels = header['SZ_IN_PX'] 
+        screenSizeInMeters = header['SZ_IN_M'] 
+        outerScaleInMeters = header['OS_IN_M'] 
+        seed = header['SEED'] 
+        
+        psg = PhaseScreenGenerator(
+            screenSizeInPixels,
+            screenSizeInMeters,
+            outerScaleInMeters,
+            seed)
+        
+        hduList = fits.open(fname)
+        psg._phaseScreens = hduList[0].data
+        
+        return psg

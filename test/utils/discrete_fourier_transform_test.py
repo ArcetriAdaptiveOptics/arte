@@ -224,7 +224,7 @@ class BidimensionalFourierTransformTest(unittest.TestCase):
         xyDomain = DomainXY.from_shape((sz, sz), 1)
         xyFunct = ScalarBidimensionalFunction(deltaMap,
                                               domain=xyDomain)
-        fftFunct = bfft.inverse(xyFunct)
+        fftFunct = bfft.reverse(xyFunct)
         spectralMap = fftFunct.values
         self.assertEqual((sz, sz), spectralMap.shape)
         self.assertEqual(0, spectralMap.ptp())
@@ -263,7 +263,7 @@ class BidimensionalFourierTransformTest(unittest.TestCase):
         constant_map = ampl * np.ones(xy.shape)
         original = ScalarBidimensionalFunction(constant_map, domain=xy)
         spectr = bfft.direct(original)
-        inverse_spectr = bfft.inverse(spectr)
+        inverse_spectr = bfft.reverse(spectr)
         self.assertTrue(np.allclose(
             inverse_spectr.values, original.values))
 
@@ -310,13 +310,30 @@ class BidimensionalFourierTransformTest(unittest.TestCase):
         xy = DomainXY.from_shape((szy, szx), (stepy, stepx))
         map_in_V = ampl * np.ones(xy.shape)
         spatial_funct = ScalarBidimensionalFunction(map_in_V, domain=xy)
-        spectr = bfft.inverse(spatial_funct)
+        spectr = bfft.reverse(spatial_funct)
         self.assertTrue(spectr.xmap.unit.is_equivalent((1 / u.m).unit))
         self.assertTrue(spectr.ymap.unit.is_equivalent((1 / u.kg).unit))
         self.assertTrue(spectr.xcoord.unit.is_equivalent((1 / u.m).unit))
         self.assertTrue(spectr.ycoord.unit.is_equivalent((1 / u.kg).unit))
         self.assertTrue(spectr.values.unit.is_equivalent((u.V)))
 
+
+    def test_parseval(self):    
+        x = np.random.rand(321, 456)
+        f = bfft.direct_transform(x)
+        want = np.sum(np.abs(x)**2)
+        got = np.sum(np.abs(f)**2)
+        np.testing.assert_allclose(got, want)
+
+        xy = DomainXY.from_shape(x.shape, 0.123)
+        spatial_funct = ScalarBidimensionalFunction(x, domain=xy)
+        spectr = bfft.reverse(spatial_funct)
+
+        want = np.sum(np.abs(spatial_funct.values)**2)
+        got = np.sum(np.abs(spectr.values)**2)
+        np.testing.assert_allclose(got, want)
+        
+        
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

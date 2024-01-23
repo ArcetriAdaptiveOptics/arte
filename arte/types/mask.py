@@ -2,10 +2,51 @@ import numpy as np
 from arte.types.region_of_interest import RegionOfInterest
 from arte.utils.image_moments import ImageMoments
 
-# class BaseMask
+
+class BaseMask():
+    '''
+    '''
+
+    def __init__(self, mask_array):
+        self._shape = mask_array.shape
+        self._mask = mask_array
+    
+    def mask(self):
+        '''
+        Boolean mask of the mask
+
+        Returns
+        -------
+        mask: boolean `~numpy.array`
+            mask of the pupil. Array is True outside the pupil,
+            and False inside the pupil
+        '''
+        return self._mask
+    
+    def as_masked_array(self):
+        return np.ma.array(np.ones(self._shape),
+                           mask=self.mask())
+        
+    def shape(self):
+        '''
+        Array shape
+
+        Returns
+        -------
+        shape: list (2,)
+            shape of the mask array
+        '''
+        return self._shape
+    
+    @staticmethod
+    def from_masked_array(numpy_masked_array):
+        return BaseMask(numpy_masked_array)
+    
+    # TODO: funzione per verificare che tutti i punti di questa maschera stanno
+    # dentro una maschera passata
 
 
-class CircularMask():
+class CircularMask(BaseMask):
     '''
     Represent a circular mask
 
@@ -63,19 +104,7 @@ class CircularMask():
         y, x = np.mgrid[0.5: self._shape[0] + 0.5:1,
                         0.5: self._shape[1] + 0.5:1]
         self._mask = np.where(
-            ((x - cc[1])**2 + (y - cc[0])**2) <= r**2, False, True)
-
-    def mask(self):
-        '''
-        Boolean mask of the Circular Mask
-
-        Returns
-        -------
-        mask: boolean `~numpy.array`
-            mask of the circular pupil. Array is True outside the pupil,
-            and False inside the pupil
-        '''
-        return self._mask
+            ((x - cc[1]) ** 2 + (y - cc[0]) ** 2) <= r ** 2, False, True)
 
     def asTransmissionValue(self):
         return np.logical_not(self._mask).astype(int)
@@ -103,17 +132,6 @@ class CircularMask():
 
         '''
         return self._maskCenter
-
-    def shape(self):
-        '''
-        Array shape
-
-        Returns
-        -------
-        shape: list (2,)
-            shape of the mask array
-        '''
-        return self._shape
 
     @staticmethod
     def fromMaskedArray(maskedArray):
@@ -144,9 +162,9 @@ class CircularMask():
         shape = maskedArray.shape
         again = 0.995
         while again:
-            im = ImageMoments(maskedArray.mask.astype(int)*-1 + 1)
-            centerYX = np.roll(im.centroid(),1)
-            radius = again*np.min(im.semiAxes())
+            im = ImageMoments(maskedArray.mask.astype(int) * -1 + 1)
+            centerYX = np.roll(im.centroid(), 1)
+            radius = again * np.min(im.semiAxes())
             circularMask = CircularMask(shape, radius, centerYX)
             if np.in1d(circularMask.in_mask_indices(),
                        np.argwhere(maskedArray.mask.flatten() == False)).all():
@@ -165,12 +183,9 @@ class CircularMask():
         return RegionOfInterest(centerX - radius, centerX + radius,
                                 centerY - radius, centerY + radius)
 
-    def as_masked_array(self):
-        return np.ma.array(np.ones(self._shape),
-                           mask=self.mask())
-
     def in_mask_indices(self):
         return self.asTransmissionValue().flatten().nonzero()[0]
+
 
 class AnnularMask(CircularMask):
     '''
@@ -208,7 +223,7 @@ class AnnularMask(CircularMask):
         y, x = np.mgrid[0.5: self._shape[0] + 0.5:1,
                         0.5: self._shape[1] + 0.5:1]
 
-        tmp = ((x - cc[1])**2 + (y - cc[0])**2) <= r**2
+        tmp = ((x - cc[1]) ** 2 + (y - cc[0]) ** 2) <= r ** 2
         if self._inRadius == 0:
             self._mask = np.where(tmp, False, True)
         else:

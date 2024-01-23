@@ -26,7 +26,7 @@ the i-th layer and the airmass is :math:`X=\sec z`.
 '''
 import numpy as np
 from astropy.units.quantity import Quantity
-from arte.utils.constants import Constants
+from arte.utils.constants import DEG2RAD, RAD2ARCSEC
 from arte.utils.package_data import dataRootDir
 import os
 from astropy.io import fits
@@ -175,7 +175,7 @@ class Cn2Profile(object):
         assert (np.abs(sumJ - 1.0) < 0.01), \
             "Total of J values must be 1.0, got %g" % sumJ
         totalJ = r0AtZenith ** (-5. / 3) / (
-            0.422727 * (2 * np.pi / cls.DEFAULT_LAMBDA) ** 2 *
+            0.422727 * (2 * np.pi / cls.DEFAULT_LAMBDA) ** 2 * 
             cls.DEFAULT_AIRMASS)
         js = np.array(layersFractionalJ) * totalJ
         return Cn2Profile(js,
@@ -208,7 +208,7 @@ class Cn2Profile(object):
 
     @staticmethod
     def _js2r0(Js, airmass, wavelength):
-        r0s = (0.422727 * airmass * (2 * np.pi / wavelength) ** 2 *
+        r0s = (0.422727 * airmass * (2 * np.pi / wavelength) ** 2 * 
                np.array(Js)) ** (-3. / 5)
         return r0s
 
@@ -229,7 +229,7 @@ class Cn2Profile(object):
             value = zenithAngleInDeg.to(u.deg).value
         else:
             value = zenithAngleInDeg
-        zenithInRad = value * Constants.DEG2RAD
+        zenithInRad = value * DEG2RAD
         return 1. / np.cos(zenithInRad)
 
     def airmass(self):
@@ -277,10 +277,10 @@ class Cn2Profile(object):
     def mean_wind_speed(self):
         return (
             np.sum(
-                self._layersWindSpeed**(5. / 3) * self._layersJs
+                self._layersWindSpeed ** (5. / 3) * self._layersJs
             ) / np.sum(
                 self._layersJs)
-        )**(3. / 5) * u.m / u.s
+        ) ** (3. / 5) * u.m / u.s
 
     def set_wind_direction(self, windDirectionInDeg):
         if isinstance(windDirectionInDeg, Quantity):
@@ -309,7 +309,7 @@ class Cn2Profile(object):
             seeing value at specified lambda and zenith angle
             defined as 0.98 * lambda / r0
         """
-        return 0.98 * self.wavelength() / self.r0() * Constants.RAD2ARCSEC * \
+        return 0.98 * self.wavelength() / self.r0() * RAD2ARCSEC * \
             u.arcsec
 
     def r0(self):
@@ -319,8 +319,8 @@ class Cn2Profile(object):
         r0: :class:`~astropy:astropy.units.quantity.Quantity` equivalent to meters
             Fried parameter at defined wavelength and zenith angle
         '''
-        return (0.422727 * self._airmass *
-                (2 * np.pi / self._lambda) ** 2 *
+        return (0.422727 * self._airmass * 
+                (2 * np.pi / self._lambda) ** 2 * 
                 np.sum(self._layersJs)) ** (-3. / 5) * u.m
 
     def r0s(self):
@@ -340,20 +340,20 @@ class Cn2Profile(object):
             theta0 (float): isoplanatic angle at specified lambda and zenith
                 angle [arcsec]
         '''
-        return (2.914 * self._airmass ** (8. / 3) *
-                (2 * np.pi / self._lambda) ** 2 *
-                np.sum(self._layersJs *
+        return (2.914 * self._airmass ** (8. / 3) * 
+                (2 * np.pi / self._lambda) ** 2 * 
+                np.sum(self._layersJs * 
                        self._layersAltitudeInMeterAtZenith ** (5. / 3))
-                ) ** (-3. / 5) * Constants.RAD2ARCSEC * u.arcsec
+                ) ** (-3. / 5) * RAD2ARCSEC * u.arcsec
 
     def tau0(self):
         '''
         Returns:
             tau0 (float): tau0 at specified lambda and zenith angle [sec]
         '''
-        return (2.914 * self._airmass *
-                (2 * np.pi / self._lambda) ** 2 *
-                np.sum(self._layersJs *
+        return (2.914 * self._airmass * 
+                (2 * np.pi / self._lambda) ** 2 * 
+                np.sum(self._layersJs * 
                        self._layersWindSpeed ** (5. / 3))
                 ) ** (-3. / 5) * u.s
 
@@ -546,6 +546,7 @@ class MiscellaneusProfiles():
         js = [0.59, 0.02, 0.04, 0.06, 0.01, 0.05, 0.09, 0.04, 0.05, 0.05]
         windSpeed = [6.6, 5.9, 5.1, 4.5, 5.1, 8.3, 16.3, 30.2, 34.3, 17.5]
         windDirection = np.linspace(0, 360, len(js))
-        L0s = np.ones(len(js)) * 22.
+        L0s = np.ones(len(js)) * 25.
+        # L0s = np.ones(len(js)) * 22.
         return Cn2Profile.from_fractional_j(
             r0, js, L0s, hs, windSpeed, windDirection)

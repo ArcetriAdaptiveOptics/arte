@@ -12,6 +12,8 @@ pupil
 
 
 class ZernikeProjectionOnSubaperture(object):
+    
+    N_MODES = 10
 
     def __init__(self,
                  pupilRadiusInMeter,
@@ -24,11 +26,12 @@ class ZernikeProjectionOnSubaperture(object):
         self._a = subapOffAxisAzimuthInDegrees
         self._S = self._computeMatrix()
 
-    def computeZernikeDecomponsitionOnSubap(self, zernikeCoeffFrom2To11):
+    def compute_zernike_decomposition_on_subap(self, zernikeCoeffFrom2To11):
         return np.dot(zernikeCoeffFrom2To11, self._S)
 
-    def getProjectionMatrix(self):
+    def get_projection_matrix(self):
         return self._S
+    
 
     def _computeMatrix(self):
         roR = self._r / self._R

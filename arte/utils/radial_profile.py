@@ -13,7 +13,7 @@ def computeRadialProfile(image, centerInPxY, centerInPxX):
     indexR= np.argsort(rCoord.flat)
     radialDistancesSorted= rCoord.flat[indexR]
     imageValuesSortedByRadialDistance= image.flat[indexR]
-    integerPartOfRadialDistances= radialDistancesSorted.astype(np.int)
+    integerPartOfRadialDistances= radialDistancesSorted.astype(np.int64)
     deltaRadialDistance= integerPartOfRadialDistances[1:] - \
         integerPartOfRadialDistances[:-1]
     radialDistanceChanges= np.where(deltaRadialDistance)[0]
