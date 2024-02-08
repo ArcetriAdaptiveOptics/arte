@@ -7,6 +7,7 @@ from synphot.spectrum import SpectralElement
 from arte.photometry.transmittance_calculator import interface_glass_to_glass, \
     internal_transmittance_calculator
 from synphot.models import Empirical1D
+from arte.photometry.filters import Filters
 
 
 class RestoreTransmissiveElements(object):
@@ -433,4 +434,14 @@ class GlassesCatalog():
             lookup_table=interface_glass_to_glass(n_sf2(wv), n_npsk53a(wv)))
         a = Bandpass.zero()
         te = TransmissiveElement(reflectance=r, absorptance=a)
+        return te
+
+
+class FiltersCatalog():
+    
+    @classmethod
+    def bessel_H(cls):
+        t = Filters.get(Filters.BESSEL_H)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
