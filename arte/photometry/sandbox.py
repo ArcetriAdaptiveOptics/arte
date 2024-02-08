@@ -106,3 +106,38 @@ def check_zeropoints_ESO():
         print(f"{filt_name:10s} | {zp:10.3e} | {err:+7.3f}% | {cnts:10.3e} |"
               f"{filt.waveset.to(u.nm)[0]:g} {filt.waveset.to(u.nm)[-1]:g}")
 
+
+
+def pippo(filt):
+    f_source = get_normalized_star_spectrum(spectral_type='vega', magnitude=0, filter_name=filt)
+    obs = Observation(spec=f_source, band=Filters.get(filt), binset=f_source.waveset)
+    return obs.countrate(area=1*u.m**2)
+
+
+def compare_integrate_with_observation(filt_name, filt_minmax=None, filt_obs=None, star_spectral_type='A0V'):
+    sp = get_normalized_star_spectrum(star_spectral_type, 0, filt_name)
+    filt = Filters.get(filt_name)
+    if filt_minmax is None:
+        waveset = filt.waveset
+    else:
+        waveset = np.linspace(filt_minmax[0], filt_minmax[1], 1000)
+    counts_int = sp.integrate(waveset) * 1e4 * u.cm**2/u.m**2
+    if filt_obs is None:
+        #Observation integrates the spectrum considering 100% transmission within the band
+        filt_obs = SpectralElement(
+            Box1D, amplitude=1., x_0=(waveset.max() + waveset.min())/2, width=(waveset.max() - waveset.min()))
+    else:
+        filt_obs = filt
+    obs = Observation(spec=sp, band=filt_obs, binset=waveset, force='taper')
+    counts_obs = obs.countrate(area=1 * u.m**2)
+    print('Flux with integrate function: %s' %counts_int)
+    print('Flux with Observation: %s' %counts_obs)
+    return sp
+
+
+def main_observation_playing_with_parameters():
+    print('Integrate considering a waveset built by us with minmax of our H band and a Box1D filter:')
+    sp = compare_integrate_with_observation(filt_name=Filters.ESO_ETC_H, filt_minmax=(14900, 17800), filt_obs=None, star_spectral_type='vega')
+
+    print('\nIntegrate considering the ESO filter waveset (min is smaller and max is larger) and a Box1D filter:')
+    sp = compare_integrate_with_observation(filt_name=Filters.ESO_ETC_H, filt_obs=None, star_spectral_type='vega')
