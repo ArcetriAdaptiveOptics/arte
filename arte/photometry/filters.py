@@ -6,9 +6,11 @@ from astropy import units as u
 
 class Filters(object):
 
-    BESSEL_J = 'bessel_j'
-    BESSEL_H = 'bessel_h'
-    BESSEL_K = 'bessel_k'
+    BESSELL_J = 'bessel_j'
+    BESSELL_H = 'bessel_h'
+    BESSELL_K = 'bessel_k'
+    BESSELL90_R = 'bessell90_r'
+    BESSELL90_I = 'bessell90_i'
     COUSINS_R = 'cousins_r'
     COUSINS_I = 'cousins_i'
     JOHNSON_U = 'johnson_u'
@@ -36,9 +38,9 @@ class Filters(object):
     CCD_220 = 'ccd_220'
 
     SYNPHOT = [
-        BESSEL_J,
-        BESSEL_H,
-        BESSEL_K,
+        BESSELL_J,
+        BESSELL_H,
+        BESSELL_K,
         COUSINS_R,
         COUSINS_I,
         JOHNSON_U,
@@ -67,7 +69,12 @@ class Filters(object):
         ESO_ETC_Q
     ]
 
-    ALL = SYNPHOT + ESO_ETC
+    BESSELL90 = [
+        BESSELL90_R,
+        BESSELL90_I
+    ]
+
+    ALL = SYNPHOT + ESO_ETC + BESSELL90
 
     @classmethod
     def names(cls):
@@ -89,6 +96,12 @@ class Filters(object):
     def _EsoEtcFiltersFolder():
         rootDir = dataRootDir()
         dirname = os.path.join(rootDir, 'photometry', 'filters', 'eso_etc')
+        return dirname
+
+    @staticmethod
+    def _Bessell90FiltersFolder():
+        rootDir = dataRootDir()
+        dirname = os.path.join(rootDir, 'photometry', 'filters', 'bessell90')
         return dirname
 
     @staticmethod
@@ -171,3 +184,18 @@ class Filters(object):
             os.path.join(cls._EsoEtcFiltersFolder(),
                          'phot_%s.dat' % filter_name),
             wave_unit=wavelength_unit)
+
+    @classmethod
+    def _bessell90(cls, filter_name):
+        return SpectralElement.from_file(
+            os.path.join(cls._Bessell90FiltersFolder(),
+                         'bessell90_%s.dat' % filter_name),
+            wave_unit=u.AA)
+
+    @classmethod
+    def _bessell90_r(cls):
+        return cls._bessell90('r')
+
+    @classmethod
+    def _bessell90_i(cls):
+        return cls._bessell90('i')

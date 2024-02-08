@@ -34,6 +34,10 @@ class FiltersTest(unittest.TestCase):
             0.266,
             atol=0.001)
 
+    def testBessell90(self):
+        assert_quantity_allclose(
+            Filters.get(Filters.BESSELL90_R).wpeak(), 600*u.nm)
+
 
 if __name__ == "__main__":
     unittest.main()
