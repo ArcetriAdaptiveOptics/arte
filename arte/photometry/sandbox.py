@@ -97,6 +97,8 @@ def check_zeropoints_ESO():
         4.83e-12, 2.04e-12, 1.23e-13, 6.8e-15]) * FLAM
 
     star = get_normalized_star_spectrum('vega', 0.0, Filters.ESO_ETC_R)
+    print(f"{'filter':10s} | {'flux':15s} | {'zp err %':8s} | {'cnts':17s} |"
+          f"{'boundaries'}")
     for filt_name, etc_zp in zip(filters, eso_etc_zp):
         filt = Filters.get(filt_name)
         obs = Observation(star, filt)
