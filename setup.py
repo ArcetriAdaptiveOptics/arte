@@ -93,7 +93,8 @@ setup(name=NAME,
                         "skycalc-cli",
                         "scikit-image>=0.17",
                         "scipy",
-                        "mpmath"
+                        "mpmath",
+                        "requests"
                         ],
       include_package_data=True,
       test_suite='test',
