@@ -178,9 +178,12 @@ class NormalizedStarSpectrumTest(unittest.TestCase):
         cts_k5V_i = (sp_k5V*f_r).integrate(f_r.waveset)
         cts_a0V_i = (sp_a0V*f_r).integrate(f_r.waveset)
         cts_vega_i = (sp_vega*f_r).integrate(f_r.waveset)
-        cts_k5V = Observation(sp_k5V, f_r).countrate(area=1*u.m**2)
-        cts_a0V = Observation(sp_a0V, f_r).countrate(area=1*u.m**2)
-        cts_vega = Observation(sp_vega, f_r).countrate(area=1*u.m**2)
+        cts_k5V = Observation(sp_k5V, f_r).countrate(
+            area=1*u.m**2, binned=False)
+        cts_a0V = Observation(sp_a0V, f_r).countrate(
+            area=1*u.m**2, binned=False)
+        cts_vega = Observation(sp_vega, f_r).countrate(
+            area=1*u.m**2, binned=False)
         print("Flux from integrate K5V*%s %s" % (filtername, cts_k5V_i))
         print("Flux from integrate A0V*%s %s" % (filtername, cts_a0V_i))
         print("Flux from integrate VEGA*%s %s" % (filtername, cts_vega_i))
@@ -190,6 +193,33 @@ class NormalizedStarSpectrumTest(unittest.TestCase):
 
         assert_quantity_allclose(cts_vega, cts_k5V, rtol=0.001)
         assert_quantity_allclose(cts_a0V, cts_k5V, rtol=0.001)
+
+    def test_integrate_with_proper_waveset(self):
+        '''
+        Pay attention to integrate() with spectra
+        '''
+        # Assuming Observation computes correct values
+        filtername = Filters.ESO_ETC_R
+        f_r = Filters.get(filtername)
+        sp_k5V = get_normalized_star_spectrum('K5V', 0, filtername)
+        cts_observation = Observation(sp_k5V, f_r).countrate(
+            area=1*u.m**2, binned=False)
+        cts_integrate_filter_waveset = (sp_k5V*f_r).integrate(f_r.waveset)
+        cts_integrate_star_waveset = (sp_k5V*f_r).integrate(sp_k5V.waveset)
+        cts_integrate_spectrum_waveset = (
+            sp_k5V*f_r).integrate((sp_k5V*f_r).waveset)
+
+        print(" ---------- Flux for K5V*%s --------" % filtername)
+        print("Flux from Observation K5V*%s %s" %
+              (filtername, cts_observation))
+        print("Flux from integrate on filter waveset %s" %
+              (cts_integrate_filter_waveset))
+        print("Flux from integrate on star waveset %s" %
+              (cts_integrate_star_waveset))
+        print("Flux from integrate on spectrum waveset %s" %
+              (cts_integrate_spectrum_waveset))
+
+
 
 
 if __name__ == "__main__":
