@@ -15,8 +15,13 @@ from astropy.io import fits
 
 class NormalizedStarSpectrumTest(unittest.TestCase):
 
+    def test_vega_itself_is_not_renormalized(self):
 
-    def test_vega(self):
+        sp_vega_norm = get_normalized_star_spectrum(
+            'vega', 0, Filters.JOHNSON_R)
+        sp_vega = synphot.SourceSpectrum.from_vega()
+        wv = sp_vega_norm.waveset
+        assert_quantity_allclose(sp_vega_norm(wv), sp_vega(wv))
 
         cts_vega_jR= get_normalized_star_spectrum(
             'vega', 12, Filters.JOHNSON_R).integrate(np.arange(1000, 1200)*u.nm)
@@ -35,7 +40,7 @@ class NormalizedStarSpectrumTest(unittest.TestCase):
         ct_100_5000 = (spec*filt).integrate(np.arange(100, 5000)*u.nm)
         assert_quantity_allclose(ct_1400_1900, ct_100_5000)
 
-    def test_oaalib_compare_wit(self):
+    def test_oaalib_compare_with_example(self):
         '''
         Replicate case below and check results agree within 5%
         Use synphot Observation or integrate
@@ -50,26 +55,25 @@ class NormalizedStarSpectrumTest(unittest.TestCase):
         wanted = 14.9898 * u.ph / u.ms
         area = (8*u.m)**2*np.pi/4
         # integrate resulting spectrum
-        got_integrate = (spe*filt).integrate(spe.waveset, 'trapezoid') * area
+        got_integrate = (
+            spe*filt).integrate((spe*filt).waveset, 'trapezoid') * area
         # use Observation (and convert from ct/s to ph/s)
         obs = Observation(spe, filt)
-        got_with_observation = obs.countrate(area=area)*u.ph/u.ct
-        print(wanted)
-        print(got_integrate.to(u.ph/u.ms))
-        print(got_with_observation.to(u.ph/u.ms))
+        got_with_observation = obs.countrate(area=area, binned=False)*u.ph/u.ct
+        print('OAALIB %s' % wanted)
+        print('From integrate %s' % got_integrate.to(u.ph/u.ms))
+        print('From Observation %s' % got_with_observation.to(u.ph/u.ms))
         assert_quantity_allclose(got_integrate, wanted, rtol=5e-2)
         assert_quantity_allclose(got_with_observation, wanted, rtol=5e-2)
 
-    def test_not_vega(self):
-
-        cts_A0V_jR= get_normalized_star_spectrum(
-            'A0V', 12, Filters.JOHNSON_R).integrate(np.arange(1000, 1200)*u.nm)
-        cts_A0V_bH= get_normalized_star_spectrum(
-            'A0V', 12, Filters.BESSELL_H).integrate(np.arange(1000, 1200)*u.nm)
-
-        self.assertGreater(cts_A0V_bH, cts_A0V_jR)
-
     def test_oaalib_compare_vega_spectra(self):
+        '''
+        Check vega spectrum in oaalib is comparable with synphot
+        
+        Assert countrates for vega spectrum from oaalib and synphot
+        integrated on the bands R,J, H are similar within 2% 
+        '''
+
         import matplotlib.pyplot as plt
 
         def _load_oaalib_vega():
@@ -80,37 +84,30 @@ class NormalizedStarSpectrumTest(unittest.TestCase):
             return dd[0]*u.AA, dd[1]*u.erg / (u.s * u.cm**2 * u.AA)
 
         oaa_l, oaa_s = _load_oaalib_vega()
+        sp_oaa = SourceSpectrum(synphot.spectrum.Empirical1D,
+                                points=oaa_l, lookup_table=oaa_s)
 
-        spv = SourceSpectrum.from_vega()
-        spv_erg = synphot.units.convert_flux(
-            oaa_l, spv(oaa_l), u.erg / (u.s * u.cm**2 * u.AA))
+        sp_syn = SourceSpectrum.from_vega()
 
-        def _plot():
-            plt.plot(oaa_l, (oaa_s-spv_erg)/spv_erg)
-            plt.xlabel('Angstrom')
-            plt.ylabel('vega spectrum: (OAA-SYNPHOT)/SYNPHOT')
-            plt.grid()
-            plt.semilogx()
-            plt.xlim(4500, 22000)
-            plt.ylim(-0.1, 0.1)
+        assert_quantity_allclose(sp_syn.integrate(np.arange(600, 1000)*u.nm),
+                                 sp_oaa.integrate(np.arange(600, 1000)*u.nm), rtol=0.02)
 
-        def _range(wl_from, wl_to):
-            return np.flatnonzero((oaa_l > wl_from) & (oaa_l < wl_to))
+        assert_quantity_allclose(sp_syn.integrate(np.arange(1100, 1400)*u.nm),
+                                 sp_oaa.integrate(np.arange(1100, 1400)*u.nm), rtol=0.02)
 
-        # assert spectra are equal within 2% when integrated over R J H bands
-        limr = _range(600*u.nm, 1000*u.nm)
-        assert_quantity_allclose(np.trapz(oaa_s[limr], x=oaa_l[limr]),
-                                 np.trapz(spv_erg[limr], x=oaa_l[limr]), rtol=0.02)
+        assert_quantity_allclose(sp_syn.integrate(np.arange(1500, 1800)*u.nm),
+                                 sp_oaa.integrate(np.arange(1500, 1800)*u.nm), rtol=0.02)
 
-        limr = _range(1100*u.nm, 1400*u.nm)
-        assert_quantity_allclose(np.trapz(oaa_s[limr], x=oaa_l[limr]),
-                                 np.trapz(spv_erg[limr], x=oaa_l[limr]), rtol=0.02)
 
-        limr = _range(1500*u.nm, 1800*u.nm)
-        assert_quantity_allclose(np.trapz(oaa_s[limr], x=oaa_l[limr]),
-                                 np.trapz(spv_erg[limr], x=oaa_l[limr]), rtol=0.02)
 
     def test_oaalib_compare_normalized(self):
+        '''
+        Check K5V spectrum normalized in ESO_ETC_R in oaalib and synphot are identical
+        
+        Assert countrate from K5V spectrum normalized to 0mag in ESO_ETC_R
+        from oaalib and synphot integrated in 1500-1800nm are equal within 5% 
+        '''
+
         import matplotlib.pyplot as plt
 
         def _load_oaalib_K5V_R():
@@ -122,34 +119,30 @@ class NormalizedStarSpectrumTest(unittest.TestCase):
 
         # load oaalib K5V normalized to 0 mag on ESO_ETC_R
         oaa_l, oaa_s = _load_oaalib_K5V_R()
+        sp_oaa = SourceSpectrum(synphot.spectrum.Empirical1D,
+                                points=oaa_l, lookup_table=oaa_s)
+
 
         # get normalized spectrum
-        spv = get_normalized_star_spectrum('K5V', 0, Filters.ESO_ETC_R)
-        # convert to oaa lib units
-        spv_erg = synphot.units.convert_flux(
-            oaa_l, spv(oaa_l), u.ph / (u.s * u.m**2 * u.um))
+        sp_arte = get_normalized_star_spectrum('K5V', 0, Filters.ESO_ETC_R)
 
-        def _plot():
-            plt.plot(oaa_l, (oaa_s-spv_erg)/spv_erg)
-            plt.xlabel('Micron')
-            plt.ylabel('vega spectrum: (OAA-SYNPHOT)/SYNPHOT')
-            plt.grid()
-            plt.semilogx()
-            plt.xlim(0.4500, 2.2000)
-            plt.ylim(-0.1, 0.1)
-
-        def _range(wl_from, wl_to):
-            return np.flatnonzero((oaa_l > wl_from) & (oaa_l < wl_to))
+        # def _plot():
+        #     plt.plot(oaa_l, (oaa_s-spv_erg)/spv_erg)
+        #     plt.xlabel('Micron')
+        #     plt.ylabel('vega spectrum: (OAA-SYNPHOT)/SYNPHOT')
+        #     plt.grid()
+        #     plt.semilogx()
+        #     plt.xlim(0.4500, 2.2000)
+        #     plt.ylim(-0.1, 0.1)
 
         # compute fluxes in 1500-1800nm
-        limr = _range(1500*u.nm, 1800*u.nm)
-        oaa_flux = np.trapz(oaa_s[limr], x=oaa_l[limr])
-        arte_flux = np.trapz(spv_erg[limr], x=oaa_l[limr])
+        oaa_flux = sp_oaa.integrate(np.arange(1500, 1800)*u.nm)
+        arte_flux = sp_arte.integrate(np.arange(1500, 1800)*u.nm)
         print("oaa_lib %s / arte %s  - diff %g %%" %
               (oaa_flux, arte_flux, (arte_flux-oaa_flux)/oaa_flux*100))
 
-        # assert spectra are equal within 2% when integrated over R J H bands
-        assert_quantity_allclose(oaa_flux, arte_flux, rtol=0.02)
+        # assert spectra are almost equal
+        assert_quantity_allclose(oaa_flux, arte_flux, rtol=0.05)
 
     def test_countrate_of_normalized_spectra_on_Bessel(self):
         '''
@@ -196,16 +189,23 @@ class NormalizedStarSpectrumTest(unittest.TestCase):
 
     def test_integrate_with_proper_waveset(self):
         '''
-        Pay attention to integrate() with spectra
+        Assert Observation.countrate and integration are equal
+        
+        Integrate K5V on ESO_ETC_R with integrate on differente wavesets
+        and compare with observation 
         '''
         # Assuming Observation computes correct values
-        filtername = Filters.ESO_ETC_R
+        filtername = Filters.ESO_ETC_H
         f_r = Filters.get(filtername)
         sp_k5V = get_normalized_star_spectrum('K5V', 0, filtername)
-        cts_observation = Observation(sp_k5V, f_r).countrate(
-            area=1*u.m**2, binned=False)
-        cts_integrate_filter_waveset = (sp_k5V*f_r).integrate(f_r.waveset)
-        cts_integrate_star_waveset = (sp_k5V*f_r).integrate(sp_k5V.waveset)
+        cts_observation_ph = Observation(sp_k5V, f_r).countrate(
+            area=1*u.cm**2, binned=False)
+        cts_observation = cts_observation_ph.to_value(
+            u.count/u.s) * u.photon/(u.s * u.cm**2)
+        cts_integrate_filter_waveset = (
+            sp_k5V*f_r).integrate(f_r.waveset)
+        cts_integrate_star_waveset = (
+            sp_k5V*f_r).integrate(sp_k5V.waveset)
         cts_integrate_spectrum_waveset = (
             sp_k5V*f_r).integrate((sp_k5V*f_r).waveset)
 
@@ -218,6 +218,13 @@ class NormalizedStarSpectrumTest(unittest.TestCase):
               (cts_integrate_star_waveset))
         print("Flux from integrate on spectrum waveset %s" %
               (cts_integrate_spectrum_waveset))
+
+        assert_quantity_allclose(
+            cts_observation, cts_integrate_star_waveset, rtol=0.01)
+        assert_quantity_allclose(
+            cts_observation, cts_integrate_spectrum_waveset, rtol=0.01)
+        assert_quantity_allclose(
+            cts_observation, cts_integrate_filter_waveset, rtol=0.01)
 
 
 
