@@ -134,7 +134,7 @@ class CircularMask(BaseMask):
         return self._maskCenter
 
     @staticmethod
-    def fromMaskedArray(maskedArray):
+    def fromMaskedArray(maskedArray, method='ImageMoments'):
         '''
         Creates a `CircularMask` roughly corresponding to the mask of a masked
         array
@@ -160,19 +160,35 @@ class CircularMask(BaseMask):
         '''
         assert isinstance(maskedArray, np.ma.masked_array)
         shape = maskedArray.shape
-        again = 0.995
-        while again:
-            im = ImageMoments(maskedArray.mask.astype(int) * -1 + 1)
-            centerYX = np.roll(im.centroid(), 1)
-            radius = again * np.min(im.semiAxes())
-            circularMask = CircularMask(shape, radius, centerYX)
-            if np.in1d(circularMask.in_mask_indices(),
-                       np.argwhere(maskedArray.mask.flatten() == False)).all():
-                again = False
-            if radius < 1:
-                raise Exception("Couldn't estimate a CircularMask")
-            else:
-                again *= 0.9
+        if method == "ImageMoments":
+            again = 0.995
+            while again:
+                im = ImageMoments(maskedArray.mask.astype(int) * -1 + 1)
+                centerYX = np.roll(im.centroid(), 1)
+                radius = again * np.min(im.semiAxes())
+                circularMask = CircularMask(shape, radius, centerYX)
+                if np.in1d(circularMask.in_mask_indices(),
+                           np.argwhere(maskedArray.mask.flatten() == False)).all():
+                    again = False
+                if radius < 1:
+                    raise Exception("Couldn't estimate a CircularMask")
+                else:
+                    again *= 0.9
+        elif method == "RANSAC":
+            pass
+        elif method == 'cog':
+            img = np.asarray(self._mask.copy(), dtype=int)
+            regions = measure.regionprops(img)
+            bubble = regions[0]
+            y0, x0 = bubble.centroid
+            r = bubble.major_axis_length / 2.
+            return [x0, y0, r]
+        elif method == 'correlation':
+            obj = sf.ShapeFitter(self._mask)
+            obj.fit()
+            return obj.params()
+        elif method == "correlation":
+            pass
 
         return circularMask
 
@@ -185,6 +201,180 @@ class CircularMask(BaseMask):
 
     def in_mask_indices(self):
         return self.asTransmissionValue().flatten().nonzero()[0]
+
+
+    def _fit_circle_ransac(self,
+                          apply_canny=True,
+                          sigma=3,
+                          display=False,
+                          **keywords):
+        '''Perform a circle fitting on the current mask using RANSAC algorithm
+
+        Parameters
+        ----------
+            apply_canny: bool, default=True
+                apply Canny edge detection before performing the fit.
+            sigma: float, default=10
+                if apply_canny is True, you can decide the Canny kernel size.
+            display: bool, default=False
+                it shows the result of the fit.
+        '''
+        self._shape_fitted = 'circle'
+        self._method = 'ransac'
+        img = np.asarray(self._mask.copy(), dtype=float)
+        img[img > 0] = 128
+
+        edge = img.copy()
+        if apply_canny:
+            edge = feature.canny(img, sigma)
+
+        coords = np.column_stack(np.nonzero(edge))
+
+        model, inliers = measure.ransac(
+            coords, measure.CircleModel,
+            keywords.pop('min_samples', 10), residual_threshold=0.01,
+            max_trials=1000)
+        cx, cy, r = model.params
+
+        if display is True:
+            print(r"Cx-Cy {:.2f}-{:.2f}, R {:.2f}".format(cx, cy, r))
+            rr, cc = draw.disk((model.params[0], model.params[1]),
+                               model.params[2],
+                               shape=img.shape)
+            img[rr, cc] += 512
+            # plt.figure()
+            self._dispnobl(img)
+
+        self._params = model.params
+        self._success = model.estimate(coords)
+
+    def _fit_circle_correlation(self,
+                               method='Nelder-Mead',
+                               display=False,
+                               **keywords):
+        '''Perform a circle fitting on the current mask using minimization
+        algorithm  with correlation merit functions.
+
+        Tested with following minimizations methods: 'Nelder-Mead'. Relative
+        precision of 1% reached on synthetic images without noise.
+
+        Parameters
+        ----------
+            method: string, default='Nelder-Mead'
+                from scipy.optimize.minimize.
+            display: bool, default=False
+                SLOWLY shows the progress of the fit.
+            **keywords: dict, optional
+                passed to scipy.optimize.minimize
+        '''
+
+        self._method = 'correlation ' + method
+
+        img = np.asarray(self._mask.copy(), dtype=int)
+        regions = measure.regionprops(img)
+        bubble = regions[0]
+
+        x0, y0 = bubble.centroid
+        r = bubble.major_axis_length / 2.
+        if display:
+            fign = plt.figure()
+
+        self._shape_fitted = 'circle'
+        self._initial_guess = (x0, y0, r)
+
+        def _cost_disk(params):
+            x0, y0, r = params
+            coords = draw.disk((x0, y0), r, shape=img.shape)
+            template = np.zeros_like(img)
+            template[coords] = 1
+            if display:
+                self._dispnobl(template + img, fign)
+            return -np.sum((template > 0) & (img > 0))
+
+        res = optimize.minimize(_cost_disk, self._initial_guess,
+                                method=method, **keywords)
+        self._params = res.x
+        self._success = res.success
+        if res.success is True:
+            return
+        elif (method != 'COBYLA' and res.nit == 0):
+            raise Exception("Fit circle didn't converge %s" % res)
+
+    def fit_annular_correlation(self,
+                                method='Nelder-Mead',
+                                display=False,
+                                **keywords):
+        '''Perform a annular circle fitting on the current mask using
+        minimization algorithm  with correlation merit functions.
+
+        Tested with following minimizations methods: 'Nelder-Mead'. Relative
+        precision of 1% reached on synthetic images without noise.
+
+        Parameters
+        ----------
+            method: string, default='Nelder-Mead'
+                from scipy.optimize.minimize. Choose among 'Nelder-Mead'
+            display: bool, default=False
+                SLOWLY shows the progress of the fit.
+            **keywords: dict, optional
+                passed to scipy.optimize.minimize
+        '''
+
+        self._method = 'correlation ' + method
+        img = np.asarray(self._mask.copy(), dtype=int)
+        regions = measure.regionprops(img)
+        bubble = regions[0]
+
+        x0, y0 = bubble.centroid
+        r = bubble.major_axis_length / 2.
+        inr = r / 2
+        if display:
+            fign = plt.figure()
+
+        self._shape_fitted = 'annulus'
+        self._initial_guess = (x0, y0, r, inr)
+
+        def _cost_annular_disk(params):
+            x0, y0, r, inr = params
+            coords = draw.disk((x0, y0), r, shape=img.shape)
+            template = np.zeros_like(img)
+            template[coords] = 1
+
+            coords2 = draw.disk((x0, y0), inr, shape=img.shape)
+            template2 = np.zeros_like(img)
+            template2[coords2] = 1
+            template -= template2
+
+            if display:
+                self._dispnobl(template + img, fign)
+
+            merit_fcn = np.sum((template - img)**2)
+
+            return np.sqrt(merit_fcn)
+
+        linear_constraint = LinearConstraint(
+            np.identity(4, float32), np.zeros(4),
+            np.zeros(4) + np.max(img.shape))
+        res = optimize.minimize(_cost_annular_disk, self._initial_guess,
+                                method=method, constraints=linear_constraint,
+                                **keywords)
+        self._params = res.x
+        self._success = res.success
+        if res.success is False or (method != 'COBYLA' and res.nit == 0):
+            raise Exception("Fit circle with hole didn't converge %s" % res)
+
+    def _dispnobl(self, img, fign=None, **kwargs):
+
+        if fign is not None:
+            plt.figure(fign.number)
+        plt.clf()
+        plt.imshow(img, aspect='auto', **kwargs)
+        plt.colorbar()
+        plt.draw()
+        plt.ion()
+        plt.show()
+        plt.pause(0.001)
+        plt.ioff()
 
 
 class AnnularMask(CircularMask):
