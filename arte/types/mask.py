@@ -1,6 +1,10 @@
 import numpy as np
 from arte.types.region_of_interest import RegionOfInterest
 from arte.utils.image_moments import ImageMoments
+from skimage import feature
+from skimage import measure, draw
+from scipy import optimize
+from scipy.optimize import LinearConstraint
 
 
 class BaseMask():
@@ -175,21 +179,47 @@ class CircularMask(BaseMask):
                 else:
                     again *= 0.9
         elif method == "RANSAC":
+            img = np.asarray(maskedArray.mask.astype(float) * -1 + 1)
+            img[img > 0] = 128
+            edge = img.copy()
+            edge = feature.canny(img, sigma)
+
+            coords = np.column_stack(np.nonzero(edge))
+
+            model, inliers = measure.ransac(
+                coords, measure.CircleModel,
+                keywords.pop('min_samples', 10), residual_threshold=0.01,
+                max_trials=1000)
+            cx, cy, r = model.params
+
+            if display is True:
+                print(r"Cx-Cy {:.2f}-{:.2f}, R {:.2f}".format(cx, cy, r))
+                rr, cc = draw.disk((model.params[0], model.params[1]),
+                                model.params[2],
+                                shape=img.shape)
+                img[rr, cc] += 512
+                # plt.figure()
+                self._dispnobl(img)
+
+            self._params = model.params
+            self._success = model.estimate(coords)
             pass
-        elif method == 'cog':
-            img = np.asarray(self._mask.copy(), dtype=int)
+
+        elif method == 'COG':
+            img = np.asarray(maskedArray.mask.astype(int) * -1 + 1)
             regions = measure.regionprops(img)
             bubble = regions[0]
             y0, x0 = bubble.centroid
+            y0+=0.5
+            x0+=0.5
             r = bubble.major_axis_length / 2.
-            return [x0, y0, r]
+            circularMask = CircularMask(shape, r, [y0,x0])
+            
         elif method == 'correlation':
             obj = sf.ShapeFitter(self._mask)
             obj.fit()
             return obj.params()
-        elif method == "correlation":
-            pass
-
+        
         return circularMask
 
     def regionOfInterest(self):
@@ -219,34 +249,7 @@ class CircularMask(BaseMask):
             display: bool, default=False
                 it shows the result of the fit.
         '''
-        self._shape_fitted = 'circle'
-        self._method = 'ransac'
-        img = np.asarray(self._mask.copy(), dtype=float)
-        img[img > 0] = 128
-
-        edge = img.copy()
-        if apply_canny:
-            edge = feature.canny(img, sigma)
-
-        coords = np.column_stack(np.nonzero(edge))
-
-        model, inliers = measure.ransac(
-            coords, measure.CircleModel,
-            keywords.pop('min_samples', 10), residual_threshold=0.01,
-            max_trials=1000)
-        cx, cy, r = model.params
-
-        if display is True:
-            print(r"Cx-Cy {:.2f}-{:.2f}, R {:.2f}".format(cx, cy, r))
-            rr, cc = draw.disk((model.params[0], model.params[1]),
-                               model.params[2],
-                               shape=img.shape)
-            img[rr, cc] += 512
-            # plt.figure()
-            self._dispnobl(img)
-
-        self._params = model.params
-        self._success = model.estimate(coords)
+        
 
     def _fit_circle_correlation(self,
                                method='Nelder-Mead',

@@ -30,6 +30,19 @@ class MaskTest(unittest.TestCase):
                                     mask.center()),
                         "center is %s" % mask.center())
 
+    def testCreateCircularMaskFromMaskedArrayWithCircleParametersEstimationCOG(self):
+        shape= (140, 100)
+        aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 45))
+        maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
+        retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='COG')
+
+        
+        np.testing.assert_allclose(
+            aMask.radius(), retrievedMask.radius(), rtol=0.01)
+        np.testing.assert_allclose(
+            aMask.center(), retrievedMask.center(), atol=0.)
+        self.assertTrue(np.in1d(retrievedMask.in_mask_indices(),
+                                aMask.in_mask_indices()).all())
 
     def testCreateCircularMaskFromMaskedArrayWithAReallyCircularMask(self):
         shape= (140, 100)
