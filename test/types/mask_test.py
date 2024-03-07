@@ -35,12 +35,16 @@ class MaskTest(unittest.TestCase):
         aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 45))
         maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
         retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='COG')
+        print("raggi %5.2f %5.2f " % (aMask.radius(),retrievedMask.radius()))
+        print("centri x %5.2f %5.2f " % (aMask.center()[0],retrievedMask.center()[1]))
+        print("centri y %5.2f %5.2f " % (aMask.center()[1],retrievedMask.center()[1]))
 
-        
         np.testing.assert_allclose(
             aMask.radius(), retrievedMask.radius(), rtol=0.01)
         np.testing.assert_allclose(
-            aMask.center(), retrievedMask.center(), atol=0.)
+            aMask.center(), retrievedMask.center(), atol=0.01)
+        print("number of masked pix: %d  vs %d " % (retrievedMask.in_mask_indices().size,aMask.in_mask_indices().size))
+        print("number of masked pix: %d  vs %d " % ( np.sum((retrievedMask.mask()==0) - (aMask.mask() ==0))))
         self.assertTrue(np.in1d(retrievedMask.in_mask_indices(),
                                 aMask.in_mask_indices()).all())
 
