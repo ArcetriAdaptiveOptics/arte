@@ -161,13 +161,13 @@ class CircularMask(BaseMask):
         assert isinstance(maskedArray, np.ma.masked_array)
         shape = maskedArray.shape
         again = 0.995
+        im = ImageMoments(maskedArray.mask.astype(int) * -1 + 1)
         while again:
-            im = ImageMoments(maskedArray.mask.astype(int) * -1 + 1)
             centerYX = np.roll(im.centroid(), 1)
             radius = again * np.min(im.semiAxes())
             circularMask = CircularMask(shape, radius, centerYX)
             if np.in1d(circularMask.in_mask_indices(),
-                       np.argwhere(maskedArray.mask.flatten() == False)).all():
+                       np.argwhere(maskedArray.mask.flatten() is False)).all():
                 again = False
             if radius < 1:
                 raise Exception("Couldn't estimate a CircularMask")
