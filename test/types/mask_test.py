@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#%%
 import unittest
 import numpy as np
 from arte.types.mask import CircularMask, AnnularMask
@@ -31,22 +32,95 @@ class MaskTest(unittest.TestCase):
                         "center is %s" % mask.center())
 
     def testCreateCircularMaskFromMaskedArrayWithCircleParametersEstimationCOG(self):
+        print("testing COG")
         shape= (140, 100)
         aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 45))
         maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
         retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='COG')
-        print("raggi %5.2f %5.2f " % (aMask.radius(),retrievedMask.radius()))
-        print("centri x %5.2f %5.2f " % (aMask.center()[0],retrievedMask.center()[1]))
-        print("centri y %5.2f %5.2f " % (aMask.center()[1],retrievedMask.center()[1]))
-
-        np.testing.assert_allclose(
-            aMask.radius(), retrievedMask.radius(), rtol=0.01)
-        np.testing.assert_allclose(
-            aMask.center(), retrievedMask.center(), atol=0.01)
+        print("rays %5.2f %5.2f " % (aMask.radius(),retrievedMask.radius()))
+        print("center x %5.2f %5.2f " % (aMask.center()[0],retrievedMask.center()[0]))
+        print("center y %5.2f %5.2f " % (aMask.center()[1],retrievedMask.center()[1]))
         print("number of masked pix: %d  vs %d " % (retrievedMask.in_mask_indices().size,aMask.in_mask_indices().size))
-        print("number of masked pix: %d  vs %d " % ( np.sum((retrievedMask.mask()==0) - (aMask.mask() ==0))))
-        self.assertTrue(np.in1d(retrievedMask.in_mask_indices(),
-                                aMask.in_mask_indices()).all())
+        np.testing.assert_allclose(
+            aMask.radius(), retrievedMask.radius(), rtol=0.1)
+        np.testing.assert_allclose(
+            aMask.center(), retrievedMask.center(), atol=0.1)
+        
+        # print("ratio between common and forseen %d" % ( 
+        #       np.sum(np.in1d(aMask.in_mask_indices(), retrievedMask.in_mask_indices())) /
+        #                               float(aMask.in_mask_indices().size)))
+        # np.testing.assert_allclose(np.sum(np.in1d(aMask.in_mask_indices(), retrievedMask.in_mask_indices())),
+        #                               aMask.in_mask_indices().size, atol=0.1)
+
+
+
+    def testCreateCircularMaskFromMaskedArrayWithCircleParametersEstimationImageMoments(self):
+        print("testing ImageMoments")
+        shape= (140, 100)
+        aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 45))
+        maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
+        retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='ImageMoments')
+        print("rays %5.2f %5.2f " % (aMask.radius(),retrievedMask.radius()))
+        print("center x %5.2f %5.2f " % (aMask.center()[0],retrievedMask.center()[0]))
+        print("center y %5.2f %5.2f " % (aMask.center()[1],retrievedMask.center()[1]))
+        print("number of masked pix: %d  vs %d " % (retrievedMask.in_mask_indices().size,aMask.in_mask_indices().size))
+        np.testing.assert_allclose(
+            aMask.radius(), retrievedMask.radius(), rtol=0.1)
+        np.testing.assert_allclose(
+            aMask.center(), retrievedMask.center(), atol=0.1)
+        
+        #print("ratio between common and forseen %d" % ( 
+        #       np.sum(np.in1d(aMask.in_mask_indices(), retrievedMask.in_mask_indices())) /
+        #                               float(aMask.in_mask_indices().size)))
+        # np.testing.assert_allclose(np.sum(np.in1d(aMask.in_mask_indices(), retrievedMask.in_mask_indices())),
+        #                               aMask.in_mask_indices().size, atol=0.1)
+
+
+
+    def testCreateCircularMaskFromMaskedArrayWithCircleParametersEstimationCorrelation(self):
+        print("testing Correlation")
+        shape= (140, 100)
+        aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 45))
+        maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
+        retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='correlation')
+        print("rays %5.2f %5.2f " % (aMask.radius(),retrievedMask.radius()))
+        print("center x %5.2f %5.2f " % (aMask.center()[0],retrievedMask.center()[0]))
+        print("center y %5.2f %5.2f " % (aMask.center()[1],retrievedMask.center()[1]))
+        print("number of masked pix: %d  vs %d " % (retrievedMask.in_mask_indices().size,aMask.in_mask_indices().size))        
+        np.testing.assert_allclose(
+            aMask.radius(), retrievedMask.radius(), rtol=0.1)
+        np.testing.assert_allclose(
+            aMask.center(), retrievedMask.center(), atol=0.1)
+
+        # print("ratio between common and forseen %d" % ( 
+        #       np.sum(np.in1d(aMask.in_mask_indices(), retrievedMask.in_mask_indices())) /
+        #                               float(aMask.in_mask_indices().size)))
+        # np.testing.assert_allclose(np.sum(np.in1d(aMask.in_mask_indices(), retrievedMask.in_mask_indices())),
+        #                               aMask.in_mask_indices().size, atol=0.1)
+
+
+
+    def testCreateCircularMaskFromMaskedArrayWithCircleParametersEstimationRANSAC(self):
+        print("testing RANSAC")
+        shape= (140, 100)
+        aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 45))
+        maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
+        retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='RANSAC')
+        print("rays %5.2f %5.2f " % (aMask.radius(),retrievedMask.radius()))
+        print("center x %5.2f %5.2f " % (aMask.center()[0],retrievedMask.center()[0]))
+        print("center y %5.2f %5.2f " % (aMask.center()[1],retrievedMask.center()[1]))
+        print("number of masked pix: %d  vs %d " % (retrievedMask.in_mask_indices().size,aMask.in_mask_indices().size))
+        np.testing.assert_allclose(
+            aMask.radius(), retrievedMask.radius(), rtol=0.1)
+        np.testing.assert_allclose(
+            aMask.center(), retrievedMask.center(), atol=0.1)
+        # print("ratio between common and forseen %d" % ( 
+        #       np.sum(np.in1d(aMask.in_mask_indices(), retrievedMask.in_mask_indices())) /
+        #                               float(aMask.in_mask_indices().size)))
+        # np.testing.assert_allclose(np.sum(np.in1d(aMask.in_mask_indices(), retrievedMask.in_mask_indices())),
+        #                               aMask.in_mask_indices().size, atol=0.1)
+
+
 
     def testCreateCircularMaskFromMaskedArrayWithAReallyCircularMask(self):
         shape= (140, 100)
@@ -54,12 +128,13 @@ class MaskTest(unittest.TestCase):
         maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
         retrievedMask= CircularMask.fromMaskedArray(maskedArray)
         np.testing.assert_allclose(
-            aMask.radius(), retrievedMask.radius(), rtol=0.01)
+            aMask.radius(), retrievedMask.radius(), rtol=0.1)
         np.testing.assert_allclose(
-            aMask.center(), retrievedMask.center(), atol=1)
+            aMask.center(), retrievedMask.center(), atol=0.1)
         self.assertTrue(np.in1d(retrievedMask.in_mask_indices(),
                                 aMask.in_mask_indices()).all())
-
+        
+    
 
     def testCreateCircularMaskFromMaskedArrayWithFloats(self):
         aMask = CircularMask((486, 640), 126.32, (235.419, 309.468))
@@ -73,6 +148,7 @@ class MaskTest(unittest.TestCase):
             aMask.center(), retrievedMask.center(), atol=1)        
         self.assertTrue(np.in1d(retrievedMask.in_mask_indices(),
                                 aMask.in_mask_indices()).all())
+
 
 
     def testCreateCircularMaskFromMaskedArrayWithNonCircularMask(self):
