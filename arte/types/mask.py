@@ -199,7 +199,7 @@ class CircularMask(BaseMask):
                 coords, measure.CircleModel,
                 min_samples = keywords.pop('min_samples', 20), 
                 residual_threshold = keywords.pop('residual_threshold',0.001),
-                max_trials = keywords.pop('max_trials',1000))
+                max_trials = keywords.pop('max_trials',10000))
             cx, cy, r = model.params
 
             if  keywords.pop('display', False) is True:
