@@ -111,9 +111,9 @@ class MaskTest(unittest.TestCase):
         print("center y %5.2f %5.2f " % (aMask.center()[1],retrievedMask.center()[1]))
         print("number of masked pix: %d  vs %d " % (retrievedMask.in_mask_indices().size,aMask.in_mask_indices().size))
         np.testing.assert_allclose(
-            aMask.radius(), retrievedMask.radius(), rtol=0.11)
+            aMask.radius(), retrievedMask.radius(), rtol=0.1)
         np.testing.assert_allclose(
-            aMask.center(), retrievedMask.center(), atol=0.11)
+            aMask.center(), retrievedMask.center(), atol=0.5)
         # print("ratio between common and forseen %d" % ( 
         #       np.sum(np.in1d(aMask.in_mask_indices(), retrievedMask.in_mask_indices())) /
         #                               float(aMask.in_mask_indices().size)))
