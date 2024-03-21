@@ -259,6 +259,7 @@ class CircularMask(BaseMask):
             x0+=0.5
             if res.success is True:
                 circularMask = CircularMask(img.shape, r, [x0,y0])
+
             else:
                 raise Exception("Fit circle didn't converge %s" % res)
             
