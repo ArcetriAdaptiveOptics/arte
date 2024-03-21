@@ -191,7 +191,7 @@ class CircularMask(BaseMask):
             img = np.asarray(maskedArray.mask.astype(float) * -1 + 1)
             img[img > 0] = 128
             edge = img.copy()
-            edge = feature.canny(img, keywords.pop('sigmaCanny', 3))
+            edge = feature.canny(img, keywords.pop('sigmaCanny', 2))
 
             coords = np.column_stack(np.nonzero(edge))
 
