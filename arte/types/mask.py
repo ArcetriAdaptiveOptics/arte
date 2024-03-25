@@ -6,6 +6,7 @@ from skimage import feature
 from skimage import measure, draw
 from scipy import optimize
 from scipy.optimize import LinearConstraint
+import warnings
 
 
 class BaseMask():
@@ -146,8 +147,8 @@ class CircularMask(BaseMask):
         
         Returns a `CircularMask` object having radius and center guessed from
         the passed mask using `ImageMoments` centroid and semiAxes as default.
-        Important note: the created `CircularMask` object 
-        Using "ImageMoments" is not guaranteed to have the same set of valid points of the 
+        Important note: the created `CircularMask` object using "ImageMoments" 
+        is not guaranteed to have the same set of valid points of the 
         passed mask, but it is included in the passed mask, i.e. all the 
         valid points of the created mask are also valid points of the passed 
         masked array 
@@ -298,6 +299,10 @@ class CircularMask(BaseMask):
         #     raise Exception("Fit circle with hole didn't converge %s" % res)
         # #end annular mask to be implemented
         
+        if not np.in1d(circularMask.in_mask_indices(),
+                       np.argwhere(maskedArray.mask.flatten() == False)).all():
+            warnings.warn(
+                "The generated CircularMask is not completely included in the passed masked array")
         return circularMask
 
     def regionOfInterest(self):
@@ -309,11 +314,6 @@ class CircularMask(BaseMask):
 
     def in_mask_indices(self):
         return self.asTransmissionValue().flatten().nonzero()[0]
-
-
-
- 
-    
 
     def _dispnobl(img, fign=None, **kwargs):
 
