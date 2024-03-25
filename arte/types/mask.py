@@ -1,6 +1,11 @@
 import numpy as np
 from arte.types.region_of_interest import RegionOfInterest
 from arte.utils.image_moments import ImageMoments
+from skimage import feature
+from skimage import measure, draw
+from scipy import optimize
+import warnings
+import matplotlib.pyplot as plt
 
 
 class BaseMask():
@@ -78,6 +83,11 @@ class CircularMask(BaseMask):
             Y-X coordinates of the pupil center in pixel
     '''
 
+    FITTING_METHOD_IMAGE_MOMENTS = "ImageMoments"
+    FITTING_METHOD_RANSAC = "RANSAC"
+    FITTING_METHOD_CENTER_OF_GRAVITY = "COG"
+    FITTING_METHOD_CORRELATION = "correlation"
+
     def __init__(self,
                  frameShape,
                  maskRadius=None,
@@ -134,23 +144,32 @@ class CircularMask(BaseMask):
         return self._maskCenter
 
     @staticmethod
-    def fromMaskedArray(maskedArray):
+    def fromMaskedArray(maskedArray, method='ImageMoments', **keywords):
         '''
         Creates a `CircularMask` roughly corresponding to the mask of a masked
         array
         
         Returns a `CircularMask` object having radius and center guessed from
-        the passed mask using `ImageMoments` centroid and semiAxes.
-        Important note: the created `CircularMask` object 
+        the passed mask using `ImageMoments` centroid and semiAxes as default.
+        
+        Important note: the created `CircularMask` object using "ImageMoments" 
         is not guaranteed to have the same set of valid points of the 
         passed mask, but it is included in the passed mask, i.e. all the 
         valid points of the created mask are also valid points of the passed 
-        masked array 
+        masked array. For the other methods this last property is not guaranteed.  
+
+        Other valid circle estimation methods are:
+        - "RANSAC" : circle fitting using RANSAC algorithm on Canny edge detection
+        - "COG" : circle fitting using Center of gravity of the mask
+        - "correlation" : circle fitting using correlation of the mask with a disk template
+
         
         Parameters
         ----------
         maskedArray: `~numpy.ma.MaskedArray` 
             a masked array with a circular mask
+        method: string
+            method for circle estimation. Default is "ImageMoments"
 
         Returns
         -------
@@ -160,20 +179,99 @@ class CircularMask(BaseMask):
         '''
         assert isinstance(maskedArray, np.ma.masked_array)
         shape = maskedArray.shape
-        again = 0.995
-        im = ImageMoments(maskedArray.mask.astype(int) * -1 + 1)
-        while again:
-            centerYX = np.roll(im.centroid(), 1)
-            radius = again * np.min(im.semiAxes())
-            circularMask = CircularMask(shape, radius, centerYX)
-            if np.in1d(circularMask.in_mask_indices(),
-                       np.argwhere(maskedArray.mask.flatten() is False)).all():
-                again = False
-            if radius < 1:
-                raise Exception("Couldn't estimate a CircularMask")
-            else:
-                again *= 0.9
+        if method == CircularMask.FITTING_METHOD_IMAGE_MOMENTS:
+            again = 0.995
+            while again:
+                im = ImageMoments(maskedArray.mask.astype(int) * -1 + 1)
+                centerYX = np.roll(im.centroid(), 1)
+                radius = again * np.min(im.semiAxes())
+                circularMask = CircularMask(shape, radius, centerYX)
+                if np.in1d(circularMask.in_mask_indices(),
+                           np.argwhere(maskedArray.mask.flatten() == False)).all():
+                    again = False
+                if radius < 1:
+                    raise Exception("Couldn't estimate a CircularMask")
+                else:
+                    again *= 0.9
+        elif method == CircularMask.FITTING_METHOD_RANSAC:
+            img = np.asarray(maskedArray.mask.astype(float) * -1 + 1)
+            img[img > 0] = 128
+            edge = img.copy()
+            edge = feature.canny(img, keywords.pop('sigmaCanny', 2))
 
+            coords = np.column_stack(np.nonzero(edge))
+
+            model, inliers = measure.ransac(
+                coords, measure.CircleModel,
+                min_samples = keywords.pop('min_samples', 20), 
+                residual_threshold = keywords.pop('residual_threshold',0.001),
+                max_trials = keywords.pop('max_trials',10000))
+            cx, cy, r = model.params
+
+            if  keywords.pop('display', False) is True:
+                print(r"Cx-Cy {:.2f}-{:.2f}, R {:.2f}".format(cx, cy, r))
+                rr, cc = draw.disk((model.params[0], model.params[1]),
+                                model.params[2],
+                                shape=img.shape)
+                img[rr, cc] += 512
+                CircularMask._dispnobl(img)
+
+            cy+=0.5
+            cx+=0.5
+            circularMask = CircularMask(img.shape, r, [cx,cy])
+
+        elif method == CircularMask.FITTING_METHOD_CENTER_OF_GRAVITY:
+            img = np.asarray(maskedArray.mask.astype(int) * -1 + 1)
+            regions = measure.regionprops(img)
+            bubble = regions[0]
+            y0, x0 = bubble.centroid
+            y0+=0.5
+            x0+=0.5
+            r = bubble.major_axis_length / 2.
+            circularMask = CircularMask(img.shape, r, [y0,x0])
+            
+        elif method == CircularMask.FITTING_METHOD_CORRELATION:
+            
+            img = np.asarray(maskedArray.mask.astype(int) * -1 + 1)
+            regions = measure.regionprops(img)
+            bubble = regions[0]
+
+            x0, y0 = bubble.centroid
+            r = bubble.major_axis_length / 2.
+
+            initial_guess = (x0, y0, r)
+            display = keywords.pop('display', False)
+
+            if display:
+                fign=plt.figure()
+                
+            def _cost_disk(params):
+                x0, y0, r = params
+                coords = draw.disk((x0, y0), r, shape=img.shape)
+                template = np.zeros_like(img)
+                template[coords] = 1
+                if display:
+                    CircularMask._dispnobl(template + img, fign)
+                return -np.sum((template > 0) & (img > 0))
+
+            res = optimize.minimize(_cost_disk, initial_guess,
+                                    method='Nelder-Mead', **keywords)
+            x0, y0, r = res.x
+            y0+=0.5
+            x0+=0.5
+            if res.success is True:
+                circularMask = CircularMask(img.shape, r, [x0,y0])
+
+            else:
+                raise Exception("Fit circle didn't converge %s" % res)
+        
+        else:
+            raise ValueError("Unknown method %s" % method)
+
+        if not np.in1d(circularMask.in_mask_indices(),
+                       np.argwhere(maskedArray.mask.flatten() == False)).all():
+            warnings.warn(
+                "The generated CircularMask is not completely included in the passed masked array")
         return circularMask
 
     def regionOfInterest(self):
@@ -185,6 +283,18 @@ class CircularMask(BaseMask):
 
     def in_mask_indices(self):
         return self.asTransmissionValue().flatten().nonzero()[0]
+
+    def _dispnobl(img, fign=None, **kwargs):
+        if fign is not None:
+            plt.figure(fign.number)
+        plt.clf()
+        plt.imshow(img, aspect='auto', **kwargs)
+        plt.colorbar()
+        plt.draw()
+        plt.ion()
+        plt.show()
+        plt.pause(0.001)
+        plt.ioff()
 
 
 class AnnularMask(CircularMask):

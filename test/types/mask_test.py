@@ -1,13 +1,28 @@
 #!/usr/bin/env python
+#%%
 import unittest
+import logging
 import numpy as np
 from arte.types.mask import CircularMask, AnnularMask
 
 
+def _setUpBasicLogging():
+    import importlib
+    import logging
+    importlib.reload(logging)
+    logging.basicConfig(level=logging.DEBUG)
 
+
+def _except_on_warning():
+    import warnings
+    warnings.filterwarnings("error")
 
 class MaskTest(unittest.TestCase):
 
+    def setUp(self):
+        _setUpBasicLogging()
+        # _except_on_warning()
+        self._logger = logging.getLogger('MaskTest')
 
     def testStandard(self):
         mask= CircularMask((13, 14))
@@ -30,32 +45,85 @@ class MaskTest(unittest.TestCase):
                                     mask.center()),
                         "center is %s" % mask.center())
 
+    def _from_masked_array_test(self, orig_mask, retrieved_mask):
+        self._logger.debug("rays %5.2f %5.2f " %
+                           (orig_mask.radius(), retrieved_mask.radius()))
+        self._logger.debug("center x %5.2f %5.2f " %
+                           (orig_mask.center()[0], retrieved_mask.center()[0]))
+        self._logger.debug("center y %5.2f %5.2f " %
+                           (orig_mask.center()[1], retrieved_mask.center()[1]))
+        self._logger.debug("number of masked pix: %d  vs %d " % (
+            retrieved_mask.in_mask_indices().size, orig_mask.in_mask_indices().size))
+        np.testing.assert_allclose(
+            orig_mask.radius(), retrieved_mask.radius(), rtol=0.1)
+        np.testing.assert_allclose(
+            orig_mask.center(), retrieved_mask.center(), atol=0.5)
+        np.testing.assert_equal(orig_mask.shape(), retrieved_mask.shape())
+
+
+    def testCreateCircularMaskFromMaskedArrayWithCircleParametersEstimationCOG(self):
+        self._logger.debug("testing COG")
+        shape= (140, 100)
+        aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 45))
+        maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
+        retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='COG')
+        self._from_masked_array_test(aMask, retrievedMask)
+
+
+
+    def testCreateCircularMaskFromMaskedArrayWithCircleParametersEstimationImageMoments(self):
+        self._logger.debug("testing ImageMoments")
+        shape= (140, 100)
+        aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 45))
+        maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
+        retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='ImageMoments')
+        self._from_masked_array_test(aMask, retrievedMask)
+        self.assertTrue(np.isin(retrievedMask.in_mask_indices(),
+                        aMask.in_mask_indices()).all())
+
+
+
+    def testCreateCircularMaskFromMaskedArrayWithCircleParametersEstimationCorrelation(self):
+        self._logger.debug("testing Correlation")
+        shape= (140, 100)
+        aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 45))
+        maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
+        retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='correlation')
+        self._from_masked_array_test(aMask, retrievedMask)
+
+
+
+    def testCreateCircularMaskFromMaskedArrayWithCircleParametersEstimationRANSAC(self):
+        self._logger.debug("testing RANSAC")
+        shape= (140, 100)
+        aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 45))
+        maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
+        retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='RANSAC')
+        self._from_masked_array_test(aMask, retrievedMask)
+
+
 
     def testCreateCircularMaskFromMaskedArrayWithAReallyCircularMask(self):
         shape= (140, 100)
         aMask= CircularMask(shape, maskRadius=20, maskCenter=(60, 40))
         maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
         retrievedMask= CircularMask.fromMaskedArray(maskedArray)
-        np.testing.assert_allclose(
-            aMask.radius(), retrievedMask.radius(), rtol=0.01)
-        np.testing.assert_allclose(
-            aMask.center(), retrievedMask.center(), atol=1)
-        self.assertTrue(np.in1d(retrievedMask.in_mask_indices(),
-                                aMask.in_mask_indices()).all())
-
+        self._from_masked_array_test(aMask, retrievedMask)
+        self.assertTrue(np.isin(retrievedMask.in_mask_indices(),
+                        aMask.in_mask_indices()).all())
+        
+    
 
     def testCreateCircularMaskFromMaskedArrayWithFloats(self):
         aMask = CircularMask((486, 640), 126.32, (235.419, 309.468))
-        marray = np.ma.array(data = np.zeros((486, 640)), mask=aMask.mask())
+        marray = np.ma.array(data=np.ones((486, 640)), mask=aMask.mask())
         
         retrievedMask = CircularMask.fromMaskedArray(marray)
-        
-        np.testing.assert_allclose(
-            aMask.radius(), retrievedMask.radius(), rtol=0.01)
-        np.testing.assert_allclose(
-            aMask.center(), retrievedMask.center(), atol=1)        
-        self.assertTrue(np.in1d(retrievedMask.in_mask_indices(),
-                                aMask.in_mask_indices()).all())
+        self._from_masked_array_test(aMask, retrievedMask)
+        self.assertTrue(np.isin(retrievedMask.in_mask_indices(),
+                        aMask.in_mask_indices()).all())
+
+
 
 
     def testCreateCircularMaskFromMaskedArrayWithNonCircularMask(self):

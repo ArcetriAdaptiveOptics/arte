@@ -18,6 +18,8 @@ def circular_mask(size, center=None, diameter=1.0, obstruction=0.0):
     where 1 is the full aperture.
     *center* should be a sequence of two coordinates. If omitted or None,
     it will be set to [*size/2*,*size/2*].
+    
+    See also arte.types.mask for the class CircularMask and derived classes
     '''
     if center is None:
         center = [(size-1)/2, (size-1)/2]
