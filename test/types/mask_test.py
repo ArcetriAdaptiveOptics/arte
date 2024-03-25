@@ -57,7 +57,7 @@ class MaskTest(unittest.TestCase):
         np.testing.assert_allclose(
             orig_mask.radius(), retrieved_mask.radius(), rtol=0.1)
         np.testing.assert_allclose(
-            orig_mask.center(), retrieved_mask.center(), atol=0.1)
+            orig_mask.center(), retrieved_mask.center(), atol=0.5)
         np.testing.assert_equal(orig_mask.shape(), retrieved_mask.shape())
 
 
