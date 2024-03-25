@@ -59,8 +59,6 @@ class MaskTest(unittest.TestCase):
         np.testing.assert_allclose(
             orig_mask.center(), retrieved_mask.center(), atol=0.1)
         np.testing.assert_equal(orig_mask.shape(), retrieved_mask.shape())
-        self.assertTrue(np.isin(retrieved_mask.in_mask_indices(),
-                        orig_mask.in_mask_indices()).all())
 
 
     def testCreateCircularMaskFromMaskedArrayWithCircleParametersEstimationCOG(self):
@@ -80,6 +78,8 @@ class MaskTest(unittest.TestCase):
         maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
         retrievedMask= CircularMask.fromMaskedArray(maskedArray,method='ImageMoments')
         self._from_masked_array_test(aMask, retrievedMask)
+        self.assertTrue(np.isin(retrievedMask.in_mask_indices(),
+                        aMask.in_mask_indices()).all())
 
 
 
@@ -109,6 +109,8 @@ class MaskTest(unittest.TestCase):
         maskedArray= np.ma.masked_array(np.ones(shape), mask=aMask.mask())
         retrievedMask= CircularMask.fromMaskedArray(maskedArray)
         self._from_masked_array_test(aMask, retrievedMask)
+        self.assertTrue(np.isin(retrievedMask.in_mask_indices(),
+                        aMask.in_mask_indices()).all())
         
     
 
@@ -118,6 +120,8 @@ class MaskTest(unittest.TestCase):
         
         retrievedMask = CircularMask.fromMaskedArray(marray)
         self._from_masked_array_test(aMask, retrievedMask)
+        self.assertTrue(np.isin(retrievedMask.in_mask_indices(),
+                        aMask.in_mask_indices()).all())
 
 
 
