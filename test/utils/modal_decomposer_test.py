@@ -6,9 +6,28 @@ from arte.types.mask import CircularMask
 from arte.utils.modal_decomposer import ModalDecomposer
 from arte.types.wavefront import Wavefront
 from arte.types.slopes import Slopes
+from arte.types.modal_coefficients import ModalCoefficients
 
 
 class ModalDecomposerTest(unittest.TestCase):
+
+    def setUp(self):
+        self._center = (55, 60)
+        self._radius = 30
+        self._nPixelsX = 150
+        self._nPixelsY = 101
+        self._nModes = 100
+        self._nCoord = self._nModes
+        self._mask = CircularMask((128,128), self._radius, self._center)
+        self._user_mask = CircularMask((128,128), 32, (64,64))
+        self._wavefront = Wavefront(np.zeros((128,128)))
+        self._modal_decomposer = ModalDecomposer(self._nModes)
+
+        # Example usage:
+        _mask = CircularMask((self._nPixelsY, self._nPixelsX), self._radius, self._center )
+        # Generate coordinates couples
+        self._coordinates_list= self._generate_coordinates(self._center[1], self._center[0], self._radius, self._nCoord)
+ 
 
     def testMeasureZernikeCoefficientsFromSlopes(self):
         radius = 4
@@ -116,5 +135,100 @@ class ModalDecomposerTest(unittest.TestCase):
             msg="zernike decomposition is %s" % str(zernike))
 
 
+   
+    def _generate_coordinates(self, center_x, center_y, radius, num_points):
+    # Initialize list to hold coordinates
+        coordinates = []
+        
+        # Determine the number of circles needed
+        area_per_point = np.pi * (radius ** 2) / num_points
+        radius_step = np.sqrt(area_per_point / np.pi)
+        
+        # Start with the center point
+        current_radius = 0
+        while current_radius < radius:
+            # Determine the number of points on this circle
+            circumference = 2 * np.pi * current_radius
+            points_on_circle = int(circumference / np.sqrt(area_per_point))
+            
+            # Generate points on this circle
+            for i in range(points_on_circle):
+                angle = 2 * np.pi * i / points_on_circle
+                x = center_x + current_radius * np.cos(angle)
+                y = center_y + current_radius * np.sin(angle)
+                coordinates.append((x, y))
+            
+            # Move to the next circle
+            current_radius += radius_step
+        
+        return coordinates
+
+    def testMeasureZernikeCoefficientsFromWavefront(self):
+        modal_coefficients = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, "ZERNIKE", start_mode=1
+        )
+        self.assertIsInstance(modal_coefficients, ModalCoefficients)
+        self.assertEqual(modal_coefficients.numberOfModes(), self._nModes)
+        self.assertEqual(modal_coefficients.counter(), 0)
+
+    def testMeasureKLCoefficientsFromWavefront(self):
+        modal_coefficients = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, "KL", coordinates_list=self._coordinates_list
+        )
+        self.assertIsInstance(modal_coefficients, ModalCoefficients)
+        self.assertEqual(modal_coefficients.numberOfModes(), self._nModes)
+        self.assertEqual(modal_coefficients.counter(), 0)
+
+    def testMeasureTPSRBFcoefficientsFromWavefront(self):
+        modal_coefficients = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, "TPS_RBF", coordinates_list=self._coordinates_list
+        )
+        self.assertIsInstance(modal_coefficients, ModalCoefficients)
+        self.assertEqual(modal_coefficients.numberOfModes(), self._nModes)
+        self.assertEqual(modal_coefficients.counter(), 0)
+
+    def testMeasureGaussRBFcoefficientsFromWavefront(self):
+        modal_coefficients = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, "GAUSS_RBF", coordinates_list=self._coordinates_list
+        )
+        self.assertIsInstance(modal_coefficients, ModalCoefficients)
+        self.assertEqual(modal_coefficients.numberOfModes(), self._nModes)
+        self.assertEqual(modal_coefficients.counter(), 0)   
+
+    def testMeasureMultiquadriccoefficientsFromWavefront(self):
+        modal_coefficients = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, "MULTIQUADRIC", coordinates_list=self._coordinates_list
+        )
+        self.assertIsInstance(modal_coefficients, ModalCoefficients)
+        self.assertEqual(modal_coefficients.numberOfModes(), self._nModes)
+        self.assertEqual(modal_coefficients.counter(), 0)
+
+    def testMeasureInvMultiquadriccoefficientsFromWavefront(self):
+        modal_coefficients = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, "INV_MULTIQUADRIC", coordinates_list=self._coordinates_list
+        )
+        self.assertIsInstance(modal_coefficients, ModalCoefficients)
+        self.assertEqual(modal_coefficients.numberOfModes(), self._nModes)
+        self.assertEqual(modal_coefficients.counter(), 0)
+
+
+    def testMeasureInvalidBase(self):
+        with self.assertRaises(ValueError):
+            self._modal_decomposer.measureModalCoefficientsFromWavefront(
+                self._wavefront, self._mask, self._user_mask, "INVALID"
+            )
+
+    def testMeasureInvalidWavefront(self):
+        with self.assertRaises(AssertionError):
+            self._modal_decomposer.measureModalCoefficientsFromWavefront(
+                np.zeros((128,128)), self._mask, self._user_mask, "ZERNIKE"
+            )
+
+    def testMeasureInvalidCircularMask(self):
+        with self.assertRaises(AssertionError):
+            self._modal_decomposer.measureModalCoefficientsFromWavefront(
+                self._wavefront, np.zeros((128,128)), self._user_mask, "ZERNIKE"
+            )
+ 
 if __name__ == "__main__":
     unittest.main()

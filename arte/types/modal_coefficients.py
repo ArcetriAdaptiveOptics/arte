@@ -2,11 +2,13 @@ import numpy as np
 
 
 class ModalCoefficients(object):
-    FIRST_MODE = 1
+    FIRST_MODE = 0
 
-    def __init__(self, coefficients, counter=0):
+    def __init__(self, coefficients, counter=0, first_mode=0):
+
         self._coefficients = coefficients
         self._counter = counter
+        self.FIRST_MODE = first_mode
 
     def modeIndexes(self):
         return np.arange(self.FIRST_MODE, self.FIRST_MODE + self.numberOfModes())

@@ -3,7 +3,7 @@ from scipy.special.basic import factorial
 from arte.types.mask import CircularMask
 from arte.utils.zernike_generator import ZernikeGenerator
 from arte.utils.kl_generator import KLGenerator
-from arte.utils.tps_generator import TPSGenerator
+from arte.utils.rbf_generator import TPSGenerator
 
 
 class ModeGenerator(object):
