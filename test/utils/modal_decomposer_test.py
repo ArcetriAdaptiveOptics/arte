@@ -13,21 +13,78 @@ class ModalDecomposerTest(unittest.TestCase):
 
     def setUp(self):
         self._center = (55, 60)
-        self._radius = 30
-        self._nPixelsX = 150
-        self._nPixelsY = 101
+        self._radius = 32
+        self._nPxX = 150
+        self._nPxY = 101
         self._nModes = 100
         self._nCoord = self._nModes
-        self._mask = CircularMask((128,128), self._radius, self._center)
-        self._user_mask = CircularMask((128,128), 32, (64,64))
-        self._wavefront = Wavefront(np.zeros((128,128)))
+        self._mask = CircularMask((self._nPxX,self._nPxY), self._radius, self._center)
+        self._user_mask = CircularMask((self._nPxX,self._nPxY), 32, self._center)
+        self._wavefront = Wavefront(np.zeros((self._nPxY, self._nPxX)   ))  
         self._modal_decomposer = ModalDecomposer(self._nModes)
 
         # Example usage:
-        _mask = CircularMask((self._nPixelsY, self._nPixelsX), self._radius, self._center )
+        _mask = CircularMask((self._nPxY, self._nPxX), self._radius, self._center )
         # Generate coordinates couples
         self._coordinates_list= self._generate_coordinates(self._center[1], self._center[0], self._radius, self._nCoord)
- 
+
+        y0, x0 = self._mask.center()
+        cc = np.expand_dims((x0, y0), axis=(1, 2))
+        Y, X = (
+            np.mgrid[0.5 : self._nPxY + 0.5 : 1, 0.5 : self._nPxX + 0.5 : 1] - cc
+        ) / self._mask.radius()
+        r = np.sqrt(X**2 + Y**2)
+        self._wavefront = Wavefront(r)
+        self._user_mask = CircularMask((self._nPxX, self._nPxY), 30, self._center)
+
+    def testZernikeModalDecomposer(self):
+        self._base = "ZERNIKE"
+        self._modal_decomposer = ModalDecomposer(10)
+        c2test = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, self._base, start_mode=1
+        )
+        cTemplate=[-1.30027833e-02, -3.22827224e-05, -1.06959015e-01,  8.49964362e-03,
+            1.51368177e-17, -7.18398687e-17,  9.10631412e-02,  2.74849775e-05,
+            -1.24063393e-04,  3.74452222e-08]
+        cTemplate = [ 0.00875421, -0.00187142, -0.17916746,  0.04178357,  0.03762525, -0.02406837,
+            0.00624326, -0.00212699, -0.00512877, -0.00418178]
+        np.testing.assert_allclose(c2test.toNumpyArray(), cTemplate, rtol=1e-5)
+        tmp = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, self._base, start_mode=1, rtol=0.995)
+        np.testing.assert_allclose(self._modal_decomposer.getRank(), 3)
+
+    def testKLModalDecomposer(self):
+        self._base = "KL"
+        self._modal_decomposer = ModalDecomposer(10)
+        c2test = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, self._base
+        )
+        #cTemplate = [-0.15911395, -0.00040384, -0.04565834, -0.0225641,   0.03527367, -0.00075877,
+        #    -0.04821382,  0.00063496,  0.03775376, -0.03239231]
+        cTemplate = [-0.17927546,  0.00180251, -0.02950138, -0.02406837,  0.03762525, -0.00418178,
+            -0.00512877, -0.00218569,  0.00051625, -0.04127313]
+        np.testing.assert_allclose(c2test.toNumpyArray(), cTemplate, rtol=1e-5)
+        tmp = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, self._base, rtol=0.995)
+        np.testing.assert_allclose(self._modal_decomposer.getRank(), 3)
+
+
+    def testRBFModalDecomposer(self):
+        self._base = "TPS_RBF"
+        self._nCoords = 3
+        self._coords = ((70,60),(40,40), (60,60), (60,80), (70,60+2),(40-2,40), (60-3,60), (60,80+3), (70+5,60),(40,40+5))
+        self._modal_decomposer = ModalDecomposer(10)
+        c2test = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, self._base, coordinates_list=self._coords
+        )
+        cTemplate = [-0.598514,  0.578509,  1.123119,  0.561612,  1.730237, -1.918513,
+               -2.387599, -0.224815, -0.930808,  1.880122]
+        np.testing.assert_allclose(c2test.toNumpyArray(), cTemplate, rtol=1e-5)
+        tmp = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, self._base, coordinates_list=self._coords, rtol=0.995)
+        np.testing.assert_allclose(self._modal_decomposer.getRank(), 1)
+
+
 
     def testMeasureZernikeCoefficientsFromSlopes(self):
         radius = 4
