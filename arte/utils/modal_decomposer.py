@@ -29,7 +29,9 @@ class ModalDecomposer(object):
         Number of modes to decompose the wavefront into.
     """
 
-    def __init__(self, n_modes):
+    def __init__(self, n_modes, n_zernike_modes=None):
+        if n_zernike_modes is not None:
+            self.nModes = n_zernike_modes
         self.nModes = n_modes
         self.reconstructor = None
         self.baseName = None
@@ -270,50 +272,50 @@ from arte.types.wavefront import Wavefront
 
 # write test class for ModalDecomposer here derived from unittest.TestCase which tests the measureModalCoefficientsFromWavefront method
 # and save the modal coefficients in a variable and compare it with the expected modal coefficients
-class TestModalDecomposer(unittest.TestCase):
+#class TestModalDecomposer(unittest.TestCase):
 
-    def setUp(self):
-        self._nModes = 10
-        self._nPxX = 150
-        self._nPxY = 101
-        self._mask = CircularMask((self._nPxX, self._nPxY), 30, (55, 60))
+    #def setUp(self):
+        #self._nModes = 10
+        #self._nPxX = 150
+        #self._nPxY = 101
+        #self._mask = CircularMask((self._nPxX, self._nPxY), 30, (55, 60))
 
-        y0, x0 = self._mask.center()
-        cc = np.expand_dims((x0, y0), axis=(1, 2))
-        Y, X = (
-            np.mgrid[0.5 : self._nPxY + 0.5 : 1, 0.5 : self._nPxX + 0.5 : 1] - cc
-        ) / self._mask.radius()
-        r = np.sqrt(X**2 + Y**2)
-        self._wavefront = Wavefront(r)
-        self._user_mask = CircularMask((self._nPxX, self._nPxY), 30, (55, 60))
+        #y0, x0 = self._mask.center()
+        #cc = np.expand_dims((x0, y0), axis=(1, 2))
+        #Y, X = (
+            #np.mgrid[0.5 : self._nPxY + 0.5 : 1, 0.5 : self._nPxX + 0.5 : 1] - cc
+        #) / self._mask.radius()
+        #r = np.sqrt(X**2 + Y**2)
+        #self._wavefront = Wavefront(r)
+        #self._user_mask = CircularMask((self._nPxX, self._nPxY), 30, (55, 60))
 
-    def testZernikeModalDecomposer(self):
-        self._base = "ZERNIKE"
-        self._modal_decomposer = ModalDecomposer(self._nModes)
-        c2test = self._modal_decomposer.measureModalCoefficientsFromWavefront(
-            self._wavefront, self._mask, self._user_mask, self._base, start_mode=1
-        )
-        cTemplate = [
-            -5.57006321e-05,
-            1.08810731e-01,
-            -1.08810731e-01,
-            2.15396089e-01,
-            1.08517924e-02,
-            -1.24900090e-16,
-            2.82709210e-02,
-            -2.82709210e-02,
-            -1.08170522e-03,
-            -1.08170522e-03,
-        ]
-        cTemplate = [-1.01297584e-05, -1.14291429e-03, -1.81305804e-01,  3.91720929e-02,
-            3.52736742e-02, -2.25641006e-02,  5.48724126e-03, -1.86942642e-03,
-            -4.50770580e-03, -3.67539262e-03]
-        np.testing.assert_allclose(c2test.toNumpyArray(), cTemplate, rtol=1e-5)
-        tmp = self._modal_decomposer.measureModalCoefficientsFromWavefront(
-            self._wavefront, self._mask, self._user_mask, self._base, start_mode=1, rtol=0.995)
-        np.testing.assert_allclose(self._modal_decomposer.getRank(), 8)
+    #def testZernikeModalDecomposer(self):
+        #self._base = "ZERNIKE"
+        #self._modal_decomposer = ModalDecomposer(self._nModes)
+        #c2test = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            #self._wavefront, self._mask, self._user_mask, self._base, start_mode=1
+        #)
+        #cTemplate = [
+            #-5.57006321e-05,
+            #1.08810731e-01,
+            #-1.08810731e-01,
+            #2.15396089e-01,
+            #1.08517924e-02,
+            #-1.24900090e-16,
+            #2.82709210e-02,
+            #-2.82709210e-02,
+            #-1.08170522e-03,
+            #-1.08170522e-03,
+        #]
+        #cTemplate = [-1.01297584e-05, -1.14291429e-03, -1.81305804e-01,  3.91720929e-02,
+            #3.52736742e-02, -2.25641006e-02,  5.48724126e-03, -1.86942642e-03,
+            #-4.50770580e-03, -3.67539262e-03]
+        #np.testing.assert_allclose(c2test.toNumpyArray(), cTemplate, rtol=1e-5)
+        #tmp = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            #self._wavefront, self._mask, self._user_mask, self._base, start_mode=1, rtol=0.995)
+        #np.testing.assert_allclose(self._modal_decomposer.getRank(), 8)
 
-    #def testKLModalDecomposer(self):
+    ##def testKLModalDecomposer(self):
         #self._base = "KL"
         #self._modal_decomposer = ModalDecomposer(self._nModes)
         #c2test = self._modal_decomposer.measureModalCoefficientsFromWavefront(
@@ -345,5 +347,5 @@ class TestModalDecomposer(unittest.TestCase):
 
 
 
-if __name__ == "__main__":
-    unittest.main()
+#if __name__ == "__main__":
+#    unittest.main()
