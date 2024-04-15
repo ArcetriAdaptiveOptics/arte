@@ -1,7 +1,8 @@
 import numpy as np
+from arte.types.zernike_coefficients import ZernikeCoefficients
 
 
-class ModalCoefficients(object):
+class ModalCoefficients(ZernikeCoefficients):
     FIRST_MODE = 0
 
     def __init__(self, coefficients, counter=0, first_mode=0):
@@ -16,8 +17,8 @@ class ModalCoefficients(object):
     def numberOfModes(self):
         return len(self._coefficients)
 
-    def getZ(self, modeIndexes):
-        return self.toNumpyArray()[np.array(modeIndexes) - self.FIRST_ZERNIKE_MODE]
+    def getM(self, modeIndexes):
+        return self.toNumpyArray()[np.array(modeIndexes) - self.FIRST_MODE]
 
     def toDictionary(self):
         keys = self.modeIndexes()
@@ -28,8 +29,8 @@ class ModalCoefficients(object):
         return self._coefficients
 
     @staticmethod
-    def fromNumpyArray(coefficientsAsNumpyArray, counter=0):
-        return ModalCoefficients(np.array(coefficientsAsNumpyArray), counter)
+    def fromNumpyArray(coefficientsAsNumpyArray, counter=0, **kwargs):
+        return ModalCoefficients(np.array(coefficientsAsNumpyArray), counter, **kwargs)
 
     def counter(self):
         return self._counter
@@ -49,3 +50,4 @@ class ModalCoefficients(object):
 
     def __str__(self):
         return str(self._coefficients)
+

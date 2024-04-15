@@ -5,7 +5,6 @@ from arte.types.modal_coefficients import ModalCoefficients
 
 __version__ = "$$"
 
-
 class ModalCoefficientsTest(unittest.TestCase):
 
     def setUp(self):
@@ -33,9 +32,10 @@ class ModalCoefficientsTest(unittest.TestCase):
     def testReturnDictionary(self):
         coeffs = np.arange(3) * 0.1
         counter = 12
-        z = ModalCoefficients.fromNumpyArray(coeffs, counter)
+        fm = 2
+        z = ModalCoefficients.fromNumpyArray(coeffs, counter, first_mode=fm)
         d = z.toDictionary()
-        self.assertTrue(np.array_equal(list(d.keys()), np.array([2, 3, 4])))
+        self.assertTrue(np.array_equal(list(d.keys()), fm+np.array([0, 1, 2])))
         self.assertTrue(np.array_equal(list(d.values()), np.array([0, 0.1, 0.2])))
 
     def testReturnLength(self):
@@ -44,9 +44,9 @@ class ModalCoefficientsTest(unittest.TestCase):
 
     def testGetZ(self):
         self._createZ()
-        wantZernIndexes = [2, 4, 21]
-        shouldGet = (np.array(wantZernIndexes) - 2).astype(np.float32)
-        didGet = self._z.getZ(wantZernIndexes)
+        wantZernIndexes = [2, 4, 20]
+        shouldGet = (np.array(wantZernIndexes)).astype(np.float32)
+        didGet = self._z.getM(wantZernIndexes)
         self.assertTrue(
             np.array_equal(shouldGet, didGet), "wanted %s got %s" % (shouldGet, didGet)
         )
