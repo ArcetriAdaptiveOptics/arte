@@ -29,10 +29,12 @@ class ModalDecomposer(object):
         Number of modes to decompose the wavefront into.
     """
 
-    def __init__(self, n_modes, n_zernike_modes=None):
+    def __init__(self, n_modes=None, n_zernike_modes=None):
+        self.nModes = n_modes
         if n_zernike_modes is not None:
             self.nModes = n_zernike_modes
-        self.nModes = n_modes
+        if n_modes is None and n_zernike_modes is None:
+            raise ValueError("n_modes must be specified")
         self.reconstructor = None
         self.baseName = None
         self.baseModes = None
