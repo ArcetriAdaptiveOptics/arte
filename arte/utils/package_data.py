@@ -1,8 +1,6 @@
 
-def dataRootDir():
-    import pkg_resources
 
-    dataroot = pkg_resources.resource_filename(
-        'arte',
-        'data')
+def dataRootDir():
+    import importlib.resources
+    dataroot = importlib.resources.files('arte') / 'data'
     return dataroot

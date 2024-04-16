@@ -1,7 +1,7 @@
 import abc
 import numpy as np
 import functools
-from scipy.signal.spectral import welch
+from scipy.signal import welch
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
 from arte.utils.iterators import pairwise

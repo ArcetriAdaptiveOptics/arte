@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.special.basic import factorial
+from scipy.special import factorial
 from arte.types.mask import CircularMask
 
 
