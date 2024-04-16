@@ -5,6 +5,7 @@ from scipy.signal.spectral import welch
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
 from arte.utils.iterators import pairwise
+from astropy import units as u
 
 
 @add_help
@@ -83,7 +84,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, from_freq=None, to_freq=None,
               segment_factor=None, window='boxcar', *args, **kwargs):
-        '''PSD across specified series'''
+        '''Power Spectral Density across specified series'''
 
         index = self.get_index_of(*args, **kwargs)
         if segment_factor is None:
@@ -119,7 +120,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         if isinstance(data, NotAvailable):
             raise Exception('Cannot calculate power: data is not available')
 
-        self._frequency, x = welch(data.T, (1 / self.__delta_time).value,
+        self._frequency, x = welch(data.T, (1 / self.__delta_time).to_value(u.Hz),
                                    window=self._window,
                                    nperseg=data.shape[0] / self._segment_factor)
         df = np.diff(self._frequency)[0]
@@ -188,7 +189,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def plot_cumulative_spectra(self, from_freq=None, to_freq=None,
                                 segment_factor=None,
-                                overplot=False, *args, **kwargs):
+                                overplot=False, label=None, *args, **kwargs):
         '''Plot the cumulative PSD across specified series'''
         power = self.power(from_freq, to_freq,
                            segment_factor,
@@ -199,10 +200,12 @@ class TimeSeries(metaclass=abc.ABCMeta):
         if not overplot:
             plt.cla()
             plt.clf()
-        plt.plot(freq[1:], np.cumsum(power, 0)[1:])
+        plt.plot(freq[1:], np.cumsum(power, 0)[1:], label=label)
         plt.loglog()
         plt.xlabel('f [Hz]')
         plt.ylabel('cumsum(psd) [V^2]')
+        if label is not None:
+            plt.legend()
         return plt
 
 
