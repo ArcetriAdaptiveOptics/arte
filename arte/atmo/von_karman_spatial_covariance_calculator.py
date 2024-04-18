@@ -77,7 +77,6 @@ class VonKarmanSpatialCovariance():
             self._n1 + self._n2 + 3) * gamma(n1pn2 + 1) / gamma(n1pn2 + 1./6)
         temp1  = temp1 / gamma(11./6) / gamma(self._n1 + 2.) / gamma(
             self._n2 + 2.) * x0**(self._n1 + self._n2 - 5./3.)
-        print(temp1)
 
         alpha  = [n1pn2 + 3./2, n1pn2 + 2, n1pn2 + 1]
         beta   = [n1pn2 + 1./6, self._n1 + 2, self._n2 + 2, 
