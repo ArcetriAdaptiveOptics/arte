@@ -7,6 +7,9 @@ from arte.utils.help import add_help
 
 @add_help
 class DataLoader():
+    '''
+    Abstract base class for data loaders
+    '''
     def __init__(self):
         pass
 

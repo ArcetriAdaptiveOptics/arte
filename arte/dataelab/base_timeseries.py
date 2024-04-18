@@ -5,7 +5,13 @@ def no_op(x):
     return x
 class BaseTimeseries(TimeSeries):
     '''
-    Generic time series
+    Generic time series.
+
+    delta_time: time interval between data samples, in seconds.
+    data_loader: instance of DataLoader or derived class
+    mapper2d: function to map data into 2d. If None, data is assumed
+              to be already in 2d.
+    astropy_unit: if possible, astropy unit to use with the data.
     '''
     def __init__(self, delta_time, data_loader, mapper2d=None, astropy_unit=None):
         try:

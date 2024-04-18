@@ -5,9 +5,17 @@ from arte.dataelab.base_projection import BaseProjection
 
 
 class BaseResidualModes(BaseProjection):
+    '''
+    Base class for residual modes
 
-    def __init__(self, slopes_timeseries, modalrec):
-        BaseProjection.__init__(slopes_timeseries, modalrec, astropy_unit=u.m)
+    slopes_timeseries: time series object with slopes data
+    modalrec: data object with modal reconstructor
+    '''
+
+    def __init__(self, slopes_timeseries, modalrec, astropy_unit=u.m):
+        BaseProjection.__init__(slopes_timeseries,
+                                modalrec,
+                                astropy_unit=astropy_unit)
         self._nmodes = None   # Lazy initialization
 
     def nmodes(self):

@@ -9,6 +9,11 @@ def no_op(x):
 class BaseData():
     '''
     Generic static data
+
+    data_loader: instance of DataLoader or derived class
+    mapper2d: function to map data into 2d. If None, data is assumed
+              to be already in 2d.
+    astropy_unit: if possible, astropy unit to use with the data.
     '''
     def __init__(self, data_loader, mapper2d=None, astropy_unit=None):
         try:
