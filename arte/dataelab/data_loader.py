@@ -25,11 +25,13 @@ class DataLoader():
     def load(self):
         '''Load data and return it'''
 
+
 class FitsDataLoader(DataLoader):
     '''Loader for data stored into FITS files'''
-    def __init__(self, filename):
+    def __init__(self, filename, ext=None):
         DataLoader.__init__()
         self._filename = filename
+        self._ext = ext
 
     def assert_exists(self):
         assert os.path.exists(self)
@@ -38,14 +40,18 @@ class FitsDataLoader(DataLoader):
         return self._filename
     
     def load(self):
-        return fits.getdata(self._filename)
+        if self._ext:
+            return fits.getdata(self._filename, ext=self._ext)
+        else:
+            return fits.getdata(self._filename)
 
 
 class NumpyDataLoader(DataLoader):
     '''Loader for data stored into np or npz files'''
-    def __init__(self, filename):
+    def __init__(self, filename, key=None):
         DataLoader.__init__()
         self._filename = filename
+        self._key = key
 
     def assert_exists(self):
         assert os.path.exists(self)
@@ -54,7 +60,11 @@ class NumpyDataLoader(DataLoader):
         return self._filename
     
     def load(self):
-        return np.load(self._filename)
+        if self.key:
+            return np.load(self._filename)[self._key]
+        else:
+            return np.load(self._filename)
+
 
 class DummyLoader(DataLoader):
     '''Dummy loader for data not stored anywhere'''
