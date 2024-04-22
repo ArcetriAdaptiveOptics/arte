@@ -20,10 +20,15 @@ class BaseResidualModesTest(unittest.TestCase):
         self._resmodes = BaseResidualModes(self._slopes,
                                            self._modalrec,
                                            astropy_unit = u.m)
+        self._expected_data = (self._data @ self._proj) * self._resmodes.astropy_unit()
 
     def test_projection(self):
         np.testing.assert_array_equal(self._resmodes.get_data(),
-                                      (self._data @ self._proj) * self._resmodes.astropy_unit())
+                                      self._expected_data)
 
     def test_unit(self):
         assert self._resmodes.get_data().unit == u.m
+
+    def test_indexer(self):
+        np.testing.assert_array_equal(self._resmodes.get_data(mode=1),
+                                      self._expected_data[:,1])
