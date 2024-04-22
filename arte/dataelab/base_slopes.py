@@ -11,17 +11,17 @@ class BaseSlopes(BaseTimeSeries):
 
     def __init__(self, delta_time, loader, mapper2d=None, astropy_unit=u.pix,
                  interleaved=True):
-        BaseTimeSeries.__init__(delta_time,
-                                loader=loader,
-                                mapper2d=mapper2d,
-                                astropy_unit=astropy_unit)
+        super().__init__(delta_time,
+                         loader=loader,
+                         mapper2d=mapper2d,
+                         astropy_unit=astropy_unit)
         self._interleaved = interleaved
 
     def get_index_of(self, *args, **kwargs):
         if self._interleaved:
-            return Indexer.interleaved_xy(*args, **kwargs)
+            return Indexer().interleaved_xy(*args, **kwargs)
         else:
-            return Indexer.sequential_xy(maxindex=self.ensemble_size(), *args, **kwargs)
+            return Indexer().sequential_xy(maxindex=self.ensemble_size(), *args, **kwargs)
 
     def get_display_sx(self):
         '''Raw slope-x data as a cube of 2d display'''

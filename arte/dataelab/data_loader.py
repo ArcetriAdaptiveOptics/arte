@@ -29,7 +29,7 @@ class DataLoader():
 class FitsDataLoader(DataLoader):
     '''Loader for data stored into FITS files'''
     def __init__(self, filename, ext=None):
-        DataLoader.__init__()
+        super().__init__()
         self._filename = filename
         self._ext = ext
 
@@ -49,7 +49,7 @@ class FitsDataLoader(DataLoader):
 class NumpyDataLoader(DataLoader):
     '''Loader for data stored into np or npz files'''
     def __init__(self, filename, key=None):
-        DataLoader.__init__()
+        super().__init__()
         self._filename = filename
         self._key = key
 
@@ -69,7 +69,7 @@ class NumpyDataLoader(DataLoader):
 class DummyLoader(DataLoader):
     '''Dummy loader for data not stored anywhere'''
     def __init__(self):
-        DataLoader.__init__()
+        super().__init__()
 
     def assert_exists(self):
         pass
@@ -83,7 +83,7 @@ class DummyLoader(DataLoader):
 class OnTheFlyLoader(DataLoader):
     '''Loader for data calculated on the fly'''
     def __init__(self, func):
-        DataLoader.__init__()
+        super().__init__()
         self._func = func
 
     def assert_exists(self):
@@ -94,5 +94,11 @@ class OnTheFlyLoader(DataLoader):
     
     def load(self):
         return self._func()
+
+
+class ConstantDataLoader(OnTheFlyLoader):
+    '''Loader for constant data'''
+    def __init__(self, data):
+        super().__init__(lambda: data)
 
 # __oOo__

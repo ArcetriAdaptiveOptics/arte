@@ -8,10 +8,10 @@ class BasePixels(BaseTimeSeries):
     Time series for pixel data
     '''
     def __init__(self, delta_time, loader, mapper2d=None, astropy_unit=u.adu):
-        BaseTimeSeries.__init__(delta_time,
-                                loader=loader,
-                                mapper2d=mapper2d,
-                                astropy_unit=astropy_unit)
+        super().__init__(delta_time,
+                         loader=loader,
+                         mapper2d=mapper2d,
+                         astropy_unit=astropy_unit)
 
     def get_display(self):
         '''3d numpy array with pixel image over time'''

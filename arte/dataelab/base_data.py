@@ -18,7 +18,7 @@ class BaseData():
     def __init__(self, data_loader, mapper2d=None, astropy_unit=None):
         try:
             # Test that the data file is there, when possible
-            _ = data_loader.assert_exist()
+            _ = data_loader.assert_exists()
 
         except AssertionError:
             NotAvailable.transformInNotAvailable(self)
@@ -40,7 +40,10 @@ class BaseData():
 
         raw_data = self._get_not_indexed_data()
         index = self.get_index_of(*args, **kwargs)
-        return raw_data[index]
+        if index is None:
+            return raw_data
+        else:
+            return raw_data[index]
 
     def _get_not_indexed_data(self):
         return self._data_loader.load()

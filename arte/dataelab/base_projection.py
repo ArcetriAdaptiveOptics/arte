@@ -11,10 +11,10 @@ class BaseProjection(BaseTimeSeries):
         try:
             assert not isinstance(source_timeseries, NotAvailable)
             assert not isinstance(projection_matrix, NotAvailable)
-            BaseTimeSeries.__init__(source_timeseries.delta_time,
-                                    loader=OnTheFlyLoader(self.project),
-                                    mapper2d=mapper2d,
-                                    astropy_unit=astropy_unit)
+            super().__init__(source_timeseries.delta_time,
+                             loader=OnTheFlyLoader(self.project),
+                             mapper2d=mapper2d,
+                             astropy_unit=astropy_unit)
         except Exception as e:
             NotAvailable.transformInNotAvailable(self)
             return
@@ -25,10 +25,12 @@ class BaseProjection(BaseTimeSeries):
     def project(self):
         data = self._source_timeseries.get_data()
         proj = self._projection_matrix.get_data()
+        print(data.shape, proj.shape)
+        print(data, proj)
         if isinstance(data, NotAvailable) or isinstance(proj, NotAvailable):
             data = NotAvailable()
         else:
-            data = np.dot(data, proj)
+            data = data @ proj
         return data
 
 

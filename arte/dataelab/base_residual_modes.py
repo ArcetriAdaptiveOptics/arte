@@ -1,6 +1,6 @@
 
 import astropy.units as u
-from arte.time_series.indexer import Indexer
+from arte.time_series.indexer import ModeIndexer
 from arte.dataelab.base_projection import BaseProjection
 
 
@@ -13,19 +13,19 @@ class BaseResidualModes(BaseProjection):
     '''
 
     def __init__(self, slopes_timeseries, modalrec, astropy_unit=u.m):
-        BaseProjection.__init__(slopes_timeseries,
-                                modalrec,
-                                astropy_unit=astropy_unit)
+        super().__init__(slopes_timeseries,
+                         modalrec,
+                         astropy_unit=astropy_unit)
         self._nmodes = None   # Lazy initialization
 
     def nmodes(self):
         '''Number of modes'''
         if self._nmodes is None:
-            self._nmodes = self._modalrec().get_data().shape[0]
+            self._nmodes = self._projection_matrix.get_data().shape[0]
         return self._nmodes
 
     def get_index_of(self, *args, **kwargs):
-        return Indexer.modes(*args, max_mode=self.nmodes(), **kwargs)
+        return ModeIndexer(max_mode=self.nmodes()).modes(*args, **kwargs)
 
     def slopes(self):
         return self._source_timeseries

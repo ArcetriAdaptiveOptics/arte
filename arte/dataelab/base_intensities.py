@@ -7,10 +7,10 @@ class BaseIntensities(BaseTimeSeries):
     Time series for subaperture intensities
     '''
     def __init__(self, delta_time, loader, mapper2d=None, astropy_unit=u.adu):
-        BaseTimeSeries.__init__(delta_time,
-                                loader=loader,
-                                mapper2d=mapper2d,
-                                astropy_unit=astropy_unit)
+        super().__init__(delta_time,
+                         loader=loader,
+                         mapper2d=mapper2d,
+                         astropy_unit=astropy_unit)
 
     def total_adu(self, threshold=0.1):
         '''
