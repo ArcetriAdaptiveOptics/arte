@@ -9,10 +9,10 @@ from arte.utils.show_array import show_array
 class BaseSlopes(BaseTimeSeries):
     '''Slopes recorded from a generic WFS'''
 
-    def __init__(self, delta_time, loader, mapper2d=None, astropy_unit=u.pix,
+    def __init__(self, delta_time, loader_or_data, mapper2d=None, astropy_unit=u.pix,
                  interleaved=True):
         super().__init__(delta_time,
-                         loader=loader,
+                         loader_or_data=loader_or_data,
                          mapper2d=mapper2d,
                          astropy_unit=astropy_unit)
         self._interleaved = interleaved

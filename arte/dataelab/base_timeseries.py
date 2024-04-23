@@ -1,7 +1,9 @@
+import numpy as np
 import astropy.units as u
 
 from arte.time_series import TimeSeries
 from arte.utils.not_available import NotAvailable
+from arte.dataelab.data_loader import ConstantDataLoader
 
 
 def no_op(x):
@@ -13,12 +15,17 @@ class BaseTimeSeries(TimeSeries):
     Generic time series.
 
     delta_time: time interval between data samples, in seconds.
-    data_loader: instance of DataLoader or derived class
+    data_loader: instance of DataLoader or derived class, or numpy array
     mapper2d: function to map data into 2d. If None, data is assumed
               to be already in 2d.
     astropy_unit: if possible, astropy unit to use with the data.
     '''
-    def __init__(self, delta_time, loader, mapper2d=None, astropy_unit=None):
+    def __init__(self, delta_time, loader_or_data, mapper2d=None, astropy_unit=None):
+        if isinstance(loader_or_data, np.ndarray):
+            loader = ConstantDataLoader(loader_or_data)
+        else:
+            loader = loader_or_data
+
         try:
             super().__init__(delta_time)
 

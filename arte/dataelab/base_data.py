@@ -1,5 +1,7 @@
+import numpy as np
 
 from arte.utils.not_available import NotAvailable
+from arte.dataelab.data_loader import ConstantDataLoader
 
 
 def no_op(x):
@@ -16,6 +18,10 @@ class BaseData():
     astropy_unit: if possible, astropy unit to use with the data.
     '''
     def __init__(self, data_loader, mapper2d=None, astropy_unit=None):
+        if isinstance(data_loader, np.ndarray):
+            data_loader = ConstantDataLoader(data_loader)
+        else:
+            data_loader = data_loader
         try:
             # Test that the data file is there, when possible
             _ = data_loader.assert_exists()
