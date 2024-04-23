@@ -12,28 +12,72 @@ class Indexer(object):
         indexCoord = [self.dicCoord[x] for x in coord]
         return indexCoord
 
-    def _interleaved_xy(self, *args, **kwargs):
+    def interleaved_xy(self, *args, **kwargs):
         '''
         default: coord
         Accepted keywords:
         coord= x and/or y
         '''
         acceptedKeywords = ['coord', 'coords', 'axis']
-        coord = ['x', 'y']
         for k, v in kwargs.items():
             if k not in acceptedKeywords:
                 raise Exception('possible keywords are ' +
                                 str(acceptedKeywords))
-            if k == 'axis':
-                if v == 'x':
-                    return slice(0, None, 2)
-                elif v == 'y':
-                    return slice(1, None, 2)
-                else:
-                    raise Exception("%s not in accepted"
-                                    " values ('x', 'y')" % (v))
-        return self._xy_index(coord)
+            if v == 'x':
+                return slice(0, None, 2)
+            elif v == 'y':
+                return slice(1, None, 2)
+            else:
+                raise Exception("%s not in accepted"
+                                " values ('x', 'y')" % (v))
 
+        # Since we are here, no keywords were specified
+        if len(args) == 0:
+            return slice(0, None, 1)
+        elif len(args) == 1:
+            if args[0] == 'x':
+                return slice(0, None, 2)
+            elif args[0] == 'y':
+                return slice(1, None, 2)
+            elif isinstance(args[0], int):
+                return slice(args[0], args[0]+1)
+        else:
+            raise Exception("%s not in accepted"
+                            " values ('x', 'y')" % str(v))
+
+    def sequential_xy(self, maxindex, *args, **kwargs):
+        '''
+        default: coord
+        Accepted keywords:
+        coord= x and/or y
+        '''
+        acceptedKeywords = ['coord', 'coords', 'axis']
+        for k, v in kwargs.items():
+            if k not in acceptedKeywords:
+                raise Exception('possible keywords are ' +
+                                str(acceptedKeywords))
+            if v == 'x':
+                return slice(0, maxindex//2)
+            elif v == 'y':
+                return slice(maxindex//2, None)
+            else:
+                raise Exception("%s not in accepted"
+                                " values ('x', 'y')" % (v))
+
+        # Since we are here, no keywords were specified
+        if len(args) == 0:
+            return slice(0, None, 1)
+        elif len(args) == 1:
+            if args[0] == 'x':
+                return slice(0, maxindex//2)
+            elif args[0] == 'y':
+                return slice(maxindex//2, None)
+            elif isinstance(args[0], int):
+                return slice(args[0], args[0]+1)
+        else:
+            raise Exception("%s not in accepted"
+                            " values ('x', 'y')" % str(v))
+        
     def xy(self, *args, **kwargs):
         '''
         default: coord
