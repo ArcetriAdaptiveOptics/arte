@@ -60,7 +60,7 @@ class NumpyDataLoader(DataLoader):
         return self._filename
     
     def load(self):
-        if self.key:
+        if self._key:
             return np.load(self._filename)[self._key]
         else:
             return np.load(self._filename)
