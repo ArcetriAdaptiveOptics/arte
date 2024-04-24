@@ -26,6 +26,6 @@ class BasePixels(BaseTimeSeries):
         '''Total number of ADU/frame. Optional threshold is relative to max.'''
         data = self.time_average()
         data[np.where(data < data.max()*threshold)] = 0    
-        return data.sum() * self._astropy_unit
+        return data.sum()
 
 # __oOo__

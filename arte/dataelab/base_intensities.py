@@ -18,5 +18,5 @@ class BaseIntensities(BaseTimeSeries):
         ''' 
         data = self.time_average()
         data[np.where(data < data.max()*threshold)] = 0    
-        return data.sum() * self._astropy_unit
+        return data.sum()
 

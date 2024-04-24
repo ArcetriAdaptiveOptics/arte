@@ -58,9 +58,12 @@ class BaseTimeSeries(TimeSeries):
         return self._astropy_unit
 
     def _apply_unit(self, data):
-        if isinstance(data, u.Quantity):
-            return data.value * self._astropy_unit
+        if self._astropy_unit is not None:
+            if isinstance(data, u.Quantity):
+                return data.value * self._astropy_unit
+            else:
+                return data * self._astropy_unit
         else:
-            return data * self._astropy_unit
+            return data
 
 # __oOo__
