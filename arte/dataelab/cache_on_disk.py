@@ -44,8 +44,7 @@ def cache_on_disk(f):
 
     @wraps(f)
     def wrapper(self, *args, **kwargs):
-        # self must be passed explicitly because it is a callable class
-        return f.disk_cacher.__call__(self, *args, **kwargs)
+        return f.disk_cacher.execute(self, *args, **kwargs)
     return wrapper
 
 
@@ -115,9 +114,11 @@ class DiskCacher():
         self._tag = tag
 
     def set_tmpdir(self, tmpdir):
+        '''Set the directory where cached data is stored'''
         self._tmpdir = tmpdir
 
     def set_prefix(self, prefix):
+        '''Set prefix for tag directories'''
         self._prefix = prefix
 
     def clear_cache(self):
@@ -125,7 +126,8 @@ class DiskCacher():
         self._data = None
         self._delete_from_disk()
 
-    def __call__(self, *args, **kwargs):
+    def execute(self, *args, **kwargs):
+        '''Cache lookup'''
         if self._tag is not None:
             # Local memory cache
             if self._data is not None:
@@ -152,8 +154,7 @@ class DiskCacher():
             path = self._fullpath_no_extension() + ext
             if os.path.exists(path):
                 return path
-        else:
-            raise FileNotFoundError
+        raise FileNotFoundError
 
     def _save_to_disk(self):
         fullpath = self._fullpath_no_extension()
