@@ -1,4 +1,5 @@
 import numpy as np
+import astropy.units as u
 
 from arte.utils.help import add_help
 from arte.utils.not_available import NotAvailable
@@ -51,7 +52,7 @@ class BaseData():
             return raw_data[index]
 
     def _get_not_indexed_data(self):
-        return self._data_loader.load()
+        return self._apply_unit(self._data_loader.load())
 
     def get_index_of(self, *args, **kwargs):
         '''Return data slice. Override in derived classes if needed'''
@@ -64,6 +65,14 @@ class BaseData():
     def get_display(self):
         '''Data mapped in 2d'''
         return self._mapper2d(self.get_data())
-
+    
+    def _apply_unit(self, data):
+        if self._astropy_unit is not None:
+            if isinstance(data, u.Quantity):
+                return data.value * self._astropy_unit
+            else:
+                return data * self._astropy_unit
+        else:
+            return data
 
 # __oOo__
