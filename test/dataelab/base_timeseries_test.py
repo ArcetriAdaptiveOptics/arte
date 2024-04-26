@@ -3,9 +3,8 @@
 #!/usr/bin/env python
 import os
 import unittest
-from astropy.io import fits
 import astropy.units as u
-from arte.dataelab.data_loader import FitsDataLoader
+from astropy.io import fits
 from arte.dataelab.base_timeseries import BaseTimeSeries
 
 class BaseTimeSeriesTest(unittest.TestCase):
