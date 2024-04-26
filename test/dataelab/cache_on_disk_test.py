@@ -66,7 +66,6 @@ class CacheOnDiskTest(unittest.TestCase):
 
     def setUp(self):
         self.ee = Child(tag='1234')
-        self.ee_notag = ChildNoTag()
 
     def test_parent_path_name(self):
         '''If a method is not redefined, we want the parent's class name'''
@@ -163,7 +162,13 @@ class CacheOnDiskTest(unittest.TestCase):
 
     def test_notag(self):
         '''Test that an exception is raised when no tag has been set'''
+        ee_notag = ChildNoTag()
         with self.assertRaises(Exception):
-            _ = get_disk_cacher(self.ee_notag, self.ee_notag.a_method).fullpath_no_extension()
+            _ = get_disk_cacher(ee_notag, ee_notag.a_method).fullpath_no_extension()
+
+    def test_automatic_creation(self):
+        '''Test that DiskCacher instances are created automatically whenever accessed'''
+        ee_notag = ChildNoTag()
+        set_tmpdir(ee_notag, '/tmp')   # Must not raise
 
 # __oOo__
