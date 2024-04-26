@@ -179,7 +179,8 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
                 print(line)
 
         for name, obj in sorted(members.items()):
-            obj.help(search=search, prefix='%s.%s' % (prefix, name))
+            if name[0] != '_':
+                obj.help(search=search, prefix='%s.%s' % (prefix, name))
 
     def decorate(cls):
         setattr(cls, HIDDEN_HELP, False)  # Set attr but do not define a string
