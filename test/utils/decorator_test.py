@@ -5,9 +5,7 @@ import unittest
 import numpy as np
 from astropy.io import fits
 from unittest.mock import patch
-
-from arte.utils.decorator import cache_on_disk, cacheResult
-
+from arte.dataelab.cache_on_disk import cache_on_disk, set_tag
 
 class FitsStorage:
     storage = None
@@ -19,31 +17,6 @@ class FitsStorage:
         cls.storage = data
 
 
-class DecoratorTest(unittest.TestCase):
-
-    @cache_on_disk(fname='pippo')
-    def long_calculation():
-        return 1
-
-    def test_fits_cache_hit(self):
-
-        with patch.object(os.path, 'exists', lambda fname: True):
-            with patch.object(fits, 'getdata', lambda fname: 2):
-                a = DecoratorTest.long_calculation()
-
-        assert a == 2
-
-    def test_fits_cache_miss(self):
-
-        with patch.object(os.path, 'exists', lambda fname: False):
-            with patch.object(fits, 'writeto', FitsStorage()):
-                a = DecoratorTest.long_calculation()
-
-        assert a == 1
-        assert FitsStorage.storage == 1
-        assert FitsStorage.filename == 'pippo'
-
-
 class CacheDecoratorTest(unittest.TestCase):
 
     def test_cacheResult(self):
@@ -53,15 +26,16 @@ class CacheDecoratorTest(unittest.TestCase):
             def __init__(self):
                 self._nFlights = 0
                 self._nRuns = 0
+                set_tag(self, 'tux1_test')
 
-            @cacheResult
+            @cache_on_disk
             def fly(self):
                 self._nFlights += 1
 
             def nFlights(self):
                 return self._nFlights
 
-            @cacheResult
+            @cache_on_disk
             def run(self):
                 self._nRuns += 1
 
@@ -86,13 +60,14 @@ class CacheDecoratorTest(unittest.TestCase):
             def __init__(self):
                 self._nFlights = 0
                 self._nLunchs = 0
+                set_tag(self, 'tux2_test')
 
-            @cacheResult
+            @cache_on_disk
             def fly(self, speedKmh):
                 self._nFlights += 1
                 return {'N_FLIGHTS': self._nFlights, 'SPEED': speedKmh}
 
-            @cacheResult
+            @cache_on_disk
             def eat(self, fish, bug):
                 self._nLunchs += 1
                 return {'N_LUNCHS': self._nLunchs, 'FISH': fish, 'BUG': bug}
