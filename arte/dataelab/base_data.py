@@ -1,5 +1,6 @@
 import numpy as np
 
+from arte.utils.help import add_help
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import ConstantDataLoader
 
@@ -7,7 +8,7 @@ from arte.dataelab.data_loader import ConstantDataLoader
 def no_op(x):
     return x
 
-
+@add_help
 class BaseData():
     '''
     Generic static data
@@ -20,8 +21,6 @@ class BaseData():
     def __init__(self, data_loader, mapper2d=None, astropy_unit=None):
         if isinstance(data_loader, np.ndarray):
             data_loader = ConstantDataLoader(data_loader)
-        else:
-            data_loader = data_loader
         try:
             # Test that the data file is there, when possible
             _ = data_loader.assert_exists()
@@ -55,6 +54,7 @@ class BaseData():
         return self._data_loader.load()
 
     def get_index_of(self, *args, **kwargs):
+        '''Return data slice. Override in derived classes if needed'''
         return None
 
     def astropy_unit(self):
