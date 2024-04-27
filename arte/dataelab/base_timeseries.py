@@ -1,7 +1,7 @@
 import numpy as np
-import astropy.units as u
 
 from arte.time_series import TimeSeries
+from arte.utils.unit_checker import make_sure_its_a
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import ConstantDataLoader
 
@@ -59,10 +59,7 @@ class BaseTimeSeries(TimeSeries):
 
     def _apply_unit(self, data):
         if self._astropy_unit is not None:
-            if isinstance(data, u.Quantity):
-                return data.value * self._astropy_unit
-            else:
-                return data * self._astropy_unit
+            return make_sure_its_a(self._astropy_unit, data, copy=False)
         else:
             return data
 

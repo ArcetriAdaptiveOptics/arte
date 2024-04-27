@@ -23,12 +23,17 @@ class BaseTimeSeriesTest(unittest.TestCase):
         assert not isinstance(series.get_data(), u.Quantity)
 
     def test_data_with_unit_and_same_unit(self):
-        series = BaseTimeSeries(1*u.s, self.testdata*u.m, astropy_unit = u.g)
-        assert series.get_data().unit == u.g
-
-    def test_data_with_unit_and_different_unit(self):
         series = BaseTimeSeries(1*u.s, self.testdata*u.m, astropy_unit = u.m)
         assert series.get_data().unit == u.m
+
+    def test_data_with_unit_and_different_unit(self):
+        series = BaseTimeSeries(1*u.s, self.testdata*u.m, astropy_unit = u.cm)
+        assert series.get_data().unit == u.cm
+
+    def test_data_with_unit_and_incompatible_unit(self):
+        with self.assertRaises(u.UnitsError):
+            series = BaseTimeSeries(1*u.s, self.testdata*u.m, astropy_unit = u.kg)
+            _ = series.get_data()
 
     def test_data_with_unit_and_unset_unit(self):
         series = BaseTimeSeries(1*u.s, self.testdata*u.m, astropy_unit = None)
