@@ -1,13 +1,11 @@
 import abc
-import functools
-
 import numpy as np
-from astropy import units as u
+import functools
 from scipy.signal import welch
-
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
 from arte.utils.iterators import pairwise
+from astropy import units as u
 
 
 @add_help
@@ -52,6 +50,14 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def get_index_of(self, *args, **kwargs):
         pass
 
+    def data_units(self):
+        '''Override to return a string with a compact unit notation'''
+        return None
+    
+    def data_label(self):
+        '''Override to return a string with a readable unit name'''
+        return None
+
     @property
     def delta_time(self):
         '''Property with the interval between samples (astropy units)'''
@@ -64,6 +70,10 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def frequency(self):
         return self._frequency
 
+    def time(self):
+        '''Return the time vector of time ensamble'''
+        return self.__delta_time * np.arange(self.time_size())
+
     def last_cutted_frequency(self):
         return self._lastCuttedFrequency
 
@@ -71,6 +81,11 @@ class TimeSeries(metaclass=abc.ABCMeta):
         '''Number of distinct series in this time enseble'''
         not_indexed_data = self._get_not_indexed_data()
         return not_indexed_data.shape[1]
+
+    def time_size(self):
+        '''Number of time samples in this time enseble'''
+        not_indexed_data = self._get_not_indexed_data()
+        return not_indexed_data.shape[0]
 
     def _apply(self, func, times=None, *args, **kwargs):
         '''Extract data and apply the passed function'''
@@ -169,50 +184,188 @@ class TimeSeries(metaclass=abc.ABCMeta):
         func = functools.partial(np.median, axis=1)
         return self._apply(func, times, *args, **kwargs)
 
-    @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
+    @modify_help(call='plot_hist(from_freq=xx, to_freq=xx, [series_idx])')
+    def plot_hist(self, from_t=None, to_t=None,
+                  overplot=None, plot_to=None,
+                  label=None, *args, **kwargs):
+        '''Plot histogram'''
+        index = self.get_index_of(*args, **kwargs)
+        hist = self.get_data(*args, **kwargs)
+        t = self.time()
+        if from_t is None: from_t=t.min()
+        if to_t is None: to_t=t.max()
+        ul = t <= to_t
+        dl = t >= from_t
+        lim = ul & dl
+        t = t[lim]
+        hist = hist[lim]
+
+        from matplotlib.axes import Axes
+        if plot_to is None:
+            import matplotlib.pyplot as plt
+        else:
+            plt = plot_to
+        if not overplot:
+            plt.cla()
+            plt.clf()
+
+        lines = plt.plot(t, hist)
+        if self.data_units() is None:
+            units = "(a.u.)"
+        else:
+            units = self.data_units()
+
+        title = 'Time history'
+        xlabel = 'time [s]'
+        ylabel = '['+units+']'
+        if self.data_label() is not None:
+            title = title + " of " + self.data_label()
+            ylabel = self.data_label() + " " + ylabel
+
+        if isinstance(plt, Axes):
+            plt.set(title=title, xlabel=xlabel, ylabel=ylabel)
+        else:
+            plt.title(title)
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+            if label is not None:
+                if isinstance(label, str):
+                    plt.legend([label] * len(lines))
+                else:
+                    plt.legend(label)
+        return plt
+
+    @modify_help(call='plot_spectra(from_freq=xx, to_freq=xx, [series_idx])')
     def plot_spectra(self, from_freq=None, to_freq=None,
                      segment_factor=None,
                      overplot=False,
-                     label=None,
+                     label=None, plot_to=None,
+                     lineary=False, linearx=False,
                      *args, **kwargs):
-        '''Plot the PSD across specified series'''
+        '''Plot PSD'''
         power = self.power(from_freq, to_freq,
                            segment_factor,
                            *args, **kwargs)
         freq = self.last_cutted_frequency()
 
-        import matplotlib.pyplot as plt
+        # linearx=True forces lineary to True
+        if linearx: lineary=True
+        if lineary and not linearx:
+            p_shape = power.shape
+            if len(p_shape)== 1:
+                power *= freq
+            else:
+                power *= np.repeat(freq.reshape(p_shape[0],1), p_shape[1], axis=1)
+
+        from matplotlib.axes import Axes
+
+        if plot_to is None:
+            import matplotlib.pyplot as plt
+        else:
+            plt = plot_to
+
         if not overplot:
             plt.cla()
             plt.clf()
-        plt.plot(freq[1:], power[1:], label=label)
-        plt.loglog()
-        plt.xlabel('f [Hz]')
-        plt.ylabel('psd [V^2]')
-        if label is not None:
-            plt.legend()
+        lines = plt.plot(freq[1:], power[1:])
+
+        if lineary and not linearx:
+            plt.semilogx()
+        elif linearx and not lineary:
+            plt.semilogy()
+        elif not (linearx and lineary):
+            plt.loglog()
+
+        if self.data_units() is None:
+            units = "(a.u.)"
+        else:
+            units = self.data_units()
+
+        title = 'PSD'
+        if self.data_label() is not None:
+            title = title + " of " + self.data_label()
+        xlabel = 'frequency [Hz]'
+        if lineary and not linearx:
+            ylabel = 'frequency*PSD ['+units+'^2]'
+        else:
+            ylabel = 'PSD ['+units+'^2]/Hz'
+        if isinstance(plt, Axes):
+            plt.set(title=title, xlabel=xlabel, ylabel=ylabel)
+        else:
+            plt.title(title)
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+            if label is not None:
+                if isinstance(label, str):
+                    plt.legend([label] * len(lines))
+                else:
+                    plt.legend(label)
         return plt
 
-    @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
+
+    @modify_help(call='plot_cumulative_spectra(from_freq=xx, to_freq=xx, [series_idx])')
     def plot_cumulative_spectra(self, from_freq=None, to_freq=None,
                                 segment_factor=None,
-                                overplot=False, label=None, *args, **kwargs):
-        '''Plot the cumulative PSD across specified series'''
+                                label=None, plot_to=None,
+                                overplot=False, plot_rms=False, lineary=False,
+                                *args, **kwargs):
+        '''Plot cumulative PSD'''
         power = self.power(from_freq, to_freq,
                            segment_factor,
                            *args, **kwargs)
         freq = self.last_cutted_frequency()
+        freq_bin = freq[1]-freq[0] # frequency bin
 
-        import matplotlib.pyplot as plt
+        from matplotlib.axes import Axes
+
+        if plot_to is None:
+            import matplotlib.pyplot as plt
+        else:
+            plt = plot_to
+
         if not overplot:
             plt.cla()
             plt.clf()
-        plt.plot(freq[1:], np.cumsum(power, 0)[1:], label=label)
-        plt.loglog()
-        plt.xlabel('f [Hz]')
-        plt.ylabel('cumsum(psd) [V^2]')
-        if label is not None:
-            plt.legend()
+
+        # cumulated PSD
+        cumpsd = np.cumsum(power, 0) * freq_bin
+        if plot_rms:
+            # cumulated RMS
+            cumpsd = np.sqrt(cumpsd)
+            label_str = "RMS"
+            label_pow = ""
+        else:
+            # cumulated PSD
+            label_str = "Variance"
+            label_pow = "^2"
+
+        lines = plt.plot(freq[1:], cumpsd[1:])
+        if lineary:
+            plt.semilogx()
+        else:
+            plt.loglog()
+
+        if self.data_units() is None:
+            units = "(a.u.)"
+        else:
+            units = self.data_units()
+
+        title = "Cumulated " + label_str
+        if self.data_units() is not None:
+            title = title + " of " + self.data_label()
+        xlabel = 'frequency [Hz]'
+        ylabel = 'Cumulated '+label_str+' ['+units+label_pow+']'
+        if isinstance(plt, Axes):
+            plt.set(title=title, xlabel=xlabel, ylabel=ylabel)
+        else:
+            plt.title(title)
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+            if label is not None:
+                if isinstance(label, str):
+                    plt.legend([label] * len(lines))
+                else:
+                    plt.legend(label)
         return plt
 
 
