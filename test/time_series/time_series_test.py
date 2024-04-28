@@ -15,6 +15,7 @@ class ATimeSeries(TimeSeries):
         self.freq = 1. / samplingTime
         self.N_MODES = 6
         self.indexer = ModeIndexer(max_mode=self.N_MODES)
+        self.use_units = True
 
     def get_data(self):
         return self._get_not_indexed_data()
@@ -31,8 +32,9 @@ class ATimeSeries(TimeSeries):
     def _create_6_sine(self):
         self.disturbFreq = np.arange(1, self.N_MODES + 1) * 10.
         ret = np.zeros((1000, self.N_MODES))
+        f = self.freq.value if self.use_units else self.freq
         for i in np.arange(self.N_MODES):
-            ret[:, i] = self._sine(self.disturbFreq[i], 1., self.freq.value) + i
+            ret[:, i] = self._sine(self.disturbFreq[i], 1., f) + i
         return ret
 
     @staticmethod
@@ -48,6 +50,14 @@ class TimeSeriesTest(unittest.TestCase):
         dt = 0.001 * u.s
         self._ts = ATimeSeries(dt)
 
+        self._ts_no_units = ATimeSeries(0.001)
+        self._ts_no_units.use_units = False
+
+    def test_power_works_without_units(self):
+        power = self._ts_no_units.power()
+        freq = self._ts_no_units.frequency()
+        self.assertAlmostEqual(freq[np.argmax(power[:, 0])], 10.)
+    
     def test_power_return_correct_freq(self):
         power = self._ts.power()
         freq = self._ts.frequency()
