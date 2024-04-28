@@ -1,5 +1,3 @@
-import astropy.units as u
-
 from arte.dataelab.base_timeseries import BaseTimeSeries
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.cache_on_disk import cache_on_disk
@@ -8,14 +6,17 @@ from arte.dataelab.data_loader import OnTheFlyLoader
 
 class BaseProjection(BaseTimeSeries):
 
-    def __init__(self, source_timeseries, projection_matrix, mapper2d=None, astropy_unit=None):
+    def __init__(self, source_timeseries, projection_matrix, mapper2d=None, astropy_unit=None, data_label=None):
         try:
             assert not isinstance(source_timeseries, NotAvailable)
             assert not isinstance(projection_matrix, NotAvailable)
             super().__init__(source_timeseries.delta_time,
                              loader_or_data=OnTheFlyLoader(self.project),
                              mapper2d=mapper2d,
-                             astropy_unit=astropy_unit)
+                             astropy_unit=astropy_unit,
+                             data_label=data_label)
+            self._unit_handler.set_force(True)
+
         except Exception:
             NotAvailable.transformInNotAvailable(self)
             return
@@ -33,12 +34,4 @@ class BaseProjection(BaseTimeSeries):
             data = data @ proj
         return data
 
-    # Override that forces a unit conversion
-    def _apply_unit(self, data):
-        if self._astropy_unit is not None:
-            if isinstance(data, u.Quantity):
-                return u.Quantity(data.value, self._astropy_unit, copy=False)
-            else:
-                return u.Quantity(data, unit=self._astropy_unit, copy=False)
-        else:
-            return data
+# __oOo__

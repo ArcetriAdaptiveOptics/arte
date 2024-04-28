@@ -12,10 +12,11 @@ class BaseResidualModes(BaseProjection):
     modalrec: data object with modal reconstructor
     '''
 
-    def __init__(self, slopes_timeseries, modalrec, astropy_unit=u.m):
+    def __init__(self, slopes_timeseries, modalrec, astropy_unit=u.m, data_label='Modal coefficients'):
         super().__init__(slopes_timeseries,
                          modalrec,
-                         astropy_unit=astropy_unit)
+                         astropy_unit=astropy_unit,
+                         data_label=data_label)
         self._nmodes = None   # Lazy initialization
 
     def nmodes(self):
@@ -28,9 +29,11 @@ class BaseResidualModes(BaseProjection):
         return ModeIndexer(max_mode=self.nmodes()).modes(*args, **kwargs)
 
     def slopes(self):
+        '''Slopes timeseries'''
         return self._source_timeseries
 
     def modalrec(self):
+        '''Modal reconstructor'''
         return self._projection_matrix
 
 # __oOo__

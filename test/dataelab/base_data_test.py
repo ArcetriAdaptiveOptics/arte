@@ -39,3 +39,12 @@ class BaseDataTest(unittest.TestCase):
             series = BaseData(1*u.s, self.testdata*u.m, astropy_unit = u.kg)
             _ = series.get_data()
 
+    def test_data_label(self):
+        dataobj = BaseData(self.testdata*u.m, astropy_unit = None, data_label='foo')
+        assert dataobj.data_label() == 'foo'
+
+    def test_data_unit(self):
+        dataobj = BaseData(self.testdata*u.kg, astropy_unit = None, data_label='foo')
+        _ = dataobj.get_data()
+        assert dataobj.data_units() == 'kg'
+

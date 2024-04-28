@@ -12,12 +12,13 @@ signal_unit = u.def_unit('signal')
 class BaseSlopes(BaseTimeSeries):
     '''Slopes recorded from a generic WFS'''
 
-    def __init__(self, delta_time, loader_or_data, mapper2d=None, astropy_unit=signal_unit,
+    def __init__(self, delta_time, loader_or_data, mapper2d=None, astropy_unit=signal_unit, data_label='slopes',
                  interleaved=True):
         super().__init__(delta_time,
                          loader_or_data=loader_or_data,
                          mapper2d=mapper2d,
-                         astropy_unit=astropy_unit)
+                         astropy_unit=astropy_unit,
+                         data_label=data_label)
         self._interleaved = interleaved
 
     def get_index_of(self, *args, **kwargs):
@@ -29,12 +30,12 @@ class BaseSlopes(BaseTimeSeries):
     def get_display_sx(self):
         '''Raw slope-x data as a cube of 2d display'''
         sx = self.get_data('x')
-        return self._mapper2d(sx)
+        return self._display_func(sx)
 
     def get_display_sy(self):
         '''Raw slope-y data as a cube of 2d display'''
         sy = self.get_data('y')
-        return self._mapper2d(sy)
+        return self._display_func(sy)
 
     def get_display(self):
         '''Raw data as a cube of 2d display arrays'''
@@ -51,7 +52,7 @@ class BaseSlopes(BaseTimeSeries):
         '''
         title = "left:" + self._data_label + "-X, right:" + self._data_label + "-Y"
         array2show = self.get_display().mean(axis=0)
-        return show_array(array2show, cut_wings, title, 'Subap', 'Subap', self._data_units)
+        return show_array(array2show, cut_wings, title, 'Subap', 'Subap', self.data_units())
 
     def vecshow(self):
         '''Display slopes as vector field'''

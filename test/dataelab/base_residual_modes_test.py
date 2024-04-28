@@ -19,7 +19,7 @@ class BaseResidualModesTest(unittest.TestCase):
         self._resmodes = BaseResidualModes(self._slopes,
                                            self._modalrec,
                                            astropy_unit = u.m)
-        self._expected_data = (self._data @ self._proj) * self._resmodes.astropy_unit()
+        self._expected_data = (self._data @ self._proj) * u.m
 
     def test_projection(self):
         np.testing.assert_array_equal(self._resmodes.get_data(),
@@ -29,6 +29,10 @@ class BaseResidualModesTest(unittest.TestCase):
         '''Test that using assignment from unitless data works'''
         assert self._resmodes.get_data().unit == u.m
 
+    def test_unit_name(self):
+        _ = self._resmodes.get_data()
+        assert self._resmodes.data_units() == "m"
+
     def test_indexer(self):
         '''Test that the indexer for single modes works'''
         np.testing.assert_array_equal(self._resmodes.get_data(mode=1),
@@ -36,15 +40,16 @@ class BaseResidualModesTest(unittest.TestCase):
 
     def test_unit_combination(self):
         '''Test that ResidualModes multiplies input units correctly'''
-        self._data = np.arange(6).reshape((3,2)) * signal_unit
-        self._proj = np.array([[1,2], [3,4]]) * (u.m / signal_unit)
-        self._slopes = BaseSlopes(1*u.s, self._data)
-        self._modalrec = BaseData(self._proj)
-        self._resmodes = BaseResidualModes(self._slopes,
-                                           self._modalrec,
-                                           astropy_unit = None)
-        self._expected_data = self._data.value @ self._proj.value * u.m
-        np.testing.assert_array_equal(self._resmodes.get_data(mode=1),
-                                      self._expected_data[:,1])
+        data = np.arange(6).reshape((3,2)) * signal_unit
+        proj = np.array([[1,2], [3,4]]) * (u.m / signal_unit)
+        slopes = BaseSlopes(1*u.s, data)
+        modalrec = BaseData(proj)
+        resmodes = BaseResidualModes(slopes,
+                                     modalrec,
+                                     astropy_unit = None)
+        expected_data = data.value @ proj.value * u.m
+        np.testing.assert_array_equal(resmodes.get_data(mode=1),
+                                      expected_data[:,1])
+        
 
 # __oOo__
