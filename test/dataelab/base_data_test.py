@@ -7,6 +7,7 @@ import astropy.units as u
 from astropy.io import fits
 from arte.dataelab.base_data import BaseData
 
+
 class BaseDataTest(unittest.TestCase):
 
     def setUp(self):
@@ -23,6 +24,7 @@ class BaseDataTest(unittest.TestCase):
         assert not isinstance(dataobj.get_data(), u.Quantity)
 
     def test_data_with_unit_and_same_unit(self):
+
         dataobj = BaseData(self.testdata*u.m, astropy_unit = u.m)
         assert dataobj.get_data().unit == u.m
 
@@ -39,3 +41,4 @@ class BaseDataTest(unittest.TestCase):
             series = BaseData(1*u.s, self.testdata*u.m, astropy_unit = u.kg)
             _ = series.get_data()
 
+# __oOo__
