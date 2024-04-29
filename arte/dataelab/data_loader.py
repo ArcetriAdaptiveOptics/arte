@@ -2,7 +2,7 @@ import os
 import abc
 import numpy as np
 from astropy.io import fits
-
+from pathlib import Path
 from arte.utils.help import add_help
 
 @add_help
@@ -26,11 +26,15 @@ class DataLoader():
         '''Load data and return it'''
 
 
+
 class FitsDataLoader(DataLoader):
     '''Loader for data stored into FITS files'''
     def __init__(self, filename, ext=None):
         super().__init__()
-        self._filename = filename
+        if isinstance(filename, Path):
+            self._filename = str(filename)
+        else:
+            self._filename = filename
         self._ext = ext
 
     def assert_exists(self):
@@ -50,8 +54,11 @@ class NumpyDataLoader(DataLoader):
     '''Loader for data stored into np or npz files'''
     def __init__(self, filename, key=None):
         super().__init__()
-        self._filename = filename
-        if filename.endswith('.npz') and key is None:
+        if isinstance(filename, Path):
+            self._filename = str(filename)
+        else:
+            self._filename = filename
+        if self._filename.endswith('.npz') and key is None:
             key = 'arr_0'
         self._key = key
 
