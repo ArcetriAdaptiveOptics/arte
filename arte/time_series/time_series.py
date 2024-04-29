@@ -67,17 +67,6 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def delta_time(self, time):
         self.__delta_time = time
 
-    @abc.abstractmethod
-    def _get_display(self):
-        raise NotImplementedError
-
-    def get_display(self):
-        display_data = self._get_display()
-        if isinstance(display_data, u.Quantity):
-            return display_data.value
-        else:
-            return display_data
-
     def frequency(self):
         return self._frequency
 

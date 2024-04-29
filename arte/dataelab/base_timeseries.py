@@ -4,10 +4,7 @@ from arte.time_series import TimeSeries
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import ConstantDataLoader
 from arte.dataelab.unit_handler import UnitHandler
-
-
-def no_op(x):
-    return x
+from astropy import units as u
 
 
 class BaseTimeSeries(TimeSeries):
@@ -43,9 +40,12 @@ class BaseTimeSeries(TimeSeries):
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
 
         if mapper2d is None:
-            self._display_func = no_op
+            self._display_func = self._no_op_display
         else:
             self._display_func = mapper2d
+
+    def _no_op_display(self, x):
+        return np.atleast_3d(x)
 
     def filename(self):
         '''Data filename (full path)'''
@@ -68,5 +68,15 @@ class BaseTimeSeries(TimeSeries):
         '''Data unit as an astropy unit'''
         return self._unit_handler.actual_unit()
 
+    def _get_display(self):
+        return self._display_func(self.get_data())
+
+    def get_display(self):
+        '''Raw data as a 3d cube of 2d display arrays'''
+        display_data = self._get_display()
+        if isinstance(display_data, u.Quantity):
+            return display_data.value
+        else:
+            return display_data
 
 # __oOo__

@@ -11,7 +11,7 @@ class BaseTimeSeriesTest(unittest.TestCase):
 
     def setUp(self):
         mydir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.fitsfile = os.path.join(mydir, 'testdata', 'range2x3.fits')
+        self.fitsfile = os.path.join(mydir, 'testdata', 'range10x6.fits')
         self.testdata = fits.getdata(self.fitsfile)
 
     def test_data_without_unit_and_set_unit(self):
@@ -39,3 +39,6 @@ class BaseTimeSeriesTest(unittest.TestCase):
         series = BaseTimeSeries(1*u.s, self.testdata*u.m, astropy_unit = None)
         assert series.get_data().unit == u.m
 
+    def test_get_display_expands_ensemble_dimension_to_2d(self):
+        series = BaseTimeSeries(1*u.s, self.testdata*u.m, astropy_unit=None)
+        assert series.get_display().shape == (10, 6, 1)
