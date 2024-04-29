@@ -8,6 +8,7 @@ import pickle
 import tempfile
 from functools import wraps
 from collections import defaultdict
+from types import ModuleType
 
 import numpy as np
 
@@ -131,7 +132,8 @@ def _discover_cachers(obj, seen=None):
         # Recurse into all child members except for special variables.
         if (not name.startswith('__') and not type(member) in seen):
             seen.update([type(member)])
-            yield from _discover_cachers(member, seen=seen)
+            if not isinstance(member, ModuleType):
+                yield from _discover_cachers(member, seen=seen)
 
 #    What happens with properties?
 #
