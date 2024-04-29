@@ -1,4 +1,5 @@
 import numpy as np
+import astropy.units as u
 
 from arte.utils.help import add_help
 from arte.utils.not_available import NotAvailable
@@ -75,6 +76,7 @@ class BaseData():
 
     def get_display(self):
         '''Data mapped in 2d'''
+
         return self._display_func(self.get_data())
     
 
