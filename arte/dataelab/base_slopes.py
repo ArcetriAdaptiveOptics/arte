@@ -27,20 +27,18 @@ class BaseSlopes(BaseTimeSeries):
         else:
             return Indexer().sequential_xy(maxindex=self.ensemble_size(), *args, **kwargs)
 
-    def _get_display_sx(self):
+    def get_display_sx(self, data):
         '''Raw slope-x data as a cube of 2d display'''
-        sx = self.get_data('x')
-        return self._display_func(sx)
+        return np.dstack([self._display_func(frame) for frame in data])
 
-    def _get_display_sy(self):
+    def get_display_sy(self, data):
         '''Raw slope-y data as a cube of 2d display'''
-        sy = self.get_data('y')
-        return self._display_func(sy)
+        return np.dstack([self._display_func(frame) for frame in data])
 
-    def _get_display(self):
+    def _get_display_cube(self, data):
         '''Raw data as a cube of 2d display arrays'''
-        sx2d = self._get_display_sx()
-        sy2d = self._get_display_sy()
+        sx2d = self.get_display_sx(data)
+        sy2d = self.get_display_sy(data)
         return np.concatenate((sx2d, sy2d), axis=2)
     
     def imshow(self, cut_wings=0):

@@ -21,9 +21,6 @@ class ATimeSeries(TimeSeries):
         else:
             self.nsamples = int(self.freq)
 
-    def get_data(self):
-        return self._get_not_indexed_data()
-
     def _get_not_indexed_data(self):
         dataArray = self._create_6_sine()
         return dataArray

@@ -36,15 +36,18 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def _get_not_indexed_data(self):
         pass
 
-    def get_data(self, *args, **kwargs):
+    def get_data(self, *args, times=None, **kwargs):
         '''Raw data as a matrix [time, series]'''
 
-        not_indexed_data = self._get_not_indexed_data()
+        data = self._get_not_indexed_data()
+        if times is not None:
+            idxs = np.array(np.arange(times[0], times[1]) / self.__delta_time,
+                            dtype='int32')
+            data = data[idxs]
         index = self.get_index_of(*args, **kwargs)
-        if index is None:
-            return not_indexed_data
-        else:
-            return not_indexed_data[:, index]
+        if index is not None:
+            data = data[:, index]
+        return data
 
     @abc.abstractmethod
     def get_index_of(self, *args, **kwargs):
@@ -67,12 +70,14 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def delta_time(self, time):
         self.__delta_time = time
 
-    @abc.abstractmethod
-    def _get_display(self):
-        raise NotImplementedError
+    def _get_display_cube(self, data):
+        return data
 
-    def get_display(self):
-        display_data = self._get_display()
+    @modify_help(arg_str='[times=[from,to]], [series_idx]')
+    def get_display(self, times=None, *args, **kwargs):
+        '''Display cube for the specified time interval'''
+        data_to_display = self.get_data(*args, times=times, **kwargs)
+        display_data = self._get_display_cube(data_to_display)
         if isinstance(display_data, u.Quantity):
             return display_data.value
         else:
@@ -97,17 +102,6 @@ class TimeSeries(metaclass=abc.ABCMeta):
         '''Number of time samples in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
         return not_indexed_data.shape[0]
-
-    def _apply(self, func, times=None, *args, **kwargs):
-        '''Extract data and apply the passed function'''
-        data = self.get_data(*args, **kwargs)
-        if times is None:
-            result = func(data)
-        else:
-            idxs = np.array(np.arange(times[0], times[1]) / self.__delta_time,
-                            dtype='int32')
-            result = func(data[idxs])
-        return result
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, from_freq=None, to_freq=None,
@@ -162,38 +156,32 @@ class TimeSeries(metaclass=abc.ABCMeta):
     @modify_help(arg_str='[times=[from,to]], [series_idx]')
     def time_median(self, times=None, *args, **kwargs):
         '''Median over time for each series'''
-        func = functools.partial(np.median, axis=0)
-        return self._apply(func, times, *args, **kwargs)
+        return np.median(self.get_data(*args, times=times, **kwargs), axis=0)
 
     @modify_help(arg_str='[times=[from,to]], [series_idx]')
     def time_std(self, times=None, *args, **kwargs):
         '''Standard deviation over time for each series'''
-        func = functools.partial(np.std, axis=0)
-        return self._apply(func, times, *args, **kwargs)
+        return np.std(self.get_data(*args, times=times, **kwargs), axis=0)
 
     @modify_help(arg_str='[times=[from,to]], [series_idx]')
     def time_average(self, times=None, *args, **kwargs):
         '''Average value over time for each series'''
-        func = functools.partial(np.mean, axis=0)
-        return self._apply(func, times, *args, **kwargs)
+        return np.mean(self.get_data(*args, times=times, **kwargs), axis=0)
 
     @modify_help(arg_str='[times=[from,to]], [time_idx]')
     def ensemble_average(self, times=None, *args, **kwargs):
         '''Average across series at each sampling time'''
-        func = functools.partial(np.mean, axis=1)
-        return self._apply(func, times, *args, **kwargs)
+        return np.mean(self.get_data(*args, times=times, **kwargs), axis=1)
 
     @modify_help(arg_str='[times=[from,to]], [time_idx]')
     def ensemble_std(self, times=None, *args, **kwargs):
         '''Standard deviation across series at each sampling time'''
-        func = functools.partial(np.std, axis=1)
-        return self._apply(func, times, *args, **kwargs)
+        return np.std(self.get_data(*args, times=times, **kwargs), axis=1)
 
     @modify_help(arg_str='[times=[from,to]], [time_idx]')
     def ensemble_median(self, times=None, *args, **kwargs):
         '''Median across series at each sampling time'''
-        func = functools.partial(np.median, axis=1)
-        return self._apply(func, times, *args, **kwargs)
+        return np.median(self.get_data(*args, times=times, **kwargs), axis=1)
 
     @modify_help(call='plot_hist(from_freq=xx, to_freq=xx, [series_idx])')
     def plot_hist(self, from_t=None, to_t=None,

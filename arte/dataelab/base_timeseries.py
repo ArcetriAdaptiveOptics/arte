@@ -43,9 +43,12 @@ class BaseTimeSeries(TimeSeries):
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
 
         if mapper2d is None:
-            self._display_func = no_op
+            self._display_func = np.atleast_2d
         else:
             self._display_func = mapper2d
+
+    def _get_display_cube(self, data):
+        return np.dstack([self._display_func(frame) for frame in data])
 
     def filename(self):
         '''Data filename (full path)'''
