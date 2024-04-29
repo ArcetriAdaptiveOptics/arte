@@ -6,11 +6,12 @@ class BaseIntensities(BaseTimeSeries):
     '''
     Time series for subaperture intensities
     '''
-    def __init__(self, delta_time, loader_or_data, mapper2d=None, astropy_unit=u.adu):
+    def __init__(self, delta_time, loader_or_data, mapper2d=None, astropy_unit=u.adu, data_label='Subaperture intensities'):
         super().__init__(delta_time,
                          loader_or_data=loader_or_data,
                          mapper2d=mapper2d,
-                         astropy_unit=astropy_unit)
+                         astropy_unit=astropy_unit,
+                         data_label=data_label)
 
     def total_adu(self, threshold=0.1):
         '''
