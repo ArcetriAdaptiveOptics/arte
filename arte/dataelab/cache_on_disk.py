@@ -1,3 +1,7 @@
+'''Persistent disk cache for immutable method return values.
+
+Disk cache in the style of LBT elab_lib
+'''
 
 import os
 import pickle
@@ -6,7 +10,6 @@ from functools import wraps
 from collections import defaultdict
 
 import numpy as np
-import astropy.units as u
 
 
 class TagNotSetException(Exception):
@@ -14,7 +17,7 @@ class TagNotSetException(Exception):
 
 
 def cache_on_disk(f):
-    '''Persistent disk cache for method return values.
+    '''Persistent disk cache for immutable method return values.
 
     Only use this decorator for methods whose return value never changes.
 
@@ -26,20 +29,25 @@ def cache_on_disk(f):
     Caching only starts after a global tag has been defined. Call
     set_tag(obj, tag) with obj set the highest object in the hierarchy
     (typically the analyzer instance) to initialize disk caching for all
-    child objects/methods.
+    inherited and composed (via attributes) objects.
 
     Tags should be uniquely identifying the dataset to be stored.
     One suggestion is to use both a system identifier (like KAPA or LBTISX)
     and a timestamp, for example LBTISX20240410_112233.
 
-    Call clear_cache(obj) to delete all temporary files for all child
-    objects/methods. The methods code will be run and stored again
-    when called.
+    Call clear_cache(obj) to delete all temporary files for all inherited
+    and composed (via attributes) objects. The methods code will be run
+    and stored again when called.
 
-    Data is stored in tmpdir/prefix<tag>/file.npy, where:
+    Data is stored in tmpdir/prefix<tag>/filename.npy, where:
      - tmpdir is by default the system temporary directory
      - prefix is by default "cache"
-     - tag must be set by the owner class by calling set_tag at some point
+     - tag must be set by the owner class by calling set_tag() at some point
+     - "filename" identifies the method and class name
+
+    File always has extension ".npy". Any type different from a numpy array will
+    be pickled instead, using the same extension and leveraging numpy's
+    transparent object pickling.
 
     Defaults for tmpdir and prefix can be overriden using set_tmpdir() and
     set_prefix(), each with two arguments:
@@ -179,57 +187,30 @@ class DiskCacher():
         else:
             return self._original_function(*args, **kwargs)
 
-    def fullpath_no_extension(self):
+    def fullpath(self):
         '''Full path of cache file on disk, without extension'''
         if self._tag is None:
             raise TagNotSetException('Disk cache tag has not been set')
-        return os.path.join(self._tmpdir, self._prefix + self._tag, self._funcid)
-
-    def file_on_disk(self):
-        '''Returns the cache file path, raises FileNotFoundError if not found'''
-        extensions = ['.pickle', '.npy']
-        for ext in extensions:
-            path = self.fullpath_no_extension() + ext
-            if os.path.exists(path):
-                return path
-        raise FileNotFoundError
+        return os.path.join(self._tmpdir, self._prefix + self._tag, self._funcid + '.npy')
 
     def _save_to_disk(self):
-        fullpath = self.fullpath_no_extension()
         try:
-            os.mkdir(os.path.join(self._tmpdir, self._prefix+self._tag))
+            os.mkdir(os.path.join(os.path.dirname(self.fullpath())))
         except FileExistsError:
             pass
-        if isinstance(self._data, np.ndarray):
-            if isinstance(self._data, u.Quantity):
-                np.save(fullpath+'.npy', self._data.value)
-                with open(fullpath+'.npy.unit.pickle', 'wb') as f:
-                    pickle.dump(self._data.unit, f)
-            else:
-                np.save(fullpath+'.npy', self._data)
+
+        # Use exact type match because e.g. u.Quantity is a subclass
+        # but cannot be used with np.save
+        if type(self._data) == np.ndarray:          # pylint: disable=C0123
+            np.save(self.fullpath(), self._data)
         else:
-            with open(fullpath+'.pickle', 'wb') as f:
-                pickle.dump(self._data, f)
+            pickle.dump(self._data, open(self.fullpath(), 'wb'))
 
     def _load_from_disk(self):
-        path = self.file_on_disk()
-        if path.endswith('.npy'):
-            data = np.load(path)
-            print('Loading from disk')
-            if os.path.exists(path+'.unit.pickle'):
-                with open(path+'.unit.pickle', 'rb') as f:
-                    unit = pickle.load(f)
-                data = data * unit
-            return data
-        else:
-            with open(path, 'rb') as f:
-                return pickle.load(f)
+        return np.load(self.fullpath(), allow_pickle=True)
 
     def _delete_from_disk(self):
-        extensions = ['.pickle', '.npy', 'unit.pickle']
-        for ext in extensions:
-            path = self.fullpath_no_extension() + ext
-            if os.path.exists(path):
-                os.unlink(path)
+        if os.path.exists(self.fullpath()):
+            os.unlink(self.fullpath())
 
 # __oOo__

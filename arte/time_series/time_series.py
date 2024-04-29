@@ -1,11 +1,13 @@
 import abc
-import numpy as np
 import functools
+
+import numpy as np
+from astropy import units as u
 from scipy.signal import welch
+
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
 from arte.utils.iterators import pairwise
-from astropy import units as u
 
 
 @add_help
@@ -119,8 +121,13 @@ class TimeSeries(metaclass=abc.ABCMeta):
 
         if isinstance(data, NotAvailable):
             raise Exception('Cannot calculate power: data is not available')
+        
+        if isinstance(self.__delta_time, u.Quantity):
+            value_hz = (1 / self.__delta_time).to_value(u.Hz)
+        else:
+            value_hz = 1 / self.__delta_time
 
-        self._frequency, x = welch(data.T, (1 / self.__delta_time).to_value(u.Hz),
+        self._frequency, x = welch(data.T, value_hz,
                                    window=self._window,
                                    nperseg=data.shape[0] / self._segment_factor)
         df = np.diff(self._frequency)[0]

@@ -51,7 +51,7 @@ def separate_value_and_unit(var):
         return var, 1
 
 
-def make_sure_its_a(unit, v, name=''):
+def make_sure_its_a(unit, v, name='', copy=True):
     '''
     Make sure that `v` has the astropy unit `unit`.
 
@@ -81,7 +81,7 @@ def make_sure_its_a(unit, v, name=''):
 
     '''
     if not isinstance(v, u.Quantity):
-        return v * unit
+        return u.Quantity(v, unit=unit, copy=copy)
 
     try:
         normalized = v.to(unit)

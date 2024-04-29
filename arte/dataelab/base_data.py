@@ -4,10 +4,12 @@ import astropy.units as u
 from arte.utils.help import add_help
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import ConstantDataLoader
+from arte.utils.unit_checker import make_sure_its_a
 
 
 def no_op(x):
     return x
+
 
 @add_help
 class BaseData():
@@ -64,14 +66,12 @@ class BaseData():
 
     def get_display(self):
         '''Data mapped in 2d'''
-        return self._mapper2d(self.get_data())
+
+        return self._display_func(self.get_data())
     
     def _apply_unit(self, data):
         if self._astropy_unit is not None:
-            if isinstance(data, u.Quantity):
-                return data.value * self._astropy_unit
-            else:
-                return data * self._astropy_unit
+            return make_sure_its_a(self._astropy_unit, data, copy=False)
         else:
             return data
 

@@ -6,10 +6,13 @@ from arte.time_series import Indexer
 from arte.utils.show_array import show_array
 
 
+signal_unit = u.def_unit('signal')
+
+
 class BaseSlopes(BaseTimeSeries):
     '''Slopes recorded from a generic WFS'''
 
-    def __init__(self, delta_time, loader_or_data, mapper2d=None, astropy_unit=u.pix,
+    def __init__(self, delta_time, loader_or_data, mapper2d=None, astropy_unit=signal_unit,
                  interleaved=True):
         super().__init__(delta_time,
                          loader_or_data=loader_or_data,

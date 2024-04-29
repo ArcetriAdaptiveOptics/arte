@@ -1,3 +1,5 @@
+import astropy.units as u
+
 from arte.dataelab.base_timeseries import BaseTimeSeries
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.cache_on_disk import cache_on_disk
@@ -31,4 +33,12 @@ class BaseProjection(BaseTimeSeries):
             data = data @ proj
         return data
 
-
+    # Override that forces a unit conversion
+    def _apply_unit(self, data):
+        if self._astropy_unit is not None:
+            if isinstance(data, u.Quantity):
+                return u.Quantity(data.value, self._astropy_unit, copy=False)
+            else:
+                return u.Quantity(data, unit=self._astropy_unit, copy=False)
+        else:
+            return data
