@@ -4,7 +4,7 @@ import astropy.units as u
 from arte.dataelab.base_timeseries import BaseTimeSeries
 from arte.time_series import Indexer
 from arte.utils.show_array import show_array
-
+from arte.utils.unit_checker import separate_value_and_unit
 
 signal_unit = u.def_unit('signal')
 
@@ -27,20 +27,20 @@ class BaseSlopes(BaseTimeSeries):
         else:
             return Indexer().sequential_xy(maxindex=self.ensemble_size(), *args, **kwargs)
 
-    def get_display_sx(self):
+    def _get_display_sx(self):
         '''Raw slope-x data as a cube of 2d display'''
         sx = self.get_data('x')
         return self._display_func(sx)
 
-    def get_display_sy(self):
+    def _get_display_sy(self):
         '''Raw slope-y data as a cube of 2d display'''
         sy = self.get_data('y')
         return self._display_func(sy)
 
-    def get_display(self):
+    def _get_display(self):
         '''Raw data as a cube of 2d display arrays'''
-        sx2d = self.get_display_sx()
-        sy2d = self.get_display_sy()
+        sx2d = self._get_display_sx()
+        sy2d = self._get_display_sy()
         return np.concatenate((sx2d, sy2d), axis=2)
     
     def imshow(self, cut_wings=0):
@@ -56,9 +56,12 @@ class BaseSlopes(BaseTimeSeries):
 
     def vecshow(self):
         '''Display slopes as vector field'''
-        sx2d = self.get_display_sx().mean(axis=0)
-        sy2d = self.get_display_sy().mean(axis=0)
+        sx2d = self._get_display_sx().mean(axis=0)
+        sy2d = self._get_display_sy().mean(axis=0)
 
+        sx2d, _ = separate_value_and_unit(sx2d)
+        sy2d, _ = separate_value_and_unit(sy2d)
+    
         import matplotlib.pyplot as plt
         plt.quiver(sx2d, sy2d)
         return plt

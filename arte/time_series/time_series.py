@@ -67,23 +67,34 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def delta_time(self, time):
         self.__delta_time = time
 
+    @abc.abstractmethod
+    def _get_display(self):
+        raise NotImplementedError
+
+    def get_display(self):
+        display_data = self._get_display()
+        if isinstance(display_data, u.Quantity):
+            return display_data.value
+        else:
+            return display_data
+
     def frequency(self):
         return self._frequency
 
-    def time(self):
-        '''Return the time vector of time ensamble'''
+    def time_vector(self):
+        '''Override to return the time vector of data ensemble'''
         return self.__delta_time * np.arange(self.time_size())
 
     def last_cutted_frequency(self):
         return self._lastCuttedFrequency
 
     def ensemble_size(self):
-        '''Number of distinct series in this time enseble'''
+        '''Number of distinct series in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
         return not_indexed_data.shape[1]
 
     def time_size(self):
-        '''Number of time samples in this time enseble'''
+        '''Number of time samples in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
         return not_indexed_data.shape[0]
 
