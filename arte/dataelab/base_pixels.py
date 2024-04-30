@@ -20,7 +20,7 @@ class BasePixels(BaseTimeSeries):
         if npix != int(npix):
             raise Exception('Cannot remap pixels into 2d, frame is not square')
         npix = int(npix)
-        return p.reshape((data.shape[0], npix, npix))
+        return data.reshape((data.shape[0], npix, npix))
 
     def total_adu(self, threshold=0.1):
         '''Total number of ADU/frame. Optional threshold is relative to max.'''

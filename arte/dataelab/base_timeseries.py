@@ -21,6 +21,7 @@ class BaseTimeSeries(TimeSeries):
     data_label: human-readable label for plot (e.g.: "Surface modal coefficients" )
     '''
     def __init__(self, loader_or_data, time_vector=None, mapper2d=None, astropy_unit=None, data_label=None):
+
         if isinstance(loader_or_data, np.ndarray):
             data_loader = ConstantDataLoader(loader_or_data)
         else:
@@ -30,6 +31,7 @@ class BaseTimeSeries(TimeSeries):
             time_vector_loader = ConstantDataLoader(time_vector)
         else:
             time_vector_loader = time_vector
+
         try:
             super().__init__()
 
@@ -61,15 +63,18 @@ class BaseTimeSeries(TimeSeries):
         return self._data_loader.filename()
 
     def _get_not_indexed_data(self):
+        '''Reimplementation for lazy loading and astropy units'''
         return self._unit_handler.apply_unit(self._data_loader.load())
 
     def _get_time_vector(self):
+        '''Reimplementation for lazy loading'''
         if self._time_vector_loader is not None:
             return self._time_vector_loader.load()
         else:
             return super()._get_time_vector()
 
     def get_index_of(self, *args, **kwargs):
+        '''Should be overridden in derived classes'''
         pass
 
     def data_label(self):
