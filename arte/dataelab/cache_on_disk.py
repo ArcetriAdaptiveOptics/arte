@@ -77,29 +77,29 @@ def get_disk_cacher(instance, method):
 
 def set_tag(root_obj, tag):
     '''Setup disk cache tag for root_obj and child/member objects'''
-    for instance, cacher_list in _discover_cachers(root_obj):
-        cacher_list[instance].set_tag(tag)
+    for instance, instance_name, cacher_list in _discover_cachers(root_obj):
+        cacher_list[instance].set_tag(tag, instance_name)
 
 
 def clear_cache(root_obj):
     '''Clear cache for root_obj and child/member objects'''
-    for instance, cacher_list in _discover_cachers(root_obj):
+    for instance, _, cacher_list in _discover_cachers(root_obj):
         cacher_list[instance].clear_cache()
 
 
 def set_tmpdir(root_obj, tmpdir):
     '''Set the directory where cached data is stored'''
-    for instance, cacher_list in _discover_cachers(root_obj):
+    for instance, _, cacher_list in _discover_cachers(root_obj):
         cacher_list[instance].set_tmpdir(tmpdir)
 
 
 def set_prefix(root_obj, prefix):
     '''Set the prefix for each tag directory'''
-    for instance, cacher_list in _discover_cachers(root_obj):
+    for instance, _, cacher_list in _discover_cachers(root_obj):
         cacher_list[instance].set_prefix(prefix)
 
 
-def _discover_cachers(obj, seen=None):
+def _discover_cachers(obj, objname='root', seen=None):
     '''Generator that yields all DiskCacher objects in all child members'''
 
     # This set is used to avoid infinite recursion
@@ -123,17 +123,17 @@ def _discover_cachers(obj, seen=None):
     for name, method in methods.items():
         seen.update([type(method)])
         if hasattr(method, 'cacher_list'):
-            yield obj, method.cacher_list
+            yield obj, objname, method.cacher_list
 
     for name, member in members.items():
         if hasattr(member, 'cacher_list'):
-            yield obj, member.cacher_list
+            yield obj, objname, member.cacher_list
 
         # Recurse into all child members except for special variables.
-        if (not name.startswith('__') and not type(member) in seen):
+        if not name.startswith('__') and not type(member) in seen:
             seen.update([type(member)])
             if not isinstance(member, ModuleType):
-                yield from _discover_cachers(member, seen=seen)
+                yield from _discover_cachers(member, objname + '.' + name, seen=seen)
 
 #    What happens with properties?
 #
@@ -151,12 +151,14 @@ class DiskCacher():
         self._data = None
         self._tmpdir = tempfile.gettempdir()
         self._original_function = f
-        self._funcid = f.__qualname__
+        self._method_name = f.__name__
+        self._funcid = None
         self._prefix = 'cache'
 
-    def set_tag(self, tag):
+    def set_tag(self, tag, instance_name):
         '''Unique tag identifying the Elab instance'''
         self._tag = tag
+        self._funcid = instance_name + '.' + self._method_name
 
     def set_tmpdir(self, tmpdir):
         '''Set the directory where cached data is stored'''
@@ -193,6 +195,8 @@ class DiskCacher():
         '''Full path of cache file on disk, without extension'''
         if self._tag is None:
             raise TagNotSetException('Disk cache tag has not been set')
+        if self._funcid is None:
+            raise TagNotSetException('Function ID has not been set')
         return os.path.join(self._tmpdir, self._prefix + self._tag, self._funcid + '.npy')
 
     def _save_to_disk(self):
