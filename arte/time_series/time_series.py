@@ -70,19 +70,6 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def delta_time(self, time):
         self.__delta_time = time
 
-    def _get_display_cube(self, data):
-        return data
-
-    @modify_help(arg_str='[times=[from,to]], [series_idx]')
-    def get_display(self, times=None, *args, **kwargs):
-        '''Display cube for the specified time interval'''
-        data_to_display = self.get_data(*args, times=times, **kwargs)
-        display_data = self._get_display_cube(data_to_display)
-        if isinstance(display_data, u.Quantity):
-            return display_data.value
-        else:
-            return display_data
-
     def frequency(self):
         return self._frequency
 

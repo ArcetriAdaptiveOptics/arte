@@ -19,6 +19,7 @@ class BaseSlopes(BaseTimeSeries):
                          mapper2d=mapper2d,
                          astropy_unit=astropy_unit,
                          data_label=data_label)
+        # Special display handling
         self._interleaved = interleaved
 
     def get_index_of(self, *args, **kwargs):
@@ -29,17 +30,22 @@ class BaseSlopes(BaseTimeSeries):
 
     def get_display_sx(self, data):
         '''Raw slope-x data as a cube of 2d display'''
-        return np.dstack([self._display_func(frame) for frame in data])
+        return np.vstack([self._display_func(frame) for frame in data])
 
     def get_display_sy(self, data):
         '''Raw slope-y data as a cube of 2d display'''
-        return np.dstack([self._display_func(frame) for frame in data])
+        return np.vstack([self._display_func(frame) for frame in data])
 
     def _get_display_cube(self, data):
         '''Raw data as a cube of 2d display arrays'''
-        sx2d = self.get_display_sx(data)
-        sy2d = self.get_display_sy(data)
-        return np.concatenate((sx2d, sy2d), axis=2)
+        xidx = self.get_index_of('x')
+        yidx = self.get_index_of('y')
+        frames2d = []
+        for frame in data:
+            sx = self._display_func(frame[xidx])
+            sy = self._display_func(frame[yidx])
+            frames2d.append(np.hstack((sx,sy)))
+        return np.stack(frames2d)
     
     def imshow(self, cut_wings=0):
         '''
@@ -49,13 +55,17 @@ class BaseSlopes(BaseTimeSeries):
         0 are forced to 0, values above 50 are set to 50.
         '''
         title = "left:" + self._data_label + "-X, right:" + self._data_label + "-Y"
-        array2show = self.get_display().mean(axis=0)
+        sx = self.get_display('x').mean(axis=0)
+        sy = self.get_display('y').mean(axis=0)
+        array2show = np.hstack((sx,sy))
         return show_array(array2show, cut_wings, title, 'Subap', 'Subap', self.data_units())
 
     def vecshow(self):
         '''Display slopes as vector field'''
-        sx2d = self._get_display_sx().mean(axis=0)
-        sy2d = self._get_display_sy().mean(axis=0)
+        sx = self.get_data('x').mean(axis=0)
+        sy = self.get_data('y').mean(axis=0)
+        sx2d = self._display_func(sx)
+        sy2d = self._display_func(sy)
 
         sx2d, _ = separate_value_and_unit(sx2d)
         sy2d, _ = separate_value_and_unit(sy2d)

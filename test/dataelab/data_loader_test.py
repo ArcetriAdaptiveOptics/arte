@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import os
 import numpy as np
 import unittest
-
+from pathlib import Path
 from arte.dataelab.data_loader import FitsDataLoader, NumpyDataLoader
 
 class DataLoaderTest(unittest.TestCase):
@@ -13,6 +11,7 @@ class DataLoaderTest(unittest.TestCase):
         self.fitsfile = os.path.join(mydir, 'testdata', 'range2x3.fits')
         self.npyfile = os.path.join(mydir, 'testdata', 'range2x3.npy')
         self.npzfile = os.path.join(mydir, 'testdata', 'range2x3.npz')
+        self.npzpath = Path(mydir) / 'testdata' / 'range2x3.npz'
         self.testdata = np.arange(6).reshape((2, 3))
 
     def test_fits_assert_exists(self):
@@ -48,3 +47,10 @@ class DataLoaderTest(unittest.TestCase):
         loader = NumpyDataLoader(self.npzfile)
         np.testing.assert_array_equal(loader.load(), self.testdata)
 
+    def test_accept_path(self):
+        loader = NumpyDataLoader(self.npzpath)
+        np.testing.assert_array_equal(loader.load(), self.testdata)
+
+
+if __name__ == "__main__":
+    unittest.main()

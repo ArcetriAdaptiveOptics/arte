@@ -14,14 +14,13 @@ class BasePixels(BaseTimeSeries):
                          astropy_unit=astropy_unit,
                          data_label=data_label)
 
-    def get_display(self):
+    def _get_display_cube(self, data):
         '''3d numpy array with pixel image over time'''
-        p = self.get_data()
-        npix = np.sqrt(p.shape[1])
+        npix = np.sqrt(data.shape[1])
         if npix != int(npix):
             raise Exception('Cannot remap pixels into 2d, frame is not square')
         npix = int(npix)
-        return p.reshape((p.shape[0], npix, npix))
+        return p.reshape((data.shape[0], npix, npix))
 
     def total_adu(self, threshold=0.1):
         '''Total number of ADU/frame. Optional threshold is relative to max.'''
