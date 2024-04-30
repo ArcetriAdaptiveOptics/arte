@@ -39,14 +39,6 @@ class BaseAnalyzer(CanBeIncomplete):
             resDict[cmd] = eval('self.' + cmd + '()')
         return resDict
 
-    def _tn_conf(self):
-        if self._has_sparta_configuration():
-            return self.sparta.configuration.name
-        elif self.is_hadamard():
-            return 'Hadamard'
-        else:
-            return 'Unknown'
-
     @abc.abstractmethod
     def _info(self):
         return {}
