@@ -14,7 +14,7 @@ class BaseResidualModesTest(unittest.TestCase):
     def setUp(self):
         self._data = np.arange(6).reshape((3,2))
         self._proj = np.array([[1,2], [3,4]])
-        self._slopes = BaseSlopes(1*u.s, self._data)
+        self._slopes = BaseSlopes(self._data)
         self._modalrec = BaseData(self._proj)
         self._resmodes = BaseResidualModes(self._slopes,
                                            self._modalrec,
@@ -42,7 +42,7 @@ class BaseResidualModesTest(unittest.TestCase):
         '''Test that ResidualModes multiplies input units correctly'''
         data = np.arange(6).reshape((3,2)) * signal_unit
         proj = np.array([[1,2], [3,4]]) * (u.m / signal_unit)
-        slopes = BaseSlopes(1*u.s, data)
+        slopes = BaseSlopes(data)
         modalrec = BaseData(proj)
         resmodes = BaseResidualModes(slopes,
                                      modalrec,

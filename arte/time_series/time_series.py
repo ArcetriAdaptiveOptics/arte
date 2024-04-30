@@ -1,10 +1,11 @@
 import abc
 import numpy as np
-import functools
+from functools import cached_property
 from scipy.signal import welch
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
 from arte.utils.iterators import pairwise
+from arte.utils.unit_checker import make_sure_its_a
 from astropy import units as u
 
 
@@ -23,9 +24,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
     Originally implemented as part of the ARGOS codebase.
     '''
 
-    def __init__(self, sampling_interval):
-        self.__delta_time = sampling_interval
-        self._data = None
+    def __init__(self):
         self._frequency = None
         self._lastCuttedFrequency = None
         self._power = None
@@ -36,13 +35,22 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def _get_not_indexed_data(self):
         pass
 
+    def _get_time_vector(self):
+        '''Override to provide a custom time vector'''
+        return np.arange(len(self._get_not_indexed_data()))
+
     def get_data(self, *args, times=None, **kwargs):
         '''Raw data as a matrix [time, series]'''
 
         data = self._get_not_indexed_data()
         if times is not None:
-            idxs = np.array(np.arange(times[0], times[1]) / self.__delta_time,
-                            dtype='int32')
+            time_vector = self._get_time_vector()
+            if isinstance(time_vector, u.Quantity):
+                start = make_sure_its_a(time_vector.unit, times[0])
+                stop = make_sure_its_a(time_vector.unit, times[1])
+            else:
+                start, stop = times
+            idxs = np.logical_and(time_vector >= start, time_vector < stop)
             data = data[idxs]
         index = self.get_index_of(*args, **kwargs)
         if index is not None:
@@ -61,21 +69,17 @@ class TimeSeries(metaclass=abc.ABCMeta):
         '''Override to return a string with a readable unit name'''
         return None
 
-    @property
+    @cached_property
     def delta_time(self):
-        '''Property with the interval between samples (astropy units)'''
-        return self.__delta_time
-
-    @delta_time.setter
-    def delta_time(self, time):
-        self.__delta_time = time
+        '''Property with the interval between samples'''
+        time_vector = self._get_time_vector()
+        return time_vector[1] - time_vector[0]
 
     def frequency(self):
         return self._frequency
 
     def time_vector(self):
-        '''Override to return the time vector of data ensemble'''
-        return self.__delta_time * np.arange(self.time_size())
+        return self._get_time_vector()
 
     def last_cutted_frequency(self):
         return self._lastCuttedFrequency
@@ -123,16 +127,15 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return output[:, index]
 
     def _compute_power(self, data):
-        if isinstance(self.__delta_time, NotAvailable):
-            raise Exception('Cannot calculate power: deltaTime is not available')
 
         if isinstance(data, NotAvailable):
             raise Exception('Cannot calculate power: data is not available')
         
-        if isinstance(self.__delta_time, u.Quantity):
-            value_hz = (1 / self.__delta_time).to_value(u.Hz)
+        delta_time = self.delta_time
+        if isinstance(delta_time, u.Quantity):
+            value_hz = (1 / delta_time).to_value(u.Hz)
         else:
-            value_hz = 1 / self.__delta_time
+            value_hz = 1 / delta_time
 
         self._frequency, x = welch(data.T, value_hz,
                                    window=self._window,
@@ -399,16 +402,9 @@ class TimeSeriesWithInterpolation(TimeSeries):
     # TODO remove it?
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, sampling_interval):
-        TimeSeries.__init__(self, sampling_interval)
+    def __init__(self):
+        TimeSeries.__init__(self)
         self._counter = None
-        self._original_counter = None
-
-    def get_original_counter(self):
-        '''Returns the original frame counter array'''
-        if self._original_counter is None:
-            self._original_counter = self._get_counter()
-        return self._original_counter
 
     def get_counter(self):
         '''Returns the interpolated frame counter array'''
@@ -416,12 +412,8 @@ class TimeSeriesWithInterpolation(TimeSeries):
             self._counter = self._interpolate_counter()
         return self._counter
 
-    @abc.abstractmethod
-    def _get_counter(self):
-        pass
-
     def _interpolate_counter(self):
-        counter = self.get_original_counter()
+        counter = self._get_time_vector()
         if isinstance(counter, NotAvailable):
             return NotAvailable()
         step = np.median(np.diff(counter))
@@ -451,7 +443,7 @@ class TimeSeriesWithInterpolation(TimeSeries):
             if the frame counter first dimension does not have the same length
             as the data first dimension.
         '''
-        counter = self.get_original_counter()
+        counter = self._get_time_vector()
         if isinstance(counter, NotAvailable):
             return NotAvailable()
 
@@ -463,7 +455,7 @@ class TimeSeriesWithInterpolation(TimeSeries):
         self._counter = self._interpolate_counter()
 
         # No interpolation done
-        if len(self._counter) == len(self.get_original_counter()):
+        if len(self._counter) == len(self._get_time_vector()):
             return data
 
         new_data = np.zeros((self._counter.shape[0], data.shape[1]))

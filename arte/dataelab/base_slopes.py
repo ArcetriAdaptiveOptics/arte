@@ -12,10 +12,10 @@ signal_unit = u.def_unit('signal')
 class BaseSlopes(BaseTimeSeries):
     '''Slopes recorded from a generic WFS'''
 
-    def __init__(self, delta_time, loader_or_data, mapper2d=None, astropy_unit=signal_unit, data_label='slopes',
+    def __init__(self, loader_or_data, time_vector=None, mapper2d=None, astropy_unit=signal_unit, data_label='slopes',
                  interleaved=True):
-        super().__init__(delta_time,
-                         loader_or_data=loader_or_data,
+        super().__init__(loader_or_data=loader_or_data,
+                         time_vector=time_vector,
                          mapper2d=mapper2d,
                          astropy_unit=astropy_unit,
                          data_label=data_label)

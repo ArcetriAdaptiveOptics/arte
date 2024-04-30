@@ -14,7 +14,7 @@ class BaseSlopesTest(unittest.TestCase):
 
     def test_get_display_remaps_to_slopes_vector_to_2d(self):
         mapper2d = lambda x: x.reshape((3,1))
-        series = BaseSlopes(1*u.s, self.testdata*u.m, mapper2d=mapper2d, astropy_unit=None)
+        series = BaseSlopes(self.testdata*u.m, mapper2d=mapper2d, astropy_unit=None)
         assert series.get_display().shape == (10, 3, 2)
 
 
