@@ -5,7 +5,6 @@ import re
 import numpy as np
 
 from arte.dataelab.tag import Tag
-from arte.dataelab.analyzer_pool import AnalyzerPool
 
 
 class AnalyzerStub(list):
@@ -21,9 +20,17 @@ class AnalyzerStub(list):
 
 
 class BaseAnalyzerSet():
-
+    '''
+    Analyzer set. Holds a list of Analyzer objects
+    '''
     def __init__(self, from_or_list, to, analyzer_pool, recalc=False, skip_invalid=True):
-
+        '''
+        from_or_list: either a single tag, or a list of tags
+        to: sigle tag, or None
+        analyzer_pool: AnalyzerPool instance from which Analyzer instances can be get()ted
+        recalc: if True, all analyzers will be recalculated (lazy recalc, only when actually accessed)
+        skip_invalid: if True (default), skip analyzers that throw exceptions during initialization
+        '''
         self._pool = analyzer_pool
 
         if isinstance(from_or_list, str):

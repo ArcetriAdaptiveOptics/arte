@@ -20,7 +20,11 @@ class BaseAnalyzer(CanBeIncomplete):
         # Initialize disk cache
         set_tag(self, self._snapshot_tag)
         if recalc:
-            clear_cache(self)
+            self.recalc()
+
+    def recalc(self):
+        '''Force recalculation of this analyzer data'''
+        clear_cache(self)
 
     def configuration(self):
         '''Data configuration'''
