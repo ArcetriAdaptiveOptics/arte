@@ -13,7 +13,7 @@ Any class to decorated with @add_help
 gets a :meth:`help` method that provides an interactive and searchable help
 based on the method docstrings. All public methods (not starting with "_")
 are added, together with all such methods in all the members that are
-classed decorated with @add_help. Derived classes inherit the help system
+classes decorated with @add_help. Derived classes inherit the help system
 without a need to use the @add_help decorator.
 
 Help is built dynamically when invoked, so if a new member is added
