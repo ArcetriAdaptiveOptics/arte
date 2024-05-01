@@ -16,8 +16,8 @@ class BaseIntensities(BaseTimeSeries):
     def total_adu(self, threshold=0.1):
         '''
         Total number of ADU/frame. Optional threshold is relative to max
-        ''' 
+        '''
         data = self.time_average()
-        data[np.where(data < data.max()*threshold)] = 0    
+        data[np.where(data < data.max()*threshold)] = 0
         return data.sum()
 

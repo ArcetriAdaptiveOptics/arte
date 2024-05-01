@@ -11,7 +11,7 @@ class AnalyzerPool(object):
         self._logger = logger
         self._type = type_
         self._configuration = configuration
-        self._cache = dict()
+        self._cache = {}
 
     def get(self, snapshot_tag, recalc=False):
         '''
@@ -23,11 +23,10 @@ class AnalyzerPool(object):
                 snapshot_tag, self._configuration, self._logger, recalc=recalc)
             self._cache[snapshot_tag] = result
         elif recalc:
-            self._cache[snapshot_tag].recalc() 
+            self._cache[snapshot_tag].recalc()
         return self._cache[snapshot_tag]
 
     def delete(self, snapshot_tag):
         '''Delete the Analyzer object corresponding to *snapshot_tag* from the memory cahce'''
         if snapshot_tag in self._cache:
             del self._cache[snapshot_tag]
-

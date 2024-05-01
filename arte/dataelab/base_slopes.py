@@ -46,7 +46,7 @@ class BaseSlopes(BaseTimeSeries):
             sy = self._display_func(frame[yidx])
             frames2d.append(np.hstack((sx,sy)))
         return np.stack(frames2d)
-    
+
     def imshow(self, cut_wings=0):
         '''
         Display X and Y slope 2d images
@@ -69,7 +69,7 @@ class BaseSlopes(BaseTimeSeries):
 
         sx2d, _ = separate_value_and_unit(sx2d)
         sy2d, _ = separate_value_and_unit(sy2d)
-    
+
         import matplotlib.pyplot as plt
         plt.quiver(sx2d, sy2d)
         return plt

@@ -1,4 +1,3 @@
-import abc
 import datetime
 import logging
 from arte.utils.not_available import CanBeIncomplete
@@ -6,21 +5,34 @@ from arte.utils.help import add_help
 from arte.dataelab.cache_on_disk import set_tag, clear_cache
 
 
+class PostInitCaller(type):
+    '''Meta class with a _post_init() method.
+    
+    Used to initialize the disk cache, since DiskCacher objects are
+    available only after all child/member objects have been initialized'''
+    def __call__(cls, *args, **kwargs):
+        obj = type.__call__(cls, *args, **kwargs)
+        obj._post_init()
+        return obj
+
+
 @add_help
-class BaseAnalyzer(CanBeIncomplete):
+class BaseAnalyzer(CanBeIncomplete, metaclass=PostInitCaller):
     '''Main analyzer object'''
 
     def __init__(self, snapshot_tag, configuration, recalc=False):
         self._logger = logging.getLogger('an_%s' % snapshot_tag)
         self._snapshot_tag = snapshot_tag
         self._configuration = configuration
-
+        self._recalc = recalc
         self._logger.info('creating analyzer for tag %s' % snapshot_tag)
 
+    def _post_init(self):
         # Initialize disk cache
         set_tag(self, self._snapshot_tag)
-        if recalc:
+        if self._recalc:
             self.recalc()
+            self._recalc = False
 
     def recalc(self):
         '''Force recalculation of this analyzer data'''
@@ -52,9 +64,9 @@ class BaseAnalyzer(CanBeIncomplete):
             res_dict[cmd] = eval('self.' + cmd + '()')
         return res_dict
 
-    @abc.abstractmethod
+    # Override add additional info
     def _info(self):
-        return {}
+        return {'snapshot_tag': self._snapshot_tag}
 
     def info(self):
         '''Info dictionary'''

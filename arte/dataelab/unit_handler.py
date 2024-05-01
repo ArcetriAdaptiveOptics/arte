@@ -21,7 +21,7 @@ class UnitHandler():
     def set_force(self, force_flag):
         '''Set unit coercion flag'''
         self._force = force_flag
-        
+
     def apply_unit(self, data):
         '''Appy to *data* our wanted unit, if any, converting if necessary
 
@@ -39,7 +39,7 @@ class UnitHandler():
                 newdata =  make_sure_its_a(self._wanted_unit, data, copy=False)
         else:
             newdata = data
-        
+
         # Cache unit if applied
         if isinstance(newdata, u.Quantity):
             self._actual_unit = newdata.unit

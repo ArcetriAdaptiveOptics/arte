@@ -6,7 +6,7 @@ from matplotlib import pyplot
 from matplotlib.axes import Axes
 
 from arte.utils.not_available import NotAvailable
-from arte.utils.unit_checker import make_sure_its_a
+from arte.utils.unit_checker import make_sure_its_a, separate_value_and_unit
 
 
 def modalplot(residual_modes_getter, pol_modes_getter, unit=u.nm,
@@ -36,36 +36,43 @@ def modalplot(residual_modes_getter, pol_modes_getter, unit=u.nm,
         if title is None:
             raise ValueError('Title must be set when not overplotting')
 
-    plt.loglog()
-    plt.xscale('symlog')    # Allow 0 index in log plots
-    plt.yscale('symlog')
-
-    if unit:
-        cl_std = make_sure_its_a(unit, cl_std)
-        ol_std = make_sure_its_a(unit, ol_std)
-
+    maxlen = 0
     if not isinstance(cl_std, NotAvailable):
-        plt.plot(np.arange(len(cl_std)), cl_std.value,
+        if unit:
+            cl_std = make_sure_its_a(unit, cl_std)
+        value, _ = separate_value_and_unit(cl_std)
+        plt.plot(np.arange(len(cl_std)), value,
                     color=ol_color, label=cl_label)
+        maxlen = max(maxlen, len(cl_std))
 
     if not isinstance(ol_std, NotAvailable):
-        plt.plot(np.arange(len(ol_std)), ol_std.value,
+        if unit:
+            ol_std = make_sure_its_a(unit, ol_std)
+        value, _ = separate_value_and_unit(ol_std)
+        plt.plot(np.arange(len(ol_std)), value,
                     color=cl_color, label=ol_label)
+        maxlen = max(maxlen, len(ol_std))
 
     if add_unit_to_ylabel and unit:
         ystr = f'{ylabel} [{unit.name}]'
     else:
         ystr = ylabel
 
-    if isinstance(plt, Axes):
-        plt.set(xlabel=xlabel, ylabel=ystr)
-        if title is not None:
-            plt.set(title=title)
-    else:
-        plt.xlabel(xlabel)
-        plt.ylabel(ystr)
-        if title is not None:
-            plt.title(title)
-        if not (cl_label is None and ol_label is None):
-            plt.legend()
+    if not overplot:
+        if isinstance(plt, Axes):
+            plt.set(xlabel=xlabel, ylabel=ystr)
+            if title is not None:
+                plt.set(title=title)
+        else:
+            plt.loglog()
+            plt.xscale('symlog')    # Allow 0 index in log plots
+            plt.yscale('symlog')
+            plt.xlim([0, maxlen])
+
+            plt.xlabel(xlabel)
+            plt.ylabel(ystr)
+            if title is not None:
+                plt.title(title)
+            if not (cl_label is None and ol_label is None):
+                plt.legend()
     return plt

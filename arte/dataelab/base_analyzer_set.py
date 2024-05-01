@@ -7,16 +7,16 @@ import numpy as np
 from arte.dataelab.tag import Tag
 
 
-class AnalyzerStub(list):
+class _AnalyzerStub(list):
 
     def __getattr__(self, name):
         if hasattr(self[0], name):
-            return AnalyzerStub([getattr(x, name) for x in self])
+            return _AnalyzerStub([getattr(x, name) for x in self])
         else:
             raise AttributeError
 
     def __call__(self, *args, **kwargs):
-        return AnalyzerStub([x(*args, **kwargs) for x in self])
+        return _AnalyzerStub([x(*args, **kwargs) for x in self])
 
 
 class BaseAnalyzerSet():
@@ -93,7 +93,7 @@ class BaseAnalyzerSet():
 
     def __getattr__(self, attrname):
         if hasattr(self.get(self.tag_list[0]), attrname):
-            return AnalyzerStub([getattr(self.get(tag), attrname) for tag in self.tag_list])
+            return _AnalyzerStub([getattr(self.get(tag), attrname) for tag in self.tag_list])
         else:
             raise AttributeError
 
@@ -124,5 +124,4 @@ class BaseAnalyzerSet():
                     if tag_start <= l <= tag_stop:
                         tags.append(l)
         return sorted(tags)
-
     

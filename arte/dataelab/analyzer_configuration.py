@@ -23,10 +23,10 @@ class BaseConfiguration():
 
     def snapshot_dir(self):
         return self._data[ConfItem.SNAPSHOT_DIR]
-    
+
     def tmp_dir(self):
         return self._data[ConfItem.TMP_DIR]
-    
+
     def add(self, key, value):
         self._data[key] = value
 
