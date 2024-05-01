@@ -178,7 +178,6 @@ class TimeSeries(metaclass=abc.ABCMeta):
                   overplot=None, plot_to=None,
                   label=None, *args, **kwargs):
         '''Plot histogram'''
-        index = self.get_index_of(*args, **kwargs)
         hist = self.get_data(*args, **kwargs)
         t = self.time()
         if from_t is None: from_t=t.min()
