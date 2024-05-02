@@ -1,8 +1,9 @@
 import os
 import abc
+from pathlib import Path
+
 import numpy as np
 from astropy.io import fits
-from pathlib import Path
 from arte.utils.help import add_help
 
 @add_help
@@ -26,7 +27,6 @@ class DataLoader():
         '''Load data and return it'''
 
 
-
 class FitsDataLoader(DataLoader):
     '''Loader for data stored into FITS files'''
     def __init__(self, filename, ext=None):
@@ -42,7 +42,7 @@ class FitsDataLoader(DataLoader):
 
     def filename(self):
         return self._filename
-    
+
     def load(self):
         if self._ext:
             return fits.getdata(self._filename, ext=self._ext)
@@ -67,7 +67,7 @@ class NumpyDataLoader(DataLoader):
 
     def filename(self):
         return self._filename
-    
+
     def load(self):
         if self._key:
             return np.load(self._filename)[self._key]
@@ -85,7 +85,7 @@ class DummyLoader(DataLoader):
 
     def filename(self):
         return None
-    
+
     def load(self):
         return None
 
@@ -100,7 +100,7 @@ class OnTheFlyLoader(DataLoader):
 
     def filename(self):
         return None
-    
+
     def load(self):
         return self._func()
 

@@ -3,6 +3,8 @@ import numpy as np
 
 def show_array(array, cut_wings=0, title=None, xlabel='column', ylabel='row', units=None):
     '''
+    pyplot.matshow() wrapper to add a colorbar and title/labels
+
     cut_wings=x means that colorbar is saturated for array values below x percentile
     and above 100-x percentile. Default is 0, i.e. all data are displayed; values below
     0 are forced to 0, values above 50 are set to 50.

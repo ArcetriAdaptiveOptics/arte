@@ -14,6 +14,6 @@ class BasePixelsTest(unittest.TestCase):
         self.fitsfile = os.path.join(mydir, 'testdata', 'range2x3.fits')
 
     def test_total_adu(self):
-        px = BasePixels(1*u.s, FitsDataLoader(self.fitsfile))
+        px = BasePixels(FitsDataLoader(self.fitsfile))
         assert px.total_adu() == 7.5 * u.adu
 

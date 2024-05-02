@@ -9,14 +9,18 @@ from arte.time_series import MultiTimeSeries
 
 class ATimeSeries(TimeSeries):
 
-    def __init__(self, samplingTime):
-        TimeSeries.__init__(self, samplingTime)
+    def __init__(self, sampling_time):
+        TimeSeries.__init__(self)
+        self._sampling_time = sampling_time
 
     def get_data(self):
         return self._get_not_indexed_data()
 
     def _get_not_indexed_data(self):
         return np.arange(6).reshape((3,2))
+
+    def _get_time_vector(self):
+        return np.arange(6) * self._sampling_time
 
     def get_index_of(self, *args, **kwargs):
         if len(args)==0:

@@ -21,7 +21,7 @@ class MultiTimeSeries(TimeSeries):
     across all series, and raise an Exception otherwise.
     '''
     def __init__(self, *args):
-        super().__init__(None)
+        super().__init__()
 
         self._series = []
         for v in args:

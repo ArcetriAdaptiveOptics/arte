@@ -1,13 +1,9 @@
 import numpy as np
-import astropy.units as u
 
 from arte.utils.help import add_help
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import ConstantDataLoader
 from arte.dataelab.unit_handler import UnitHandler
-
-def no_op(x):
-    return x
 
 
 @add_help
@@ -37,7 +33,7 @@ class BaseData():
         self._data_label = data_label
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
         if mapper2d is None:
-            self._display_func = no_op
+            self._display_func = np.atleast_2d
         else:
             self._display_func = mapper2d
 
@@ -76,7 +72,6 @@ class BaseData():
 
     def get_display(self):
         '''Data mapped in 2d'''
-
         return self._display_func(self.get_data())
     
 

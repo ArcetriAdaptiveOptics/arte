@@ -10,8 +10,8 @@ class BaseProjection(BaseTimeSeries):
         try:
             assert not isinstance(source_timeseries, NotAvailable)
             assert not isinstance(projection_matrix, NotAvailable)
-            super().__init__(source_timeseries.delta_time,
-                             loader_or_data=OnTheFlyLoader(self.project),
+            super().__init__(loader_or_data=OnTheFlyLoader(self.project),
+                             time_vector=OnTheFlyLoader(source_timeseries.time_vector),
                              mapper2d=mapper2d,
                              astropy_unit=astropy_unit,
                              data_label=data_label)
