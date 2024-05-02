@@ -18,7 +18,7 @@ class BaseAnalyzerSet():
     '''
     Analyzer set. Holds a list of Analyzer objects
     '''
-    def __init__(self, from_or_list, to, recalc=False, skip_invalid=True):
+    def __init__(self, from_or_list, to=None, recalc=False, skip_invalid=True):
         '''
         from_or_list: either a single tag, or a list of tags
         to: sigle tag, or None
