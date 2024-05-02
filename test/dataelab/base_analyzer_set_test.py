@@ -69,9 +69,15 @@ class BaseAnalyzerSetTest(unittest.TestCase):
         set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'], skip_invalid=False)
         assert len(set) == 2
 
-    def test_stub(self):
+    def test_attribute(self):
         set = TestAnalyzerSet('20240404_024500', '20240404_024501')
         assert len(set.tip_tilt_slopes.get_data()) == 1
+
+    @unittest.skip('For some reason this fails.. investigate')
+    def test_invalid_attribute(self):
+        set = TestAnalyzerSet('20240404_024500', '20240404_024501')
+        with self.assertRaises(AttributeError):
+            _ = set.fooff
 
     @unittest.skip('For some reason this fails.. investigate')
     def test_get(self):

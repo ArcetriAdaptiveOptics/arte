@@ -14,6 +14,10 @@ class DataLoaderTest(unittest.TestCase):
         self.npzpath = Path(mydir) / 'testdata' / 'range2x3.npz'
         self.testdata = np.arange(6).reshape((2, 3))
 
+    def test_filename(self):
+        loader = FitsDataLoader(self.fitsfile)
+        assert loader.filename() == self.fitsfile
+
     def test_fits_assert_exists(self):
         loader = FitsDataLoader(self.fitsfile)
         loader.assert_exists()
