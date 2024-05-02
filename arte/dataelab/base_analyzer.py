@@ -1,5 +1,7 @@
 import datetime
+import functools
 import logging
+
 from arte.utils.not_available import CanBeIncomplete
 from arte.utils.help import add_help
 from arte.dataelab.cache_on_disk import set_tag, clear_cache
@@ -20,10 +22,9 @@ class PostInitCaller(type):
 class BaseAnalyzer(CanBeIncomplete, metaclass=PostInitCaller):
     '''Main analyzer object'''
 
-    def __init__(self, snapshot_tag, configuration, recalc=False):
+    def __init__(self, snapshot_tag, recalc=False):
         self._logger = logging.getLogger('an_%s' % snapshot_tag)
         self._snapshot_tag = snapshot_tag
-        self._configuration = configuration
         self._recalc = recalc
         self._logger.info('creating analyzer for tag %s' % snapshot_tag)
 
@@ -34,13 +35,18 @@ class BaseAnalyzer(CanBeIncomplete, metaclass=PostInitCaller):
             self.recalc()
             self._recalc = False
 
+    @classmethod
+    @functools.cache
+    def get(cls, tag, recalc=False):
+        '''Get a new Analyzer instance 
+
+        Also works in derived classes, returning
+        an instance of the derived class'''
+        return cls(tag, recalc=recalc)
+
     def recalc(self):
         '''Force recalculation of this analyzer data'''
         clear_cache(self)
-
-    def configuration(self):
-        '''Data configuration'''
-        return self._configuration
 
     def snapshot_tag(self):
         '''Snapshot tag for this Analyzer object'''
