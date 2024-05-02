@@ -9,8 +9,8 @@ from arte.utils.not_available import NotAvailable
 from arte.utils.unit_checker import make_sure_its_a, separate_value_and_unit
 
 
-def modalplot(residual_modes_getter, pol_modes_getter, unit=u.nm,
-            overplot=True, plot_to=None,
+def modalplot(residual_modes_vector, pol_modes_vector, unit=u.nm,
+            overplot=False, plot_to=None,
             title=None, xlabel='Mode index', ylabel='wavefront rms', add_unit_to_ylabel=True,
             cl_label='closed loop', cl_color='red',
             ol_label='open loop', ol_color='black'):
@@ -27,8 +27,8 @@ def modalplot(residual_modes_getter, pol_modes_getter, unit=u.nm,
     else:
         plt = pyplot
 
-    cl_std = residual_modes_getter()
-    ol_std = pol_modes_getter()
+    cl_std = residual_modes_vector
+    ol_std = pol_modes_vector
 
     if not overplot:
         plt.cla()
