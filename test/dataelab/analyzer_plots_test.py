@@ -3,11 +3,10 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
-from astropy.units import u
+import astropy.units as u
 
 import matplotlib
 matplotlib.use('Agg')   # Draw in background
-import matplotlib.pyplot as plt
 
 from arte.dataelab.analyzer_plots import modalplot
 
