@@ -81,13 +81,6 @@ def make_sure_its_a(unit, v, name='', copy=True):
 
     '''
     if not isinstance(v, u.Quantity):
-        print('----')
-        print(v)
-        print('---')
-        print(unit)
-        print('---')
-        print(copy)
-        print('----')
         return u.Quantity(v, unit=unit, copy=copy)
 
     try:

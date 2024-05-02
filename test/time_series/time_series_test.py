@@ -201,32 +201,32 @@ class TimeSeriesWithInterpolationTest(unittest.TestCase):
 
         assert data.shape == series.ref_data_shape
 
-    @pytest.mark.skip(reason="TimeSeriesWithInterpolation must be updated")
+    @unittest.skip("TimeSeriesWithInterpolation must be updated")
     def test_interpolation_with_step1(self):
         self._test_interpolation(AnIncompleteTimeSeries1)
 
-    @pytest.mark.skip(reason="TimeSeriesWithInterpolation must be updated")
+    @unittest.skip("TimeSeriesWithInterpolation must be updated")
     def test_interpolation_with_step2(self):
         self._test_interpolation(AnIncompleteTimeSeries2)
 
-    @pytest.mark.skip(reason="TimeSeriesWithInterpolation must be updated")
+    @unittest.skip("TimeSeriesWithInterpolation must be updated")
     def test_interpolation_with_step3(self):
         self._test_interpolation(AnIncompleteTimeSeries3)
 
-    @pytest.mark.skip(reason="TimeSeriesWithInterpolation must be updated")
+    @unittest.skip("TimeSeriesWithInterpolation must be updated")
     def test_interpolation_with_step4(self):
         self._test_interpolation(AnIncompleteTimeSeries4)
 
-    @pytest.mark.skip(reason="TimeSeriesWithInterpolation must be updated")
+    @unittest.skip("TimeSeriesWithInterpolation must be updated")
     def test_interpolation_with_step5(self):
         self._test_interpolation(AnIncompleteTimeSeries5)
 
-    @pytest.mark.skip(reason="TimeSeriesWithInterpolation must be updated")
+    @unittest.skip("TimeSeriesWithInterpolation must be updated")
     def test_interpolation_with_step6(self):
         with self.assertRaises(ValueError):
             self._test_interpolation(AnIncompleteTimeSeries6)
     
-    @pytest.mark.skip(reason="TimeSeriesWithInterpolation must be updated")
+    @unittest.skip("TimeSeriesWithInterpolation must be updated")
     def test_counter_not_available(self):
         
         series = CounterIsNotAvailable(sampling_interval=1)
