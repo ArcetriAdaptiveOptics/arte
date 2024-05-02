@@ -96,6 +96,9 @@ class TimeSeriesTest(unittest.TestCase):
         ta = self._ts.time_average(times=[0.1, 0.3])
         self.assertAlmostEqual(ta[1], 1.)
 
+    def test_ensemble_median(self):
+        np.testing.assert_almost_equal(self._ts.time_median(mode=0), 0)
+
 
 class AnIncompleteTimeSeries1(TimeSeriesWithInterpolation):
     '''A time series with a single gap a'''

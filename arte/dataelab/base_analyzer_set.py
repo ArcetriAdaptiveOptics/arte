@@ -29,7 +29,7 @@ class BaseAnalyzerSet():
         if isinstance(from_or_list, str):
             if to is None:
                 to = Tag.create_tag()
-            self.tag_list= self._get_file_walker().find_tag_between_dates(from_or_list, to)
+            self.tag_list= self._get_file_walker().find_tag_between_dates(from_or_list, str(to))
         else:
             self.tag_list= sorted(from_or_list)
 

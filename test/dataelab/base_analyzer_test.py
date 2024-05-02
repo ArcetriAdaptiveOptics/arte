@@ -15,3 +15,7 @@ class BaseAnalyzerTest(unittest.TestCase):
         ee = TestAnalyzer.get('20240404_024500')
         assert ee.snapshot_tag() == '20240404_024500'
 
+    def test_cache(self):
+        ee1 = TestAnalyzer.get('20240404_024500')
+        ee2 = TestAnalyzer.get('20240404_024500')
+        assert id(ee1) == id(ee2)

@@ -49,6 +49,14 @@ class BaseAnalyzerSetTest(unittest.TestCase):
         set = TestAnalyzerSet('20240404_024500', '20240404_024501')
         assert len(set) == 1
 
+    def test_creation_single(self):
+        set = TestAnalyzerSet('20240404_024500')
+        assert len(set) == 1
+
+    def test_creation_recalc(self):
+        set = TestAnalyzerSet('20240404_024500', recalc=True)
+        assert len(set) == 1
+
     def test_creation_list(self):
         set = TestAnalyzerSet(['20240404_024500'])
         assert len(set) == 1
@@ -60,3 +68,18 @@ class BaseAnalyzerSetTest(unittest.TestCase):
     def test_creation_invalid(self):
         set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'], skip_invalid=False)
         assert len(set) == 2
+
+    def test_stub(self):
+        set = TestAnalyzerSet('20240404_024500', '20240404_024501')
+        assert len(set.tip_tilt_slopes.get_data()) == 1
+
+    @unittest.skip('For some reason this fails.. investigate')
+    def test_get(self):
+        set = TestAnalyzerSet('20240404_024500')
+        ee = TestAnalyzer.get('20240404_024500')
+        assert id(set['20240404_024500']) == id(ee)
+
+    def test_for(self):
+        set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'])
+        for ee in set:
+            _ = ee.snapshot_tag()
