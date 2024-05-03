@@ -93,7 +93,7 @@ class BaseTimeSeries(TimeSeries):
         '''Generate a 3d cube for display'''
         return self._display_func(data_to_display)
 
-    @modify_help(arg_str='[times=[from,to]], [series_idx]')
+    @modify_help(arg_str='[series_idx], [times=[from, to]]')
     def get_display(self, *args, times=None, **kwargs):
         '''Display cube for the specified time interval'''
         data_to_display = self.get_data(*args, times=times, **kwargs)

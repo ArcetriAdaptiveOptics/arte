@@ -143,37 +143,37 @@ class TimeSeries(metaclass=abc.ABCMeta):
         df = np.diff(self._frequency)[0]
         return x.T * df
 
-    @modify_help(arg_str='[times=[from,to]], [series_idx]')
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def time_median(self, *args, times=None, **kwargs):
         '''Median over time for each series'''
         return np.median(self.get_data(*args, times=times, **kwargs), axis=0)
 
-    @modify_help(arg_str='[times=[from,to]], [series_idx]')
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def time_std(self, *args, times=None, **kwargs):
         '''Standard deviation over time for each series'''
         return np.std(self.get_data(*args, times=times, **kwargs), axis=0)
 
-    @modify_help(arg_str='[times=[from,to]], [series_idx]')
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def time_average(self, *args, times=None, **kwargs):
         '''Average value over time for each series'''
         return np.mean(self.get_data(*args, times=times, **kwargs), axis=0)
 
-    @modify_help(arg_str='[times=[from,to]], [time_idx]')
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_average(self, *args, times=None, **kwargs):
         '''Average across series at each sampling time'''
         return np.mean(self.get_data(*args, times=times, **kwargs), axis=1)
 
-    @modify_help(arg_str='[times=[from,to]], [time_idx]')
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_std(self, *args, times=None, **kwargs):
         '''Standard deviation across series at each sampling time'''
         return np.std(self.get_data(*args, times=times, **kwargs), axis=1)
 
-    @modify_help(arg_str='[times=[from,to]], [time_idx]')
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_median(self, *args, times=None, **kwargs):
         '''Median across series at each sampling time'''
         return np.median(self.get_data(*args, times=times, **kwargs), axis=1)
 
-    @modify_help(call='plot_hist(from_freq=xx, to_freq=xx, [series_idx])')
+    @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
                   overplot=None, plot_to=None,
                   label=None,  **kwargs):
@@ -223,7 +223,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
                     plt.legend(label)
         return plt
 
-    @modify_help(call='plot_spectra(from_freq=xx, to_freq=xx, [series_idx])')
+    @modify_help(call='plot_spectra([series_idx], from_freq=xx, to_freq=xx)')
     def plot_spectra(self, *args, from_freq=None, to_freq=None,
                      segment_factor=None,
                      overplot=False,
@@ -291,7 +291,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return plt
 
 
-    @modify_help(call='plot_cumulative_spectra(from_freq=xx, to_freq=xx, [series_idx])')
+    @modify_help(call='plot_cumulative_spectra([series_idx], from_freq=xx, to_freq=xx)')
     def plot_cumulative_spectra(self, *args, from_freq=None, to_freq=None,
                                 segment_factor=None,
                                 label=None, plot_to=None,
