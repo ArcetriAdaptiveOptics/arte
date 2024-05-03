@@ -31,7 +31,7 @@ class BaseResidualModesTest(unittest.TestCase):
 
     def test_unit_name(self):
         _ = self._resmodes.get_data()
-        assert self._resmodes.data_units() == "m"
+        assert self._resmodes.data_unit() == "m"
 
     def test_indexer(self):
         '''Test that the indexer for single modes works'''

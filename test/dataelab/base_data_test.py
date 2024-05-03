@@ -48,6 +48,6 @@ class BaseDataTest(unittest.TestCase):
     def test_data_unit(self):
         dataobj = BaseData(self.testdata*u.kg, astropy_unit = None, data_label='foo')
         _ = dataobj.get_data()
-        assert dataobj.data_units() == 'kg'
+        assert dataobj.data_unit() == 'kg'
 
 # __oOo__

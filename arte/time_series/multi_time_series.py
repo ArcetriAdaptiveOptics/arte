@@ -76,29 +76,29 @@ class MultiTimeSeries(TimeSeries):
         return dt
 
     @modify_help(arg_str='[time_idx]')
-    def ensemble_average(self, times=None, *args, **kwargs):
+    def ensemble_average(self, *args, times=None, **kwargs):
         ''' Average across series at each sampling time '''
         if self.is_homogeneous(*args, **kwargs):
             self._impersonateDeltaTime(*args, **kwargs) 
-            return super().ensemble_average(times, *args, **kwargs)
+            return super().ensemble_average(*args, times=times, **kwargs)
         else:
             raise Exception('Data series cannot be combined')
 
     @modify_help(arg_str='[time_idx]')
-    def ensemble_std(self,  times=None, *args, **kwargs):
+    def ensemble_std(self, *args, times=None, **kwargs):
         ''' Standard deviation across series at each sampling time '''
         if self.is_homogeneous(*args, **kwargs):
             self._impersonateDeltaTime(*args, **kwargs) 
-            return super().ensemble_std(times, *args, **kwargs)
+            return super().ensemble_std(*args, times=times, **kwargs)
         else:
             raise Exception('Data series cannot be combined')
 
     @modify_help(arg_str='[time_idx]')
-    def ensemble_median(self,  times=None, *args, **kwargs):
+    def ensemble_median(self, *args, times=None, **kwargs):
         ''' Standard deviation across series at each sampling time '''
         if self.is_homogeneous(*args, **kwargs):
             self._impersonateDeltaTime(*args, **kwargs) 
-            return super().ensemble_median(times, *args, **kwargs)
+            return super().ensemble_median(*args, times=times, **kwargs)
         else:
             raise Exception('Data series cannot be combined')
 
