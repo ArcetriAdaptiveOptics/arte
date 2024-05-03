@@ -58,7 +58,7 @@ class BaseSlopes(BaseTimeSeries):
         sx = self.get_display('x').mean(axis=0)
         sy = self.get_display('y').mean(axis=0)
         array2show = np.hstack((sx,sy))
-        return show_array(array2show, cut_wings, title, 'Subap', 'Subap', self.data_units())
+        return show_array(array2show, cut_wings, title, 'Subap', 'Subap', self.data_unit())
 
     def vecshow(self):
         '''Display slopes as vector field'''

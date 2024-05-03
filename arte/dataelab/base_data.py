@@ -62,7 +62,7 @@ class BaseData():
         '''Long-form data label (for plots)'''
         return self._data_label
 
-    def data_units(self):
+    def data_unit(self):
         '''Data unit string (for plots)'''
         return self._unit_handler.actual_unit_name()
 
