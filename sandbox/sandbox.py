@@ -236,3 +236,60 @@ class AtmosphericPhaseScreenDecomposition():
     #energy_f = np.trapz(abs(FFT)**2, x=frq) / N
     
     #print('Parsevals theorem NOT fulfilled: ' + str(energy_t - energy_f))
+
+if __name__ == '__main__':
+
+    import os
+    from pathlib import Path
+
+    from arte.utils.not_available import NotAvailable
+    from arte.dataelab.base_analyzer import BaseAnalyzer
+    from arte.dataelab.base_analyzer_set import BaseAnalyzerSet
+    from arte.dataelab.base_file_walker import AbstractFileNameWalker
+
+
+    class TestFileWalker(AbstractFileNameWalker):
+
+        def snapshots_dir(self):
+            return Path(__file__).parents[0] /  '..' / 'test' / 'dataelab' / 'data' / 'snapshots'
+
+        def snapshot_dir(self, tag):
+            return self.snapshots_dir() / tag[:8] / tag
+
+        def find_tag_between_dates(self, tag_start, tag_stop):
+            dirlist = os.listdir(self.snapshots_dir())
+            tags = []
+            for dir in dirlist:
+                lst = os.listdir(os.path.join(self.snapshots_dir(), dir))
+                tags += list(filter(lambda x: x >=tag_start and x<tag_stop, lst))
+            return tags
+
+
+    class TestAnalyzer(BaseAnalyzer):
+        def __init__(self, snapshot_tag, recalc=False):
+            super().__init__(snapshot_tag)
+            if not os.path.exists(TestFileWalker().snapshot_dir(snapshot_tag)):
+                    NotAvailable.transformInNotAvailable(self)
+                    return
+
+
+    class TestAnalyzerSet(BaseAnalyzerSet):
+        def _get_file_walker(self):
+            return TestFileWalker()
+
+        def _get_type(self):
+            return TestAnalyzer
+
+
+    set = TestAnalyzerSet('20240404_024500')
+    print(id(set.get('20240404_024500')))
+    print(id(set.get('20240404_024500')))
+    print(id(set.get('20240404_024500')))
+    print(id(set.get('20240404_024500')))
+    print(id(set.get('20240404_024500')))
+    print(id(TestAnalyzer.get('20240404_024500')))
+    print(id(TestAnalyzer.get('20240404_024500')))
+    print(id(TestAnalyzer.get('20240404_024500')))
+    print(id(TestAnalyzer.get('20240404_024500')))
+    print(id(TestAnalyzer.get('20240404_024500')))
+    print(set.snapshot_tag())
