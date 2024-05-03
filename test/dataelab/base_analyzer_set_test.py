@@ -2,7 +2,6 @@
 
 #!/usr/bin/env python
 import os
-import glob
 import unittest
 from pathlib import Path
 
@@ -31,6 +30,7 @@ class TestFileWalker(AbstractFileNameWalker):
 
 class TestAnalyzer(BaseAnalyzer):
     def __init__(self, snapshot_tag, recalc=False):
+       super().__init__(snapshot_tag)
        if not os.path.exists(TestFileWalker().snapshot_dir(snapshot_tag)):
             NotAvailable.transformInNotAvailable(self)
             return
@@ -71,15 +71,13 @@ class BaseAnalyzerSetTest(unittest.TestCase):
 
     def test_attribute(self):
         set = TestAnalyzerSet('20240404_024500', '20240404_024501')
-        assert len(set.tip_tilt_slopes.get_data()) == 1
+        assert len(set.snapshot_tag()) == 1
 
-    @unittest.skip('For some reason this fails.. investigate')
     def test_invalid_attribute(self):
         set = TestAnalyzerSet('20240404_024500', '20240404_024501')
         with self.assertRaises(AttributeError):
-            _ = set.fooff
+            _ = set.foo()
 
-    @unittest.skip('For some reason this fails.. investigate')
     def test_get(self):
         set = TestAnalyzerSet('20240404_024500')
         ee = TestAnalyzer.get('20240404_024500')

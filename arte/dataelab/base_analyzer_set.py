@@ -60,7 +60,7 @@ class BaseAnalyzerSet():
             yield self.get(tag)
 
     def get(self, tag, recalc=False):
-        return self._get_type().get(tag, recalc=recalc)
+        return self._get_type()._get(tag, recalc=recalc)
 
     def __getitem__(self, idx_or_tag):
         if isinstance(idx_or_tag, int):

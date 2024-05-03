@@ -19,8 +19,12 @@ class PostInitCaller(type):
 
 
 @add_help
-class BaseAnalyzer(CanBeIncomplete, metaclass=PostInitCaller):
-    '''Main analyzer object'''
+class BaseAnalyzer(metaclass=PostInitCaller):
+    '''Main analyzer object
+    
+    Note that an analyzer is not CanBeIncomplete, because all attributes
+    should be initialized (if they are missing, their value will be NA)
+    '''
 
     def __init__(self, snapshot_tag, recalc=False):
         self._logger = logging.getLogger('an_%s' % snapshot_tag)
@@ -36,12 +40,24 @@ class BaseAnalyzer(CanBeIncomplete, metaclass=PostInitCaller):
             self._recalc = False
 
     @classmethod
-    @functools.cache
     def get(cls, tag, recalc=False):
         '''Get a new Analyzer instance 
 
         Also works in derived classes, returning
         an instance of the derived class'''
+        return cls._get(tag, recalc=recalc)
+
+    @classmethod
+    @functools.cache
+    def _get(cls, tag, recalc=False):
+        '''Get a new Analyzer instance 
+
+        Added one level of indirection (get() calls _get())
+        to make sure that the cache always works even when
+        the default argument *recalc* is not specified in get().
+
+        Also makes it easier to override it in classes
+        '''
         return cls(tag, recalc=recalc)
 
     def recalc(self):
