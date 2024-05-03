@@ -40,5 +40,5 @@ class BaseTimeSeriesTest(unittest.TestCase):
         assert series.get_data().unit == u.m
 
     def test_get_display_expands_ensemble_dimension_to_2d(self):
-        series = BaseTimeSeries(self.testdata*u.m, astropy_unit=None)
-        assert series.get_display().shape == (10, 6, 1)
+        series = BaseTimeSeries(self.testdata, astropy_unit=None)
+        assert series.get_display().shape == (10, 1, 6)

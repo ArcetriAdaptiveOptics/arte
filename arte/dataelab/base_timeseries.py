@@ -15,7 +15,7 @@ class BaseTimeSeries(TimeSeries):
     delta_time: time interval between data samples, in seconds.
     data_loader: instance of DataLoader or derived class, or numpy array
     time_vector: instance of DataLoader or derived class, or numpy_array
-    mapper2d: function to map data into 2d. If None, data is assumed
+    mapper2d: function to map a single data sample into 2d. If None, data is assumed
               to be already in 2d.
     astropy_unit: if possible, astropy unit to use with the data.
     data_label: human-readable label for plot (e.g.: "Surface modal coefficients" )
@@ -56,7 +56,7 @@ class BaseTimeSeries(TimeSeries):
             self._display_func = mapper2d
 
     def _no_op_display(self, x):
-        return np.atleast_3d(x)
+        return np.atleast_2d(x)
 
     def filename(self):
         '''Data filename (full path)'''
@@ -91,7 +91,8 @@ class BaseTimeSeries(TimeSeries):
     # Override to provide custom displays
     def _get_display_cube(self, data_to_display):
         '''Generate a 3d cube for display'''
-        return self._display_func(data_to_display)
+        return np.stack(
+            [self._display_func(frame) for frame in data_to_display])
 
     @modify_help(arg_str='[series_idx], [times=[from, to]]')
     def get_display(self, *args, times=None, **kwargs):
