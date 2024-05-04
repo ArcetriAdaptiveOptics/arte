@@ -2,7 +2,6 @@ import datetime
 import functools
 import logging
 
-from arte.utils.not_available import CanBeIncomplete
 from arte.utils.help import add_help
 from arte.dataelab.cache_on_disk import set_tag, clear_cache
 
