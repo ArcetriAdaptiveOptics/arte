@@ -1,12 +1,16 @@
 import abc
-import numpy as np
+import math
 from functools import cached_property
+
+import numpy as np
 from scipy.signal import welch
+from astropy import units as u
+
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
 from arte.utils.iterators import pairwise
 from arte.utils.unit_checker import make_sure_its_a
-from astropy import units as u
+
 
 
 @add_help
@@ -53,9 +57,15 @@ class TimeSeries(metaclass=abc.ABCMeta):
             idxs = np.logical_and(time_vector >= start, time_vector < stop)
             data = data[idxs]
         index = self.get_index_of(*args, **kwargs)
-        if index is not None:
-            data = data[:, index]
-        return data
+        return self._index_data(data, index)
+        
+    def _index_data(self, data, index):
+        if index is None:
+            return data
+        elif isinstance(index, tuple):
+            return data[(slice(0,data.shape[0]),) + index]
+        else:
+            return data[:, index]
 
     @abc.abstractmethod
     def get_index_of(self, *args, **kwargs):
@@ -87,19 +97,31 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def ensemble_size(self):
         '''Number of distinct series in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
-        return not_indexed_data.shape[1]
+        return math.prod(not_indexed_data.shape[1:])
 
     def time_size(self):
         '''Number of time samples in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
         return not_indexed_data.shape[0]
 
+    def _data_flattened(self, data):
+        '''Flatten data over all non-time dimensions'''
+        return data.reshape(data.shape[0], self._data_sample_size(data))
+    
+    def _data_sample_shape(self, data):
+        return data.shape[1:]
+    
+    def _data_sample_axes(self, data):
+        return tuple(range(len(data.shape))[1:])
+    
+    def _data_sample_size(self, data):
+        return math.prod(data.shape[1:])
+        
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, from_freq=None, to_freq=None,
               segment_factor=None, window='boxcar', *args, **kwargs):
         '''Power Spectral Density across specified series'''
 
-        index = self.get_index_of(*args, **kwargs)
         if segment_factor is None:
             if self._segment_factor is None:
                 self._segment_factor = 1.0
@@ -112,7 +134,9 @@ class TimeSeries(metaclass=abc.ABCMeta):
             self._window = window
         if self._power is None:
             data = self._get_not_indexed_data()
-            self._power = self._compute_power(data)
+            # Perform power on flattened data and restore the shape afterwards
+            power = self._compute_power(self._data_flattened(data))
+            self._power = power.reshape((power.shape[0],) + self._data_sample_shape(data))
         if from_freq is None:
             output = self._power
             self._lastCuttedFrequency = self._frequency
@@ -122,9 +146,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
             lim = ul & dl
             self._lastCuttedFrequency = self._frequency[lim]
             output = self._power[lim]
-        if index is None:
-            return output
-        return output[:, index]
+        index = self.get_index_of(*args, **kwargs)
+        return self._index_data(output, index)
 
     def _compute_power(self, data):
 
@@ -161,23 +184,26 @@ class TimeSeries(metaclass=abc.ABCMeta):
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_average(self, *args, times=None, **kwargs):
         '''Average across series at each sampling time'''
-        return np.mean(self.get_data(*args, times=times, **kwargs), axis=1)
+        data = self.get_data(*args, times=times, **kwargs)
+        return np.mean(data, axis=self._data_sample_axes(data))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_std(self, *args, times=None, **kwargs):
         '''Standard deviation across series at each sampling time'''
-        return np.std(self.get_data(*args, times=times, **kwargs), axis=1)
+        data = self.get_data(*args, times=times, **kwargs)
+        return np.std(data, axis=self._data_sample_axes(data))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_median(self, *args, times=None, **kwargs):
         '''Median across series at each sampling time'''
-        return np.median(self.get_data(*args, times=times, **kwargs), axis=1)
+        data = self.get_data(*args, times=times, **kwargs)
+        return np.median(data, axis=self._data_sample_axes(data))
 
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
                   overplot=None, plot_to=None,
                   label=None,  **kwargs):
-        '''Plot histogram'''
+        '''Plot histogram. TODO: does not work, rewrite'''
         hist = self.get_data(*args, **kwargs)
         t = self.time()
         if from_t is None: from_t=t.min()

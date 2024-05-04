@@ -49,6 +49,24 @@ class ATimeSeries(TimeSeries):
         return np.sin(np.arange(length) * factor)
 
 
+class TimeSeries1D(TimeSeries):
+    
+    def _get_not_indexed_data(self):
+        return np.arange(20).reshape(5,4)
+    
+    def get_index_of(*args, **kwargs):
+        return args[0]
+
+
+class TimeSeries2D(TimeSeries):
+
+    def _get_not_indexed_data(self):
+        return np.arange(2*3*4).reshape(2,3,4)
+    
+    def get_index_of(*args, **kwargs):
+        pass  # Modified inside tests    
+    
+
 class TimeSeriesTest(unittest.TestCase):
 
     def setUp(self):
@@ -103,6 +121,78 @@ class TimeSeriesTest(unittest.TestCase):
         with self.assertRaises(IndexError):
             _ = self._ts.time_average([0.1, 0.3])
 
+    def test_1d_data(self):
+        t1d = TimeSeries1D()
+        assert t1d.time_size() == 5
+
+    def test_1d_correct_indexing(self):
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda *args, **kwargs: 1
+        assert t1d.get_data().shape == (5,)
+
+    def test_1d_correct_indexing_via_slice(self):
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda *args, **kwargs: slice(0, 2)
+        assert t1d.get_data().shape == (5, 2)
+
+    def test_1d_correct_indexing_via_array(self):
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda *args, **kwargs: [1, 2, 3]
+        assert t1d.get_data().shape == (5, 3)
+
+    def test_1d_wrong_indexing(self):
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda *args, **kwargs: (1, 2)
+        with self.assertRaises(IndexError):
+            t1d.get_data()
+    
+    def test_2d_data(self):
+        t2d = TimeSeries2D()
+        assert t2d.time_size() == 2
+        np.testing.assert_equal(t2d.time_average(), np.arange(3*4).reshape(3,4)+6)
+
+    def test_2d_correct_indexing(self):
+        t2d = TimeSeries2D()
+        t2d.get_index_of = lambda *args, **kwargs: (0, 2)
+        assert t2d.get_data().shape == (2,)
+
+    def test_2d_correct_indexing_arrays(self):
+        t2d = TimeSeries2D()
+        t2d.get_index_of = lambda *args, **kwargs: ([0,1], [1,2])
+        assert t2d.get_data().shape == (2, 2)
+        
+    def test_2d_correct_indexing_via_slice(self):
+        t2d = TimeSeries2D()
+        t2d.get_index_of = lambda *args, **kwargs: (slice(1, 2), slice(3, 4))
+        assert t2d.get_data().shape == (2, 1, 1)
+
+    def test_2d_wrong_indexing(self):
+        t2d = TimeSeries2D()
+        t2d.get_index_of = lambda *args, **kwargs: (1, 2, 3)
+        with self.assertRaises(IndexError):
+            t2d.get_data()
+
+    def test_2d_wrong_indexing_via_slice(self):
+        t2d = TimeSeries2D()
+        t2d.get_index_of = lambda *args, **kwargs: [slice(1, 2), slice(3, 4), slice(0, 2)] # 3D indexing must fail
+        with self.assertRaises(IndexError):
+            t2d.get_data()
+            
+    def test_2d_short_indexing(self):
+        t2d = TimeSeries2D()
+        t2d.get_index_of = lambda *args, **kwargs: (1,)
+        assert t2d.get_data().shape == (2, 4)
+
+    def test_2d_short_indexing_via_slice(self):
+        t2d = TimeSeries2D()
+        t2d.get_index_of = lambda *args, **kwargs: slice(1, 3)
+        assert t2d.get_data().shape == (2, 2, 4)
+
+    def test_2d_mean(self):
+        t2d = TimeSeries2D()
+        t2d.get_index_of = lambda *args, **kwargs: None
+        np.testing.assert_array_almost_equal(t2d.ensemble_average(), (5.5, 17.5))
+
 
 class AnIncompleteTimeSeries1(TimeSeriesWithInterpolation):
     '''A time series with a single gap a'''
@@ -133,7 +223,7 @@ class AnIncompleteTimeSeries1(TimeSeriesWithInterpolation):
 
     def get_index_of(self, *args, **kwargs):
         return Indexer.myrange(*args, maxrange=4)
-
+    
 
 class AnIncompleteTimeSeries2(AnIncompleteTimeSeries1):
     '''A time series with a single gap and a counter going up by 2'''
