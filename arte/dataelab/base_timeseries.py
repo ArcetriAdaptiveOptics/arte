@@ -20,7 +20,7 @@ class BaseTimeSeries(TimeSeries):
     astropy_unit: if possible, astropy unit to use with the data.
     data_label: human-readable label for plot (e.g.: "Surface modal coefficients" )
     '''
-    def __init__(self, loader_or_data, time_vector=None, mapper2d=None, astropy_unit=None, data_label=None):
+    def __init__(self, loader_or_data, time_vector=None, astropy_unit=None, data_label=None):
 
         if isinstance(loader_or_data, np.ndarray):
             data_loader = ConstantDataLoader(loader_or_data)
@@ -49,14 +49,6 @@ class BaseTimeSeries(TimeSeries):
         self._astropy_unit = astropy_unit
         self._data_label = data_label
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
-
-        if mapper2d is None:
-            self._display_func = self._no_op_display
-        else:
-            self._display_func = mapper2d
-
-    def _no_op_display(self, x):
-        return np.atleast_2d(x)
 
     def filename(self):
         '''Data filename (full path)'''
@@ -91,8 +83,7 @@ class BaseTimeSeries(TimeSeries):
     # Override to provide custom displays
     def _get_display_cube(self, data_to_display):
         '''Generate a 3d cube for display'''
-        return np.stack(
-            [self._display_func(frame) for frame in data_to_display])
+        return np.atleast_3d(data_to_display)
 
     @modify_help(arg_str='[series_idx], [times=[from, to]]')
     def get_display(self, *args, times=None, **kwargs):

@@ -121,7 +121,7 @@ class AnIncompleteTimeSeries1(TimeSeriesWithInterpolation):
     def get_original(self, new_data):
         mask = np.ones(new_data.shape,dtype=bool)
         for _slice in self.ref_slice:
-             mask[_slice]= False
+            mask[_slice]= False
         return new_data[mask].reshape(self.test_data.shape)
 
     def _get_not_indexed_data(self):

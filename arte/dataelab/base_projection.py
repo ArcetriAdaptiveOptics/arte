@@ -6,13 +6,12 @@ from arte.dataelab.data_loader import OnTheFlyLoader
 
 class BaseProjection(BaseTimeSeries):
 
-    def __init__(self, source_timeseries, projection_matrix, mapper2d=None, astropy_unit=None, data_label=None):
+    def __init__(self, source_timeseries, projection_matrix, astropy_unit=None, data_label=None):
         try:
             assert not isinstance(source_timeseries, NotAvailable)
             assert not isinstance(projection_matrix, NotAvailable)
             super().__init__(loader_or_data=OnTheFlyLoader(self.project),
                              time_vector=OnTheFlyLoader(source_timeseries.time_vector),
-                             mapper2d=mapper2d,
                              astropy_unit=astropy_unit,
                              data_label=data_label)
             self._unit_handler.set_force(True)

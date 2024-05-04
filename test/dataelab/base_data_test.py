@@ -38,7 +38,7 @@ class BaseDataTest(unittest.TestCase):
 
     def test_data_with_unit_and_incompatible_unit(self):
         with self.assertRaises(u.UnitsError):
-            series = BaseData(1*u.s, self.testdata*u.m, astropy_unit = u.kg)
+            series = BaseData(self.testdata*u.m, astropy_unit = u.kg)
             _ = series.get_data()
 
     def test_data_label(self):
