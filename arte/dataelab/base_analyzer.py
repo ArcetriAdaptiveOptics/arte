@@ -31,8 +31,13 @@ class BaseAnalyzer(metaclass=PostInitCaller):
         self._recalc = recalc
         self._logger.info('creating analyzer for tag %s' % snapshot_tag)
 
+ 
     def _post_init(self):
-        # Initialize disk cache
+        '''Initialize disk cache
+        
+        Executed after all child classes have completed their __init__
+        thanks to the PostInitCaller metaclass
+        '''
         set_tag(self, self._snapshot_tag)
         if self._recalc:
             self.recalc()
@@ -79,13 +84,7 @@ class BaseAnalyzer(metaclass=PostInitCaller):
         td = this_date - epoch
         return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
 
-    def eval(self, commandList):
-        res_dict = {}
-        for cmd in commandList:
-            res_dict[cmd] = eval('self.' + cmd + '()')
-        return res_dict
-
-    # Override add additional info
+    # Override to add additional info
     def _info(self):
         return {'snapshot_tag': self._snapshot_tag}
 
@@ -93,13 +92,13 @@ class BaseAnalyzer(metaclass=PostInitCaller):
         '''Info dictionary'''
         return self._info()
 
-    def summary(self):
+    def summary(self, keywidth=None):
         '''Print info dictionary on stdout'''
         info = self._info()
-        spacing = max([len(x) for x in info.keys()])
-        fmt = '%%%ds' % spacing
+        if keywidth is None:
+            keywidth = max(len(x) for x in info.keys())
         for k, v in info.items():
-            print(fmt % k, ':'+str(v))
+            print(f'{k:{keywidth}} : {v}')
 
     def wiki(self, header=True):
         '''Print info dictionary in wiki format on stdout'''
@@ -108,13 +107,10 @@ class BaseAnalyzer(metaclass=PostInitCaller):
 
         if header:
             for i, k in enumerate(info.keys()):
-                bold_k = '*{}*'.format(k)
-                fmt = '|{{:^{}}}'.format(spacing[i])
-                print(fmt.format(bold_k), end='')
+                print(f'|*{k:^{spacing[i]}}*', end='')
             print('|')
 
         for i, v in enumerate(info.values()):
-            fmt = '|{{:^{}}}'.format(spacing[i])
-            print(fmt.format(v), end='')
+            print(f'|{v:^{spacing[i]}}', end='')
         print('|')
 
