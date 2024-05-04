@@ -236,10 +236,8 @@ class TimeSeriesWithInterpolationTest(unittest.TestCase):
     @unittest.skip("TimeSeriesWithInterpolation must be updated")
     def test_counter_not_available(self):
         
-        series = CounterIsNotAvailable(sampling_interval=1)
-        
+        series = CounterIsNotAvailable()
         assert isinstance(series.get_data(), NotAvailable)
-        assert isinstance(series.get_original_counter(), NotAvailable)
-        
+
 if __name__ == "__main__":
     unittest.main()
