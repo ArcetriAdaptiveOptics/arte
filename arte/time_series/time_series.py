@@ -1,14 +1,19 @@
 import abc
-import numpy as np
 from functools import cached_property
+from collections import namedtuple
+
+import numpy as np
+from astropy import units as u
 from scipy.signal import welch
-from scipy.interpolate import interpn
+from scipy.interpolate import interp1d
 
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
 from arte.utils.iterators import pairwise
 from arte.utils.unit_checker import make_sure_its_a
-from astropy import units as u
+
+
+Interpolation = namedtuple('Interpolation', ['result_vector', 'interpolation_flag_vector'])
 
 
 @add_help
@@ -176,33 +181,48 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return np.median(self.get_data(*args, times=times, **kwargs), axis=1)
 
     def _interpolate_missing_data(self):
-        missing = self._detect_missing_points()
-        values = self.get_data()
-        points = self._get_time_vector()
-        interpolated = scipy.interpolate.interpn(points, values, missing, method='linear')
-        # Now insert the interpolated values and missing points into data and time vector
-        # ...
+        known_x = self._get_time_vector()
+        full_x, interp_flag_vector = self._fill_missing_points(self._get_time_vector())
+        data = self.get_data()
+        interpolator = interp1d(known_x, data, axis=0)
+        interpolated_data = interpolator(full_x)
+        return interpolated_data
+        # Now we should store full_x and interpolated_data somewhere
+        # overwrite time_vector and data?
+        # or keep both and give the user a choice?
+        # We should keep interp_flag_vector to tell the user what was interpolated and what wasn't.
         
-    def _detect_missing_points(self, missing_th=1.5):
+    def _fill_missing_points(self, vector, missing_th=1.5):
         '''
         Detect missing points in time_vector.
         If two points are separated by more than missing_th*median_diff,
         then some points are missing.
         '''
-        t = self._get_time_vector()
-        diff = np.diff(t)
+        diff = np.diff(vector)
         step = np.median(diff)
         missing = np.where(diff >= step * missing_th)[0]
-        pieces = []
-        for hole in missing:
-            pieces.append(t[:hole+1])
-            n_missing = int((t[hole+1] - t[hole]) // step)
-            pieces.append(list(np.arange(1, n_missing)*step + t[hole]))
-        pieces.append(t[missing[-1]+1:])
-        print(pieces)
-        return sum(pieces, [])
-        
-                                  
+        vector_pieces = []
+        flag_pieces = []
+        if len(missing) > 0:
+            start = 0
+            for hole in missing:
+                # Section before the hole
+                vector_pieces.append(vector[start:hole+1])
+                flag_pieces.append([False] * (hole+1 -start))
+           
+                # Interpolated values
+                n_missing = int((vector[hole+1] - vector[hole]) // step)
+                vector_pieces.append(list(np.arange(1, n_missing)*step + vector[hole]))
+                flag_pieces.append([True] * (n_missing-1))
+                start = hole + 1
+            # Final section
+            vector_pieces.append(vector[missing[-1]+1:])
+            flag_pieces.append([False] * (len(vector) - missing[-1] -1 ))
+            return Interpolation(np.array(sum(vector_pieces, [])),
+                                 np.array(sum(flag_pieces, []), dtype=bool))
+        else:
+            return Interpolation(vector, np.ones(len(vector), dtype=bool))
+
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
                   overplot=None, plot_to=None,

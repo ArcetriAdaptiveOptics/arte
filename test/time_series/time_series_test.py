@@ -104,9 +104,25 @@ class TimeSeriesTest(unittest.TestCase):
             _ = self._ts.time_average([0.1, 0.3])
 
     def test_detect_missing_points(self):
-        series = ATimeSeries()
+        series = ATimeSeries(1)
         series._get_time_vector = lambda: [1,2,3,5,6]
-        assert series._detect_missing_points() == [1,2,3,4,5,6]
+        full_points, flag = series._fill_missing_points([1,2,3,5,6])
+        np.testing.assert_array_equal(full_points, [1,2,3,4,5,6])
+        np.testing.assert_array_equal(flag, [False, False, False, True, False, False])
+
+    def test_detect_missing_points_when_there_are_none(self):
+        series = ATimeSeries(2)
+        series._get_time_vector = lambda: [1,2,3,4,5,6]
+        full_points, flag = series._fill_missing_points([1,2,3,4,5,6]) 
+        np.testing.assert_array_equal(full_points, [1,2,3,4,5,6])
+        np.testing.assert_array_equal(flag, [True] * 6)
+
+    def test_detect_missing_points_two_holes(self):
+        series = ATimeSeries(2)
+        series._get_time_vector = lambda: [1,3,4,5,6,8]
+        full_points, flag = series._fill_missing_points([1,3,4,5,6,8]) 
+        np.testing.assert_array_equal(full_points, [1,2,3,4,5,6,7,8])
+        np.testing.assert_array_equal(flag, [False, True, False, False, False, False, True, False])
 
 
 class AnIncompleteTimeSeries1(TimeSeriesWithInterpolation):
