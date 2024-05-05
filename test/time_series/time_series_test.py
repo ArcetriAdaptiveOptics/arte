@@ -115,14 +115,38 @@ class TimeSeriesTest(unittest.TestCase):
         series._get_time_vector = lambda: [1,2,3,4,5,6]
         full_points, flag = series._fill_missing_points([1,2,3,4,5,6]) 
         np.testing.assert_array_equal(full_points, [1,2,3,4,5,6])
-        np.testing.assert_array_equal(flag, [True] * 6)
+        np.testing.assert_array_equal(flag, [False] * 6)
 
-    def test_detect_missing_points_two_holes(self):
+    def test_detect_missing_points_two_gaps(self):
         series = ATimeSeries(2)
         series._get_time_vector = lambda: [1,3,4,5,6,8]
         full_points, flag = series._fill_missing_points([1,3,4,5,6,8]) 
         np.testing.assert_array_equal(full_points, [1,2,3,4,5,6,7,8])
         np.testing.assert_array_equal(flag, [False, True, False, False, False, False, True, False])
+
+    def test_interpolate_missing_data(self):
+        series = ATimeSeries(0.001*u.s)
+        series._get_time_vector = lambda: np.array([1,2,3,5,6])
+        series._get_not_indexed_data = lambda: np.array([10,20,30,50,60])
+        series.get_index_of = lambda: None
+        full_x, interpolated_data = series._interpolate_missing_data()
+        np.testing.assert_array_equal(interpolated_data, [10,20,30,40,50,60])
+
+    def test_interpolate_missing_data_two_gaps(self):
+        series = ATimeSeries(0.001*u.s)
+        series._get_time_vector = lambda: np.array([1,2,3,5,6,8])
+        series._get_not_indexed_data = lambda: np.array([10,20,30,50,60,80])
+        series.get_index_of = lambda: None
+        full_x, interpolated_data = series._interpolate_missing_data()
+        np.testing.assert_array_equal(interpolated_data, [10,20,30,40,50,60,70,80])
+
+    def test_interpolate_missing_data_no_gaps(self):
+        series = ATimeSeries(0.001*u.s)
+        series._get_time_vector = lambda: np.array([1,2,3,4,5,6])
+        series._get_not_indexed_data = lambda: np.array([10,20,30,40,50,60])
+        series.get_index_of = lambda: None
+        full_x, interpolated_data = series._interpolate_missing_data()
+        np.testing.assert_array_equal(interpolated_data, [10,20,30,40,50,60])
 
 
 class AnIncompleteTimeSeries1(TimeSeriesWithInterpolation):

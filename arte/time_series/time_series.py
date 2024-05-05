@@ -13,7 +13,7 @@ from arte.utils.iterators import pairwise
 from arte.utils.unit_checker import make_sure_its_a
 
 
-Interpolation = namedtuple('Interpolation', ['result_vector', 'interpolation_flag_vector'])
+InterpolationResult = namedtuple('InterpolationResult', ['result_vector', 'interpolation_flag_vector'])
 
 
 @add_help
@@ -183,45 +183,46 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def _interpolate_missing_data(self):
         known_x = self._get_time_vector()
         full_x, interp_flag_vector = self._fill_missing_points(self._get_time_vector())
-        data = self.get_data()
+        data = self._get_not_indexed_data()
         interpolator = interp1d(known_x, data, axis=0)
         interpolated_data = interpolator(full_x)
-        return interpolated_data
+        return full_x, interpolated_data
         # Now we should store full_x and interpolated_data somewhere
         # overwrite time_vector and data?
         # or keep both and give the user a choice?
         # We should keep interp_flag_vector to tell the user what was interpolated and what wasn't.
-        
+
     def _fill_missing_points(self, vector, missing_th=1.5):
         '''
         Detect missing points in time_vector.
         If two points are separated by more than missing_th*median_diff,
         then some points are missing.
         '''
+        vector = np.array(vector)
         diff = np.diff(vector)
         step = np.median(diff)
         missing = np.where(diff >= step * missing_th)[0]
-        vector_pieces = []
-        flag_pieces = []
         if len(missing) > 0:
+            vector_pieces = []
+            flag_pieces = []
             start = 0
-            for hole in missing:
-                # Section before the hole
-                vector_pieces.append(vector[start:hole+1])
-                flag_pieces.append([False] * (hole+1 -start))
-           
+            for gap in missing:
+                # Section before the gap
+                vector_pieces.append(vector[start:gap+1])
+                flag_pieces.append(np.zeros(gap+1 -start))
+
                 # Interpolated values
-                n_missing = int((vector[hole+1] - vector[hole]) // step)
-                vector_pieces.append(list(np.arange(1, n_missing)*step + vector[hole]))
-                flag_pieces.append([True] * (n_missing-1))
-                start = hole + 1
+                n_missing = int((vector[gap+1] - vector[gap]) // step)
+                vector_pieces.append(np.arange(1, n_missing)*step + vector[gap])
+                flag_pieces.append(np.ones(n_missing-1))
+                start = gap + 1
             # Final section
             vector_pieces.append(vector[missing[-1]+1:])
-            flag_pieces.append([False] * (len(vector) - missing[-1] -1 ))
-            return Interpolation(np.array(sum(vector_pieces, [])),
-                                 np.array(sum(flag_pieces, []), dtype=bool))
+            flag_pieces.append(np.zeros(len(vector) - missing[-1] -1))
+            return InterpolationResult(np.hstack(vector_pieces),
+                                       np.hstack(flag_pieces).astype(bool))
         else:
-            return Interpolation(vector, np.ones(len(vector), dtype=bool))
+            return InterpolationResult(vector, np.zeros(len(vector), dtype=bool))
 
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
