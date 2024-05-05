@@ -2,6 +2,8 @@ import abc
 import numpy as np
 from functools import cached_property
 from scipy.signal import welch
+from scipy.interpolate import interpn
+
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
 from arte.utils.iterators import pairwise
@@ -73,7 +75,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def delta_time(self):
         '''Property with the interval between samples'''
         time_vector = self._get_time_vector()
-        return time_vector[1] - time_vector[0]
+        return np.median(np.diff(time_vector))
 
     def frequency(self):
         return self._frequency
@@ -173,6 +175,34 @@ class TimeSeries(metaclass=abc.ABCMeta):
         '''Median across series at each sampling time'''
         return np.median(self.get_data(*args, times=times, **kwargs), axis=1)
 
+    def _interpolate_missing_data(self):
+        missing = self._detect_missing_points()
+        values = self.get_data()
+        points = self._get_time_vector()
+        interpolated = scipy.interpolate.interpn(points, values, missing, method='linear')
+        # Now insert the interpolated values and missing points into data and time vector
+        # ...
+        
+    def _detect_missing_points(self, missing_th=1.5):
+        '''
+        Detect missing points in time_vector.
+        If two points are separated by more than missing_th*median_diff,
+        then some points are missing.
+        '''
+        t = self._get_time_vector()
+        diff = np.diff(t)
+        step = np.median(diff)
+        missing = np.where(diff >= step * missing_th)[0]
+        pieces = []
+        for hole in missing:
+            pieces.append(t[:hole+1])
+            n_missing = int((t[hole+1] - t[hole]) // step)
+            pieces.append(list(np.arange(1, n_missing)*step + t[hole]))
+        pieces.append(t[missing[-1]+1:])
+        print(pieces)
+        return sum(pieces, [])
+        
+                                  
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
                   overplot=None, plot_to=None,

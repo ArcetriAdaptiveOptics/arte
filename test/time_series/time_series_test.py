@@ -103,6 +103,11 @@ class TimeSeriesTest(unittest.TestCase):
         with self.assertRaises(IndexError):
             _ = self._ts.time_average([0.1, 0.3])
 
+    def test_detect_missing_points(self):
+        series = ATimeSeries()
+        series._get_time_vector = lambda: [1,2,3,5,6]
+        assert series._detect_missing_points() == [1,2,3,4,5,6]
+
 
 class AnIncompleteTimeSeries1(TimeSeriesWithInterpolation):
     '''A time series with a single gap a'''
@@ -232,7 +237,7 @@ class TimeSeriesWithInterpolationTest(unittest.TestCase):
     def test_interpolation_with_step6(self):
         with self.assertRaises(ValueError):
             self._test_interpolation(AnIncompleteTimeSeries6)
-    
+
     @unittest.skip("TimeSeriesWithInterpolation must be updated")
     def test_counter_not_available(self):
         
