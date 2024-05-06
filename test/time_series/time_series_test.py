@@ -5,8 +5,7 @@ import numpy as np
 import astropy.units as u
 
 from arte.time_series.time_series import TimeSeries
-from arte.time_series.indexer import Indexer, ModeIndexer, RowColIndexer
-from arte.utils.not_available import NotAvailable
+from arte.time_series.indexer import ModeIndexer, RowColIndexer
 
 
 class ATimeSeries(TimeSeries):
@@ -51,10 +50,10 @@ class ATimeSeries(TimeSeries):
 
 
 class TimeSeries1D(TimeSeries):
-    
+
     def _get_not_indexed_data(self):
         return np.arange(20).reshape(5,4)
-    
+
     def get_index_of(self, *args, **kwargs):
         return args[0]   # Modified inside tests
 
@@ -63,10 +62,10 @@ class TimeSeries2D(TimeSeries):
 
     def _get_not_indexed_data(self):
         return np.arange(2*3*4).reshape(2,3,4)
-    
+
     def get_index_of(self, *args, **kwargs):
-        pass  # Modified inside tests    
-    
+        pass  # Modified inside tests   
+
 
 class TimeSeriesTest(unittest.TestCase):
 
