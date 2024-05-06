@@ -194,6 +194,12 @@ class TimeSeriesTest(unittest.TestCase):
         t2d.get_index_of = lambda *args, **kwargs: None
         np.testing.assert_array_almost_equal(t2d.ensemble_average(), (5.5, 17.5))
 
+    def test_2d_index(self):
+        t2d = TimeSeries2D()
+        t2d.get_index_of = lambda *args, **kwargs: RowColIndexer().rowcol(*args, **kwargs)
+        test = t2d.get_data(rows=[1,2], col_from=0, col_to=3)
+        assert test.shape == (2, 2, 3)    # [Time, rows, cols]
+
 
 class AnIncompleteTimeSeries1(TimeSeriesWithInterpolation):
     '''A time series with a single gap a'''
