@@ -1,7 +1,7 @@
 import astropy.units as u
 
 from arte.dataelab.base_timeseries import BaseTimeSeries
-from arte.time_series import Indexer
+from arte.time_series.indexer import Indexer
 from arte.utils.show_array import show_array
 from arte.utils.unit_checker import separate_value_and_unit
 
