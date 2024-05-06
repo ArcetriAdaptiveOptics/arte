@@ -3,8 +3,9 @@ import unittest
 import math
 import numpy as np
 import astropy.units as u
-from arte.time_series import TimeSeries, TimeSeriesWithInterpolation
-from arte.time_series import Indexer, ModeIndexer
+
+from arte.time_series.time_series import TimeSeries, TimeSeriesWithInterpolation
+from arte.time_series.indexer import Indexer, ModeIndexer, RowColIndexer
 from arte.utils.not_available import NotAvailable
 
 

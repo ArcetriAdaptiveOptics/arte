@@ -4,8 +4,8 @@
 import unittest
 import numpy as np
 import astropy.units as u
-from arte.time_series import TimeSeries
-from arte.time_series import MultiTimeSeries
+from arte.time_series.time_series import TimeSeries
+from arte.time_series.multi_time_series import MultiTimeSeries
 
 class ATimeSeries(TimeSeries):
 

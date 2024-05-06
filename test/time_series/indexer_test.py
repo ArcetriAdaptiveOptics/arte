@@ -2,7 +2,7 @@
 import unittest
 import numpy as np
 
-from arte.time_series.indexer import Indexer, ModeIndexer
+from arte.time_series.indexer import Indexer, ModeIndexer, RowColIndexer
 
 
 class TestIndexer(unittest.TestCase):
