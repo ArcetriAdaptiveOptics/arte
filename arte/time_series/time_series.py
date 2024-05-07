@@ -11,6 +11,10 @@ from arte.utils.help import add_help, modify_help
 from arte.utils.unit_checker import make_sure_its_a
 
 
+class TimeSeriesException(Exception):
+    '''Exception raised by TimeSeries'''
+
+
 @add_help
 class TimeSeries(metaclass=abc.ABCMeta):
     '''
@@ -40,13 +44,24 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def _get_time_vector(self):
         '''Override to provide a custom time vector'''
         return np.arange(len(self._get_not_indexed_data()))
+    
+    def _get_time_vector_check(self):
+        v = self._get_time_vector()
+        if isinstance(v, np.ndarray):
+            return v
+        else:
+            try:
+                # Try to convert
+                return np.array(v)
+            except TypeError as e:
+                raise TimeSeriesException('Cannot convert _get_time_vector() result to numpy array') from e
 
     def get_data(self, *args, times=None, **kwargs):
         '''Raw data as a matrix [time, series]'''
 
         data = self._get_not_indexed_data()
         if times is not None:
-            time_vector = self._get_time_vector()
+            time_vector = self.get_time_vector()
             if isinstance(time_vector, u.Quantity):
                 start = make_sure_its_a(time_vector.unit, times[0])
                 stop = make_sure_its_a(time_vector.unit, times[1])
@@ -79,15 +94,29 @@ class TimeSeries(metaclass=abc.ABCMeta):
 
     @cached_property
     def delta_time(self):
-        '''Property with the interval between samples'''
-        time_vector = self._get_time_vector()
-        return time_vector[1] - time_vector[0]
+        '''Property with the interval between samples.
+        
+        If no interval can be determined (time vector too short),
+        returns 1 with the correct unit if applicable.
+        '''
+        time_vector = self.get_time_vector()
+        if len(time_vector) == 0:
+            return 1
+        diff = np.diff(time_vector)
+        if len(diff) > 0:
+            return np.median(diff)
+        else:
+            if isinstance(time_vector[0], u.Quantity):
+                return 1 * time_vector[0].unit
+            else:
+                return 1
 
     def frequency(self):
         return self._frequency
 
-    def time_vector(self):
-        return self._get_time_vector()
+    def get_time_vector(self):
+        '''Return the series time vector'''
+        return self._get_time_vector_check()
 
     def last_cutted_frequency(self):
         return self._lastCuttedFrequency

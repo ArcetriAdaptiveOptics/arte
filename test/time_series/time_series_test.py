@@ -4,7 +4,7 @@ import math
 import numpy as np
 import astropy.units as u
 
-from arte.time_series.time_series import TimeSeries
+from arte.time_series.time_series import TimeSeries, TimeSeriesException
 from arte.time_series.indexer import ModeIndexer, RowColIndexer
 
 
@@ -199,6 +199,45 @@ class TimeSeriesTest(unittest.TestCase):
         test = t2d.get_data(rows=[1,2], col_from=0, col_to=3)
         assert test.shape == (2, 2, 3)    # [Time, rows, cols]
 
+    def test_default_delta_time(self):
+        t1d = TimeSeries1D()
+        assert t1d.delta_time == 1
+
+    def test_custom_regular_delta_time(self):
+        t1d = TimeSeries1D()
+        t1d._get_time_vector = lambda: [10, 20, 30, 40]
+        assert t1d.delta_time == 10
+
+    def test_custom_irregular_delta_time(self):
+        t1d = TimeSeries1D()
+        t1d._get_time_vector = lambda: [7.5, 11, 13.4, 16.7]
+        self.assertAlmostEqual(t1d.delta_time, 3.3)
+
+    def test_delta_time_unit(self):
+        t1d = TimeSeries1D()
+        t1d._get_time_vector = lambda: np.array([1,2,3,4]) * u.s
+        assert t1d.delta_time == 1 * u.s
+        
+    def test_delta_time_1_sample(self):
+        t1d = TimeSeries1D()
+        t1d._get_time_vector = lambda: [10]
+        assert t1d.delta_time == 1
+
+    def test_delta_time_1_sample_with_unit(self):
+        t1d = TimeSeries1D()
+        t1d._get_time_vector = lambda: np.array([5]) * u.ms
+        assert t1d.delta_time == 1 * u.ms
+
+    def test_delta_time_no_samples(self):
+        t1d = TimeSeries1D()
+        t1d._get_time_vector = lambda: np.array([])
+        assert t1d.delta_time == 1
+
+    def test_invalid_time_vector(self):
+        t1d = TimeSeries1D()
+        t1d._get_time_vector = lambda: [1*u.s]   # Numpy cannot handle this
+        with self.assertRaises(TimeSeriesException):
+            _ = t1d.delta_time
 
 
 if __name__ == "__main__":
