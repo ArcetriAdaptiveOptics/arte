@@ -123,7 +123,7 @@ def _discover_cachers(obj, objname='root', seen=None):
 
     methods = {k: v for k, v in valid_attrs.items() if callable(v)}
     members = {k: v for k, v in valid_attrs.items() if not callable(v)}
- 
+
     # Examine both methods and members, because DiskCacher replaces a method
     for name, method in methods.items():
         seen.update([type(method)])
@@ -139,13 +139,6 @@ def _discover_cachers(obj, objname='root', seen=None):
             seen.update([type(member)])
             if not isinstance(member, ModuleType):
                 yield from _discover_cachers(member, objname + '.' + name, seen=seen)
-
-#    What happens with properties?
-#
-#    properties = ({k: getattr(obj.__class__, k)
-#                      for k in dir(obj.__class__)
-#                      if isinstance(getattr(obj.__class__, k), property)})
-#    methods.update(properties)
 
 
 class DiskCacher():
