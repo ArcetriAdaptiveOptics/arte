@@ -5,6 +5,7 @@ import tempfile
 import unittest
 import numpy as np
 import astropy.units as u
+from functools import cached_property
 
 from arte.dataelab.cache_on_disk import cache_on_disk, set_tag, set_tmpdir
 from arte.dataelab.cache_on_disk import set_prefix, clear_cache, get_disk_cacher
@@ -71,6 +72,26 @@ class NumpyCache(Parent):
     @cache_on_disk
     def a_method(self, arg):
         return arg*2
+
+
+class ClassWithProperties():
+
+    def __init__(self):
+        self.total = 0
+
+    def I_am_a_method(self):
+        self.total += 1
+        return 1
+
+    @property
+    def I_am_a_property(self):
+        self.total += 2
+        return 2
+
+    @cached_property
+    def I_am_a_cached_property(self):
+        self.total += 4
+        return 4
 
 
 class CacheOnDiskTest(unittest.TestCase):
@@ -209,4 +230,10 @@ class CacheOnDiskTest(unittest.TestCase):
         _ = ee.a_method('a_string')
         assert os.path.exists(get_disk_cacher(ee, ee.a_method).fullpath())
         clear_cache(ee)
+
+    def test_no_property_trigger(self):
+        ee = ClassWithProperties()
+        set_tag(ee, 'foo')
+        assert ee.total == 0
+
 # __oOo__
