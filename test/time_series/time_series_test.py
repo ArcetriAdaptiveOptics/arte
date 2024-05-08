@@ -239,6 +239,13 @@ class TimeSeriesTest(unittest.TestCase):
         with self.assertRaises(TimeSeriesException):
             _ = t1d.delta_time
 
+    def test_wrong_time_vector_length(self):
+        t1d = TimeSeries1D()
+        t1d._get_time_vector = lambda: [1, 2]
+        t1d._get_not_indexed_data = lambda: [1, 2, 3]
+        with self.assertRaises(TimeSeriesException):
+            _ = t1d.get_data(times=[0,1])
+
 
 if __name__ == "__main__":
     unittest.main()

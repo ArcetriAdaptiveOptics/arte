@@ -62,6 +62,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
         data = self._get_not_indexed_data()
         if times is not None:
             time_vector = self.get_time_vector()
+            if len(time_vector) != len(data):
+                raise TimeSeriesException('Time vector and data lengths differ')
             if isinstance(time_vector, u.Quantity):
                 start = make_sure_its_a(time_vector.unit, times[0])
                 stop = make_sure_its_a(time_vector.unit, times[1])
