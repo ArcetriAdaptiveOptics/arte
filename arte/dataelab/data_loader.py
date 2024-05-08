@@ -29,13 +29,14 @@ class DataLoader():
 
 class FitsDataLoader(DataLoader):
     '''Loader for data stored into FITS files'''
-    def __init__(self, filename, ext=None):
+    def __init__(self, filename, ext=None, transpose_axes=None):
         super().__init__()
         if isinstance(filename, Path):
             self._filename = str(filename)
         else:
             self._filename = filename
         self._ext = ext
+        self._transpose_axes = transpose_axes
 
     def assert_exists(self):
         assert os.path.exists(self._filename)
@@ -45,14 +46,18 @@ class FitsDataLoader(DataLoader):
 
     def load(self):
         if self._ext:
-            return fits.getdata(self._filename, ext=self._ext)
+            data = fits.getdata(self._filename, ext=self._ext)
         else:
-            return fits.getdata(self._filename)
+            data = fits.getdata(self._filename)
+        if self._transpose_axes is not None:
+            print(data.shape, self._transpose_axes)
+            data = data.transpose(*self._transpose_axes)
+        return data
 
 
 class NumpyDataLoader(DataLoader):
     '''Loader for data stored into np or npz files'''
-    def __init__(self, filename, key=None):
+    def __init__(self, filename, key=None, transpose_axes=None):
         super().__init__()
         if isinstance(filename, Path):
             self._filename = str(filename)
@@ -61,6 +66,7 @@ class NumpyDataLoader(DataLoader):
         if self._filename.endswith('.npz') and key is None:
             key = 'arr_0'
         self._key = key
+        self._transpose_axes = transpose_axes
 
     def assert_exists(self):
         assert os.path.exists(self._filename)
@@ -70,10 +76,12 @@ class NumpyDataLoader(DataLoader):
 
     def load(self):
         if self._key:
-            return np.load(self._filename)[self._key]
+            data = np.load(self._filename)[self._key]
         else:
-            return np.load(self._filename)
-
+            data = np.load(self._filename)
+        if self._transpose_axes is not None:
+            data = data.transpose(*self._transpose_axes)
+        return data
 
 class DummyLoader(DataLoader):
     '''Dummy loader for data not stored anywhere'''
