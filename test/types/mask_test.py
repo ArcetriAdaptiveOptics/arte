@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 #%%
+from numpy import random
 import unittest
 import logging
 import numpy as np
-from arte.types.mask import CircularMask, AnnularMask
+from arte.types.mask import BaseMask, CircularMask, AnnularMask
 
 
 def _setUpBasicLogging():
@@ -16,6 +17,29 @@ def _setUpBasicLogging():
 def _except_on_warning():
     import warnings
     warnings.filterwarnings("error")
+
+
+class BaseMaskTest(unittest.TestCase):
+
+    def test_comparison(self):
+        mask1 = random.choice([True, False], size=(3, 4))
+        mask2 = mask1.copy()
+        self.assertTrue(id(mask1) != id(mask2))
+        self.assertTrue(BaseMask(mask1) == BaseMask(mask2))
+
+    def test_comparison_different_shape(self):
+        mask = random.choice([True, False], size=(3, 4))
+        mask1 = BaseMask(mask)
+        mask2 = BaseMask(mask.reshape(1, 12))
+        self.assertTrue(mask1 != mask2)
+
+    def test_hash(self):
+        mask1 = random.choice([True, False], size=(3, 4))
+        mask2 = mask1.copy()
+        bm1 = BaseMask(mask1)
+        bm2 = BaseMask(mask2)
+        self.assertTrue(hash(bm1) == hash(bm2))
+
 
 class MaskTest(unittest.TestCase):
 
