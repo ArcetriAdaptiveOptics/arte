@@ -82,7 +82,7 @@ class TimeSeriesTest(unittest.TestCase):
 
     def test_power_with_from_to(self):
         power = self._ts.power(from_freq=30, to_freq=100)
-        freq = self._ts.last_cutted_frequency()
+        freq = self._ts.last_cut_frequency()
         self.assertAlmostEqual(freq[np.argmax(power[:, 3])],
                                self._ts.disturbFreq[3])
         self.assertAlmostEqual(np.min(freq), 30)

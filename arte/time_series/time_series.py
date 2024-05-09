@@ -26,7 +26,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
 
     def __init__(self):
         self._frequency = None
-        self._lastCuttedFrequency = None
+        self._last_cut_frequency = None
         self._power = None
         self._segment_factor = None
         self._window = None
@@ -81,8 +81,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def time_vector(self):
         return self._get_time_vector()
 
-    def last_cutted_frequency(self):
-        return self._lastCuttedFrequency
+    def last_cut_frequency(self):
+        return self._last_cut_frequency
 
     def ensemble_size(self):
         '''Number of distinct series in this time ensemble'''
@@ -115,12 +115,12 @@ class TimeSeries(metaclass=abc.ABCMeta):
             self._power = self._compute_power(data)
         if from_freq is None:
             output = self._power
-            self._lastCuttedFrequency = self._frequency
+            self._last_cut_frequency = self._frequency
         else:
             ul = self._frequency <= to_freq
             dl = self._frequency >= from_freq
             lim = ul & dl
-            self._lastCuttedFrequency = self._frequency[lim]
+            self._last_cut_frequency = self._frequency[lim]
             output = self._power[lim]
         if index is None:
             return output
@@ -234,7 +234,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         power = self.power(from_freq, to_freq,
                            segment_factor,
                            *args, **kwargs)
-        freq = self.last_cutted_frequency()
+        freq = self.last_cut_frequency()
 
         # linearx=True forces lineary to True
         if linearx: lineary=True
@@ -301,7 +301,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         power = self.power(from_freq, to_freq,
                            segment_factor,
                            *args, **kwargs)
-        freq = self.last_cutted_frequency()
+        freq = self.last_cut_frequency()
         freq_bin = freq[1]-freq[0] # frequency bin
 
         from matplotlib.axes import Axes
