@@ -18,6 +18,7 @@ class BaseResidualModes(BaseProjection):
                          astropy_unit=astropy_unit,
                          data_label=data_label)
         self._nmodes = None   # Lazy initialization
+        self._indexer = None
 
     def nmodes(self):
         '''Number of modes'''
@@ -26,7 +27,9 @@ class BaseResidualModes(BaseProjection):
         return self._nmodes
 
     def get_index_of(self, *args, **kwargs):
-        return ModeIndexer(max_mode=self.nmodes()).modes(*args, **kwargs)
+        if self._indexer is None:
+            self._indexer = ModeIndexer(max_mode=self.nmodes())
+        return self._indexer.modes(*args, **kwargs)
 
     def slopes(self):
         '''Slopes timeseries'''
