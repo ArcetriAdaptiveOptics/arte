@@ -50,6 +50,7 @@ parameters available for the algorithms.
 
    atmo
    astro
+   dataelab
    math
    misc
    photometry
