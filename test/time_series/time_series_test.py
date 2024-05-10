@@ -268,6 +268,10 @@ class TimeSeriesTest(unittest.TestCase):
         with self.assertRaises(TimeSeriesException):
             _ = t1d.get_data(times=[0,1])
 
+    def test_default_time_vector(self):
+        t1d = TimeSeries1D()
+        np.testing.assert_array_almost_equal(t1d.get_time_vector(), np.arange(5))
+
 
 if __name__ == "__main__":
     unittest.main()

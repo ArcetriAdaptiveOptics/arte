@@ -80,16 +80,19 @@ class ClassWithProperties():
         self.total = 0
 
     def I_am_a_method(self):
+        '''We will check that self.total is NOT incremented by 1'''
         self.total += 1
         return 1
 
     @property
     def I_am_a_property(self):
+        '''We will check that self.total is NOT incremented by 2'''
         self.total += 2
         return 2
 
     @cached_property
     def I_am_a_cached_property(self):
+        '''We will check that self.total is NOT incremented by 4'''
         self.total += 4
         return 4
 
