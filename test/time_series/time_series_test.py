@@ -106,6 +106,28 @@ class TimeSeriesTest(unittest.TestCase):
         self.assertAlmostEqual(np.min(freq), 30)
         self.assertAlmostEqual(np.max(freq), 100)
 
+    def test_power_outside_range_higher(self):
+        power = self._ts.power(from_freq=30, to_freq=1000)
+        freq = self._ts.last_cut_frequency()
+        self.assertAlmostEqual(freq[np.argmax(power[:, 3])],
+                               self._ts.disturbFreq[3])
+        self.assertAlmostEqual(np.min(freq), 30)
+        self.assertAlmostEqual(np.max(freq), 500)
+
+    def test_power_outside_range_lower(self):
+        power = self._ts.power(from_freq=0.001, to_freq=100)
+        freq = self._ts.last_cut_frequency()
+        self.assertAlmostEqual(freq[np.argmax(power[:, 3])],
+                               self._ts.disturbFreq[3])
+        self.assertAlmostEqual(np.min(freq), 1)
+        self.assertAlmostEqual(np.max(freq), 100)
+
+    def test_power_outside_range_completely(self):
+        power = self._ts.power(from_freq=800, to_freq=1000)
+        freq = self._ts.last_cut_frequency()
+        assert len(power) == 0
+        assert len(freq) == 0
+
     def test_timeAverage(self):
         ta = self._ts.time_average()
         self.assertAlmostEqual(ta[1], 1.)

@@ -205,6 +205,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
         else:
             ul = self._frequency <= to_freq
             dl = self._frequency >= from_freq
+            ul |= np.isclose(self._frequency, to_freq)
+            dl |= np.isclose(self._frequency, from_freq)
             lim = ul & dl
             self._last_cut_frequency = self._frequency[lim]
             output = self._power[lim]
