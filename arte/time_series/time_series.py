@@ -73,6 +73,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def delta_time(self):
         '''Property with the interval between samples'''
         time_vector = self._get_time_vector()
+        if len(time_vector) == 1:
+            return NotAvailable
         return time_vector[1] - time_vector[0]
 
     def frequency(self):
@@ -159,6 +161,13 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return np.mean(self.get_data(*args, times=times, **kwargs), axis=0)
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def time_rms(self, *args, times=None, **kwargs):
+        '''Root-Mean-Square value over time for each series'''
+        x = self.get_data(*args, times=times, **kwargs)
+        return np.sqrt(np.mean(np.abs(x)**2, axis=0))
+
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_average(self, *args, times=None, **kwargs):
         '''Average across series at each sampling time'''
         return np.mean(self.get_data(*args, times=times, **kwargs), axis=1)
@@ -172,6 +181,12 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def ensemble_median(self, *args, times=None, **kwargs):
         '''Median across series at each sampling time'''
         return np.median(self.get_data(*args, times=times, **kwargs), axis=1)
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def ensemble_rms(self, *args, times=None, **kwargs):
+        '''Root-Mean-Square across series at each sampling time'''
+        x = self.get_data(*args, times=times, **kwargs)
+        return np.sqrt(np.mean(np.abs(x)**2, axis=1))
 
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
