@@ -12,13 +12,20 @@ class BaseTimeSeries(TimeSeries):
     '''
     Generic time series.
 
-    delta_time: time interval between data samples, in seconds.
+    Parameters
+    ----------
     data_loader: instance of DataLoader or derived class, or numpy array
-    time_vector: instance of DataLoader or derived class, or numpy_array
-    mapper2d: function to map a single data sample into 2d. If None, data is assumed
-              to be already in 2d.
-    astropy_unit: if possible, astropy unit to use with the data.
-    data_label: human-readable label for plot (e.g.: "Surface modal coefficients" )
+         time series data
+    time_vector: instance of DataLoader or derived class, or numpy_array, or None
+         time vector data. If None, a default counter from 0 to N-1 samples will be assigned
+    mapper2d: function or None
+	 function to map a single data sample into 2d. If None, data is assumed
+         to be already in 2d.
+    astropy_unit: astropy unit or None
+         if possible, astropy unit to use with the data.
+    data_label: string or None
+         human-readable label for plot (e.g.: "Surface modal coefficients" )
+
     '''
     def __init__(self, loader_or_data, time_vector=None, astropy_unit=None, data_label=None):
 

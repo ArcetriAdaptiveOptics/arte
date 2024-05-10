@@ -32,7 +32,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
 
     def __init__(self):
         self._frequency = None
-        self._lastCuttedFrequency = None
+        self._last_cut_frequency = None
         self._power = None
         self._segment_factor = None
         self._window = None
@@ -120,8 +120,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
         '''Return the series time vector'''
         return self._get_time_vector_check()
 
-    def last_cutted_frequency(self):
-        return self._lastCuttedFrequency
+    def last_cut_frequency(self):
+        return self._last_cut_frequency
 
     def ensemble_size(self):
         '''Number of distinct series in this time ensemble'''
@@ -201,12 +201,12 @@ class TimeSeries(metaclass=abc.ABCMeta):
             self._power = power.reshape((power.shape[0],) + self._data_sample_shape(data))
         if from_freq is None:
             output = self._power
-            self._lastCuttedFrequency = self._frequency
+            self._last_cut_frequency = self._frequency
         else:
             ul = self._frequency <= to_freq
             dl = self._frequency >= from_freq
             lim = ul & dl
-            self._lastCuttedFrequency = self._frequency[lim]
+            self._last_cut_frequency = self._frequency[lim]
             output = self._power[lim]
         index = self.get_index_of(*args, **kwargs)
         return self._index_data(output, index)
@@ -227,5 +227,6 @@ class TimeSeries(metaclass=abc.ABCMeta):
                                    nperseg=data.shape[0] / self._segment_factor)
         df = np.diff(self._frequency)[0]
         return x.T * df
+
 
 # ___oOo___

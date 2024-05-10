@@ -20,12 +20,13 @@ class BaseSlopes(BaseTimeSeries):
                          data_label=data_label)
         # Special display handling
         self._interleaved = interleaved
+        self._indexer = Indexer()
 
     def get_index_of(self, *args, **kwargs):
         if self._interleaved:
-            return Indexer().interleaved_xy(*args, **kwargs)
+            return self._indexer.interleaved_xy(*args, **kwargs)
         else:
-            return Indexer().sequential_xy(maxindex=self.ensemble_size(), *args, **kwargs)
+            return self._indexer.sequential_xy(maxindex=self.ensemble_size(), *args, **kwargs)
 
     def imshow(self, cut_wings=0):
         '''

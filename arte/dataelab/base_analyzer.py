@@ -45,10 +45,11 @@ class BaseAnalyzer(metaclass=PostInitCaller):
 
     @classmethod
     def get(cls, tag, recalc=False):
-        '''Get a new Analyzer instance 
+        '''Get the Analyzer instance (or derived class) corresponding to *tag*.
 
-        Also works in derived classes, returning
-        an instance of the derived class'''
+        This method mantains an internal cache. If a tag is requested
+        multiple times, the same Analyzer instance is returned.
+        '''
         return cls._get(tag, recalc=recalc)
 
     @classmethod

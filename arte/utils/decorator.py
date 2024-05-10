@@ -132,7 +132,10 @@ def cacheResult(f):
             if isinstance(aa, ndarray):
                 key += (hash(aa.tostring()),)
             else:
-                key += (aa,)
+                try:
+                    key += (hash(aa),)
+                except Exception:
+                    key += (aa,)
         if key not in self.__dict__[cacheName]:
             result = f(self, *args)
             self.__dict__[cacheName][key] = result
