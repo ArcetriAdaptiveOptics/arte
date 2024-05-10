@@ -6,7 +6,7 @@ Disk cache in the style of LBT elab_lib
 import os
 import pickle
 import tempfile
-from functools import wraps
+from functools import wraps, cached_property
 from collections import defaultdict
 from types import ModuleType
 
@@ -107,14 +107,19 @@ def _discover_cachers(obj, objname='root', seen=None):
     if seen is None:
         seen = set()
 
+    # Exclude properties and cached properties
+    properties = ([k for k in dir(obj.__class__)
+                   if isinstance(getattr(obj.__class__, k), (property, cached_property))])
+
     # Some packages like astropy.units define attributes
     # that just raise exceptions if they are accessed (!)
     valid_attrs = {}
     for name in dir(obj):
-        try:
-            valid_attrs[name] = getattr(obj, name)
-        except AttributeError:
-            pass
+        if not name in properties:
+            try:
+                valid_attrs[name] = getattr(obj, name)
+            except AttributeError:
+                pass
 
     methods = {k: v for k, v in valid_attrs.items() if callable(v)}
     members = {k: v for k, v in valid_attrs.items() if not callable(v)}
@@ -134,13 +139,6 @@ def _discover_cachers(obj, objname='root', seen=None):
             seen.update([type(member)])
             if not isinstance(member, ModuleType):
                 yield from _discover_cachers(member, objname + '.' + name, seen=seen)
-
-#    What happens with properties?
-#
-#    properties = ({k: getattr(obj.__class__, k)
-#                      for k in dir(obj.__class__)
-#                      if isinstance(getattr(obj.__class__, k), property)})
-#    methods.update(properties)
 
 
 class DiskCacher():

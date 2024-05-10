@@ -17,7 +17,7 @@ class BaseData():
     astropy_unit: if possible, astropy unit to use with the data.
     data_label: human-readable label for plot (e.g.: "Surface modal coefficients" )
     '''
-    def __init__(self, data_loader, mapper2d=None, astropy_unit=None, data_label=None):
+    def __init__(self, data_loader, astropy_unit=None, data_label=None):
         if isinstance(data_loader, np.ndarray):
             data_loader = ConstantDataLoader(data_loader)
         try:
@@ -32,10 +32,6 @@ class BaseData():
         self._astropy_unit = astropy_unit
         self._data_label = data_label
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
-        if mapper2d is None:
-            self._display_func = np.atleast_2d
-        else:
-            self._display_func = mapper2d
 
     def filename(self):
         '''Data filename (full path)'''
@@ -70,9 +66,9 @@ class BaseData():
         '''Data unit as an astropy unit'''
         return self._unit_handler.actual_unit()
 
-    def get_display(self):
+    def get_display(self, *args, **kwargs):
         '''Data mapped in 2d'''
-        return self._display_func(self.get_data())
+        return np.atleast_2d(self.get_data(*args, **kwargs))
     
 
 

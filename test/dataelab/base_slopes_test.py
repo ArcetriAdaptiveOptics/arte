@@ -20,13 +20,18 @@ def slope_for_3subaps_in_2d(x):
         raise ValueError(f'Number of slopes must be either {nsubaps} or {nsubaps*2}')
 
 
+class MySlopes(BaseSlopes):
+    def _get_display_cube(self, data_to_display):
+        return np.stack([slope_for_3subaps_in_2d(x) for x in data_to_display])
+
+
 class BaseSlopesTest(unittest.TestCase):
 
     def setUp(self):
         mydir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.fitsfile = os.path.join(mydir, 'testdata', 'range10x6.fits')
         self.testdata = fits.getdata(self.fitsfile)
-        self.series = BaseSlopes(self.testdata, mapper2d=slope_for_3subaps_in_2d, astropy_unit=None)
+        self.series = MySlopes(self.testdata, astropy_unit=None)
 
     def test_get_display_remaps_to_slopes_vector_to_2d(self):
         assert self.series.get_display().shape == (10, 3, 2)

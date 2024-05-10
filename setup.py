@@ -85,6 +85,7 @@ setup(name=NAME,
       package_data={
           'arte': ['data/*'],
       },
+      python_requires='>=3.8.0',
       install_requires=["numpy>1.17",
                         "scipy",
                         "matplotlib",

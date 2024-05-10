@@ -2,7 +2,7 @@
 import unittest
 import numpy as np
 
-from arte.time_series.indexer import Indexer, ModeIndexer
+from arte.time_series.indexer import Indexer, ModeIndexer, RowColIndexer
 
 
 class TestIndexer(unittest.TestCase):
@@ -51,6 +51,12 @@ class TestIndexer(unittest.TestCase):
         self.assertRaises(
             Exception, lambda: self.indexer.xy(wrongKeyword='x'))
 
+    def test_rowcol_indexer(self):
+
+        indexer = RowColIndexer()
+        rows, cols = indexer.rowcol(rows=3, col_from=0, col_to=10)
+        assert rows == 3
+        assert cols == slice(0, 10, None)
 
 if __name__ == "__main__":
     unittest.main()

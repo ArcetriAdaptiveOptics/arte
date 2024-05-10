@@ -147,3 +147,46 @@ class ModeIndexer(Indexer):
                             "when initializing the ModeIndexer, cannot continue") 
         return np.arange(from_mode, to_mode)
 
+
+class RowColIndexer(Indexer):
+
+    def __init__(self):
+        super().__init__()
+
+    def rowcol(self, *args, **kwargs):
+        '''
+        rows = index
+        cols = index
+        '''
+        rows = slice(None, None, None)
+        cols = slice(None, None, None)
+        if len(args) == 1:
+            rows = args[0]
+        elif len(args) == 2:
+            rows, cols = args
+        elif len(args) > 2:
+            raise IndexError('Unsupported rowcol index')
+        
+        accepted = 'rows cols row_from col_from row_to col_to row_step col_step'.split()
+        for kw in kwargs:
+            if kw not in accepted:
+                raise IndexError(f'Unsupported index keyword {kw}')
+
+            if kw == 'rows':
+                rows = kwargs['rows']
+            if kw == 'cols':
+                cols = kwargs['cols']
+            if kw == 'row_from':
+                rows = slice(kwargs['row_from'], rows.stop, rows.step)
+            if kw == 'col_from':
+                cols = slice(kwargs['col_from'], cols.stop, cols.step)
+            if kw == 'row_to':
+                rows = slice(rows.start, kwargs['row_to'], rows.step)
+            if kw == 'col_to':
+                cols = slice(cols.start, kwargs['col_to'], cols.step)
+            if kw == 'row_step':
+                rows = slice(rows.start, rows.stop, kwargs['row_step'])
+            if kw == 'col_step':
+                cols = slice(cols.start, cols.stop, kwargs['col_step'])
+
+        return (rows, cols)
