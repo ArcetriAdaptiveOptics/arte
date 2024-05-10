@@ -17,8 +17,8 @@ def modalplot(residual_modes_vector, pol_modes_vector, unit=u.nm,
     '''
     Example to apply an optical gain of 2:
 
-    modalplot(lambda: self.residual_modes.time_std() * 2, 
-              lambda: self.pol_modes.time_std() * 2,
+    modalplot(self.residual_modes.time_std() * 2, 
+              self.pol_modes.time_std() * 2,
               )
     '''
 

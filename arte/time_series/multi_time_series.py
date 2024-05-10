@@ -3,7 +3,7 @@ import numpy as np
 import astropy.units as u
 
 from arte.utils.help import modify_help
-from arte.time_series import TimeSeries
+from arte.time_series.time_series import TimeSeries
 
 class MultiTimeSeries(TimeSeries):
     '''

@@ -12,6 +12,7 @@ class DataLoaderTest(unittest.TestCase):
         self.npyfile = os.path.join(mydir, 'testdata', 'range2x3.npy')
         self.npzfile = os.path.join(mydir, 'testdata', 'range2x3.npz')
         self.npzpath = Path(mydir) / 'testdata' / 'range2x3.npz'
+        self.fitsfile3d = os.path.join(mydir, 'testdata', 'range3x3x2.fits')
         self.testdata = np.arange(6).reshape((2, 3))
 
     def test_filename(self):
@@ -54,6 +55,10 @@ class DataLoaderTest(unittest.TestCase):
     def test_accept_path(self):
         loader = NumpyDataLoader(self.npzpath)
         np.testing.assert_array_equal(loader.load(), self.testdata)
+
+    def test_axes_transpose(self):
+        loader = FitsDataLoader(self.fitsfile3d, transpose_axes=(2,0,1))
+        np.testing.assert_almost_equal(loader.load(), np.arange(18).reshape(2,3,3))
 
 
 if __name__ == "__main__":

@@ -1,21 +1,21 @@
 import astropy.units as u
 
 from arte.dataelab.base_timeseries import BaseTimeSeries
-from arte.time_series import Indexer
+from arte.time_series.indexer import Indexer
 from arte.utils.show_array import show_array
 from arte.utils.unit_checker import separate_value_and_unit
 
 signal_unit = u.def_unit('signal')
 
 
+
 class BaseSlopes(BaseTimeSeries):
     '''Slopes recorded from a generic WFS'''
 
-    def __init__(self, loader_or_data, time_vector=None, mapper2d=None, astropy_unit=signal_unit, data_label='slopes',
+    def __init__(self, loader_or_data, time_vector=None, astropy_unit=signal_unit, data_label='slopes',
                  interleaved=True):
         super().__init__(loader_or_data=loader_or_data,
                          time_vector=time_vector,
-                         mapper2d=mapper2d,
                          astropy_unit=astropy_unit,
                          data_label=data_label)
         # Special display handling
