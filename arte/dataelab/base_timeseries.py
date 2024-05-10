@@ -163,7 +163,7 @@ class BaseTimeSeries(TimeSeries):
         power = self.power(from_freq, to_freq,
                            segment_factor,
                            *args, **kwargs)
-        freq = self.last_cutted_frequency()
+        freq = self.last_cut_frequency()
 
         # linearx=True forces lineary to True
         if linearx: lineary=True
@@ -229,7 +229,7 @@ class BaseTimeSeries(TimeSeries):
         power = self.power(from_freq, to_freq,
                            segment_factor,
                            *args, **kwargs)
-        freq = self.last_cutted_frequency()
+        freq = self.last_cut_frequency()
         freq_bin = freq[1]-freq[0] # frequency bin
 
         from matplotlib.axes import Axes

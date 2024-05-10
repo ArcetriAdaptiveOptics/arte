@@ -5,6 +5,10 @@ import os
 import unittest
 import astropy.units as u
 from astropy.io import fits
+
+import matplotlib
+matplotlib.use('Agg')   # Draw in background
+
 from arte.dataelab.base_timeseries import BaseTimeSeries
 
 class BaseTimeSeriesTest(unittest.TestCase):
@@ -42,3 +46,15 @@ class BaseTimeSeriesTest(unittest.TestCase):
     def test_get_display_expands_ensemble_dimension_to_3d(self):
         series = BaseTimeSeries(self.testdata, astropy_unit=None)
         assert series.get_display().shape == (10, 6, 1)
+
+    def test_plot_hist(self):
+        series = BaseTimeSeries(self.testdata, astropy_unit=None)
+        _ = series.plot_hist()
+
+    def test_plot_spectra(self):
+        series = BaseTimeSeries(self.testdata, astropy_unit=None)
+        _ = series.plot_spectra()
+
+    def test_plot_cumulative_spectra(self):
+        series = BaseTimeSeries(self.testdata, astropy_unit=None)
+        _ = series.plot_cumulative_spectra()
