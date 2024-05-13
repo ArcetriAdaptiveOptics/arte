@@ -73,7 +73,25 @@ class BaseTimeSeries(TimeSeries):
             return super()._get_time_vector()
 
     def get_index_of(self, *args, **kwargs):
-        '''Should be overridden in derived classes'''
+        '''Return a selection index
+
+        Parameters
+        ----------
+        *args: tuple
+           user-defined arguments for data selection
+        **kwargs: dict, optional
+           extra user-defined arguments for data selection
+
+        Returns
+        -------
+        index: None, integer, list of integers, slice objects, or a tuple of the previous possibilities.
+           indexes to select a data subset. If None, all data is selected.
+           An integer, a list of integers or a slice will select those rows.
+           If the data is multidimensional, a tuple can be returned where each element
+           will select data across a single dimension.
+           For a detailed explanation, see the "Advanced indexing" topic at
+           https://numpy.org/doc/stable/user/basics.indexing.html#advanced-indexing
+        '''
         pass
 
     def data_label(self):
