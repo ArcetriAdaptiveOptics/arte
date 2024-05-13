@@ -89,7 +89,7 @@ the even and odd data members::
             else:
                 return None   # Get all data
 
-Thanks to the base time series class, your one will inherit a huge amount
+Thanks to the base time series class, your one will inherit a number
 of useful methods. Please have a look at the :py:class:`~arte.dataelab.base_timeseries.BaseTimeSeries`
 class documentation for a list.
 
@@ -125,9 +125,9 @@ at construction time like checking for the file existance, etc. There is a
 
 Usually the time series sclass will correspond to a single FITS or numpy file,
 or to a subsection (like a single FITS extension), but if you have
-an exotic data layout you can either to the work manually, build a numpy array
+an exotic data layout you can either do the work manually, build a numpy array
 and pass it to the constructor, or derive your own class from
-:py:class:`~arte.dataelab.data_loader.DataLoader` for a more structure approach.
+:py:class:`~arte.dataelab.data_loader.DataLoader` for a more structured approach.
 
 In order to use the analyzer, rather than instantiate it directly, it is better
 to use its :py:meth:`~arte.dataelab.base_analyzer.BaseAnalyzer.get` method. This method
