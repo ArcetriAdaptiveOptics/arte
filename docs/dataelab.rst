@@ -22,11 +22,12 @@ File walker
 
 The file walker knows your directory structure and all your file names.
 In general, it should know how to:
-   * find the root directory of your data storage, based on your preferred
-     mechanism (environment variables, configuration files, hard-coded paths, etc)
-   * return the directory holding the data for a single tag, inside the root directory,
-     including any internal structure if any (e.g. if the tags are divided by day)
-   * return the full path for each single data type stored inside a tag
+
+* find the root directory of your data storage, based on your preferred
+  mechanism (environment variables, configuration files, hard-coded paths, etc)
+* return the directory holding the data for a single tag, inside the root directory,
+  including any internal structure if any (e.g. if the tags are divided by day)
+* return the full path for each single data type stored inside a tag
 
 Define a class derived from :py:class:`~arte.dataelab.base_file_walker.AbstractFileNameWalker`,
 defining the :py:meth:`~arte.dataelab.base_file_walker.AbstractFileNameWalker.snapshot_dir()` 
@@ -60,8 +61,8 @@ DM commands, etc), define a class derived from
     from arte.dataelab.base_timeseries import BaseTimeseries
 
     class LBTSlopes(BaseTimeseries):
-        def __init__(self, loader_or_data, time_vector=None):
-            super().__init__(loader_or_data, time_vector)
+        def __init__(self, loader_or_data, time_vector=None, astropy_unit=None):
+            super().__init__(loader_or_data, time_vector, astropy_unit)
 
 By default, the :py:meth:`~arte.time_series.time_series.TimeSeries.get_data`
 method of this class will retrieve the entire data array. In order
@@ -116,6 +117,18 @@ Define your analyzer class deriving from the base analyzer, adding some access m
             return self._slopes
 
 
+Note how we use a :py:class:`~arte.dataelab.data_loader.FitsDataLoader` instance
+instead of passing the filename directly. The filename would work too, but a data loader
+allows the BaseTimeSeries class to employ lazy loading while still doing things
+at construction time like checking for the file existance, etc. There is a
+:py:class:`~arte.dataelab.data_loader.NumpyDataLoader` for numpy files as well.
+
+Usually the time series sclass will correspond to a single FITS or numpy file,
+or to a subsection (like a single FITS extension), but if you have
+an exotic data layout you can either to the work manually, build a numpy array
+and pass it to the constructor, or derive your own class from
+:py:class:`~arte.dataelab.data_loader.DataLoader` for a more structure approach.
+
 In order to use the analyzer, rather than instantiate it directly, it is better
 to use its :py:meth:`~arte.dataelab.base_analyzer.BaseAnalyzer.get` method. This method
 has an internal cache and will reuse an Analyzer instance if the same tag
@@ -140,7 +153,7 @@ all Analyzer instances have an interactive help with sub-string search::
 
 
 Help strings are automatically generated scanning the Analyzer member hiearchy, and
-uses the first docstring line for each public method, so you can add your own
+use the first docstring line for each public method, so you can add your own
 custom help as well.
 
 
@@ -161,11 +174,25 @@ Analyzer sets
     # Discard the first 0.1 seconds in each tag.
     slopes = myset.slopes.time_std(times=[0.1, None])
 
+In order for the set to work, you have to add another method to your custom FileNameWalker
+(of course replace the example algorithm here with the correct one for you)::
+
+        class LBTFileNameWalker(AbstractFileNameWalker):
+        
+            ...
+
+            def find_tag_between_dates(self, tag_start, tag_stop):
+                '''Return all tags between *tag_start* and *tag_stop* '''
+                tags = os.listdir(mydir)
+                return list(filter(lambda x: tag_start <= x <= tag_stop, tags))
+
+the :py:meth:`~arte.dataelab.base_file_walker.AbstractFileNameWalker.find_tag_between_dates`
+method must return a list of tags between the two extremes
 
 Disk cache
 ----------
 
-
+TODO
 
 Submodules
 ----------
@@ -190,6 +217,14 @@ arte.dataelab.base_file_walker module
 -------------------------------
 
 .. automodule:: arte.dataelab.base_file_walker
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+arte.dataelab.data_loader module
+-------------------------------
+
+.. automodule:: arte.dataelab.data_loader
    :members:
    :undoc-members:
    :show-inheritance:
