@@ -5,7 +5,7 @@ Data elab
 The elaboration library is based on the concept of *tag*: 
 a name for a file collection corresponding to a snapshot
 of the system state, contaning both istantaneus sampling of slow-varying data
-(e.g. seeing measurements) and time series of fast varying data (pixel frames,
+(e.g. seeing measurements) and time series of fast-varying data (pixel frames,
 DM commands, etc), usually a few hundreds or thousands of samples each.
 A tag is typically a timestamped directory containing
 a list of FITS or numpy files for time series, and other text or binary files
@@ -71,7 +71,7 @@ to select a data subset, you should override the
 returning the index to be used to select a data subset (see the method
 documentation for details).
 What kind of arguments or keywords to accept is entirely up to you.
-In this example we accept two keywords, 'x' and 'y', to return
+In this example we accept two arguments, 'x' and 'y', to select
 the even and odd data members::
 
     from arte.dataelab.base_timeseries import BaseTimeseries
@@ -81,10 +81,10 @@ the even and odd data members::
             super().__init__(loader_or_data, time_vector)
 
         def get_index_of(self, *args, **kwargs):
-            '''Return the x or y slopes'''
-            if 'x' in kwargs:
+            '''Select the x or y slopes'''
+            if 'x' in args:
                 return slice(0, None)
-            elif 'y' in kwargs:
+            elif 'y' in args:
                 return slice(1, None)
             else:
                 return None   # Get all data
