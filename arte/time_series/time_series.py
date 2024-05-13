@@ -162,6 +162,13 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return np.mean(self.get_data(*args, times=times, **kwargs), axis=0)
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def time_rms(self, *args, times=None, **kwargs):
+        '''Root-Mean-Square value over time for each series'''
+        x = self.get_data(*args, times=times, **kwargs)
+        return np.sqrt(np.mean(np.abs(x)**2, axis=0))
+
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_average(self, *args, times=None, **kwargs):
         '''Average across series at each sampling time'''
         data = self.get_data(*args, times=times, **kwargs)
@@ -178,6 +185,12 @@ class TimeSeries(metaclass=abc.ABCMeta):
         '''Median across series at each sampling time'''
         data = self.get_data(*args, times=times, **kwargs)
         return np.median(data, axis=self._data_sample_axes(data))
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def ensemble_rms(self, *args, times=None, **kwargs):
+        '''Root-Mean-Square across series at each sampling time'''
+        x = self.get_data(*args, times=times, **kwargs)
+        return np.sqrt(np.mean(np.abs(x)**2, axis=1))
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, from_freq=None, to_freq=None,
