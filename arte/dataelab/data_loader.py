@@ -28,7 +28,19 @@ class DataLoader():
 
 
 class FitsDataLoader(DataLoader):
-    '''Loader for data stored into FITS files'''
+    '''Loader for data stored into FITS files
+
+    Parameters
+    ----------
+
+    filename: str
+        FITS filename or full path
+    ext: int, optional
+        FITS extenstion to read. Defaults to the primary card
+    transpose_axes: tuple, optional
+        Axes transpose pattern as specified for np.transpose.
+        Use this if time is not your first dimension
+    '''
     def __init__(self, filename, ext=None, transpose_axes=None):
         super().__init__()
         if isinstance(filename, Path):
@@ -117,5 +129,29 @@ class ConstantDataLoader(OnTheFlyLoader):
     '''Loader for constant data'''
     def __init__(self, data):
         super().__init__(lambda: data)
+
+
+def guess_data_loader(filename):
+    '''
+    Return the correct DataLoader instance for *filename*.
+
+    Raises ValueError if the guess fails,
+
+    Parameters
+    ----------
+    filename: str
+        filename
+        
+    Returns
+    -------
+    AbstractDataLoader instance for the file type
+        
+    '''
+    if filename.endswith('.fits'):
+        return FitsDataLoader(filename)
+    elif filename.endswith('.npy') or filename.endswith('.npz'):
+        return NumpyDataLoader(filename)
+    else:
+        raise ValueError(f'Cannot guess correct DataLoader instance for filename {filename}')
 
 # __oOo__

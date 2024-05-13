@@ -4,7 +4,7 @@ from astropy import units as u
 from arte.time_series.time_series import TimeSeries
 from arte.utils.help import modify_help
 from arte.utils.not_available import NotAvailable
-from arte.dataelab.data_loader import ConstantDataLoader
+from arte.dataelab.data_loader import ConstantDataLoader, DataLoader, guess_data_loader
 from arte.dataelab.unit_handler import UnitHandler
 
 
@@ -31,13 +31,23 @@ class BaseTimeSeries(TimeSeries):
 
         if isinstance(loader_or_data, np.ndarray):
             data_loader = ConstantDataLoader(loader_or_data)
-        else:
+        elif isinstance(loader_or_data, str):
+            data_loader = guess_data_loader(loader_or_data)
+        elif isinstance(loader_or_data, DataLoader):
             data_loader = loader_or_data
+        else:
+            raise ValueError('loader_or_data must be a Loader class, a numpy array, or a filename')
 
         if isinstance(time_vector, np.ndarray):
             time_vector_loader = ConstantDataLoader(time_vector)
-        else:
+        elif isinstance(time_vector, str):
+            time_vector_loader = guess_data_loader(time_vector)
+        elif isinstance(time_vector, DataLoader):
             time_vector_loader = time_vector
+        elif time_vector is None:
+            time_vector_loader = None
+        else:
+            raise ValueError('time_vector must be a Loader class, a numpy array, a filename, or None')
 
         try:
             super().__init__()
