@@ -272,6 +272,28 @@ class TimeSeriesTest(unittest.TestCase):
         t1d = TimeSeries1D()
         np.testing.assert_array_almost_equal(t1d.get_time_vector(), np.arange(5))
 
+    def test_times_wrong_length(self):
+        t1d = TimeSeries1D()
+        with self.assertRaises(TimeSeriesException):
+            _ = t1d.get_data(times=1)
+        with self.assertRaises(TimeSeriesException):
+            _ = t1d.get_data(times=[1,2,3])
 
+    def test_times_start_only(self):
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda: None
+        assert t1d.get_data(times=[2, None]).shape == (3, 4)
+
+    def test_times_stop_only(self):
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda: None
+        assert t1d.get_data(times=[None, 4]).shape == (4, 4)
+
+    def test_times_bothj(self):
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda: None
+        assert t1d.get_data(times=[2, 4]).shape == (2, 4)
+        
+        
 if __name__ == "__main__":
     unittest.main()

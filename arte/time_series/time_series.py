@@ -1,5 +1,6 @@
 import abc
 import math
+import collections
 from functools import cached_property
 
 import numpy as np
@@ -61,16 +62,26 @@ class TimeSeries(metaclass=abc.ABCMeta):
 
         data = self._get_not_indexed_data()
         if times is not None:
+            if not isinstance(times, collections.abc.Sequence) or len(times) != 2:
+                raise TimeSeriesException('Times keywords must be a sequence of two elements: [start, stop]')
             time_vector = self.get_time_vector()
             if len(time_vector) != len(data):
                 raise TimeSeriesException('Time vector and data lengths differ')
+
+            start, stop = times
             if isinstance(time_vector, u.Quantity):
-                start = make_sure_its_a(time_vector.unit, times[0])
-                stop = make_sure_its_a(time_vector.unit, times[1])
-            else:
-                start, stop = times
-            idxs = np.logical_and(time_vector >= start, time_vector < stop)
+                if start is not None:
+                    start = make_sure_its_a(time_vector.unit, start)
+                if stop is not None:
+                    stop = make_sure_its_a(time_vector.unit, stop)
+
+            idxs = np.ones(len(time_vector), dtype=bool)
+            if start is not None:
+                idxs = np.logical_and(idxs, time_vector >= start)
+            if stop is not None:
+                idxs = np.logical_and(idxs, time_vector < stop)
             data = data[idxs]
+
         index = self.get_index_of(*args, **kwargs)
         return self._index_data(data, index)
 
