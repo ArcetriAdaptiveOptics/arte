@@ -12,11 +12,12 @@ class BaseResidualModes(BaseProjection):
     modalrec: data object with modal reconstructor
     '''
 
-    def __init__(self, slopes_timeseries, modalrec, astropy_unit=u.m, data_label='Modal coefficients'):
+    def __init__(self, slopes_timeseries, modalrec, astropy_unit=u.m, data_label='Modal coefficients', logger=None):
         super().__init__(slopes_timeseries,
                          modalrec,
                          astropy_unit=astropy_unit,
-                         data_label=data_label)
+                         data_label=data_label,
+                         logger=logger)
         self._nmodes = None   # Lazy initialization
         self._indexer = None
 

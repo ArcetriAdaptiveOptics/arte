@@ -13,11 +13,12 @@ class BaseSlopes(BaseTimeSeries):
     '''Slopes recorded from a generic WFS'''
 
     def __init__(self, loader_or_data, time_vector=None, astropy_unit=signal_unit, data_label='slopes',
-                 interleaved=True):
+                 logger=None, interleaved=True):
         super().__init__(loader_or_data=loader_or_data,
                          time_vector=time_vector,
                          astropy_unit=astropy_unit,
-                         data_label=data_label)
+                         data_label=data_label,
+                         logger=logger)
         # Special display handling
         self._interleaved = interleaved
         self._indexer = Indexer()

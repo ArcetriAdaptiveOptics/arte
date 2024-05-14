@@ -18,7 +18,7 @@ class BaseAnalyzerSet():
     '''
     Analyzer set. Holds a list of Analyzer objects
     '''
-    def __init__(self, from_or_list, to=None, recalc=False, skip_invalid=True):
+    def __init__(self, from_or_list, to=None, recalc=False, skip_invalid=True, logger=None):
         '''
         from_or_list: either a single tag, or a list of tags
         to: sigle tag, or None
@@ -26,6 +26,8 @@ class BaseAnalyzerSet():
         recalc: if True, all analyzers will be recalculated (lazy recalc, only when actually accessed)
         skip_invalid: if True (default), skip analyzers that throw exceptions during initialization
         '''
+        self._logger = logger
+
         if isinstance(from_or_list, str):
             if to is None:
                 to = Tag.create_tag()
@@ -61,7 +63,7 @@ class BaseAnalyzerSet():
 
     def get(self, tag, recalc=False):
         '''Returns the Analyzer instance for this tag'''
-        return self._get_type()._get(tag, recalc=recalc)
+        return self._get_type()._get(tag, recalc=recalc, logger=self._logger)
 
     def __getitem__(self, idx_or_tag):
         if isinstance(idx_or_tag, int):

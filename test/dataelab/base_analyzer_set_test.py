@@ -29,8 +29,8 @@ class TestFileWalker(AbstractFileNameWalker):
 
 
 class TestAnalyzer(BaseAnalyzer):
-    def __init__(self, snapshot_tag, recalc=False):
-       super().__init__(snapshot_tag)
+    def __init__(self, snapshot_tag, recalc=False, logger=None):
+       super().__init__(snapshot_tag, recalc=recalc, logger=logger)
        if not os.path.exists(TestFileWalker().snapshot_dir(snapshot_tag)):
             NotAvailable.transformInNotAvailable(self)
             return
