@@ -75,13 +75,6 @@ class BaseAnalyzer(metaclass=PostInitCaller):
         '''Snapshot tag for this Analyzer object'''
         return self._snapshot_tag
 
-    def date_in_seconds(self):
-        '''Tag date as seconds since the epoch'''
-        epoch = datetime.datetime(1970, 1, 1, 0, 0, 0, 0)
-        this_date = self._snapshot_tag.get_datetime()
-        td = this_date - epoch
-        return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
-
     # Override to add additional info
     def _info(self):
         return {'snapshot_tag': self._snapshot_tag}

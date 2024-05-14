@@ -25,10 +25,6 @@ class BaseAnalyzerTest(unittest.TestCase):
     def test_recalc(self):
         _ = TestAnalyzer.get('20240404_024500', recalc=True)
 
-    def test_date_in_seconds(self):
-        seconds = TestAnalyzer.get('20240404_024500').date_in_seconds()
-        assert seconds == 1712198700.0
-
     def test_info(self):
         info = TestAnalyzer.get('20240404_024500').info()
         assert 'snapshot_tag' in info

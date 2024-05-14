@@ -65,6 +65,13 @@ class Tag(object):
         return datetime.strptime(f'{day} {time}',
                                  '%Y%m%d %H%M%S')
 
+    def date_in_seconds(self):
+        '''Tag date as seconds since the epoch'''
+        epoch = datetime(1970, 1, 1, 0, 0, 0, 0)
+        this_date = self.get_datetime()
+        td = this_date - epoch
+        return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
+    
     @staticmethod
     def create_tag(system):
         '''Create a tag with a system prefix and the current timestamp
