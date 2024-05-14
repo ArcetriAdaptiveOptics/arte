@@ -4,7 +4,7 @@ import logging
 
 from arte.utils.help import add_help
 from arte.dataelab.cache_on_disk import set_tag, clear_cache
-
+from arte.dataelab.tag import Tag
 
 class PostInitCaller(type):
     '''Meta class with a _post_init() method.
@@ -27,6 +27,8 @@ class BaseAnalyzer(metaclass=PostInitCaller):
 
     def __init__(self, snapshot_tag, recalc=False):
         self._logger = logging.getLogger('an_%s' % snapshot_tag)
+        if isinstance(snapshot_tag, str):
+            snapshot_tag = Tag(snapshot_tag)
         self._snapshot_tag = snapshot_tag
         self._recalc = recalc
         self._logger.info('creating analyzer for tag %s' % snapshot_tag)
@@ -76,12 +78,7 @@ class BaseAnalyzer(metaclass=PostInitCaller):
     def date_in_seconds(self):
         '''Tag date as seconds since the epoch'''
         epoch = datetime.datetime(1970, 1, 1, 0, 0, 0, 0)
-        this_date = datetime.datetime(int(self._snapshot_tag[0:4]),
-                                     int(self._snapshot_tag[4:6]),
-                                     int(self._snapshot_tag[6:8]),
-                                     int(self._snapshot_tag[9:11]),
-                                     int(self._snapshot_tag[11:13]),
-                                     int(self._snapshot_tag[13:15]))
+        this_date = self._snapshot_tag.get_datetime()
         td = this_date - epoch
         return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
 
