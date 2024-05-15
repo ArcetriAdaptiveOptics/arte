@@ -4,7 +4,6 @@ from astropy import units as u
 
 from arte.time_series.time_series import TimeSeries
 from arte.utils.help import modify_help
-from arte.utils.logger import is_logging_configured
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import ConstantDataLoader, DataLoader, guess_data_loader
 from arte.dataelab.unit_handler import UnitHandler
