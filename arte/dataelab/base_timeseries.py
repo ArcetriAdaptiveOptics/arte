@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 from astropy import units as u
 
 from arte.time_series.time_series import TimeSeries
@@ -6,6 +7,7 @@ from arte.utils.help import modify_help
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import ConstantDataLoader, DataLoader, guess_data_loader
 from arte.dataelab.unit_handler import UnitHandler
+from arte.dataelab.dataelab_utils import setup_dataelab_logging
 
 
 class BaseTimeSeries(TimeSeries):
@@ -22,9 +24,11 @@ class BaseTimeSeries(TimeSeries):
          if possible, astropy unit to use with the data.
     data_label: string or None
          human-readable label for plot (e.g.: "Surface modal coefficients" )
+    logger: Logger instance or None
+         logger to use for warnings and errors. If not set, a default logger will be used
 
     '''
-    def __init__(self, loader_or_data, time_vector=None, astropy_unit=None, data_label=None):
+    def __init__(self, loader_or_data, time_vector=None, astropy_unit=None, data_label=None, logger=None):
 
         if isinstance(loader_or_data, np.ndarray):
             data_loader = ConstantDataLoader(loader_or_data)
@@ -63,6 +67,8 @@ class BaseTimeSeries(TimeSeries):
         self._astropy_unit = astropy_unit
         self._data_label = data_label
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
+        self._logger = logger or logging.getLogger(__name__)
+        setup_dataelab_logging()
 
     def filename(self):
         '''Data filename (full path)'''

@@ -25,11 +25,11 @@ class BaseAnalyzer(metaclass=PostInitCaller):
     should be initialized (if they are missing, their value will be NA)
     '''
 
-    def __init__(self, snapshot_tag, recalc=False):
-        self._logger = logging.getLogger('an_%s' % snapshot_tag)
+    def __init__(self, snapshot_tag, recalc=False, logger=None):
         self._snapshot_tag = snapshot_tag
         self._recalc = recalc
-        self._logger.info('creating analyzer for tag %s' % snapshot_tag)
+        self._logger = logger or logging.getLogger(f'an_{snapshot_tag}')
+        self._logger.info(f'creating analyzer for tag {snapshot_tag}')
 
  
     def _post_init(self):
@@ -44,17 +44,28 @@ class BaseAnalyzer(metaclass=PostInitCaller):
             self._recalc = False
 
     @classmethod
-    def get(cls, tag, recalc=False):
+    def get(cls, tag, recalc=False, logger=None):
         '''Get the Analyzer instance (or derived class) corresponding to *tag*.
 
         This method mantains an internal cache. If a tag is requested
         multiple times, the same Analyzer instance is returned.
+        
+        Parameters
+        ----------
+        tag: str
+            snapshot tag
+        recalc: bool, optional
+            if set to True, any cached data for this tag will be deleted and
+            computed again when requested
+        logger: Logger instance, optional
+            logger to use for errors and warning. If not set, a default logger
+            will be used.
         '''
-        return cls._get(tag, recalc=recalc)
+        return cls._get(tag, recalc=recalc, logger=logger)
 
     @classmethod
     @functools.cache
-    def _get(cls, tag, recalc=False):
+    def _get(cls, tag, recalc=False, logger=None):
         '''Get a new Analyzer instance 
 
         Added one level of indirection (get() calls _get())
@@ -63,7 +74,7 @@ class BaseAnalyzer(metaclass=PostInitCaller):
 
         Also makes it easier to override it in classes
         '''
-        return cls(tag, recalc=recalc)
+        return cls(tag, recalc=recalc, logger=logger)
 
     def recalc(self):
         '''Force recalculation of this analyzer data'''

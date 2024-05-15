@@ -4,6 +4,7 @@ from arte.utils.help import add_help
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import ConstantDataLoader
 from arte.dataelab.unit_handler import UnitHandler
+from arte.dataelab.dataelab_utils import setup_dataelab_logging
 
 
 @add_help
@@ -17,7 +18,7 @@ class BaseData():
     astropy_unit: if possible, astropy unit to use with the data.
     data_label: human-readable label for plot (e.g.: "Surface modal coefficients" )
     '''
-    def __init__(self, data_loader, astropy_unit=None, data_label=None):
+    def __init__(self, data_loader, astropy_unit=None, data_label=None, logger=None):
         if isinstance(data_loader, np.ndarray):
             data_loader = ConstantDataLoader(data_loader)
         try:
@@ -32,6 +33,8 @@ class BaseData():
         self._astropy_unit = astropy_unit
         self._data_label = data_label
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
+        self._logger = logger
+        setup_dataelab_logging()
 
     def filename(self):
         '''Data filename (full path)'''
