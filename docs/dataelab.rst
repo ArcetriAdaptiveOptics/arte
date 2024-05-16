@@ -29,7 +29,7 @@ In general, it should know how to:
   including any internal structure if any (e.g. if the tags are divided by day)
 * return the full path for each single data type stored inside a tag
 
-Define a class derived from :py:class:`~arte.dataelab.base_file_walker.AbstractFileNameWalker`,
+Derive your FileWalker class from :py:class:`~arte.dataelab.base_file_walker.AbstractFileNameWalker`,
 defining the :py:meth:`~arte.dataelab.base_file_walker.AbstractFileNameWalker.snapshot_dir()` 
 method and an additional method for each file that you want to load::
 
@@ -100,7 +100,7 @@ An Analyzer is a class that knows how to analyze all data inside a tag.
 It will use a file walker instance in order get the file names, and
 pass those to your custom data series classes to build the analyzer attributes.
 
-Define your analyzer class deriving from the base analyzer, adding some access methods::
+Derive your analyzer class from the base analyzer, adding some access methods::
 
     from arte.dataelab.base_analyzer import BaseAnalyzer
     from arte.dataelab.data_loader import FitsDataLoader
@@ -124,9 +124,13 @@ at construction time like checking for the file existance, etc. There is a
 :py:class:`~arte.dataelab.data_loader.NumpyDataLoader` for numpy files as well.
 
 Usually the time series sclass will correspond to a single FITS or numpy file,
-or to a subsection (like a single FITS extension), but if you have
-an exotic data layout you can either do the work manually, build a numpy array
-and pass it to the constructor, or derive your own class from
+or to a subsection (like a single FITS extension). Time (or just the sample index)
+is supposed to be the first axis. If your data layout is different, check if the
+*transpose_axes* option of :py:class:`~arte.dataelab.data_loader.FitsDataLoader`
+and :py:class:`~arte.dataelab.data_loader.NumpyDataLoader` is enough.
+If you have a more exotic data layout
+you can either do the work manually, building a numpy array
+and passing it to the constructor, or derive your own class from
 :py:class:`~arte.dataelab.data_loader.DataLoader` for a more structured approach.
 
 In order to use the analyzer, rather than instantiate it directly, it is better
