@@ -135,6 +135,7 @@ def data_loader_factory(obj, allow_none=False, name=''):
     '''
     Return the correct DataLoader instance for *obj*, which might be:
     * a string with a filename among the known ones (fits or npy)
+    * a pathlib.Path instance
     * a numpy array
     * a DataLoader instance (returned unchanged)
      
@@ -142,7 +143,7 @@ def data_loader_factory(obj, allow_none=False, name=''):
 
     Parameters
     ----------
-    obj: Loader class, numpy array, str (filename), or None
+    obj: Loader class, numpy array, str (filename), Path instance, or None
         object to wrap in a DataLoader class
     allow_none: bool, optional
         if set to True, obj can be None. If this flag is False and obj
@@ -155,6 +156,8 @@ def data_loader_factory(obj, allow_none=False, name=''):
     DataLoader instance
         
     '''
+    if isinstance(obj, Path):
+        obj = str(obj)
     if isinstance(obj, str):
         if obj.endswith('.fits'):
             return FitsDataLoader(obj)
@@ -171,9 +174,9 @@ def data_loader_factory(obj, allow_none=False, name=''):
     else:
         name = name or 'object'
         if allow_none:
-            errstr = f'{name} must be a Loader class, a numpy array, or a filename, or None.'
+            errstr = f'{name} must be a Loader class, a numpy array, or a filename or Path instance, or None.'
         else:
-            errstr = f'{name} must be a Loader class, a numpy array, or a filename.'
+            errstr = f'{name} must be a Loader class, a numpy array, or a filename or Path instance.'
         raise ValueError(errstr)
 
 # __oOo__
