@@ -20,9 +20,6 @@ class BaseTimeSeries(TimeSeries):
          time series data
     time_vector: instance of DataLoader or derived class, or numpy_array, or None
          time vector data. If None, a default counter from 0 to N-1 samples will be assigned
-    mapper2d: function or None
-	 function to map a single data sample into 2d. If None, data is assumed
-         to be already in 2d.
     astropy_unit: astropy unit or None
          if possible, astropy unit to use with the data.
     data_label: string or None

@@ -158,11 +158,11 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
         hlp = {prefix: _format_docstring(self)}
 
         for name, method in methods.items():
-            name = _format_name(method, default=name)
-            pars = _format_pars(method)
-            helpstr = _format_docstring(method)
-
-            hlp[prefix + '.' + name + pars] = helpstr
+            if name and method:  # Skip NAs
+                name = _format_name(method, default=name)
+                pars = _format_pars(method)
+                helpstr = _format_docstring(method)
+                hlp[prefix + '.' + name + pars] = helpstr
 
         maxlen = max(map(len, hlp.keys()))
         fmt = '%%-%ds%%s' % (maxlen + 3)
