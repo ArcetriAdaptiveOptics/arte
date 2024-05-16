@@ -5,7 +5,7 @@ from astropy import units as u
 from arte.time_series.time_series import TimeSeries
 from arte.utils.help import modify_help
 from arte.utils.not_available import NotAvailable
-from arte.dataelab.data_loader import ConstantDataLoader, DataLoader, guess_data_loader
+from arte.dataelab.data_loader import data_loader_factory
 from arte.dataelab.unit_handler import UnitHandler
 from arte.dataelab.dataelab_utils import setup_dataelab_logging
 
@@ -30,25 +30,8 @@ class BaseTimeSeries(TimeSeries):
     '''
     def __init__(self, loader_or_data, time_vector=None, astropy_unit=None, data_label=None, logger=None):
 
-        if isinstance(loader_or_data, np.ndarray):
-            data_loader = ConstantDataLoader(loader_or_data)
-        elif isinstance(loader_or_data, str):
-            data_loader = guess_data_loader(loader_or_data)
-        elif isinstance(loader_or_data, DataLoader):
-            data_loader = loader_or_data
-        else:
-            raise ValueError('loader_or_data must be a Loader class, a numpy array, or a filename')
-
-        if isinstance(time_vector, np.ndarray):
-            time_vector_loader = ConstantDataLoader(time_vector)
-        elif isinstance(time_vector, str):
-            time_vector_loader = guess_data_loader(time_vector)
-        elif isinstance(time_vector, DataLoader):
-            time_vector_loader = time_vector
-        elif time_vector is None:
-            time_vector_loader = None
-        else:
-            raise ValueError('time_vector must be a Loader class, a numpy array, a filename, or None')
+        data_loader = data_loader_factory(loader_or_data, allow_none=False, name='loader_or_data')
+        time_vector_loader = data_loader_factory(time_vector, allow_none=True, name='time_vector')
 
         try:
             super().__init__()

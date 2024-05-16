@@ -2,7 +2,7 @@ import numpy as np
 
 from arte.utils.help import add_help
 from arte.utils.not_available import NotAvailable
-from arte.dataelab.data_loader import ConstantDataLoader
+from arte.dataelab.data_loader import data_loader_factory
 from arte.dataelab.unit_handler import UnitHandler
 from arte.dataelab.dataelab_utils import setup_dataelab_logging
 
@@ -12,15 +12,19 @@ class BaseData():
     '''
     Generic static data
 
-    data_loader: instance of DataLoader or derived class
-    mapper2d: function to map data into 2d. If None, data is assumed
-              to be already in 2d.
-    astropy_unit: if possible, astropy unit to use with the data.
-    data_label: human-readable label for plot (e.g.: "Surface modal coefficients" )
+    parameters
+    ----------
+    loader_or_data: instance of DataLoader or derived class, filename, or numpy array
+        data to load
+    astropy_unit: unit
+        if possible, astropy unit to use with the data.
+    data_label: str, optional
+        human-readable label for plot (e.g.: "Surface modal coefficients" )
     '''
-    def __init__(self, data_loader, astropy_unit=None, data_label=None, logger=None):
-        if isinstance(data_loader, np.ndarray):
-            data_loader = ConstantDataLoader(data_loader)
+    def __init__(self, loader_or_data, astropy_unit=None, data_label=None, logger=None):
+        
+        data_loader = data_loader_factory(loader_or_data, allow_none=False, name='loader_or_data')
+
         try:
             # Test that the data file is there, when possible
             _ = data_loader.assert_exists()

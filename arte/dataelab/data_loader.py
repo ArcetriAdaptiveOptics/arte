@@ -131,27 +131,52 @@ class ConstantDataLoader(OnTheFlyLoader):
         super().__init__(lambda: data)
 
 
-def guess_data_loader(filename):
+def data_loader_factory(obj, allow_none=False, name=''):
     '''
-    Return the correct DataLoader instance for *filename*.
-
+    Return the correct DataLoader instance for *obj*, which might be:
+    * a string with a filename among the known ones (fits or npy)
+    * a pathlib.Path instance
+    * a numpy array
+    * a DataLoader instance (returned unchanged)
+     
     Raises ValueError if the guess fails,
 
     Parameters
     ----------
-    filename: str
-        filename
+    obj: Loader class, numpy array, str (filename), Path instance, or None
+        object to wrap in a DataLoader class
+    allow_none: bool, optional
+        if set to True, obj can be None. If this flag is False and obj
+        is None, a ValueError exception willb be raised.
+    name: str, optional
+        object name for error messages.
         
     Returns
     -------
-    AbstractDataLoader instance for the file type
+    DataLoader instance
         
     '''
-    if filename.endswith('.fits'):
-        return FitsDataLoader(filename)
-    elif filename.endswith('.npy') or filename.endswith('.npz'):
-        return NumpyDataLoader(filename)
+    if isinstance(obj, Path):
+        obj = str(obj)
+    if isinstance(obj, str):
+        if obj.endswith('.fits'):
+            return FitsDataLoader(obj)
+        elif obj.endswith('.npy') or obj.endswith('.npz'):
+            return NumpyDataLoader(obj)
+        else:
+            raise ValueError(f'Cannot guess correct DataLoader instance for filename {obj}')
+    elif isinstance(obj, np.ndarray):
+        return ConstantDataLoader(obj)
+    elif isinstance(obj, DataLoader):
+        return obj
+    elif obj is None and allow_none is True:
+        return obj
     else:
-        raise ValueError(f'Cannot guess correct DataLoader instance for filename {filename}')
+        name = name or 'object'
+        if allow_none:
+            errstr = f'{name} must be a Loader class, a numpy array, or a filename or Path instance, or None.'
+        else:
+            errstr = f'{name} must be a Loader class, a numpy array, or a filename or Path instance.'
+        raise ValueError(errstr)
 
 # __oOo__
