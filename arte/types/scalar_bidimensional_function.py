@@ -3,7 +3,7 @@ from arte.types.domainxy import DomainXY
 from arte.utils.help import add_help
 from arte.utils.radial_profile import computeRadialProfile
 from scipy import interpolate
-
+from scipy.interpolate import LinearNDInterpolator
 
 @add_help
 class ScalarBidimensionalFunction(object):
@@ -151,16 +151,32 @@ class ScalarBidimensionalFunction(object):
                 z[i] = self._interp_real(nX, nY, nZ, x, y)
         return z
 
-    def _interp_real(self, nX, nY, nZ, x, y):
+    def _interp_real_obsolete(self, nX, nY, nZ, x, y):
         # beware of https://github.com/scipy/scipy/issues/10268 !!!
         # use 1D (nX[0] and nY[:,0]) instead of 2D nX and nY
         intp = interpolate.interp2d(nX[0], nY[:, 0], nZ, kind='linear')
         return intp(x, y)[0]
 
-    def _interp_complex(self, nX, nY, nZ, x, y):
+    def _interp_complex_obsolete(self, nX, nY, nZ, x, y):
         intpr = interpolate.interp2d(nX[0], nY[:, 0], nZ.real, kind='linear')
         intpi = interpolate.interp2d(nX[0], nY[:, 0], nZ.imag, kind='linear')
         return intpr(x, y)[0] + 1j * intpi(x, y)[0]
+
+    def _interp_real_linear_nd(self, nX, nY, nZ, x, y):
+        xy = np.c_[nX[0], nY[:, 0]]
+        r = LinearNDInterpolator(xy, nZ)
+        return r(x, y)
+
+    def _interp_complex_linear_nd(self, nX, nY, nZ, x, y):
+        zr = self._interp_complex_linear_nd(nX, nY, nZ.real, x, y)
+        zi = self._interp_complex_linear_nd(nX, nY, nZ.imag, x, y)
+        return zr + 1j * zi
+
+    def _interp_real(self, nX, nY, nZ, x, y):
+        return self._interp_real_obsolete(nX, nY, nZ, x, y)
+
+    def _interp_complex(self, nX, nY, nZ, x, y):
+        return self._interp_complex_obsolete(nX, nY, nZ, x, y)
 
     def get_roi(self, xmin, xmax, ymin, ymax):
 

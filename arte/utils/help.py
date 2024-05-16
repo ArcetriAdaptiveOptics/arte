@@ -13,7 +13,7 @@ Any class to decorated with @add_help
 gets a :meth:`help` method that provides an interactive and searchable help
 based on the method docstrings. All public methods (not starting with "_")
 are added, together with all such methods in all the members that are
-classed decorated with @add_help. Derived classes inherit the help system
+classes decorated with @add_help. Derived classes inherit the help system
 without a need to use the @add_help decorator.
 
 Help is built dynamically when invoked, so if a new member is added
@@ -158,11 +158,11 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
         hlp = {prefix: _format_docstring(self)}
 
         for name, method in methods.items():
-            name = _format_name(method, default=name)
-            pars = _format_pars(method)
-            helpstr = _format_docstring(method)
-
-            hlp[prefix + '.' + name + pars] = helpstr
+            if name and method:  # Skip NAs
+                name = _format_name(method, default=name)
+                pars = _format_pars(method)
+                helpstr = _format_docstring(method)
+                hlp[prefix + '.' + name + pars] = helpstr
 
         maxlen = max(map(len, hlp.keys()))
         fmt = '%%-%ds%%s' % (maxlen + 3)
@@ -179,7 +179,8 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
                 print(line)
 
         for name, obj in sorted(members.items()):
-            obj.help(search=search, prefix='%s.%s' % (prefix, name))
+            if name[0] != '_':
+                obj.help(search=search, prefix='%s.%s' % (prefix, name))
 
     def decorate(cls):
         setattr(cls, HIDDEN_HELP, False)  # Set attr but do not define a string

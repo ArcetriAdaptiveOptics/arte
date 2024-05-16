@@ -12,28 +12,72 @@ class Indexer(object):
         indexCoord = [self.dicCoord[x] for x in coord]
         return indexCoord
 
-    def _interleaved_xy(self, *args, **kwargs):
+    def interleaved_xy(self, *args, **kwargs):
         '''
         default: coord
         Accepted keywords:
         coord= x and/or y
         '''
         acceptedKeywords = ['coord', 'coords', 'axis']
-        coord = ['x', 'y']
         for k, v in kwargs.items():
             if k not in acceptedKeywords:
                 raise Exception('possible keywords are ' +
                                 str(acceptedKeywords))
-            if k == 'axis':
-                if v == 'x':
-                    return slice(0, None, 2)
-                elif v == 'y':
-                    return slice(1, None, 2)
-                else:
-                    raise Exception("%s not in accepted"
-                                    " values ('x', 'y')" % (v))
-        return self._xy_index(coord)
+            if v == 'x':
+                return slice(0, None, 2)
+            elif v == 'y':
+                return slice(1, None, 2)
+            else:
+                raise Exception("%s not in accepted"
+                                " values ('x', 'y')" % (v))
 
+        # Since we are here, no keywords were specified
+        if len(args) == 0:
+            return slice(0, None, 1)
+        elif len(args) == 1:
+            if args[0] == 'x':
+                return slice(0, None, 2)
+            elif args[0] == 'y':
+                return slice(1, None, 2)
+            elif isinstance(args[0], int):
+                return slice(args[0], args[0]+1)
+        else:
+            raise Exception("%s not in accepted"
+                            " values ('x', 'y')" % str(v))
+
+    def sequential_xy(self, maxindex, *args, **kwargs):
+        '''
+        default: coord
+        Accepted keywords:
+        coord= x and/or y
+        '''
+        acceptedKeywords = ['coord', 'coords', 'axis']
+        for k, v in kwargs.items():
+            if k not in acceptedKeywords:
+                raise Exception('possible keywords are ' +
+                                str(acceptedKeywords))
+            if v == 'x':
+                return slice(0, maxindex//2)
+            elif v == 'y':
+                return slice(maxindex//2, None)
+            else:
+                raise Exception("%s not in accepted"
+                                " values ('x', 'y')" % (v))
+
+        # Since we are here, no keywords were specified
+        if len(args) == 0:
+            return slice(0, None, 1)
+        elif len(args) == 1:
+            if args[0] == 'x':
+                return slice(0, maxindex//2)
+            elif args[0] == 'y':
+                return slice(maxindex//2, None)
+            elif isinstance(args[0], int):
+                return slice(args[0], args[0]+1)
+        else:
+            raise Exception("%s not in accepted"
+                            " values ('x', 'y')" % str(v))
+        
     def xy(self, *args, **kwargs):
         '''
         default: coord
@@ -103,3 +147,46 @@ class ModeIndexer(Indexer):
                             "when initializing the ModeIndexer, cannot continue") 
         return np.arange(from_mode, to_mode)
 
+
+class RowColIndexer(Indexer):
+
+    def __init__(self):
+        super().__init__()
+
+    def rowcol(self, *args, **kwargs):
+        '''
+        rows = index
+        cols = index
+        '''
+        rows = slice(None, None, None)
+        cols = slice(None, None, None)
+        if len(args) == 1:
+            rows = args[0]
+        elif len(args) == 2:
+            rows, cols = args
+        elif len(args) > 2:
+            raise IndexError('Unsupported rowcol index')
+        
+        accepted = 'rows cols row_from col_from row_to col_to row_step col_step'.split()
+        for kw in kwargs:
+            if kw not in accepted:
+                raise IndexError(f'Unsupported index keyword {kw}')
+
+            if kw == 'rows':
+                rows = kwargs['rows']
+            if kw == 'cols':
+                cols = kwargs['cols']
+            if kw == 'row_from':
+                rows = slice(kwargs['row_from'], rows.stop, rows.step)
+            if kw == 'col_from':
+                cols = slice(kwargs['col_from'], cols.stop, cols.step)
+            if kw == 'row_to':
+                rows = slice(rows.start, kwargs['row_to'], rows.step)
+            if kw == 'col_to':
+                cols = slice(cols.start, kwargs['col_to'], cols.step)
+            if kw == 'row_step':
+                rows = slice(rows.start, rows.stop, kwargs['row_step'])
+            if kw == 'col_step':
+                cols = slice(cols.start, cols.stop, kwargs['col_step'])
+
+        return (rows, cols)

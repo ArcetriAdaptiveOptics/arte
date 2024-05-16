@@ -1,10 +1,19 @@
 import abc
+import math
+import collections
+from functools import cached_property
+
 import numpy as np
-import functools
-from scipy.signal.spectral import welch
+from scipy.signal import welch
+from astropy import units as u
+
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
-from arte.utils.iterators import pairwise
+from arte.utils.unit_checker import make_sure_its_a
+
+
+class TimeSeriesException(Exception):
+    '''Exception raised by TimeSeries'''
 
 
 @add_help
@@ -22,11 +31,9 @@ class TimeSeries(metaclass=abc.ABCMeta):
     Originally implemented as part of the ARGOS codebase.
     '''
 
-    def __init__(self, sampling_interval):
-        self.__delta_time = sampling_interval
-        self._data = None
+    def __init__(self):
         self._frequency = None
-        self._lastCuttedFrequency = None
+        self._last_cut_frequency = None
         self._power = None
         self._segment_factor = None
         self._window = None
@@ -35,57 +42,172 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def _get_not_indexed_data(self):
         pass
 
-    def get_data(self, *args, **kwargs):
+    def _get_time_vector(self):
+        '''Override to provide a custom time vector'''
+        return np.arange(len(self._get_not_indexed_data()))
+    
+    def _get_time_vector_check(self):
+        v = self._get_time_vector()
+        if isinstance(v, np.ndarray):
+            return v
+        else:
+            try:
+                # Try to convert
+                return np.array(v)
+            except TypeError as e:
+                raise TimeSeriesException('Cannot convert _get_time_vector() result to numpy array') from e
+
+    def get_data(self, *args, times=None, **kwargs):
         '''Raw data as a matrix [time, series]'''
 
-        not_indexed_data = self._get_not_indexed_data()
+        data = self._get_not_indexed_data()
+        if times is not None:
+            if not isinstance(times, collections.abc.Sequence) or len(times) != 2:
+                raise TimeSeriesException('Times keywords must be a sequence of two elements: [start, stop]')
+            time_vector = self.get_time_vector()
+            if len(time_vector) != len(data):
+                raise TimeSeriesException('Time vector and data lengths differ')
+
+            start, stop = times
+            if isinstance(time_vector, u.Quantity):
+                if start is not None:
+                    start = make_sure_its_a(time_vector.unit, start)
+                if stop is not None:
+                    stop = make_sure_its_a(time_vector.unit, stop)
+
+            idxs = np.ones(len(time_vector), dtype=bool)
+            if start is not None:
+                idxs = np.logical_and(idxs, time_vector >= start)
+            if stop is not None:
+                idxs = np.logical_and(idxs, time_vector < stop)
+            data = data[idxs]
+
         index = self.get_index_of(*args, **kwargs)
+        return self._index_data(data, index)
+
+    def _index_data(self, data, index):
         if index is None:
-            return not_indexed_data
+            return data
+        elif isinstance(index, tuple):
+            return data[(slice(0,data.shape[0]),) + index]
         else:
-            return not_indexed_data[:, index]
+            return data[:, index]
 
     @abc.abstractmethod
     def get_index_of(self, *args, **kwargs):
         pass
 
-    @property
-    def delta_time(self):
-        '''Property with the interval between samples (astropy units)'''
-        return self.__delta_time
+    def data_unit(self):
+        '''Override to return a string with a compact unit notation'''
+        return None
 
-    @delta_time.setter
-    def delta_time(self, time):
-        self.__delta_time = time
+    def data_label(self):
+        '''Override to return a string with a readable unit name'''
+        return None
+
+    @cached_property
+    def delta_time(self):
+        '''Property with the interval between samples.
+        
+        If no interval can be determined (time vector too short),
+        returns 1 with the correct unit if applicable.
+        '''
+        time_vector = self.get_time_vector()
+        if len(time_vector) == 0:
+            return 1
+        diff = np.diff(time_vector)
+        if len(diff) > 0:
+            return np.median(diff)
+        else:
+            if isinstance(time_vector[0], u.Quantity):
+                return 1 * time_vector[0].unit
+            else:
+                return 1
 
     def frequency(self):
         return self._frequency
 
-    def last_cutted_frequency(self):
-        return self._lastCuttedFrequency
+    def get_time_vector(self):
+        '''Return the series time vector'''
+        return self._get_time_vector_check()
+
+    def last_cut_frequency(self):
+        return self._last_cut_frequency
 
     def ensemble_size(self):
-        '''Number of distinct series in this time enseble'''
+        '''Number of distinct series in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
-        return not_indexed_data.shape[1]
+        return math.prod(not_indexed_data.shape[1:])
 
-    def _apply(self, func, times=None, *args, **kwargs):
-        '''Extract data and apply the passed function'''
-        data = self.get_data(*args, **kwargs)
-        if times is None:
-            result = func(data)
-        else:
-            idxs = np.array(np.arange(times[0], times[1]) / self.__delta_time,
-                            dtype='int32')
-            result = func(data[idxs])
-        return result
+    def time_size(self):
+        '''Number of time samples in this time ensemble'''
+        not_indexed_data = self._get_not_indexed_data()
+        return not_indexed_data.shape[0]
+
+    def _data_flattened(self, data):
+        '''Flatten data over all non-time dimensions'''
+        return data.reshape(data.shape[0], self._data_sample_size(data))
+
+    def _data_sample_shape(self, data):
+        return data.shape[1:]
+
+    def _data_sample_axes(self, data):
+        return tuple(range(len(data.shape))[1:])
+
+    def _data_sample_size(self, data):
+        return math.prod(data.shape[1:])
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def time_median(self, *args, times=None, **kwargs):
+        '''Median over time for each series'''
+        return np.median(self.get_data(*args, times=times, **kwargs), axis=0)
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def time_std(self, *args, times=None, **kwargs):
+        '''Standard deviation over time for each series'''
+        return np.std(self.get_data(*args, times=times, **kwargs), axis=0)
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def time_average(self, *args, times=None, **kwargs):
+        '''Average value over time for each series'''
+        return np.mean(self.get_data(*args, times=times, **kwargs), axis=0)
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def time_rms(self, *args, times=None, **kwargs):
+        '''Root-Mean-Square value over time for each series'''
+        x = self.get_data(*args, times=times, **kwargs)
+        return np.sqrt(np.mean(np.abs(x)**2, axis=0))
+
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def ensemble_average(self, *args, times=None, **kwargs):
+        '''Average across series at each sampling time'''
+        data = self.get_data(*args, times=times, **kwargs)
+        return np.mean(data, axis=self._data_sample_axes(data))
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def ensemble_std(self, *args, times=None, **kwargs):
+        '''Standard deviation across series at each sampling time'''
+        data = self.get_data(*args, times=times, **kwargs)
+        return np.std(data, axis=self._data_sample_axes(data))
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def ensemble_median(self, *args, times=None, **kwargs):
+        '''Median across series at each sampling time'''
+        data = self.get_data(*args, times=times, **kwargs)
+        return np.median(data, axis=self._data_sample_axes(data))
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def ensemble_rms(self, *args, times=None, **kwargs):
+        '''Root-Mean-Square across series at each sampling time'''
+        x = self.get_data(*args, times=times, **kwargs)
+        return np.sqrt(np.mean(np.abs(x)**2, axis=1))
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, from_freq=None, to_freq=None,
               segment_factor=None, window='boxcar', *args, **kwargs):
-        '''PSD across specified series'''
+        '''Power Spectral Density across specified series'''
 
-        index = self.get_index_of(*args, **kwargs)
         if segment_factor is None:
             if self._segment_factor is None:
                 self._segment_factor = 1.0
@@ -98,256 +220,39 @@ class TimeSeries(metaclass=abc.ABCMeta):
             self._window = window
         if self._power is None:
             data = self._get_not_indexed_data()
-            self._power = self._compute_power(data)
+            # Perform power on flattened data and restore the shape afterwards
+            power = self._compute_power(self._data_flattened(data))
+            self._power = power.reshape((power.shape[0],) + self._data_sample_shape(data))
         if from_freq is None:
             output = self._power
-            self._lastCuttedFrequency = self._frequency
+            self._last_cut_frequency = self._frequency
         else:
             ul = self._frequency <= to_freq
             dl = self._frequency >= from_freq
+            ul |= np.isclose(self._frequency, to_freq)
+            dl |= np.isclose(self._frequency, from_freq)
             lim = ul & dl
-            self._lastCuttedFrequency = self._frequency[lim]
+            self._last_cut_frequency = self._frequency[lim]
             output = self._power[lim]
-        if index is None:
-            return output
-        return output[:, index]
+        index = self.get_index_of(*args, **kwargs)
+        return self._index_data(output, index)
 
     def _compute_power(self, data):
-        if isinstance(self.__delta_time, NotAvailable):
-            raise Exception('Cannot calculate power: deltaTime is not available')
 
         if isinstance(data, NotAvailable):
             raise Exception('Cannot calculate power: data is not available')
+        
+        delta_time = self.delta_time
+        if isinstance(delta_time, u.Quantity):
+            value_hz = (1 / delta_time).to_value(u.Hz)
+        else:
+            value_hz = 1 / delta_time
 
-        self._frequency, x = welch(data.T, (1 / self.__delta_time).value,
+        self._frequency, x = welch(data.T, value_hz,
                                    window=self._window,
                                    nperseg=data.shape[0] / self._segment_factor)
         df = np.diff(self._frequency)[0]
         return x.T * df
 
-    @modify_help(arg_str='[times=[from,to]], [series_idx]')
-    def time_median(self, times=None, *args, **kwargs):
-        '''Median over time for each series'''
-        func = functools.partial(np.median, axis=0)
-        return self._apply(func, times, *args, **kwargs)
-
-    @modify_help(arg_str='[times=[from,to]], [series_idx]')
-    def time_std(self, times=None, *args, **kwargs):
-        '''Standard deviation over time for each series'''
-        func = functools.partial(np.std, axis=0)
-        return self._apply(func, times, *args, **kwargs)
-
-    @modify_help(arg_str='[times=[from,to]], [series_idx]')
-    def time_average(self, times=None, *args, **kwargs):
-        '''Average value over time for each series'''
-        func = functools.partial(np.mean, axis=0)
-        return self._apply(func, times, *args, **kwargs)
-
-    @modify_help(arg_str='[times=[from,to]], [time_idx]')
-    def ensemble_average(self, times=None, *args, **kwargs):
-        '''Average across series at each sampling time'''
-        func = functools.partial(np.mean, axis=1)
-        return self._apply(func, times, *args, **kwargs)
-
-    @modify_help(arg_str='[times=[from,to]], [time_idx]')
-    def ensemble_std(self, times=None, *args, **kwargs):
-        '''Standard deviation across series at each sampling time'''
-        func = functools.partial(np.std, axis=1)
-        return self._apply(func, times, *args, **kwargs)
-
-    @modify_help(arg_str='[times=[from,to]], [time_idx]')
-    def ensemble_median(self, times=None, *args, **kwargs):
-        '''Median across series at each sampling time'''
-        func = functools.partial(np.median, axis=1)
-        return self._apply(func, times, *args, **kwargs)
-
-    @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
-    def plot_spectra(self, from_freq=None, to_freq=None,
-                     segment_factor=None,
-                     overplot=False,
-                     label=None,
-                     *args, **kwargs):
-        '''Plot the PSD across specified series'''
-        power = self.power(from_freq, to_freq,
-                           segment_factor,
-                           *args, **kwargs)
-        freq = self.last_cutted_frequency()
-
-        import matplotlib.pyplot as plt
-        if not overplot:
-            plt.cla()
-            plt.clf()
-        plt.plot(freq[1:], power[1:], label=label)
-        plt.loglog()
-        plt.xlabel('f [Hz]')
-        plt.ylabel('psd [V^2]')
-        if label is not None:
-            plt.legend()
-        return plt
-
-    @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
-    def plot_cumulative_spectra(self, from_freq=None, to_freq=None,
-                                segment_factor=None,
-                                overplot=False, *args, **kwargs):
-        '''Plot the cumulative PSD across specified series'''
-        power = self.power(from_freq, to_freq,
-                           segment_factor,
-                           *args, **kwargs)
-        freq = self.last_cutted_frequency()
-
-        import matplotlib.pyplot as plt
-        if not overplot:
-            plt.cla()
-            plt.clf()
-        plt.plot(freq[1:], np.cumsum(power, 0)[1:])
-        plt.loglog()
-        plt.xlabel('f [Hz]')
-        plt.ylabel('cumsum(psd) [V^2]')
-        return plt
-
-
-class TimeSeriesWithInterpolation(TimeSeries):
-    '''
-    :class:`TimeSeries` with automatic interpolation of missing data.
-
-    Missing data points are detected from a jump in the frame counter,
-    and are linearly interpolated between valid data points.
-
-    In addition to the methods defined by :class:`TimeSeries`, the derived
-    class must also implement a `_get_counter()` method that returns
-    the (potentially incomplete) frame counter array. The frame counter
-    can be of any integer or floating point type, and can increase by any
-    amount at each time step, as long as it is regular, and can start
-    from any value.
-    These are all valid frame counters (some have gaps in them)::
-
-        [0,1,2,3,4,5,6]
-        [-6, -3, 0, 3, 6, 9, 15]
-        [1.0, 1.2, 1.4, 2.0, 2.2, 2.4]
-
-    Interpolation is an expensive operation and is not automatic.
-    The derived class must call the interpolation routine in the
-    `_get_not_indexed_data()` method explicitly.
-    The data array passed to `interpolate_missing_data()` must not
-    include the missing points: if the "theoretical" shape is (100,n) but
-    one frame is missing, the data array must have shape (99,n) and the
-    frame counter (99,). The interpolated data and frame counter will
-    have the correct dimensions.
-
-    For example::
-
-        def _get_counter(self):
-            return fits.getdata('file_with_incomplete_frame_counter.fits')
-
-        def _get_not_indexed_data(self):
-            raw_data = fits.getdata('file_with_incomplete_data.fits')
-            return self.interpolate_missing_data(raw_data)
-
-    Since interpolation can be slow, it is recommended that some form of
-    caching strategy is implemented in the `_get_not_indexed_data()` method.
-    '''
-
-    # TODO remove it?
-    __metaclass__ = abc.ABCMeta
-
-    def __init__(self, sampling_interval):
-        TimeSeries.__init__(self, sampling_interval)
-        self._counter = None
-        self._original_counter = None
-
-    def get_original_counter(self):
-        '''Returns the original frame counter array'''
-        if self._original_counter is None:
-            self._original_counter = self._get_counter()
-        return self._original_counter
-
-    def get_counter(self):
-        '''Returns the interpolated frame counter array'''
-        if self._counter is None:
-            self._counter = self._interpolate_counter()
-        return self._counter
-
-    @abc.abstractmethod
-    def _get_counter(self):
-        pass
-
-    def _interpolate_counter(self):
-        counter = self.get_original_counter()
-        if isinstance(counter, NotAvailable):
-            return NotAvailable()
-        step = np.median(np.diff(counter))
-        n = round((max(counter) - min(counter)) / step) + 1
-        if n == len(counter):
-            return counter
-        else:
-            return np.arange(n) * step + min(counter)
-
-    def interpolate_missing_data(self, data):
-        '''
-        Interpolate missing data.
-
-        Parameters
-        ----------
-        data: ndarray
-            the original data
-
-        Returns
-        -------
-        ndarray
-            the interpolated array
-
-        Raises
-        ------
-        ValueError
-            if the frame counter first dimension does not have the same length
-            as the data first dimension.
-        '''
-        counter = self.get_original_counter()
-        if isinstance(counter, NotAvailable):
-            return NotAvailable()
-
-        if data.shape[0] != counter.shape[0]:
-            raise ValueError('Shape mismatch between frame counter and data:'
-                              + ' - Data: %s' % str(data.shape)
-                              + ' - Counter: %s' % str(counter.shape))
-
-        self._counter = self._interpolate_counter()
-
-        # No interpolation done
-        if len(self._counter) == len(self.get_original_counter()):
-            return data
-
-        new_data = np.zeros((self._counter.shape[0], data.shape[1]))
-
-        # Normalize original counter to unsigned integer with unitary steps,
-        # keeping the gaps. It makes easier to use the counter as
-        # slice indexes, which must be integers.
-        step = np.median(np.diff(counter))
-        mycounter = np.round((counter - min(counter)) / step).astype(np.uint32)
-        deltas = np.diff(mycounter)
-        jumps = np.where(deltas > 1)[0]
-
-        # Data before the first jump
-        new_data[:jumps[0] + 1] = data[:jumps[0] + 1]
-
-        shift = 0
-        jump_idx = np.concatenate((jumps, [len(new_data)]))
-
-        for j, nextj in pairwise(jump_idx):
-            n_interp = deltas[j]
-            gap = n_interp - 1
-            interp = np.outer(np.arange(0, n_interp),
-                              (data[j + 1] - data[j]) / n_interp) + data[j]
-
-            # Interpolated data
-            new_data[shift+j : shift+j+n_interp] = interp
-
-            # Original data up to the next jump
-            new_data[shift+j+n_interp: shift+nextj+n_interp] = data[j+1:nextj+1]
-
-            # Keep track of how much data has been inserted in new_data
-            shift += gap
-
-        return new_data
 
 # ___oOo___

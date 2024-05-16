@@ -157,6 +157,14 @@ arte.utils.package\_data module
    :undoc-members:
    :show-inheritance:
 
+arte.utils.paste module
+----------------------------------
+
+.. automodule:: arte.utils.paste
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 arte.utils.quadratic\_sum module
 -----------------------------------
 

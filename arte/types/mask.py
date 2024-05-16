@@ -47,6 +47,14 @@ class BaseMask():
     def from_masked_array(numpy_masked_array):
         return BaseMask(numpy_masked_array)
     
+    def __eq__(self, other):
+        if isinstance(other, BaseMask):
+            return np.array_equal(self.mask(), other.mask())
+        return False
+
+    def __hash__(self):
+        return hash(self.mask().tobytes())
+
     # TODO: funzione per verificare che tutti i punti di questa maschera stanno
     # dentro una maschera passata
 

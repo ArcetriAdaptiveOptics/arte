@@ -34,6 +34,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               'sphinx.ext.intersphinx',
               'nbsphinx',
+              'numpydoc',
               ]
 intersphinx_mapping = {
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
@@ -74,7 +75,11 @@ today_fmt = '%B %d, %Y'
 #
 # html_theme = "sphinx_rtd_theme"
 # html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-html_theme = 'nature'
+html_theme = 'pydata_sphinx_theme'
+
+html_theme_options = {
+  "show_nav_level": 2
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
