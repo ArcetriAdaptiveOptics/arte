@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import astropy.units as u
 from functools import wraps
+
+import astropy.units as u
+from astropy.utils.masked import Masked
 
 
 def assert_unit_is_equivalent(var, ref):
@@ -81,7 +83,10 @@ def make_sure_its_a(unit, v, name='', copy=True):
 
     '''
     if not isinstance(v, u.Quantity):
-        return u.Quantity(v, unit=unit, copy=copy)
+        if isinstance(v, np.ma.MaskedArray):
+            return Masked(v.data, v.mask) * unit
+        else:
+            return u.Quantity(v, unit=unit, copy=copy)
 
     try:
         normalized = v.to(unit)
