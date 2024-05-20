@@ -80,6 +80,12 @@ def make_sure_its_a(unit, v, name='', copy=True):
         if the conversion to `unit` fails.
 
     '''
+    # Special case for masked arrays, who wraps their data into a "data" attribute
+    if isinstance(v, np.ma.MaskedArray):
+        return np.ma.MaskedArray(
+            make_sure_its_a(unit, v.data, name=name, copy=copy),
+            mask=v.mask)
+
     if not isinstance(v, u.Quantity):
         return u.Quantity(v, unit=unit, copy=copy)
 
@@ -90,112 +96,6 @@ def make_sure_its_a(unit, v, name='', copy=True):
                   name, str(unit), str(v.unit))
         raise u.UnitsError(errmsg)
     return normalized
-
-
-def match_and_remove_unit(var, var_to_match):
-    '''
-    Make sure that `var` has the same unit as `var_to_match`, if any,
-    and then remove the unit. If `var_to_match` has no unit, the value of
-    `var` is returned, without its unit if it has one.
-
-    Parameters
-    ----------
-    var: any type
-        the variable to be tested
-    var_to_match: any type
-        the variable whose unit must be matched
-
-    Returns
-    -------
-    value
-         the value of `var` (without unit attached) after the unit has been
-         changed to be the same as `var_to_match`
-
-    Raises
-    ------
-    u.UnitsError
-         if `var` cannot be converted to `var_to_match` using
-         the standard astropy method `var`.to()
-
-    Examples
-    --------
-    >>> a = 42*u.km
-    >>> b = 42*u.m
-    >>> match_and_remove_unit(a,b)
-    42000.0
-
-    >>> a = 42
-    >>> c = 3.1415
-    >>> match_and_remove_unit(a,c)
-    42
-
-    '''
-    if isinstance(var, u.Quantity) and isinstance(var_to_match, u.Quantity):
-        # Catch the errors here to have nicer tracebacks, otherwise
-        # we end up deep into astropy libraries.
-        try:
-            return var.to(var_to_match.unit).value
-        except Exception as e:
-            raise u.UnitsError(str(e))
-
-    elif isinstance(var, u.Quantity):
-        return var.value
-    else:
-        return var
-
-
-def match_and_remove_units(*args):
-    '''
-    Take a list of variables, make sure that all have the same unit as the
-    first one, and return a list of unitless values plus the common unit.
-
-    Order is significant! The first variable's unit is applied to all others.
-    If the first one does not have a unit, all units are removed.
-
-    Parameters
-    ----------
-    *args: an arbitrary number of parameters
-         variables whose units must be matched
-
-    Returns
-    -------
-    list
-        list of values after unit conversion and removal, plus the unit.
-        If the first parameter had no unit, the unit is set to 1.
-
-    Raises
-    ------
-    u.UnitsError
-         if any of the parameters cannot be converted using
-         the standard astropy method `var`.to()
-
-    Examples
-    --------
-    >>> a = 42*u.m
-    >>> b = 42*u.cm
-    >>> c = 42*u.km
-    >>> match_and_remove_units(a,b,c)
-    [42.0, 0.42, 42000.0, Unit("m")]
-
-    >>> a = 42
-    >>> b = 42*u.cm
-    >>> c = 42*u.km
-    >>> match_and_remove_units(a,b,c)
-    [42, 42.0, 42.0, 1]
-    '''
-    if len(args) == 0:
-        return [1]
-    else:
-        _, unit = separate_value_and_unit(args[0])
-
-    newvars = [match_and_remove_unit(x, args[0]) for x in args[0:]]
-    return newvars + [unit]
-
-
-def assert_array_almost_equal_w_units(a, b):
-    '''Clone of np.testing.asset_array_almost_equal for u.Quantities'''
-    a_, b_, _ = match_and_remove_units(a, b)
-    np.testing.assert_array_almost_equal(a_, b_)
 
 
 def unit_check(f):
