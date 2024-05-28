@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import inspect
+from functools import wraps
+
 import numpy as np
 import astropy.units as u
-from functools import wraps
 
 
 def assert_unit_is_equivalent(var, ref):
@@ -215,7 +217,6 @@ def unit_check(f):
     '''
     # Keep as much as possible out of the wrapper, so it only executes
     # once at function definition time.
-    import inspect
     sig = inspect.signature(f)
     pars_to_check = [p for p in sig.parameters.values()
                      if isinstance(p.default, u.Quantity)]
