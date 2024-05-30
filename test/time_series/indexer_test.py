@@ -2,7 +2,8 @@
 import unittest
 import numpy as np
 
-from arte.time_series.indexer import Indexer, ModeIndexer, RowColIndexer
+from arte.time_series.indexer import Indexer, ModeIndexer
+from arte.time_series.indexer import RowColIndexer, DefaultIndexer
 
 
 class TestIndexer(unittest.TestCase):
@@ -57,6 +58,36 @@ class TestIndexer(unittest.TestCase):
         rows, cols = indexer.rowcol(rows=3, col_from=0, col_to=10)
         assert rows == 3
         assert cols == slice(0, 10, None)
+
+    def test_default_indexer_all(self):
+        indexer = DefaultIndexer()
+        ret = indexer.elements()
+        assert ret == slice(None, None, None)
+
+    def test_default_indexer_single_element(self):
+        indexer = DefaultIndexer()
+        ret = indexer.elements(22)
+        assert ret == 22
+
+    def test_default_indexer_list(self):
+        indexer = DefaultIndexer()
+        ret = indexer.elements([2,3])
+        assert ret == [2,3]
+
+    def test_default_indexer_from(self):
+        indexer = DefaultIndexer()
+        ret = indexer.elements(from_element=10)
+        assert ret == slice(10, None, None)
+
+    def test_default_indexer_to(self):
+        indexer = DefaultIndexer()
+        ret = indexer.elements(to_element=10)
+        assert ret == slice(None, 10, None)
+
+    def test_default_indexer_fromto(self):
+        indexer = DefaultIndexer()
+        ret = indexer.elements(from_element=10, to_element=20)
+        assert ret == slice(10, 20, None)
 
 if __name__ == "__main__":
     unittest.main()

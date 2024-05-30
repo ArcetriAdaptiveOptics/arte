@@ -8,7 +8,7 @@ from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import data_loader_factory
 from arte.dataelab.unit_handler import UnitHandler
 from arte.dataelab.dataelab_utils import setup_dataelab_logging
-
+from arte.time_series.indexer import DefaultIndexer
 
 class BaseTimeSeries(TimeSeries):
     '''
@@ -51,6 +51,7 @@ class BaseTimeSeries(TimeSeries):
         self._data_label = data_label
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
         self._logger = logger or logging.getLogger(__name__)
+        self._default_indexer = DefaultIndexer()
         setup_dataelab_logging()
 
     def filename(self):
@@ -88,7 +89,7 @@ class BaseTimeSeries(TimeSeries):
            For a detailed explanation, see the "Advanced indexing" topic at
            https://numpy.org/doc/stable/user/basics.indexing.html#advanced-indexing
         '''
-        pass
+        return self._default_indexer.elements(*args, **kwargs)
 
     def data_label(self):
         return self._data_label
