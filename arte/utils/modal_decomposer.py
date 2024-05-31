@@ -10,6 +10,7 @@ from arte.types.slopes import Slopes
 
 class ModalDecomposer(object):
 
+    FIRST_ZERNIKE_MODE = ZernikeCoefficients.FIRST_ZERNIKE_MODE
 
     def __init__(self, n_zernike_modes):
         self._nZernikeModes = n_zernike_modes
@@ -17,11 +18,14 @@ class ModalDecomposer(object):
     @cacheResult
     def _synthZernikeRecFromSlopes(self, nModes, circular_mask, user_mask):
         zg = ZernikeGenerator(circular_mask)
-        dx = zg.getDerivativeXDict(list(range(2, 2 + nModes)))
-        dy = zg.getDerivativeYDict(list(range(2, 2 + nModes)))
+        dx = zg.getDerivativeXDict(
+            list(range(self.FIRST_ZERNIKE_MODE, self.FIRST_ZERNIKE_MODE + nModes)))
+        dy = zg.getDerivativeYDict(
+            list(range(self.FIRST_ZERNIKE_MODE, self.FIRST_ZERNIKE_MODE + nModes)))
         im = np.zeros(
             (nModes, 2*user_mask.as_masked_array().compressed().size))
-        modesIdx = list(range(2, 2 + nModes))
+        modesIdx = list(range(self.FIRST_ZERNIKE_MODE,
+                        self.FIRST_ZERNIKE_MODE + nModes))
 
         i = 0
         for idx in modesIdx:
@@ -72,9 +76,11 @@ class ModalDecomposer(object):
     def _synthZernikeRecFromWavefront(self, nModes, circular_mask,
                                       user_mask):
         zg = ZernikeGenerator(circular_mask)
-        wf = zg.getZernikeDict(list(range(2, 2 + nModes)))
+        wf = zg.getZernikeDict(
+            list(range(self.FIRST_ZERNIKE_MODE, self.FIRST_ZERNIKE_MODE + nModes)))
         im = np.zeros((nModes, user_mask.as_masked_array().compressed().size))
-        modesIdx = list(range(2, 2 + nModes))
+        modesIdx = list(range(self.FIRST_ZERNIKE_MODE,
+                        self.FIRST_ZERNIKE_MODE + nModes))
 
         i = 0
         for idx in modesIdx:

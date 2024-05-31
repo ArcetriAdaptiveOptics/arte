@@ -14,8 +14,9 @@ class ModalDecomposerTest(unittest.TestCase):
         radius = 4
         zg = ZernikeGenerator(2 * radius)
         mask = CircularMask((2 * radius, 2 * radius), radius)
-        dx = zg.getDerivativeXDict(list(range(2, 6)))
-        dy = zg.getDerivativeYDict(list(range(2, 6)))
+        modes_idxs = list(range(2, 6))
+        dx = zg.getDerivativeXDict(modes_idxs)
+        dy = zg.getDerivativeYDict(modes_idxs)
         mapX = 2.5 * dx[2] - 4 * dx[3] + 3 * dx[5]
         mapY = 2.5 * dy[2] - 4 * dy[3] + 3 * dy[5]
         slopes = Slopes(mapX, mapY)
@@ -23,7 +24,7 @@ class ModalDecomposerTest(unittest.TestCase):
         zernike = modalDecomposer.measureZernikeCoefficientsFromSlopes(
             slopes, mask, mask)
         self.assertTrue(np.allclose(np.array([2.5, -4, 0, 3.0]),
-                                    zernike.toNumpyArray()[0:4]),
+                                    [zernike.getZ(j) for j in modes_idxs]),
                         "zernike decomposition is %s" % str(zernike))
 
     # def testZernikeRecIsCached(self):
@@ -49,15 +50,16 @@ class ModalDecomposerTest(unittest.TestCase):
         radius = 4
         zg = ZernikeGenerator(2 * radius)
         mask = CircularMask((2 * radius, 2 * radius), radius)
-        dx = zg.getDerivativeXDict(list(range(2, 6)))
-        dy = zg.getDerivativeYDict(list(range(2, 6)))
+        modes_idxs = list(range(2, 6))
+        dx = zg.getDerivativeXDict(modes_idxs)
+        dy = zg.getDerivativeYDict(modes_idxs)
         mapX = 2.5 * dx[2] - 4 * dx[3] + 3 * dx[5]
         mapY = 2.5 * dy[2] - 4 * dy[3] + 3 * dy[5]
         slopes = Slopes(mapX, mapY)
         modalDecomposer = ModalDecomposer(8)
         zernike = modalDecomposer.measureZernikeCoefficientsFromSlopes(slopes, mask)
         self.assertTrue(np.allclose(np.array([2.5, -4, 0, 3.0]),
-                                    zernike.toNumpyArray()[0:4]),
+                                    [zernike.getZ(j) for j in modes_idxs]),
                         "zernike decomposition is %s" % str(zernike))
         zernike42 = modalDecomposer.measureZernikeCoefficientsFromSlopes(
             slopes, mask, nModes=42)
@@ -80,14 +82,15 @@ class ModalDecomposerTest(unittest.TestCase):
         radius = 4
         zg = ZernikeGenerator(2 * radius)
         mask = CircularMask((2 * radius, 2 * radius), radius)
-        zernModes = zg.getZernikeDict(list(range(2, 6)))
+        modes_idxs = list(range(2, 6))
+        zernModes = zg.getZernikeDict(modes_idxs)
         wavefront = 2.5 * zernModes[2] - 4 * zernModes[3] + 3 * zernModes[5]
 
         modalDecomposer = ModalDecomposer(5)
         zernike = modalDecomposer.measureZernikeCoefficientsFromWavefront(
             Wavefront.fromNumpyArray(wavefront), mask, mask)
         self.assertTrue(np.allclose(np.array([2.5, -4, 0, 3.0]),
-                                    zernike.toNumpyArray()[0:4]),
+                                    [zernike.getZ(j) for j in modes_idxs]),
                         "zernike decomposition is %s" % str(zernike))
         
     def testMeasureZernikeCoefficientsFromWavefrontUsingDifferentMasks(self):
@@ -95,14 +98,15 @@ class ModalDecomposerTest(unittest.TestCase):
         zg = ZernikeGenerator(2 * radius)
         mask1 = CircularMask((2 * radius, 2 * radius), radius)
         mask2 = CircularMask((2 * radius, 2 * radius), radius / 2)
-        zernModes = zg.getZernikeDict(list(range(2, 6)))
+        modes_idxs = list(range(2, 6))
+        zernModes = zg.getZernikeDict(modes_idxs)
         wavefront = 2.5 * zernModes[2] - 4 * zernModes[3] + 3 * zernModes[5]
 
         modalDecomposer = ModalDecomposer(5)
         zernike = modalDecomposer.measureZernikeCoefficientsFromWavefront(
             Wavefront.fromNumpyArray(wavefront), mask1, mask2)
         self.assertTrue(np.allclose(np.array([2.5, -4, 0, 3.0]),
-                                    zernike.toNumpyArray()[0:4]),
+                                    [zernike.getZ(j) for j in modes_idxs]),
                         "zernike decomposition is %s" % str(zernike))
 
     def testZernikeCoefficientsFromWfRejectsPiston(self):
@@ -114,8 +118,7 @@ class ModalDecomposerTest(unittest.TestCase):
         zernike = modalDecomposer.measureZernikeCoefficientsFromWavefront(
             Wavefront.fromNumpyArray(wavefront), mask, mask)
         self.assertAlmostEqual(1, zernike.getZ(2))
-        self.assertAlmostEqual(
-            0, zernike.toNumpyArray()[1:].sum(),
+        self.assertAlmostEqual(0, zernike.getZ(1),
             msg="zernike decomposition is %s" % str(zernike))
 
     def testMaskWithSmallerSlopeMap(self):
