@@ -1,24 +1,28 @@
 import numpy as np
-from arte.misc.fourier_adaptive_optics import TurbulentPhase, \
-    FourierAdaptiveOptics
-from arte.utils.discrete_fourier_transform import \
-    BidimensionalFourierTransform as bfft
+from arte.misc.fourier_adaptive_optics import TurbulentPhase, FourierAdaptiveOptics
+from arte.utils.discrete_fourier_transform import BidimensionalFourierTransform as bfft
 from arte.atmo.phase_screen_generator import PhaseScreenGenerator
 from arte.types.mask import CircularMask
 from arte.utils.zernike_generator import ZernikeGenerator
-from arte.utils.modal_decomposer import ModalDecomposer
+from arte.utils.zernike_decomposer import ZZModalDecomposer
 from arte.types.wavefront import Wavefront
 from scipy.special import gamma
 
 
 def r0AtLambda(r0At500, wavelenghtInMeters):
-    return r0At500 * (wavelenghtInMeters / 0.5e-6) ** (6. / 5)
+    return r0At500 * (wavelenghtInMeters / 0.5e-6) ** (6.0 / 5)
 
 
-class Test1():
+class Test1:
 
-    def __init__(self, dPupInMeters, r0At500nm, wavelenghtInMeters,
-                 dPupInPixels=1024, outerScaleInMeter=1e6):
+    def __init__(
+        self,
+        dPupInMeters,
+        r0At500nm,
+        wavelenghtInMeters,
+        dPupInPixels=1024,
+        outerScaleInMeter=1e6,
+    ):
         self._pupDiameterInMeters = dPupInMeters
         self.r0 = r0At500nm
         self._lambda = wavelenghtInMeters
@@ -27,37 +31,38 @@ class Test1():
 
         self._tb = TurbulentPhase()
         self._pxSize = self._pupDiameterInMeters / self._pupDiameterInPixels
-        self._spat_freqs = bfft.frequencies_norm_map(self._pupDiameterInPixels,
-                                                     self._pxSize)
-        self._dist = bfft.distances_norm_map(self._pupDiameterInPixels,
-                                             self._pxSize)
+        self._spat_freqs = bfft.frequencies_norm_map(
+            self._pupDiameterInPixels, self._pxSize
+        )
+        self._dist = bfft.distances_norm_map(self._pupDiameterInPixels, self._pxSize)
         self._mapCenter = (np.asarray(self._dist.shape) / 2).astype(np.int)
-        self._psd = self._tb.vonKarmanPowerSpectralDensity(self.r0, self._L0,
-                                                           self._spat_freqs)
+        self._psd = self._tb.vonKarmanPowerSpectralDensity(
+            self.r0, self._L0, self._spat_freqs
+        )
         self._phaseAC = bfft.direct_transform(self._psd).real
         self._phaseSTF = 2 * (
-            self._phaseAC[self._mapCenter[0], self._mapCenter[1]] -
-            self._phaseAC)
+            self._phaseAC[self._mapCenter[0], self._mapCenter[1]] - self._phaseAC
+        )
         self._kolmSTFInRad2 = 6.88 * (
-            self._dist / r0AtLambda(self.r0, self._lambda))**(5 / 3)
+            self._dist / r0AtLambda(self.r0, self._lambda)
+        ) ** (5 / 3)
         # TODO mezzi pixels!
 
 
-class TestLongExposure():
+class TestLongExposure:
 
-    def __init__(self, dPupInMeters,
-                 howMany=100, dPupInPixels=128, outerScaleInMeters=1e6):
+    def __init__(
+        self, dPupInMeters, howMany=100, dPupInPixels=128, outerScaleInMeters=1e6
+    ):
         self.pupil_diameter = dPupInMeters
         self._L0 = outerScaleInMeters
         self._howMany = howMany
         self._nPx = dPupInPixels
-        self._psg = PhaseScreenGenerator(
-            self._nPx, self.pupil_diameter, self._L0)
+        self._psg = PhaseScreenGenerator(self._nPx, self.pupil_diameter, self._L0)
         self._psg.generate_normalized_phase_screens(self._howMany)
 
     def _doPsf(self, phaseScreenInRadians):
-        self._fao.setPhaseMapInMeters(
-            phaseScreenInRadians / (2 * np.pi) * self._lambda)
+        self._fao.setPhaseMapInMeters(phaseScreenInRadians / (2 * np.pi) * self._lambda)
         return self._fao.psf().values
 
     def test(self, r0At500nm, wavelenghtInMeters):
@@ -67,7 +72,8 @@ class TestLongExposure():
         self._fao = FourierAdaptiveOptics(
             pupilDiameterInMeters=self.pupil_diameter,
             wavelength=self._lambda,
-            resolutionFactor=extFact)
+            resolutionFactor=extFact,
+        )
         self._psg.rescale_to(self.r0)
         ps = self._psg.get_in_radians_at(self._lambda)
         aa = np.asarray([self._doPsf(ps[i]) for i in range(self._howMany)])
@@ -76,25 +82,25 @@ class TestLongExposure():
         return longExposurePsf, freqsX
 
     def seeingLimitedFWHMInArcsec(self):
-        return 0.976 * self._lambda / \
-            r0AtLambda(self.r0, self._lambda) / 4.848e-6
+        return 0.976 * self._lambda / r0AtLambda(self.r0, self._lambda) / 4.848e-6
 
     @staticmethod
     def run():
         from arte.utils.image_moments import ImageMoments
         import matplotlib
-        tle = TestLongExposure(8.0, howMany=1000, dPupInPixels=128,
-                               outerScaleInMeters=1e6)
+
+        tle = TestLongExposure(
+            8.0, howMany=1000, dPupInPixels=128, outerScaleInMeters=1e6
+        )
         le = tle.test(0.1, 0.5e-6)
         sz = le[0].shape[0]
         matplotlib.pyplot.plot(le[1], le[0][sz // 2, :])
-        print(ImageMoments(le[0]).semiAxes() *
-              le[1][sz // 2 - 1:sz // 2 + 1][1])
+        print(ImageMoments(le[0]).semiAxes() * le[1][sz // 2 - 1 : sz // 2 + 1][1])
         print(tle.seeingLimitedFWHMInArcsec())
         return tle, le
 
 
-class AtmosphericPhaseScreenDecomposition():
+class AtmosphericPhaseScreenDecomposition:
 
     def __init__(self):
         self.n_modes = 1275
@@ -105,9 +111,8 @@ class AtmosphericPhaseScreenDecomposition():
         self.n_pixel = 64
         self.how_many = 100
 
-        self._md = ModalDecomposer(self.n_modes)
-        self._psg = PhaseScreenGenerator(
-            self.n_pixel, self.pupil_diameter, self.L0)
+        self._md = ZZModalDecomposer(self.n_modes)
+        self._psg = PhaseScreenGenerator(self.n_pixel, self.pupil_diameter, self.L0)
 
         self.compute()
 
@@ -121,15 +126,15 @@ class AtmosphericPhaseScreenDecomposition():
         self._psg.rescale_to(self.r0)
         self._screen_cube = np.ma.masked_array(
             self._psg.get_in_radians_at(self.wavelength),
-            np.tile(mask.mask(), (self.how_many, 1, 1)))
+            np.tile(mask.mask(), (self.how_many, 1, 1)),
+        )
 
     def decompose(self):
         self._zcoeff = np.zeros((self.how_many, self.n_modes))
         mask = CircularMask.fromMaskedArray(self._screen_cube[0])
         for i in range(self.how_many):
             wf = Wavefront.fromNumpyArray(self._screen_cube[i].data)
-            zcoeff = self._md.measureZernikeCoefficientsFromWavefront(
-                wf, mask)
+            zcoeff = self._md.measureZernikeCoefficientsFromWavefront(wf, mask)
             self._zcoeff[i] = zcoeff.toNumpyArray()
         self._zIdx = zcoeff.zernikeIndexes()
 
@@ -145,11 +150,13 @@ class AtmosphericPhaseScreenDecomposition():
 
     def plot_std(self):
         import matplotlib.pyplot as plt
-        plt.loglog(self._zIdx, self.modal_variance(), '.-')
+
+        plt.loglog(self._zIdx, self.modal_variance(), ".-")
         plt.loglog(self._zIdx, self.expected_modal_variance())
         plt.xlabel("Zernike mode")
         plt.ylabel("Mode variance [rad**2]")
         plt.show()
+
 
 # class SimulationOfResidualPhase():
 #
@@ -227,17 +234,14 @@ class AtmosphericPhaseScreenDecomposition():
 #         pass
 
 
+# Parsevals theorem with proper sample points
 
-    
-    
-    # Parsevals theorem with proper sample points
-    
-    #energy_t = np.sum(abs(f)**2, x=t)
-    #energy_f = np.trapz(abs(FFT)**2, x=frq) / N
-    
-    #print('Parsevals theorem NOT fulfilled: ' + str(energy_t - energy_f))
+# energy_t = np.sum(abs(f)**2, x=t)
+# energy_f = np.trapz(abs(FFT)**2, x=frq) / N
 
-if __name__ == '__main__':
+# print('Parsevals theorem NOT fulfilled: ' + str(energy_t - energy_f))
+
+if __name__ == "__main__":
 
     import os
     from pathlib import Path
@@ -247,11 +251,17 @@ if __name__ == '__main__':
     from arte.dataelab.base_analyzer_set import BaseAnalyzerSet
     from arte.dataelab.base_file_walker import AbstractFileNameWalker
 
-
     class TestFileWalker(AbstractFileNameWalker):
 
         def snapshots_dir(self):
-            return Path(__file__).parents[0] /  '..' / 'test' / 'dataelab' / 'data' / 'snapshots'
+            return (
+                Path(__file__).parents[0]
+                / ".."
+                / "test"
+                / "dataelab"
+                / "data"
+                / "snapshots"
+            )
 
         def snapshot_dir(self, tag):
             return self.snapshots_dir() / tag[:8] / tag
@@ -261,17 +271,15 @@ if __name__ == '__main__':
             tags = []
             for dir in dirlist:
                 lst = os.listdir(os.path.join(self.snapshots_dir(), dir))
-                tags += list(filter(lambda x: x >=tag_start and x<tag_stop, lst))
+                tags += list(filter(lambda x: x >= tag_start and x < tag_stop, lst))
             return tags
-
 
     class TestAnalyzer(BaseAnalyzer):
         def __init__(self, snapshot_tag, recalc=False):
             super().__init__(snapshot_tag)
             if not os.path.exists(TestFileWalker().snapshot_dir(snapshot_tag)):
-                    NotAvailable.transformInNotAvailable(self)
-                    return
-
+                NotAvailable.transformInNotAvailable(self)
+                return
 
     class TestAnalyzerSet(BaseAnalyzerSet):
         def _get_file_walker(self):
@@ -280,16 +288,15 @@ if __name__ == '__main__':
         def _get_type(self):
             return TestAnalyzer
 
-
-    set = TestAnalyzerSet('20240404_024500')
-    print(id(set.get('20240404_024500')))
-    print(id(set.get('20240404_024500')))
-    print(id(set.get('20240404_024500')))
-    print(id(set.get('20240404_024500')))
-    print(id(set.get('20240404_024500')))
-    print(id(TestAnalyzer.get('20240404_024500')))
-    print(id(TestAnalyzer.get('20240404_024500')))
-    print(id(TestAnalyzer.get('20240404_024500')))
-    print(id(TestAnalyzer.get('20240404_024500')))
-    print(id(TestAnalyzer.get('20240404_024500')))
+    set = TestAnalyzerSet("20240404_024500")
+    print(id(set.get("20240404_024500")))
+    print(id(set.get("20240404_024500")))
+    print(id(set.get("20240404_024500")))
+    print(id(set.get("20240404_024500")))
+    print(id(set.get("20240404_024500")))
+    print(id(TestAnalyzer.get("20240404_024500")))
+    print(id(TestAnalyzer.get("20240404_024500")))
+    print(id(TestAnalyzer.get("20240404_024500")))
+    print(id(TestAnalyzer.get("20240404_024500")))
+    print(id(TestAnalyzer.get("20240404_024500")))
     print(set.snapshot_tag())
