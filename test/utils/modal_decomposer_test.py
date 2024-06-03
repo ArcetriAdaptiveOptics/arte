@@ -27,16 +27,25 @@ class ModalDecomposerTest(unittest.TestCase):
                                     [zernike.getZ(j) for j in modes_idxs]),
                         "zernike decomposition is %s" % str(zernike))
 
-    # def testZernikeRecIsCached(self):
-    #     md = ModalDecomposer(11)
-    #     diameter = 100
-    #     foo = 'foo'
-    #     n_modes = 10
-    #     rec1 = md._synthZernikeRecFromSlopes(n_modes, diameter, foo)
-    #     rec2 = md._synthZernikeRecFromSlopes(n_modes, diameter, foo)
-    #     self.assertTrue(rec1 is rec2)
-    #     rec3 = md._synthZernikeRecFromSlopes(1, diameter, foo)
-    #     self.assertFalse(rec1 is rec3)
+    def testZernikeRecIsCached(self):
+        md = ModalDecomposer(11)
+        diameter = 100
+        n_modes = 10
+        circ_mask = CircularMask((diameter, diameter))
+        rec1 = md.synthZernikeRecFromSlopes(n_modes, circ_mask, circ_mask)
+        rec2 = md.synthZernikeRecFromSlopes(n_modes, circ_mask, circ_mask)
+        self.assertTrue(rec1 is rec2)
+        rec3 = md.synthZernikeRecFromSlopes(1, circ_mask, circ_mask)
+        self.assertFalse(rec1 is rec3)
+
+    def testZernikeRecUserMaskDefault(self):
+        md = ModalDecomposer(11)
+        diameter = 100
+        n_modes = 10
+        circ_mask = CircularMask((diameter, diameter))
+        rec1 = md.synthZernikeRecFromSlopes(n_modes, circ_mask, circ_mask)
+        rec2 = md.synthZernikeRecFromSlopes(n_modes, circ_mask, None)
+        np.testing.assert_array_equal(rec1, rec2)
 
     def testRaiseOnWrongArguments(self):
         md = ModalDecomposer(3)
