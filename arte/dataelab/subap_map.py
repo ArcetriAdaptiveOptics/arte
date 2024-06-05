@@ -24,6 +24,12 @@ class SubapMap:
     def shape(self):
         return self._subap_map.shape
 
+    def as_mask(self):
+        ''''
+        Return a mask suitable to be used in a masked array
+        '''
+        return (1 - self._subap_map).astype(bool)
+
     def as_subap_image(self, data):
         '''
         Remap the 2d time series data into a 3d cube, where each

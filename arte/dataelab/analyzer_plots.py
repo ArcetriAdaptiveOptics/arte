@@ -66,7 +66,7 @@ def modalplot(residual_modes_vector, pol_modes_vector, unit=u.nm,
         else:
             plt.loglog()
             plt.xscale('symlog')    # Allow 0 index in log plots
-            plt.yscale('symlog')
+#            plt.yscale('symlog')
             plt.xlim([0, maxlen])
 
             plt.xlabel(xlabel)

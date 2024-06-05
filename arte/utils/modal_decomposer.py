@@ -16,7 +16,7 @@ class ModalDecomposer(object):
         self._nZernikeModes = n_zernike_modes
 
     @cacheResult
-    def synthZernikeRecFromSlopes(self, nModes, circular_mask, user_mask=None):
+    def synthZernikeRecFromSlopes(self, nModes, circular_mask, user_mask=None, dtype=float):
         if user_mask is None:
             user_mask = circular_mask
         assert isinstance(circular_mask, CircularMask), \
@@ -37,7 +37,7 @@ class ModalDecomposer(object):
         dy = zg.getDerivativeYDict(
             list(range(self.FIRST_ZERNIKE_MODE, self.FIRST_ZERNIKE_MODE + nModes)))
         im = np.zeros(
-            (nModes, 2*user_mask.as_masked_array().compressed().size))
+            (nModes, 2*user_mask.as_masked_array().compressed().size), dtype=dtype)
         modesIdx = list(range(self.FIRST_ZERNIKE_MODE,
                         self.FIRST_ZERNIKE_MODE + nModes))
 
@@ -49,11 +49,8 @@ class ModalDecomposer(object):
         return pinv(im)
 
     @returns(ZernikeCoefficients)
-    def measureZernikeCoefficientsFromSlopes(self,
-                                             slopes,
-                                             circular_mask,
-                                             user_mask=None,
-                                             nModes=None):
+    def measureZernikeCoefficientsFromSlopes(self, slopes, circular_mask,
+                                             user_mask=None, nModes=None, dtype=float):
         if user_mask is None:
             user_mask = circular_mask
         if nModes is None:
@@ -64,7 +61,7 @@ class ModalDecomposer(object):
             slopes.__class__.__name__
 
         reconstructor = self.synthZernikeRecFromSlopes(
-            nModes, circular_mask, user_mask)
+            nModes, circular_mask, user_mask, dtype)
 
         slopesInMaskVector = np.hstack(
             (np.ma.masked_array(slopes.mapX(), user_mask.mask()).compressed(),
@@ -76,7 +73,7 @@ class ModalDecomposer(object):
 
     @cacheResult
     def synthZernikeRecFromWavefront(self, nModes, circular_mask,
-                                      user_mask):
+                                      user_mask, dtype=float):
         assert isinstance(circular_mask, CircularMask), \
             'Circular mask argument must be of type CircularMask, instead is %s' % \
             circular_mask.__class__.__name__
@@ -91,21 +88,19 @@ class ModalDecomposer(object):
         zg = ZernikeGenerator(circular_mask)
         wf = zg.getZernikeDict(
             list(range(self.FIRST_ZERNIKE_MODE, self.FIRST_ZERNIKE_MODE + nModes)))
-        im = np.zeros((nModes, user_mask.as_masked_array().compressed().size))
+        im = np.zeros((nModes, user_mask.as_masked_array().compressed().size), dtype=dtype)
         modesIdx = list(range(self.FIRST_ZERNIKE_MODE,
                         self.FIRST_ZERNIKE_MODE + nModes))
 
         for i, idx in enumerate(modesIdx):
             wf_masked = np.ma.masked_array(wf[idx].data, mask=user_mask.mask())
             im[i,:] = wf_masked.compressed()
+
         return pinv(im)
 
     @returns(ZernikeCoefficients)
-    def measureZernikeCoefficientsFromWavefront(self,
-                                                wavefront,
-                                                circular_mask,
-                                                user_mask=None,
-                                                nModes=None):
+    def measureZernikeCoefficientsFromWavefront(self, wavefront, circular_mask,
+                                                user_mask=None, nModes=None, dtype=float):
         if user_mask is None:
             user_mask = circular_mask
         if nModes is None:
@@ -116,7 +111,7 @@ class ModalDecomposer(object):
 
         reconstructor = self.synthZernikeRecFromWavefront(nModes,
                                                            circular_mask,
-                                                           user_mask)
+                                                           user_mask, dtype)
         wavefrontInMaskVector = \
             np.ma.masked_array(wavefront.toNumpyArray(),
                                user_mask.mask()).compressed()
