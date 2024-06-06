@@ -128,7 +128,7 @@ class BaseTimeSeries(TimeSeries):
     def tile(self, *args, rowlength=10, **kwargs):
         '''Display data as a tiled 2d frame'''
         frames = self.get_display(*args, **kwargs)
-        tile(frames, rowlength=rowlength)
+        return tile(frames, rowlength=rowlength)
 
     @modify_help(arg_str='filename, [series_idx], [times=[from, to]]')
     def savegif(self, filename, *args, interval=0.1, loop=0, **kwargs):
