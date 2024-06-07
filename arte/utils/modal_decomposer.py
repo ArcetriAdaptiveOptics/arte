@@ -63,13 +63,16 @@ class ModalDecomposer(object):
         reconstructor = self.synthZernikeRecFromSlopes(
             nModes, circular_mask, user_mask, dtype)
 
-        slopesInMaskVector = np.hstack(
-            (np.ma.masked_array(slopes.mapX(), user_mask.mask()).compressed(),
-             np.ma.masked_array(slopes.mapY(), user_mask.mask()).compressed())
-        )
+        valid_idx = np.where(~user_mask.mask())
 
+        slopesInMaskVector = np.hstack((
+            slopes.mapX(add_time_axis=True).data[:, *valid_idx],
+            slopes.mapY(add_time_axis=True).data[:, *valid_idx],
+        ))
         return ZernikeCoefficients.fromNumpyArray(
-            np.dot(slopesInMaskVector, reconstructor))
+            np.squeeze(
+                np.dot(slopesInMaskVector, reconstructor)
+        ))
 
     @cacheResult
     def synthZernikeRecFromWavefront(self, nModes, circular_mask,
@@ -119,3 +122,5 @@ class ModalDecomposer(object):
             wavefrontInMaskVector.mean()
         return ZernikeCoefficients.fromNumpyArray(
             np.dot(wavefrontInMaskVectorNoPiston, reconstructor))
+
+

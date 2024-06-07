@@ -10,12 +10,14 @@ class Slopes(object):
         Parameters
         ----------
         slopesx_compressed: np.ndarray
-            1D or 2D slope vector. If 2D, it is assumed to be [time, slopes]
+            1D slope vector, or 2D slope time series [time, slopes]
         slopesy_compressed: np.ndarray
-            1D or 2D slope vector. If 2D, it is assumed to be [time, slopes]
+            1D slope vector, or 2D slope time series [time, slopes]
         mask: np.ndarray
-            2D boolean mask, valid for both X and Y slope vectors
+            2D boolean mask to rearrange a 1D slope vector into a 2D frame,
+            valid for both X and Y slope vectors.
         '''
+        assert slopesx_compressed.shape == slopesy_compressed.shape
         self._mask2d = mask2d
         self._vector = np.hstack((slopesx_compressed, slopesy_compressed))
         if len(self._vector.shape) == 1:
@@ -24,7 +26,7 @@ class Slopes(object):
     @staticmethod
     def from2dmaps(mapX, mapY):
         '''
-        Build a Slopes object from X/Y 2d maps or a series of X/Y 2d maps.
+        Build a Slopes object from X/Y 2D maps or a series of X/Y 2D maps.
         Both maps must be np.ma.MaskedArray objects. Masks for X and Y slopes
         must be identical.
 
@@ -39,7 +41,7 @@ class Slopes(object):
         -------
         slopes: Slopes object
             A new Slopes object. Valid slopes (as indicated by the mask)
-            is copied into an internal array. No references to the input data are kept.
+            are copied into an internal array. No references to the input data are kept.
         '''
         assert isinstance(mapX, np.ma.MaskedArray)
         assert isinstance(mapY, np.ma.MaskedArray)
@@ -50,7 +52,7 @@ class Slopes(object):
         if len(mapX.shape) == 2:
             mask = np.expand_dims(mask, axis=0)
 
-        nframes = mapX.shape[0]
+        nframes = mask.shape[0]
         mask2d = np.logical_or.reduce(mask, axis=0)
 
         nOfSubaps = np.count_nonzero(~mask2d)
@@ -77,23 +79,31 @@ class Slopes(object):
     def shape2d(self):
         return self._mask2d.shape
 
-    def mapX(self):
+    def _map2d(self, data1d):
         fullshape = (self.numberOfFrames(),) + self.shape2d
-        data = np.zeros_like(self._vector, shape=fullshape)
-        data[:, *np.where(~self._mask2d)] = self._vector[:, :self.numberOfSlopes()//2]
-        return np.squeeze(np.ma.array(data, mask=np.broadcast_to(self._mask2d, shape=fullshape)))
+        data2d = np.zeros_like(self._vector, shape=fullshape)
+        data2d[:, *np.where(~self._mask2d)] = data1d
+        return np.ma.array(data2d, mask=np.broadcast_to(self._mask2d, shape=fullshape))
 
-    def mapY(self):
-        fullshape = (self.numberOfFrames(),) + self.shape2d
-        data = np.zeros_like(self._vector, shape=fullshape)
-        data[:, *np.where(~self._mask2d)] = self._vector[:, self.numberOfSlopes()//2:]
-        return np.squeeze(np.ma.array(data, mask=np.broadcast_to(self._mask2d, shape=fullshape)))
+    def mapX(self, add_time_axis=False):
+        mapX = self._map2d(self._vector[:, :self.numberOfSlopes()//2])
+        if not add_time_axis:
+            return np.squeeze(mapX)
+        else:
+            return mapX
+
+    def mapY(self, add_time_axis=False):
+        mapY = self._map2d(self._vector[:, self.numberOfSlopes()//2:])
+        if not add_time_axis:
+            return np.squeeze(mapY)
+        else:
+            return mapY
 
     def vector(self):
         return np.squeeze(self._vector)
 
     def vectorX(self):
-        return np.squeeze(self._vector[:, 0: self.numberOfSlopes() // 2])
+        return np.squeeze(self._vector[:, 0:self.numberOfSlopes() // 2])
 
     def vectorY(self):
         return np.squeeze(self._vector[:, self.numberOfSlopes() // 2:])
@@ -101,9 +111,7 @@ class Slopes(object):
     def __eq__(self, o):
         if not isinstance(o, Slopes):
             return False
-        if not np.array_equal(self._vector, o._vector):
-            return False
-        return True
+        return np.array_equal(self._vector, o._vector)
 
     def __ne__(self, o):
         return not self.__eq__(o)
