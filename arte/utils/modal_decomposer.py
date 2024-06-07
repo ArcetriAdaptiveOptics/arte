@@ -6,6 +6,7 @@ from arte.types.zernike_coefficients import ZernikeCoefficients
 from arte.types.mask import CircularMask, BaseMask
 from arte.types.wavefront import Wavefront
 from arte.types.slopes import Slopes
+from arte.dataelab.base_slopes import BaseSlopes
 
 
 class ModalDecomposer(object):
@@ -56,8 +57,8 @@ class ModalDecomposer(object):
         if nModes is None:
             nModes = self._nZernikeModes
 
-        assert isinstance(slopes, Slopes), \
-            'slopes argument must be of type Slopes, instead is %s' % \
+        assert isinstance(slopes, (Slopes, BaseSlopes)), \
+            'slopes argument must be of type Slopes or BaseSlopes, instead is %s' % \
             slopes.__class__.__name__
 
         reconstructor = self.synthZernikeRecFromSlopes(
@@ -65,10 +66,16 @@ class ModalDecomposer(object):
 
         valid_idx = np.where(~user_mask.mask())
 
-        slopesInMaskVector = np.hstack((
-            slopes.mapX(add_time_axis=True).data[:, *valid_idx],
-            slopes.mapY(add_time_axis=True).data[:, *valid_idx],
-        ))
+        if isinstance(slopes, Slopes):
+            slopesInMaskVector = np.hstack((
+                slopes.mapX(add_time_axis=True).data[:, *valid_idx],
+                slopes.mapY(add_time_axis=True).data[:, *valid_idx],
+            ))
+        else:
+            slopesInMaskVector = np.hstack((
+                slopes.get_display('x')[:, *valid_idx],
+                slopes.get_display('y')[:, *valid_idx],
+            ))
         return ZernikeCoefficients.fromNumpyArray(
             np.squeeze(
                 np.dot(slopesInMaskVector, reconstructor)
@@ -108,7 +115,7 @@ class ModalDecomposer(object):
             user_mask = circular_mask
         if nModes is None:
             nModes = self._nZernikeModes
-        assert isinstance(wavefront, Wavefront), \
+        assert isinstance(wavefront, (Wavefront, BaseTimeseries)), \
             'wavefront argument must be of type Wavefront, instead is %s' % \
             wavefront.__class__.__name__
 
@@ -122,5 +129,3 @@ class ModalDecomposer(object):
             wavefrontInMaskVector.mean()
         return ZernikeCoefficients.fromNumpyArray(
             np.dot(wavefrontInMaskVectorNoPiston, reconstructor))
-
-
