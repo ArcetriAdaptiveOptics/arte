@@ -3,28 +3,26 @@ import numpy as np
 
 class Slopes(object):
     ''''
-    Class that represents one or more generic WFS slope frames
+    Class that represents a generic WFS slope frame
     '''
     def __init__(self, slopesx_compressed, slopesy_compressed, mask2d):
         '''
         Parameters
         ----------
         slopesx_compressed: np.ndarray
-            1D slope vector, or 2D slope time series [time, slopes]
+            1D slope vector
         slopesy_compressed: np.ndarray
-            1D slope vector, or 2D slope time series [time, slopes]
+            1D slope vector
         mask: np.ndarray
             2D boolean mask to rearrange a 1D slope vector into a 2D frame,
             valid for both X and Y slope vectors.
         '''
-        assert slopesx_compressed.shape == slopesy_compressed.shape
+        assert len(slopesx_compressed) == len(slopesy_compressed)
         self._mask2d = mask2d
         self._vector = np.hstack((slopesx_compressed, slopesy_compressed))
-        if len(self._vector.shape) == 1:
-            self._vector = np.expand_dims(self._vector, axis=0)
 
     @staticmethod
-    def from2dmaps(mapX, mapY):
+    def from_2dmaps(mapX, mapY):
         '''
         Build a Slopes object from X/Y 2D maps or a series of X/Y 2D maps.
         Both maps must be np.ma.MaskedArray objects. Masks for X and Y slopes
@@ -33,9 +31,9 @@ class Slopes(object):
         Parameters
         ----------
         mapX: np.ma.MaskedArray
-            2D or 3D slope map. If 3D, it is assumed to be [time, rows, cols]
+            2D slope map
         mapY: np.ma.MaskedArray
-            2D or 3D slope map. If 3D, it is assumed to be [time, rows, cols]
+            2D slope map
 
         Returns
         -------
@@ -47,32 +45,18 @@ class Slopes(object):
         assert isinstance(mapY, np.ma.MaskedArray)
         assert mapX.shape == mapY.shape
         assert np.all(mapX.mask == mapY.mask)
-
-        mask = mapX.mask.copy()
-        if len(mapX.shape) == 2:
-            mask = np.expand_dims(mask, axis=0)
-
-        nframes = mask.shape[0]
-        mask2d = np.logical_or.reduce(mask, axis=0)
-
-        nOfSubaps = np.count_nonzero(~mask2d)
-        return Slopes(mapX.compressed().reshape(nframes, nOfSubaps),
-                      mapY.compressed().reshape(nframes, nOfSubaps),
-                      mask2d)
+        return Slopes(mapX.compressed(), mapY.compressed(), np.ma.getmaskarray(mapX))
 
     @staticmethod
     def fromNumpyArray(mapXAsMaskedNumpyArray,
                        mapYAsMaskedNumpyArray):
-        return Slopes.from2dmaps(mapXAsMaskedNumpyArray,
-                                 mapYAsMaskedNumpyArray)
+        return Slopes.from_2dmaps(mapXAsMaskedNumpyArray,
+                                  mapYAsMaskedNumpyArray)
 
     def toNumpyArray(self):
         return self.mapX(), self.mapY()
 
     def numberOfSlopes(self):
-        return self._vector.shape[1]
-
-    def numberOfFrames(self):
         return len(self._vector)
 
     @property
@@ -80,33 +64,24 @@ class Slopes(object):
         return self._mask2d.shape
 
     def _map2d(self, data1d):
-        fullshape = (self.numberOfFrames(),) + self.shape2d
-        data2d = np.zeros_like(self._vector, shape=fullshape)
-        data2d[:, *np.where(~self._mask2d)] = data1d
-        return np.ma.array(data2d, mask=np.broadcast_to(self._mask2d, shape=fullshape))
+        data2d = np.zeros_like(self._vector, shape=self._mask2d.shape)
+        data2d[np.where(~self._mask2d)] = data1d
+        return np.ma.array(data2d, mask=self._mask2d)
 
-    def mapX(self, add_time_axis=False):
-        mapX = self._map2d(self._vector[:, :self.numberOfSlopes()//2])
-        if not add_time_axis:
-            return np.squeeze(mapX)
-        else:
-            return mapX
+    def mapX(self):
+        return self._map2d(self.vectorX())
 
-    def mapY(self, add_time_axis=False):
-        mapY = self._map2d(self._vector[:, self.numberOfSlopes()//2:])
-        if not add_time_axis:
-            return np.squeeze(mapY)
-        else:
-            return mapY
+    def mapY(self):
+        return self._map2d(self.vectorY())
 
     def vector(self):
-        return np.squeeze(self._vector)
+        return self._vector
 
     def vectorX(self):
-        return np.squeeze(self._vector[:, 0:self.numberOfSlopes() // 2])
+        return self._vector[:self.numberOfSlopes() // 2]
 
     def vectorY(self):
-        return np.squeeze(self._vector[:, self.numberOfSlopes() // 2:])
+        return self._vector[self.numberOfSlopes() // 2:]
 
     def __eq__(self, o):
         if not isinstance(o, Slopes):
