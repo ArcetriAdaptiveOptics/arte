@@ -6,7 +6,6 @@ from arte.types.zernike_coefficients import ZernikeCoefficients
 from arte.types.mask import CircularMask, BaseMask
 from arte.types.wavefront import Wavefront
 from arte.types.slopes import Slopes
-from arte.dataelab.base_slopes import BaseSlopes
 
 
 class ModalDecomposer(object):
@@ -56,30 +55,20 @@ class ModalDecomposer(object):
             user_mask = circular_mask
         if nModes is None:
             nModes = self._nZernikeModes
-
-        assert isinstance(slopes, (Slopes, BaseSlopes)), \
-            'slopes argument must be of type Slopes or BaseSlopes, instead is %s' % \
+        assert isinstance(slopes, Slopes), \
+            'slopes argument must be of type Slopes, instead is %s' % \
             slopes.__class__.__name__
 
         reconstructor = self.synthZernikeRecFromSlopes(
             nModes, circular_mask, user_mask, dtype)
 
-        valid_idx = np.where(~user_mask.mask())
-
-        if isinstance(slopes, Slopes):
-            slopesInMaskVector = np.hstack((
-                slopes.mapX(add_time_axis=True).data[:, *valid_idx],
-                slopes.mapY(add_time_axis=True).data[:, *valid_idx],
-            ))
-        else:
-            slopesInMaskVector = np.hstack((
-                slopes.get_display('x')[:, *valid_idx],
-                slopes.get_display('y')[:, *valid_idx],
-            ))
+        slopesInMaskVector = np.hstack(
+            (np.ma.masked_array(slopes.mapX(), user_mask.mask()).compressed(),
+             np.ma.masked_array(slopes.mapY(), user_mask.mask()).compressed())
+        )
+        
         return ZernikeCoefficients.fromNumpyArray(
-            np.squeeze(
-                np.dot(slopesInMaskVector, reconstructor)
-        ))
+            np.dot(slopesInMaskVector, reconstructor))
 
     @cacheResult
     def synthZernikeRecFromWavefront(self, nModes, circular_mask,
@@ -115,7 +104,7 @@ class ModalDecomposer(object):
             user_mask = circular_mask
         if nModes is None:
             nModes = self._nZernikeModes
-        assert isinstance(wavefront, (Wavefront, BaseTimeseries)), \
+        assert isinstance(wavefront, Wavefront), \
             'wavefront argument must be of type Wavefront, instead is %s' % \
             wavefront.__class__.__name__
 

@@ -19,7 +19,7 @@ class ModalDecomposerTest(unittest.TestCase):
         dy = zg.getDerivativeYDict(modes_idxs)
         mapX = 2.5 * dx[2] - 4 * dx[3] + 3 * dx[5]
         mapY = 2.5 * dy[2] - 4 * dy[3] + 3 * dy[5]
-        slopes = Slopes(mapX, mapY)
+        slopes = Slopes.from_2dmaps(mapX, mapY)
         modalDecomposer = ModalDecomposer(5)
         zernike = modalDecomposer.measureZernikeCoefficientsFromSlopes(
             slopes, mask, mask)
@@ -64,7 +64,7 @@ class ModalDecomposerTest(unittest.TestCase):
         dy = zg.getDerivativeYDict(modes_idxs)
         mapX = 2.5 * dx[2] - 4 * dx[3] + 3 * dx[5]
         mapY = 2.5 * dy[2] - 4 * dy[3] + 3 * dy[5]
-        slopes = Slopes(mapX, mapY)
+        slopes = Slopes.from_2dmaps(mapX, mapY)
         modalDecomposer = ModalDecomposer(8)
         zernike = modalDecomposer.measureZernikeCoefficientsFromSlopes(slopes, mask)
         self.assertTrue(np.allclose(np.array([2.5, -4, 0, 3.0]),
@@ -82,7 +82,7 @@ class ModalDecomposerTest(unittest.TestCase):
         md = ModalDecomposer(3)
         mapX = np.ma.masked_array(np.arange(40000).reshape((200, 200)))
         mapY = mapX.T
-        slopes = Slopes(mapX, mapY)
+        slopes = Slopes.from_2dmaps(mapX, mapY)
         for maskRadius in np.arange(1, 90, 7):
             mask = CircularMask((200, 200), maskRadius, [101, 100])
             md.measureZernikeCoefficientsFromSlopes(slopes, mask)
@@ -137,7 +137,7 @@ class ModalDecomposerTest(unittest.TestCase):
         mapX = np.ma.masked_array(np.arange(40000).reshape(
             (200, 200)), mask=slopeMask.mask())
         mapY = mapX.T
-        slopes = Slopes(mapX, mapY)
+        slopes = Slopes.from_2dmaps(mapX, mapY)
         mask = CircularMask((200, 200), 90, [100, 100])
         md.measureZernikeCoefficientsFromSlopes(
             slopes, mask, BaseMask(slopeMask.mask()))
