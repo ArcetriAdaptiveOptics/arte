@@ -18,15 +18,16 @@ class BaseAnalyzerSet():
     '''
     Analyzer set. Holds a list of Analyzer objects
     '''
-    def __init__(self, from_or_list, to=None, recalc=False, skip_invalid=True, logger=None):
+    def __init__(self, from_or_list, to=None, recalc=False, logger=None):
         '''
         from_or_list: either a single tag, or a list of tags
         to: sigle tag, or None
         analyzer_pool: AnalyzerPool instance from which Analyzer instances can be get()ted
         recalc: if True, all analyzers will be recalculated (lazy recalc, only when actually accessed)
-        skip_invalid: if True (default), skip analyzers that throw exceptions during initialization
         '''
         self._logger = logger
+        self._analyzer_args = []
+        self._analyzer_kwargs = {}
 
         if isinstance(from_or_list, str):
             if to is None:
@@ -34,18 +35,15 @@ class BaseAnalyzerSet():
             self.tag_list= self._get_file_walker().find_tag_between_dates(from_or_list, str(to))
         else:
             self.tag_list= sorted(from_or_list)
+        self._init_recalcs = {k: True for k in self.tag_list}
 
-        if skip_invalid:
-            newtags = []
-            for tag in self.tag_list:
-                ee = self.get(tag, recalc=recalc)
-                if str(ee) != 'NA':
-                    newtags.append(tag)
-            self.tag_list = newtags
-
-        if recalc and not skip_invalid:
-            for tag in self.tag_list:
-                _ = self.get(tag, recalc=recalc)
+    def remove_invalids(self):
+        newtags = []
+        for tag in self.tag_list:
+            ee = self.get(tag, recalc=self._init_recalcs[tag])
+            if str(ee) != 'NA':
+                newtags.append(tag)
+        self.tag_list = newtags
 
     @abc.abstractmethod
     def _get_file_walker(self):
@@ -57,13 +55,20 @@ class BaseAnalyzerSet():
         '''Return the Analyzer class type'''
         pass
 
+    def set_analyzer_args(self, *args, **kwargs):
+        self._analyzer_args = args
+        self._analyzer_kwargs = kwargs
+
     def __iter__(self):
         for tag in self.tag_list:
             yield self.get(tag)
 
     def get(self, tag, recalc=False):
         '''Returns the Analyzer instance for this tag'''
-        return self._get_type()._get(tag, recalc=recalc, logger=self._logger)
+        my_recalc = self._init_recalcs[tag] or recalc
+        self._init_recalcs[tag] = False
+        return self._get_type()._get(tag, *self._analyzer_args,
+                                     recalc=my_recalc, logger=self._logger, **self._analyzer_kwargs)
 
     def __getitem__(self, idx_or_tag):
         if isinstance(idx_or_tag, int):
