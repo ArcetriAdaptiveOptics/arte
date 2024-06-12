@@ -164,12 +164,18 @@ custom help as well.
 Analyzer sets
 -------------
 
-*sets* are a list of Analyzer objects that can be addressed in a single call::
+*sets* are a list of Analyzer objects that can be addressed in a single call,
+based on a list of tags or just the first and last one. The base class
+needs to be initialized with your file walker and the analyzer class type
+(note, just the type, not a instance)::
 
-    from arte.dataelab.base_analyzer_set import AnalyzerSet
+    from arte.dataelab.base_analyzer_set import BaseAnalyzerSet
 
-    file_walker = LBTFileNameWalker()
-    LBTSetAnalyzer = AnalyzerSet(file_walker, class_type=LBTAnalyzer)
+    class LBTAnalyzerSet(BaseAnalyzerSet):
+        def __init__(self, first, last, recalc=False):
+            super().__init___(first, last, recalc=recalc,
+                              file_walker=LBTFileNameWalker(),
+                              analyzer_type=LBTAnalyzer)
 
     # Get an entire day's worth of data
     myset = LBTSetAnalyzer('20230303_000000', '20230303_235959')

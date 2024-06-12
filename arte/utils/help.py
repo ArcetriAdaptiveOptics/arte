@@ -239,7 +239,8 @@ def hide_from_help(f):
 def _format_docstring(obj, default=None):
 
     hlp = getattr(obj, HIDDEN_HELP, False)
-    hlp = hlp or obj.__doc__ or default or 'No docstring defined'
+    docstr = (obj.__doc__ or '').strip()
+    hlp = hlp or docstr or default or 'No docstring defined'
     hlp = hlp.strip().splitlines()[0]
     return hlp
 

@@ -125,11 +125,20 @@ class OnTheFlyLoader(DataLoader):
         return self._func()
 
 
-class ConstantDataLoader(OnTheFlyLoader):
+class ConstantDataLoader(DataLoader):
     '''Loader for constant data'''
     def __init__(self, data):
-        super().__init__(lambda: data)
+        super().__init__()
+        self._data = data
 
+    def assert_exists(self):
+        pass
+
+    def filename(self):
+        return None
+
+    def load(self):
+        return self._data
 
 def data_loader_factory(obj, allow_none=False, name=''):
     '''
