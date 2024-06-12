@@ -1,5 +1,4 @@
-import abc
-from arte.dataelab.tag import Tag
+import collections
 
 
 class _AnalyzerStub(list):
@@ -18,26 +17,42 @@ class BaseAnalyzerSet():
     '''
     Analyzer set. Holds a list of Analyzer objects
     '''
-    def __init__(self, from_or_list, to=None, recalc=False, logger=None):
+    def __init__(self, from_or_list, to=None, recalc=False, logger=None, *,
+                       file_walker, analyzer_type):
         '''
-        from_or_list: either a single tag, or a list of tags
-        to: sigle tag, or None
-        analyzer_pool: AnalyzerPool instance from which Analyzer instances can be get()ted
-        recalc: if True, all analyzers will be recalculated (lazy recalc, only when actually accessed)
+        This constructor only builds the list of tags but does not allocate any Analyzer.
+
+        Parameters
+        ----------
+        from_or_list: str or list
+            either a single tag, or a list of tags
+        to: str, optional
+            sigle tag, or None
+        recalc: bool
+            if True, all analyzers will be recalculated (lazy recalc, only when actually accessed)
+        logger:
+            if set, logger to use for all analyzers
+        file_walker: BaseFileWalker or derived class instance
+            file walker used to find tag data (required keyword argument)
+        analyzer_type: BaseAnalyzer or derived class (not an instance).
+            analyzer type to instance for each tag. Must define a get() classmethod (required keyword argument).
         '''
         self._logger = logger
         self._analyzer_args = []
         self._analyzer_kwargs = {}
+        self._file_walker = file_walker
+        self._analyzer_type = analyzer_type
 
-        if isinstance(from_or_list, str):
-            if to is None:
-                to = Tag.create_tag()
-            self.tag_list= self._get_file_walker().find_tag_between_dates(from_or_list, str(to))
+        if isinstance(from_or_list, collections.abc.Sequence) and not isinstance(from_or_list, str):
+            self.tag_list = sorted(from_or_list)
         else:
-            self.tag_list= sorted(from_or_list)
-        self._init_recalcs = {k: True for k in self.tag_list}
+            self.tag_list = sorted(self._file_walker.find_tag_between_dates(str(from_or_list), str(to)))
+        self._init_recalcs = {k: recalc for k in self.tag_list}
 
     def remove_invalids(self):
+        '''
+        Remove tags that evaluate to NotAvailable when created
+        '''
         newtags = []
         for tag in self.tag_list:
             ee = self.get(tag, recalc=self._init_recalcs[tag])
@@ -45,17 +60,8 @@ class BaseAnalyzerSet():
                 newtags.append(tag)
         self.tag_list = newtags
 
-    @abc.abstractmethod
-    def _get_file_walker(self):
-        '''Return a FileWalker instance'''
-        pass
-
-    @abc.abstractmethod
-    def _get_type(self):
-        '''Return the Analyzer class type'''
-        pass
-
     def set_analyzer_args(self, *args, **kwargs):
+        '''Set the additional arguments to pass to Analyzers' contructors'''
         self._analyzer_args = args
         self._analyzer_kwargs = kwargs
 
@@ -67,8 +73,8 @@ class BaseAnalyzerSet():
         '''Returns the Analyzer instance for this tag'''
         my_recalc = self._init_recalcs[tag] or recalc
         self._init_recalcs[tag] = False
-        return self._get_type()._get(tag, *self._analyzer_args,
-                                     recalc=my_recalc, logger=self._logger, **self._analyzer_kwargs)
+        return self._analyzer_type.get(tag, *self._analyzer_args,
+                                    recalc=my_recalc, logger=self._logger, **self._analyzer_kwargs)
 
     def __getitem__(self, idx_or_tag):
         if isinstance(idx_or_tag, int):
@@ -110,7 +116,6 @@ class BaseAnalyzerSet():
 
     def wiki(self):
         '''Print wiki info on stdout'''
-        conf=None
         for i, ee in enumerate(self.generate_tags()):
             ee.wiki(header = (i == 0))
 

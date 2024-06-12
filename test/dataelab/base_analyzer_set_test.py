@@ -37,11 +37,9 @@ class TestAnalyzer(BaseAnalyzer):
 
 
 class TestAnalyzerSet(BaseAnalyzerSet):
-    def _get_file_walker(self):
-        return TestFileWalker()
-
-    def _get_type(self):
-        return TestAnalyzer
+    def __init__(self, first, last=None, recalc=False):
+        super().__init__(first, last, recalc=recalc,
+                         file_walker=TestFileWalker(), analyzer_type=TestAnalyzer)
 
 
 class BaseAnalyzerSetTest(unittest.TestCase):
@@ -63,11 +61,12 @@ class BaseAnalyzerSetTest(unittest.TestCase):
 
     def test_creation_list_notfound(self):
         set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'])
-        assert len(set) == 1
+        assert len(set) == 2
 
     def test_creation_invalid(self):
-        set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'], skip_invalid=False)
-        assert len(set) == 2
+        set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'])
+        set.remove_invalids()
+        assert len(set) == 1
 
     def test_attribute(self):
         set = TestAnalyzerSet('20240404_024500', '20240404_024501')
