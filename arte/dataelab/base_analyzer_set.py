@@ -5,6 +5,10 @@ from arte.dataelab.tag import Tag
 class _AnalyzerStub(list):
 
     def __getattr__(self, name):
+        # Necessary to allow casting by np.array()
+        if name.startswith('__array'):
+            raise AttributeError
+
         if hasattr(self[0], name):
             return _AnalyzerStub([getattr(x, name) for x in self])
         else:
