@@ -1,6 +1,6 @@
 import logging
 import numbers
-from functools import cached_property
+from functools import cached_property, cache
 import numpy as np
 from astropy import units as u
 
@@ -77,6 +77,7 @@ class BaseTimeSeries(TimeSeries):
         '''Data series shape'''
         return self.get_data().shape
 
+    @cache
     def _get_not_indexed_data(self):
         '''Lazy loading of raw data and astropy unit application'''
         return self._unit_handler.apply_unit(self._data_loader.load())

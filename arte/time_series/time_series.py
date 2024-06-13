@@ -1,7 +1,7 @@
 import abc
 import math
 import collections
-from functools import cached_property
+from functools import cache, cached_property
 
 import numpy as np
 from scipy.signal import welch
@@ -42,6 +42,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def _get_not_indexed_data(self):
         pass
 
+    @cache
     def _get_time_vector(self):
         '''Override to provide a custom time vector'''
         return np.arange(len(self._get_not_indexed_data()))
@@ -134,11 +135,13 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def last_cut_frequency(self):
         return self._last_cut_frequency
 
+    @cache
     def ensemble_size(self):
         '''Number of distinct series in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
         return math.prod(not_indexed_data.shape[1:])
 
+    @cache
     def time_size(self):
         '''Number of time samples in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
