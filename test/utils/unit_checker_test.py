@@ -4,8 +4,7 @@ import doctest
 import unittest
 import numpy as np
 import astropy.units as u
-from arte.utils.unit_checker import unit_check
-from arte.utils.unit_checker import assert_array_almost_equal_w_units
+from arte.utils.unit_checker import unit_check, make_sure_its_a
 
 class UnitCheckTest(unittest.TestCase):
 
@@ -49,14 +48,21 @@ class UnitCheckTest(unittest.TestCase):
     def test_docstrings(self):
         from arte.utils import unit_checker
         doctest.testmod(unit_checker, raise_on_error=True)
-        
-    def test_assert_array_almost_equal_w_units(self):
-        
-        a = np.arange(5)*u.mm
-        b = np.arange(5)*u.mm
-        c = np.arange(5)*u.mm +1*u.mm
-        
-        assert_array_almost_equal_w_units(a, b)
 
-        with self.assertRaises(AssertionError):
-            assert_array_almost_equal_w_units(a, c)
+    def test_make_sure_its_a_with_masked_array_returns_masked_array(self):
+            mask = np.array([[True, False], [False, False]])
+            data = np.arange(4).reshape((2, 2))
+            v = np.ma.array(data, mask=mask)
+            c = make_sure_its_a(u.m, v)
+            self.assertTrue(isinstance(c, np.ma.MaskedArray))
+            self.assertFalse(np.isnan(c).data.value.any())
+
+    def test_make_sure_its_a_with_masked_array_and_unit_returns_masked_array(self):
+            mask = np.array([[True, False], [False, False]])
+            data = np.arange(4).reshape((2, 2)) * u.cm
+            v = np.ma.array(data, mask=mask)
+            c = make_sure_its_a(u.m, v)
+            self.assertTrue(isinstance(c, np.ma.MaskedArray))
+            self.assertTrue(isinstance(c.data, u.Quantity))
+            assert c.data.unit == u.m
+            np.testing.assert_array_almost_equal(c.data.value,data.value * 0.01)
