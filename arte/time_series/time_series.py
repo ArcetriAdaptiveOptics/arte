@@ -207,8 +207,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return np.sqrt(np.mean(np.abs(x)**2, axis=1))
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
-    def power(self, from_freq=None, to_freq=None,
-              segment_factor=None, window='boxcar', *args, **kwargs):
+    def power(self, *args, from_freq=None, to_freq=None,
+              segment_factor=None, window='boxcar', **kwargs):
         '''Power Spectral Density across specified series'''
 
         if segment_factor is None:

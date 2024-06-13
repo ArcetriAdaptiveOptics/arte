@@ -327,9 +327,9 @@ class BaseTimeSeries(TimeSeries):
                                 overplot=False, plot_rms=False, lineary=False,
                                 **kwargs):
         '''Plot cumulative PSD'''
-        power = self.power(from_freq, to_freq,
-                           segment_factor,
-                           *args, **kwargs)
+        power = self.power(*args, from_freq=from_freq, to_freq=to_freq,
+                           segment_factor=segment_factor,
+                           **kwargs)
         freq = self.last_cut_frequency()
         freq_bin = freq[1]-freq[0] # frequency bin
 
