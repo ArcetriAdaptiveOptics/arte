@@ -44,7 +44,7 @@ class BaseAnalyzer(metaclass=PostInitCaller):
             self._recalc = False
 
     @classmethod
-    def get(cls, tag, recalc=False, logger=None):
+    def get(cls, tag, *args, recalc=False, logger=None, **kwargs):
         '''Get the Analyzer instance (or derived class) corresponding to *tag*.
 
         This method mantains an internal cache. If a tag is requested
@@ -61,11 +61,11 @@ class BaseAnalyzer(metaclass=PostInitCaller):
             logger to use for errors and warning. If not set, a default logger
             will be used.
         '''
-        return cls._get(tag, recalc=recalc, logger=logger)
+        return cls._get(tag, *args, recalc=recalc, logger=logger, **kwargs)
 
     @classmethod
     @functools.cache
-    def _get(cls, tag, recalc=False, logger=None):
+    def _get(cls, tag, *args, recalc=False, logger=None, **kwargs):
         '''Get a new Analyzer instance 
 
         Added one level of indirection (get() calls _get())
@@ -74,7 +74,7 @@ class BaseAnalyzer(metaclass=PostInitCaller):
 
         Also makes it easier to override it in classes
         '''
-        return cls(tag, recalc=recalc, logger=logger)
+        return cls(tag, *args, recalc=recalc, logger=logger, **kwargs)
 
     def recalc(self):
         '''Force recalculation of this analyzer data'''
