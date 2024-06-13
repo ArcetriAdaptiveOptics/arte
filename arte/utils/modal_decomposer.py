@@ -94,7 +94,6 @@ class ModalDecomposer(object):
         for i, idx in enumerate(modesIdx):
             wf_masked = np.ma.masked_array(wf[idx].data, mask=user_mask.mask())
             im[i,:] = wf_masked.compressed()
-
         return pinv(im)
 
     @returns(ZernikeCoefficients)

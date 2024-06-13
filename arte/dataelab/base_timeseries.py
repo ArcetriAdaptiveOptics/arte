@@ -1,4 +1,6 @@
 import logging
+import numbers
+from functools import cached_property
 import numpy as np
 from astropy import units as u
 
@@ -15,10 +17,21 @@ class BaseTimeSeries(TimeSeries):
     '''
     Generic time series.
 
+    A time series holds:
+        - N samples of numeric data of arbitrary type and dimensions, with an optional astropy unit.
+        - sampling time for each sample
+        - optionally, a data label for plots and displays
+        - optionally, a specialized logger
+
+    Data is accessed with the get_data() method. Derived classes can define specialized
+    arguments to return data subsets, e.g. get_data(quadrant=2)
+    Basic arithmetic operations (sum, div, etc) are supported. Astropy units, if present,
+    will be enforced.
+
     Parameters
     ----------
-    data_loader: instance of DataLoader or derived class, or numpy array
-         time series data
+    data_loader: instance of DataLoader or derived class, or numpy array, or filename (string or pathlib instance)
+         time series data [time, data_d0 [, data_d1...]]
     time_vector: instance of DataLoader or derived class, or numpy_array, or None
          time vector data. If None, a default counter from 0 to N-1 samples will be assigned
     astropy_unit: astropy unit or None
@@ -59,12 +72,17 @@ class BaseTimeSeries(TimeSeries):
         '''Data filename (full path)'''
         return self._data_loader.filename()
 
+    @cached_property
+    def shape(self):
+        '''Data series shape'''
+        return self.get_data().shape
+
     def _get_not_indexed_data(self):
-        '''Reimplementation for lazy loading and astropy units'''
+        '''Lazy loading of raw data and astropy unit application'''
         return self._unit_handler.apply_unit(self._data_loader.load())
 
     def _get_time_vector(self):
-        '''Reimplementation for lazy loading'''
+        '''Lazy loading of time vector'''
         if self._time_vector_loader is not None:
             return self._time_vector_loader.load()
         else:
@@ -135,6 +153,54 @@ class BaseTimeSeries(TimeSeries):
         '''Save data as an animated GIF'''
         frames = self.get_display(*args, **kwargs)
         savegif(frames, filename, interval=interval, loop=loop)
+
+    def _check(self, other):
+        return self.shape == other.shape
+
+    def _operator(self, other, func):
+        new_unit = self._astropy_unit
+        if isinstance(other, numbers.Number):
+            newdata = func(self.get_data(), other)
+        elif isinstance(other, u.Quantity):
+            newdata = func(self.get_data(), other)
+            new_unit = newdata.unit
+        elif not isinstance(other, self.__class__):
+            return NotImplemented
+        elif not self._check(other):
+            raise ValueError('Data dimensions do not match')
+        else:
+            newdata = func(self.get_data(), other.get_data())
+
+        return self.__class__(newdata, time_vector=self._get_time_vector(),
+                              astropy_unit=new_unit,
+                              data_label=self._data_label, logger=self._logger)
+
+    def __add__(self, other):
+        return self._operator(other, lambda x, y: x + y)
+
+    def __sub__(self, other):
+        return self._operator(other, lambda x, y: x - y)
+
+    def __mul__(self, other):
+        return self._operator(other, lambda x, y: x * y)
+
+    def __truediv__(self, other):
+        return self._operator(other, lambda x, y: x / y)
+
+    def __floordiv__(self, other):
+        return self._operator(other, lambda x, y: x // y)
+
+    def __mod__(self, other):
+        return self._operator(other, lambda x, y: x % y)
+
+    def __pow__(self, other):
+        return self._operator(other, lambda x, y: x ** y)
+
+    def __neg__(self):
+        return self._operator(self, lambda x, y: -x)
+
+    def __abs__(self):
+        return self._operator(self, lambda x, y: abs(x))
 
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
