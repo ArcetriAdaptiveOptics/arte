@@ -21,8 +21,6 @@ class Slopes(object):
     def toNumpyArray(self):
         return self._mapX, self._mapY
 
-#    def pupils(self):
-#        return self._pupils
     def numberOfSlopes(self):
         return self._nOfSlopes
 

@@ -9,6 +9,8 @@ def setup_dataelab_logging():
     
     If logging has already been configured, this function does nothing.
     '''
+    return # Disabled for now
+
     if not _is_logging_configured():
         logging.basicConfig(format='%(asctime)s,%(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                             datefmt='%Y-%m-%d:%H:%M:%S',
