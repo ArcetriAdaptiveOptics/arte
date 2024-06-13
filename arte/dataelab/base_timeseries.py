@@ -11,6 +11,7 @@ from arte.dataelab.data_loader import data_loader_factory
 from arte.dataelab.unit_handler import UnitHandler
 from arte.dataelab.dataelab_utils import setup_dataelab_logging
 from arte.time_series.indexer import DefaultIndexer
+from arte.utils.displays import movie, tile, savegif
 
 class BaseTimeSeries(TimeSeries):
     '''
@@ -134,6 +135,25 @@ class BaseTimeSeries(TimeSeries):
             return display_data.value
         else:
             return display_data
+
+    @modify_help(arg_str='[series_idx], [times=[from, to]]')
+    def movie(self, *args, interval=0.1, **kwargs):
+        '''Display data as a movie'''
+        frames = self.get_display(*args, **kwargs)
+        movie(frames, interval=interval)
+
+    @modify_help(arg_str='[series_idx], [times=[from, to]]')
+    def tile(self, *args, rowlength=10, **kwargs):
+        '''Display data as a tiled 2d frame'''
+        frames = self.get_display(*args, **kwargs)
+        return tile(frames, rowlength=rowlength)
+
+    @modify_help(arg_str='filename, [series_idx], [times=[from, to]]')
+    def savegif(self, filename, *args, interval=0.1, loop=0, **kwargs):
+        '''Save data as an animated GIF'''
+        frames = self.get_display(*args, **kwargs)
+        savegif(frames, filename, interval=interval, loop=loop)
+
     def _check(self, other):
         return self.shape == other.shape
 

@@ -40,8 +40,12 @@ class FitsDataLoader(DataLoader):
     transpose_axes: tuple, optional
         Axes transpose pattern as specified for np.transpose.
         Use this if time is not your first dimension
+    postprocess: function, optional
+        function to call after loading data and before returning it
+        Must take a single parameter with the whole data array
+        and return the processed data array.
     '''
-    def __init__(self, filename, ext=None, transpose_axes=None):
+    def __init__(self, filename, ext=None, transpose_axes=None, postprocess=None):
         super().__init__()
         if isinstance(filename, Path):
             self._filename = str(filename)
@@ -49,6 +53,7 @@ class FitsDataLoader(DataLoader):
             self._filename = filename
         self._ext = ext
         self._transpose_axes = transpose_axes
+        self._postprocess = postprocess
 
     def assert_exists(self):
         assert os.path.exists(self._filename)
@@ -64,12 +69,29 @@ class FitsDataLoader(DataLoader):
         if self._transpose_axes is not None:
             print(data.shape, self._transpose_axes)
             data = data.transpose(*self._transpose_axes)
+        if self._postprocess:
+            data = self._postprocess(data)
         return data
 
 
 class NumpyDataLoader(DataLoader):
-    '''Loader for data stored into np or npz files'''
-    def __init__(self, filename, key=None, transpose_axes=None):
+    '''Loader for data stored into np or npz files
+
+    Parameters
+    ----------
+    filename: str
+        numpy filename or full path
+    key: str, optional
+        array key for .npz files
+    transpose_axes: tuple, optional
+        Axes transpose pattern as specified for np.transpose.
+        Use this if time is not your first dimension
+    postprocess: function, optional
+        function to call after loading data and before returning it
+        Must take a single parameter with the whole data array
+        and return the processed data array.
+    '''
+    def __init__(self, filename, key=None, transpose_axes=None, postprocess=None):
         super().__init__()
         if isinstance(filename, Path):
             self._filename = str(filename)
@@ -79,6 +101,7 @@ class NumpyDataLoader(DataLoader):
             key = 'arr_0'
         self._key = key
         self._transpose_axes = transpose_axes
+        self._postprocess = postprocess
 
     def assert_exists(self):
         assert os.path.exists(self._filename)
@@ -93,6 +116,8 @@ class NumpyDataLoader(DataLoader):
             data = np.load(self._filename)
         if self._transpose_axes is not None:
             data = data.transpose(*self._transpose_axes)
+        if self._postprocess:
+            data = self._postprocess(data)
         return data
 
 class DummyLoader(DataLoader):

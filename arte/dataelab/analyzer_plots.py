@@ -12,8 +12,8 @@ from arte.utils.unit_checker import make_sure_its_a, separate_value_and_unit
 def modalplot(residual_modes_vector, pol_modes_vector, unit=u.nm,
             overplot=False, plot_to=None,
             title=None, xlabel='Mode index', ylabel='wavefront rms', add_unit_to_ylabel=True,
-            cl_label='closed loop', cl_color='red',
-            ol_label='open loop', ol_color='black'):
+            cl_label='residual modes', cl_color='red',
+            ol_label='POL modes', ol_color='black'):
     '''
     Example to apply an optical gain of 2:
 
@@ -66,7 +66,7 @@ def modalplot(residual_modes_vector, pol_modes_vector, unit=u.nm,
         else:
             plt.loglog()
             plt.xscale('symlog')    # Allow 0 index in log plots
-            plt.yscale('symlog')
+#            plt.yscale('symlog')
             plt.xlim([0, maxlen])
 
             plt.xlabel(xlabel)
