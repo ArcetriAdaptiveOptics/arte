@@ -21,10 +21,8 @@ class ModalDecomposer(object):
         im = np.zeros((nModes, 2 * dx[2].compressed().size))
         modesIdx = list(range(2, 2 + nModes))
 
-        i = 0
-        for idx in modesIdx:
+        for i, idx in enumerate(modesIdx):
             im[i,:] = np.hstack((dx[idx].compressed(), dy[idx].compressed()))
-            i += 1
         return pinv(im)
 
     @returns(ZernikeCoefficients)
@@ -56,11 +54,9 @@ class ModalDecomposer(object):
         im = np.zeros((nModes, user_mask.as_masked_array().compressed().size))
         modesIdx = list(range(2, 2 + nModes))
 
-        i = 0
-        for idx in modesIdx:
+        for i, idx in enumerate(modesIdx):
             wf_masked = np.ma.masked_array(wf[idx].data, mask=user_mask.mask())
             im[i,:] = wf_masked.compressed()
-            i += 1
         return pinv(im)
 
     @returns(ZernikeCoefficients)
