@@ -21,6 +21,7 @@ class Member():
 class Parent():
     def __init__(self):
         '''Child object test'''
+        set_tag(self, '2222')
         self.foo = Member()
 
     @cache_on_disk
@@ -59,10 +60,13 @@ class Child(Parent):
         return arg1 / arg2
 
 
-class ChildNoTag(Parent):
+class ClassNoTag():
     def __init__(self):
         super().__init__()
-        self.c_method_counter = 0
+    
+    @cache_on_disk
+    def a_method(self, foo):
+        pass
 
 
 class NumpyCache(Parent):
@@ -103,24 +107,30 @@ class CacheOnDiskTest(unittest.TestCase):
         self.ee = Child(tag='1234')
 
     def test_parent_path_name(self):
-        '''If a method is not redefined, we want the parent's class name'''
+        '''If a method is not redefined, we want the child class name anyway'''
         fullpath = get_disk_cacher(self.ee, self.ee.a_method).fullpath()
-        assert fullpath == os.path.join(tempfile.gettempdir(), 'cache1234', 'root.a_method.npy')
+        assert fullpath == os.path.join(tempfile.gettempdir(), 'cache1234', 'root.Parent.a_method.npy')
 
     def test_reimplemented_path_name(self):
-        '''If both parent and child use @cache_on_disk on the same method, we want the child's class name'''
+        '''If both parent and child use @cache_on_disk on the same method, we want the child class name'''
         fullpath = get_disk_cacher(self.ee, self.ee.b_method).fullpath()
-        assert fullpath == os.path.join(tempfile.gettempdir(), 'cache1234', 'root.b_method.npy')
+        assert fullpath == os.path.join(tempfile.gettempdir(), 'cache1234', 'root.Child.b_method.npy')
 
     def test_child_path_name(self):
-        '''If a child redefines a method using @cache_on_disk, we want the child's class name'''
+        '''If a child redefines a method using @cache_on_disk, we want the child class name'''
         fullpath = get_disk_cacher(self.ee, self.ee.c_method).fullpath()
-        assert fullpath == os.path.join(tempfile.gettempdir(), 'cache1234', 'root.c_method.npy')
+        assert fullpath == os.path.join(tempfile.gettempdir(), 'cache1234', 'root.Child.c_method.npy')
+
+    def test_force_parent_path_name(self):
+        '''For a redefined method, using the parent class name explictly results in the parent class name'''
+        p = Parent()
+        fullpath = get_disk_cacher(p, p.b_method).fullpath()
+        assert fullpath == os.path.join(tempfile.gettempdir(), 'cache2222', 'root.Parent.b_method.npy')
 
     def test_member_path_name(self):
         '''If a method is defined in a class used as attribute, we want that attribute class name'''
         fullpath = get_disk_cacher(self.ee.foo, self.ee.foo.my_method).fullpath()
-        assert fullpath == os.path.join(tempfile.gettempdir(), 'cache1234', 'root.foo.my_method.npy')
+        assert fullpath == os.path.join(tempfile.gettempdir(), 'cache1234', 'root.foo.Member.my_method.npy')
 
     def test_parent_method(self):
         '''Test caching of parent method and cache clearing'''
@@ -186,24 +196,24 @@ class CacheOnDiskTest(unittest.TestCase):
         set_prefix(myee, 'prefix')
         fullpath = get_disk_cacher(myee, myee.a_method).fullpath()
         set_prefix(myee, orig_prefix)
-        assert fullpath == os.path.join(tempfile.gettempdir(), 'prefix4321', 'root.a_method.npy')
+        assert fullpath == os.path.join(tempfile.gettempdir(), 'prefix4321', 'root.Parent.a_method.npy')
 
     def test_set_tmpdir(self):
         '''Test tempdir change'''
         myee = Child(tag='4321')
         set_tmpdir(myee, 'another_tempdir')
         fullpath = get_disk_cacher(myee, myee.a_method).fullpath()
-        assert fullpath == os.path.join('another_tempdir', 'cache4321', 'root.a_method.npy')
+        assert fullpath == os.path.join('another_tempdir', 'cache4321', 'root.Parent.a_method.npy')
 
     def test_notag(self):
         '''Test that an exception is raised when no tag has been set'''
-        ee_notag = ChildNoTag()
+        ee_notag = ClassNoTag()
         with self.assertRaises(Exception):
             _ = get_disk_cacher(ee_notag, ee_notag.a_method).fullpath()
 
     def test_automatic_creation(self):
         '''Test that DiskCacher instances are created automatically whenever accessed'''
-        ee_notag = ChildNoTag()
+        ee_notag = ClassNoTag()
         set_tmpdir(ee_notag, '/tmp')   # Must not raise
 
     def test_numpy(self):

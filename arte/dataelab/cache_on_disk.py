@@ -164,7 +164,7 @@ class DiskCacher():
         self._data = None
         self._tmpdir = tempfile.gettempdir()
         self._original_function = f
-        self._method_name = f.__name__
+        self._method_name = f.__qualname__
         self._funcid = None
         self._prefix = 'cache'
 
