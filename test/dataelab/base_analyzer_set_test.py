@@ -9,7 +9,7 @@ from arte.utils.not_available import NotAvailable
 from arte.dataelab.base_analyzer import BaseAnalyzer
 from arte.dataelab.base_analyzer_set import BaseAnalyzerSet
 from arte.dataelab.base_file_walker import AbstractFileNameWalker
-
+from arte.dataelab.cache_on_disk import cache_on_disk
 
 class TestFileWalker(AbstractFileNameWalker):
 
@@ -27,13 +27,18 @@ class TestFileWalker(AbstractFileNameWalker):
             tags += list(filter(lambda x: x >=tag_start and x<tag_stop, lst))
         return tags
 
-
 class TestAnalyzer(BaseAnalyzer):
     def __init__(self, snapshot_tag, recalc=False, logger=None):
-       super().__init__(snapshot_tag, recalc=recalc, logger=logger)
-       if not os.path.exists(TestFileWalker().snapshot_dir(snapshot_tag)):
+        super().__init__(snapshot_tag, recalc=recalc, logger=logger)
+        self._counter = 0
+        if not os.path.exists(TestFileWalker().snapshot_dir(snapshot_tag)):
             NotAvailable.transformInNotAvailable(self)
             return
+
+    @cache_on_disk
+    def a_method(self):
+        self._counter += 1
+        return self._counter
 
 
 class TestAnalyzerSet(BaseAnalyzerSet):
@@ -86,3 +91,13 @@ class BaseAnalyzerSetTest(unittest.TestCase):
         set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'])
         for ee in set:
             _ = ee.snapshot_tag()
+
+    def test_recalc_works(self):
+        set = TestAnalyzerSet(['20240404_024500'])
+        a = set.a_method()
+        b = set.a_method()
+        set = TestAnalyzerSet(['20240404_024500'], recalc=True)
+        c = set.a_method()
+        assert a == b
+        for aa, cc, in zip(a,c):
+            assert cc == aa + 1

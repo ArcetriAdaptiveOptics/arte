@@ -61,7 +61,11 @@ class BaseAnalyzer(metaclass=PostInitCaller):
             logger to use for errors and warning. If not set, a default logger
             will be used.
         '''
-        return cls._get(tag, *args, recalc=recalc, logger=logger, **kwargs)
+        analyzer = cls._get(tag, *args, logger=logger, **kwargs)
+        # Special recalc handling, must be set again for a cached instance
+        if recalc:
+            analyzer.recalc()
+        return analyzer
 
     @classmethod
     @functools.cache
