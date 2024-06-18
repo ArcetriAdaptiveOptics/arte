@@ -50,7 +50,8 @@ class BaseTimeSeries(TimeSeries):
             if time_vector_loader is not None:
                 _ = time_vector_loader.assert_exists()
 
-        except AssertionError:
+        except AssertionError as e:
+            print(e)
             NotAvailable.transformInNotAvailable(self)
             return
 
