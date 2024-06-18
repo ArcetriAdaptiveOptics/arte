@@ -1,15 +1,14 @@
 from functools import cached_property
-
 import numpy as np
+from arte.dataelab.base_data import BaseData
 
-class Base2dMap:
+class Base2dMap(BaseData):
     '''
-    2d map. Initialize by calling *set_map* with a 2d map
+    2d map. Initialize with a 2d map
     where valid elements are 1 and not used elements are 0.
     '''
     def __init__(self, map2d):
-        assert isinstance(map2d, np.ndarray)
-        self._map2d = map2d
+        super().__init__(map2d)
 
     @staticmethod
     def from_idx1d(shape, idx1d):
@@ -20,18 +19,14 @@ class Base2dMap:
     @cached_property
     def nvalid(self):
         '''Number of valid elements'''
-        nonzero = np.nonzero(self._map2d)
+        nonzero = np.nonzero(self.get_data())
         return len(nonzero[0])
-
-    @cached_property
-    def shape(self):
-        return self._map2d.shape
 
     def as_mask(self):
         ''''
         Return a mask suitable to be used in a masked array
         '''
-        return (1 - self._map2d).astype(bool)
+        return (1 - self.get_data()).astype(bool)
 
     def remap_image(self, data):
         '''
@@ -52,9 +47,8 @@ class Base2dMap:
         if len(data.shape) == 1:
             data = np.expand_dims(data, axis=0)
 
-        nonzero = np.nonzero(self._map2d)
-        ss = self._map2d.shape
-        frame = np.zeros((len(data), ss[0], ss[1]), dtype=np.float32)
+        nonzero = np.nonzero(self.get_data())
+        frame = np.zeros((len(data), self.shape[0], self.shape[1]), dtype=np.float32)
         if len(nonzero[0]) != data.shape[1]:
             raise ValueError('Cannot build display: data shape and subap map shape do not match')
         frame[:, nonzero[0], nonzero[1]] = data
