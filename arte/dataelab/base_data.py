@@ -61,6 +61,10 @@ class BaseData():
         '''Return data slice. Override in derived classes if needed'''
         return None
 
+    @property
+    def shape(self):
+        return self.get_data().shape
+
     def data_label(self):
         '''Long-form data label (for plots)'''
         return self._data_label
