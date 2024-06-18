@@ -155,28 +155,28 @@ class BaseTimeSeries(TimeSeries):
         frames = self.get_display(*args, **kwargs)
         savegif(frames, filename, interval=interval, loop=loop)
 
-    def _check_equal(self, other, func):
+    def _check_equal(self, other):
         if not self.shape == other.shape:
             raise ValueError(f'Data dimensions do not match: {self.shape} and {other.shape}')
-        return func(self.get_data(), other.get_data())
 
-    def _check_mult(self, other, func):
+    def _check_mult(self, other):
         if not self.shape[1] == other.shape[0]:
             raise ValueError(f'Data dimensions do not match: {self.shape} and {other.shape}')
-        return func(self.get_data(), other.get_data())
 
-    def _check_none(self, other, func):
+    def _check_none(self, other):
+        return None
+
+    def _check_and_execute(self, check, other, func):
+        check(other)
         return func(self.get_data(), other.get_data())
 
     def _operator(self, other, func, check):
-        if isinstance(other, numbers.Number):
-            new_data = func(self.get_data(), other)
-        elif isinstance(other, u.Quantity):
+        if isinstance(other, (numbers.Number, u.Quantity)):
             new_data = func(self.get_data(), other)
         elif not is_dataelab(other):
             return NotImplemented
         else:
-            new_data = lambda: check(other, func)
+            new_data = lambda: self._check_and_execute(check, other, func)
 
         if self.__class__ == other.__class__:
             new_class = self.__class__
