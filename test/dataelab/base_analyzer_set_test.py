@@ -9,7 +9,7 @@ from arte.utils.not_available import NotAvailable
 from arte.dataelab.base_analyzer import BaseAnalyzer
 from arte.dataelab.base_analyzer_set import BaseAnalyzerSet
 from arte.dataelab.base_file_walker import AbstractFileNameWalker
-from arte.dataelab.cache_on_disk import cache_on_disk
+from arte.dataelab.cache_on_disk import cache_on_disk, clear_cache
 
 class TestFileWalker(AbstractFileNameWalker):
 
@@ -93,7 +93,7 @@ class BaseAnalyzerSetTest(unittest.TestCase):
             _ = ee.snapshot_tag()
 
     def test_recalc_works(self):
-        set = TestAnalyzerSet(['20240404_024500'])
+        set = TestAnalyzerSet(['20240404_024500'], recalc=True)
         a = set.a_method()
         b = set.a_method()
         set = TestAnalyzerSet(['20240404_024500'], recalc=True)
