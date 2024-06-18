@@ -2,6 +2,8 @@
 
 #!/usr/bin/env python
 import unittest
+from functools import cached_property
+
 from arte.utils.help import add_help, modify_help, hide_from_help
 from arte.utils.capture_output import capture_output
 
@@ -46,6 +48,17 @@ class MyClass():
     def hidden_method(self0):
         '''an hidden method'''
         pass
+
+    @property
+    def a_property(self):
+        '''This is a property'''
+        return 1+1
+
+    @cached_property
+    def a_cached_property(self):
+        '''This is a cached property'''
+        return 2+2
+
 
 @add_help(help_function='show_help')
 class CustomClass():

@@ -88,6 +88,7 @@ Interactive session::
 '''
 import inspect
 from functools import partial
+from functools import cached_property
 
 HIDDEN_HELP = '__arte_help'
 HIDDEN_NAME = '__arte_name'
@@ -139,13 +140,14 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
         The *prefix* argument is prepended to the method name and is used
         for recursive help of every class member.
         '''
-        methods = {k: getattr(self, k) for k in dir(self) if callable(getattr(self, k))}
-        members = {k: getattr(self, k) for k in dir(self) if not callable(getattr(self, k))}
-
         properties = ({k: getattr(self.__class__, k)
                       for k in dir(self.__class__)
-                      if isinstance(getattr(self.__class__, k), property)})
+                      if isinstance(getattr(self.__class__, k), (property, cached_property))})
 
+        items = [k for k in dir(self) if k not in properties]
+
+        methods = {k: getattr(self, k) for k in items if callable(getattr(self, k))}
+        members = {k: getattr(self, k) for k in items if not callable(getattr(self, k))}
         methods.update(properties)
 
         methods = {k: v for k, v in methods.items() if _is_public_method(k) \
@@ -159,10 +161,13 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
 
         for name, method in methods.items():
             if name and method:  # Skip NAs
-                name = _format_name(method, default=name)
-                pars = _format_pars(method)
+                display_name = _format_name(method, default=name)
+                if name in properties:
+                    pars = ''
+                else:
+                    pars = _format_pars(method)
                 helpstr = _format_docstring(method)
-                hlp[prefix + '.' + name + pars] = helpstr
+                hlp[prefix + '.' + display_name + pars] = helpstr
 
         maxlen = max(map(len, hlp.keys()))
         fmt = '%%-%ds%%s' % (maxlen + 3)
