@@ -37,9 +37,9 @@ class BaseTimeSeries(TimeSeries):
     data_label: string or None
          human-readable label for plot (e.g.: "Surface modal coefficients" )
     '''
-    def __init__(self, loader_or_data, time_vector=None, astropy_unit=None, data_label=None):
+    def __init__(self, data, time_vector=None, astropy_unit=None, data_label=None):
 
-        data_loader = data_loader_factory(loader_or_data, allow_none=False, name='loader_or_data')
+        data_loader = data_loader_factory(data, allow_none=False, name='data')
         time_vector_loader = data_loader_factory(time_vector, allow_none=True, name='time_vector')
 
         try:

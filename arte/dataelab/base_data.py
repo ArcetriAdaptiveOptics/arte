@@ -13,16 +13,16 @@ class BaseData():
 
     parameters
     ----------
-    loader_or_data: instance of DataLoader or derived class, filename, or numpy array
+    data: instance of DataLoader or derived class, filename, or numpy array
         data to load
     astropy_unit: unit
         if possible, astropy unit to use with the data.
     data_label: str, optional
         human-readable label for plot (e.g.: "Surface modal coefficients" )
     '''
-    def __init__(self, loader_or_data, astropy_unit=None, data_label=None):
+    def __init__(self, data, astropy_unit=None, data_label=None):
         
-        data_loader = data_loader_factory(loader_or_data, allow_none=False, name='loader_or_data')
+        data_loader = data_loader_factory(data, allow_none=False, name='data')
 
         try:
             # Test that the data file is there, when possible
