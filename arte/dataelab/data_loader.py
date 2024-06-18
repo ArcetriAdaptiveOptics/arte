@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 from astropy.io import fits
 from arte.utils.help import add_help
+from arte.dataelab.dataelab_utils import is_dataelab
 
 @add_help
 class DataLoader():
@@ -203,6 +204,10 @@ def data_loader_factory(obj, allow_none=False, name=''):
         return ConstantDataLoader(obj)
     elif isinstance(obj, DataLoader):
         return obj
+    elif callable(obj):
+        return OnTheFlyLoader(obj)
+    elif is_dataelab(obj):
+        return OnTheFlyLoader(obj.get_data)
     elif obj is None and allow_none is True:
         return obj
     else:

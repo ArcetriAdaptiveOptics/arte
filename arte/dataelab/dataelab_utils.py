@@ -21,3 +21,8 @@ def _is_logging_configured():
     '''Detect whether logging has already been configured'''
     root = logging.getLogger()
     return root.hasHandlers()
+
+
+def is_dataelab(x):
+    '''Return whether x is supports the dataelab protocol'''
+    return hasattr(x, 'get_data') and hasattr(x, 'astropy_unit')
