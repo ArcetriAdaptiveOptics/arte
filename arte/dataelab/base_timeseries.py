@@ -1,4 +1,3 @@
-import logging
 import numbers
 from functools import cached_property, cache
 import numpy as np
@@ -9,7 +8,7 @@ from arte.utils.help import modify_help
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import data_loader_factory
 from arte.dataelab.unit_handler import UnitHandler
-from arte.dataelab.dataelab_utils import setup_dataelab_logging, is_dataelab
+from arte.dataelab.dataelab_utils import is_dataelab
 from arte.time_series.indexer import DefaultIndexer
 from arte.utils.displays import movie, tile, savegif
 
@@ -21,7 +20,6 @@ class BaseTimeSeries(TimeSeries):
         - N samples of numeric data of arbitrary type and dimensions, with an optional astropy unit.
         - sampling time for each sample
         - optionally, a data label for plots and displays
-        - optionally, a specialized logger
 
     Data is accessed with the get_data() method. Derived classes can define specialized
     arguments to return data subsets, e.g. get_data(quadrant=2)
@@ -38,11 +36,8 @@ class BaseTimeSeries(TimeSeries):
          if possible, astropy unit to use with the data.
     data_label: string or None
          human-readable label for plot (e.g.: "Surface modal coefficients" )
-    logger: Logger instance or None
-         logger to use for warnings and errors. If not set, a default logger will be used
-
     '''
-    def __init__(self, loader_or_data, time_vector=None, astropy_unit=None, data_label=None, logger=None):
+    def __init__(self, loader_or_data, time_vector=None, astropy_unit=None, data_label=None):
 
         data_loader = data_loader_factory(loader_or_data, allow_none=False, name='loader_or_data')
         time_vector_loader = data_loader_factory(time_vector, allow_none=True, name='time_vector')
@@ -64,9 +59,7 @@ class BaseTimeSeries(TimeSeries):
         self._astropy_unit = astropy_unit
         self._data_label = data_label
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
-        self._logger = logger or logging.getLogger(__name__)
         self._default_indexer = DefaultIndexer()
-        setup_dataelab_logging()
 
     def filename(self):
         '''Data filename (full path)'''
@@ -184,7 +177,7 @@ class BaseTimeSeries(TimeSeries):
             new_class = BaseTimeSeries
         return new_class(new_data, time_vector=self._get_time_vector(),
                          astropy_unit=None,
-                         data_label=self._data_label, logger=self._logger)
+                         data_label=self._data_label)
 
     def __add__(self, other):
         return self._operator(other, lambda x, y: x + y, self._check_equal)
