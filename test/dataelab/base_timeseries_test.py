@@ -133,13 +133,13 @@ class TestBaseTimeSeriesMath(unittest.TestCase):
         a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
         b = BaseTimeSeries(np.array([[5, 6], [7, 8]]) * u.m)
         with self.assertRaises(u.UnitConversionError):
-            _ = a + b
+            _ = (a + b).get_data()
 
     def test_addition_numpy_array_with_astropy_quantities(self):
         a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
         b = BaseTimeSeries(np.array([[5, 6], [7, 8]]) * u.m)
         with self.assertRaises(u.UnitConversionError):
-            _ = a + b
+            _ = (a + b).get_data()
 
     def test_subtraction_astropy_quantities(self):
         a = BaseTimeSeries(np.array([[9, 8], [7, 6]]) * u.m)
@@ -166,13 +166,13 @@ class TestBaseTimeSeriesMath(unittest.TestCase):
         a = BaseTimeSeries(np.array([[1, 2], [3, 4]]) * u.m)
         b = BaseTimeSeries(np.array([[5, 6], [7, 8]]) * u.s)
         with self.assertRaises(u.UnitConversionError):
-            _ = a + b
+            _ = (a + b).get_data()
 
     def test_subtraction_mismatched_units(self):
         a = BaseTimeSeries(np.array([[9, 8], [7, 6]]) * u.m)
         b = BaseTimeSeries(np.array([[5, 4], [3, 2]]) * u.s)
         with self.assertRaises(u.UnitConversionError):
-            _ = a - b
+            _ = (a + b).get_data()
 
     def test_invalid_addition(self):
         a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))

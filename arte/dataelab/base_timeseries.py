@@ -9,7 +9,7 @@ from arte.utils.help import modify_help
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import data_loader_factory
 from arte.dataelab.unit_handler import UnitHandler
-from arte.dataelab.dataelab_utils import setup_dataelab_logging
+from arte.dataelab.dataelab_utils import setup_dataelab_logging, is_dataelab
 from arte.time_series.indexer import DefaultIndexer
 from arte.utils.displays import movie, tile, savegif
 
@@ -155,53 +155,66 @@ class BaseTimeSeries(TimeSeries):
         frames = self.get_display(*args, **kwargs)
         savegif(frames, filename, interval=interval, loop=loop)
 
-    def _check(self, other):
-        return self.shape == other.shape
+    def _check_equal(self, other, func):
+        if not self.shape == other.shape:
+            raise ValueError(f'Data dimensions do not match: {self.shape} and {other.shape}')
+        return func(self.get_data(), other.get_data())
 
-    def _operator(self, other, func):
-        new_unit = self._astropy_unit
+    def _check_mult(self, other, func):
+        if not self.shape[1] == other.shape[0]:
+            raise ValueError(f'Data dimensions do not match: {self.shape} and {other.shape}')
+        return func(self.get_data(), other.get_data())
+
+    def _check_none(self, other, func):
+        return func(self.get_data(), other.get_data())
+
+    def _operator(self, other, func, check):
         if isinstance(other, numbers.Number):
-            newdata = func(self.get_data(), other)
+            new_data = func(self.get_data(), other)
         elif isinstance(other, u.Quantity):
-            newdata = func(self.get_data(), other)
-            new_unit = newdata.unit
-        elif not isinstance(other, self.__class__):
+            new_data = func(self.get_data(), other)
+        elif not is_dataelab(other):
             return NotImplemented
-        elif not self._check(other):
-            raise ValueError('Data dimensions do not match')
         else:
-            newdata = func(self.get_data(), other.get_data())
+            new_data = lambda: check(other, func)
 
-        return self.__class__(newdata, time_vector=self._get_time_vector(),
-                              astropy_unit=new_unit,
-                              data_label=self._data_label, logger=self._logger)
+        if self.__class__ == other.__class__:
+            new_class = self.__class__
+        else:
+            new_class = BaseTimeSeries
+        return new_class(new_data, time_vector=self._get_time_vector(),
+                         astropy_unit=None,
+                         data_label=self._data_label, logger=self._logger)
 
     def __add__(self, other):
-        return self._operator(other, lambda x, y: x + y)
+        return self._operator(other, lambda x, y: x + y, self._check_equal)
 
     def __sub__(self, other):
-        return self._operator(other, lambda x, y: x - y)
+        return self._operator(other, lambda x, y: x - y, self._check_equal)
 
     def __mul__(self, other):
-        return self._operator(other, lambda x, y: x * y)
+        return self._operator(other, lambda x, y: x * y, self._check_equal)
 
     def __truediv__(self, other):
-        return self._operator(other, lambda x, y: x / y)
+        return self._operator(other, lambda x, y: x / y, self._check_equal)
 
     def __floordiv__(self, other):
-        return self._operator(other, lambda x, y: x // y)
+        return self._operator(other, lambda x, y: x // y, self._check_equal)
 
     def __mod__(self, other):
-        return self._operator(other, lambda x, y: x % y)
+        return self._operator(other, lambda x, y: x % y, self._check_equal)
+
+    def __matmul__(self, other):
+        return self._operator(other, lambda x, y: x @ y, self._check_mult)
 
     def __pow__(self, other):
-        return self._operator(other, lambda x, y: x ** y)
+        return self._operator(other, lambda x, y: x ** y, self._check_equal)
 
     def __neg__(self):
-        return self._operator(self, lambda x, y: -x)
+        return self._operator(self, lambda x, y: -x, self._check_none)
 
     def __abs__(self):
-        return self._operator(self, lambda x, y: abs(x))
+        return self._operator(self, lambda x, y: abs(x), self._check_none)
 
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
