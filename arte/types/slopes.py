@@ -17,7 +17,8 @@ class Slopes(object):
             2D boolean mask to rearrange a 1D slope vector into a 2D frame,
             valid for both X and Y slope vectors.
         '''
-        assert len(slopesx_compressed) == len(slopesy_compressed)
+        assert len(slopesx_compressed) == len(slopesy_compressed), \
+            'X and Y slopes length differ'
         self._mask2d = mask2d
         self._vector = np.hstack((slopesx_compressed, slopesy_compressed))
 
@@ -41,10 +42,10 @@ class Slopes(object):
             A new Slopes object. Valid slopes (as indicated by the mask)
             are copied into an internal array. No references to the input data are kept.
         '''
-        assert isinstance(mapX, np.ma.MaskedArray)
-        assert isinstance(mapY, np.ma.MaskedArray)
-        assert mapX.shape == mapY.shape
-        assert np.all(mapX.mask == mapY.mask)
+        assert isinstance(mapX, np.ma.MaskedArray), 'mapX is not a np.ma.MaskedArray'
+        assert isinstance(mapY, np.ma.MaskedArray), 'mapY is not a np.ma.MaskedArray'
+        assert mapX.shape == mapY.shape, 'mapX and mapY shapes differ'
+        assert np.all(mapX.mask == mapY.mask), 'mapX and mapY masks differ'
         return Slopes(mapX.compressed(), mapY.compressed(), np.ma.getmaskarray(mapX))
 
     @staticmethod

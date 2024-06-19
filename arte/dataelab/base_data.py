@@ -29,7 +29,8 @@ class BaseData():
             # Test that the data file is there, when possible
             _ = data_loader.assert_exists()
 
-        except AssertionError:
+        except AssertionError as e:
+            print(e)
             NotAvailable.transformInNotAvailable(self)
             return
 

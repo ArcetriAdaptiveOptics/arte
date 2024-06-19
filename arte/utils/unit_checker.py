@@ -6,6 +6,8 @@ from functools import wraps
 import numpy as np
 import astropy.units as u
 
+from arte.utils.not_available import NotAvailable
+
 
 def assert_unit_is_equivalent(var, ref):
     '''Make sure that `var` has a unit compatible with `ref`'''
@@ -87,6 +89,9 @@ def make_sure_its_a(unit, v, name='', copy=True):
         return np.ma.MaskedArray(
             make_sure_its_a(unit, v.data, name=name, copy=copy),
             mask=v.mask)
+
+    if isinstance(v, NotAvailable):
+        return NotAvailable
 
     if not isinstance(v, u.Quantity):
         return u.Quantity(v, unit=unit, copy=copy)

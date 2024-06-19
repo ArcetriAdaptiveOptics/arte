@@ -57,7 +57,7 @@ class FitsDataLoader(DataLoader):
         self._postprocess = postprocess
 
     def assert_exists(self):
-        assert os.path.exists(self._filename)
+        assert os.path.exists(self._filename), 'File Not Found: ' + self._filename
 
     def filename(self):
         return self._filename
@@ -105,7 +105,7 @@ class NumpyDataLoader(DataLoader):
         self._postprocess = postprocess
 
     def assert_exists(self):
-        assert os.path.exists(self._filename)
+        assert os.path.exists(self._filename), 'File Not Found: ' + self._filename
 
     def filename(self):
         return self._filename
@@ -120,6 +120,45 @@ class NumpyDataLoader(DataLoader):
         if self._postprocess:
             data = self._postprocess(data)
         return data
+
+class TxtDataLoader(DataLoader):
+    '''Loader for data stored into txt files
+
+    Parameters
+    ----------
+    filename: str
+        numpy filename or full path
+    transpose_axes: tuple, optional
+        Axes transpose pattern as specified for np.transpose.
+        Use this if time is not your first dimension
+    postprocess: function, optional
+        function to call after loading data and before returning it
+        Must take a single parameter with the whole data array
+        and return the processed data array.
+    '''
+    def __init__(self, filename, transpose_axes=None, postprocess=None):
+        super().__init__()
+        if isinstance(filename, Path):
+            self._filename = str(filename)
+        else:
+            self._filename = filename
+        self._transpose_axes = transpose_axes
+        self._postprocess = postprocess
+
+    def assert_exists(self):
+        assert os.path.exists(self._filename), 'File Not Found: ' + self._filename
+
+    def filename(self):
+        return self._filename
+
+    def load(self):
+        data = np.loadtxt(self._filename)
+        if self._transpose_axes is not None:
+            data = data.transpose(*self._transpose_axes)
+        if self._postprocess:
+            data = self._postprocess(data)
+        return data
+
 
 class DummyLoader(DataLoader):
     '''Dummy loader for data not stored anywhere'''
@@ -165,6 +204,7 @@ class ConstantDataLoader(DataLoader):
 
     def load(self):
         return self._data
+
 
 def data_loader_factory(obj, allow_none=False, name=''):
     '''
