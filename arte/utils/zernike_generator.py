@@ -1,4 +1,5 @@
 import numpy as np
+from functools import cache
 from scipy.special import factorial
 from arte.types.mask import CircularMask
 
@@ -395,6 +396,35 @@ class ZernikeGenerator(object):
 
         '''
         return np.ceil(0.5 * (np.sqrt(8 * np.array(j) + 1) - 3)).astype(int)
+
+    @classmethod
+    @cache
+    def index_to_name_dict(cls):
+        '''
+        Zernike index to zernike name mapping
+
+        Returns
+        -------
+        names: dict
+            dictionary of Zernike mode names: int -> str
+        '''
+        return {1:'piston',
+                2:'tip',
+                3:'tilt',
+                4:'focus'}
+
+    @classmethod
+    @cache
+    def name_to_index_dict(cls):
+        '''
+        Zernike name to zernike index mapping
+
+        Returns
+        -------
+        names: dict
+            dictionary of Zernike indexes: str -> int
+        '''
+        return {v: k for k,v in cls.index_to_name_dict().items()}
 
 
 def _isOdd(num):
