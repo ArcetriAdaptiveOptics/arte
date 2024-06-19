@@ -176,7 +176,7 @@ class BaseTimeSeries(TimeSeries):
             new_class = self.__class__
         else:
             new_class = BaseTimeSeries
-        return new_class(new_data, time_vector=self._get_time_vector(),
+        return new_class(new_data, time_vector=self._get_time_vector,
                          astropy_unit=None,
                          data_label=self._data_label)
 
