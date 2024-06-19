@@ -91,7 +91,7 @@ def make_sure_its_a(unit, v, name='', copy=True):
             mask=v.mask)
 
     if isinstance(v, NotAvailable):
-        return NotAvailable
+        return v
 
     if not isinstance(v, u.Quantity):
         return u.Quantity(v, unit=unit, copy=copy)

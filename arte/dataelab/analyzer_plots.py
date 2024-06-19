@@ -36,16 +36,29 @@ def modalplot(residual_modes_vector, pol_modes_vector, unit=None,
         if title is None:
             raise ValueError('Title must be set when not overplotting')
 
-    if unit:
+    # Make sure that the two units match if at all possible,
+    # taking care of leaving NotAvailable values untouched.
+    res_valid = not isinstance(res_data, NotAvailable)
+    pol_valid = not isinstance(pol_data, NotAvailable)
+    res_quantity = isinstance(res_data, u.Quantity)
+    pol_quantity = isinstance(pol_data, u.Quantity)
+    if unit is not None:
         res_data = make_sure_its_a(unit, res_data)
         pol_data = make_sure_its_a(unit, pol_data)
+    elif res_valid and pol_valid and (res_quantity or pol_quantity):
+        pol_data = make_sure_its_a(res_data.unit, pol_data)
+
     res_value, res_unit = separate_value_and_unit(res_data)
     pol_value, pol_unit = separate_value_and_unit(pol_data)
 
-    if res_unit != pol_unit and \
-        not isinstance(res_value, NotAvailable) and \
-        not isinstance(res_value, NotAvailable):
-        raise ValueError('Residuals and POL units do not match, cannot produce plot')
+    # Select what to display on the Y axis.
+    plot_unit = ''
+    if res_quantity:
+        plot_unit = res_unit
+    elif pol_quantity:
+        plot_unit = pol_unit
+    if not isinstance(plot_unit, u.UnitBase):
+        plot_unit = 'a.u.'
 
     plt.plot(np.arange(len(res_data)), res_value,
                 color=res_color, label=res_label)
@@ -54,8 +67,8 @@ def modalplot(residual_modes_vector, pol_modes_vector, unit=None,
 
     maxlen = max(len(res_data), len(pol_data))
 
-    if add_unit_to_ylabel and unit:
-        ystr = f'{ylabel} [{unit.name}]'
+    if add_unit_to_ylabel:
+        ystr = f'{ylabel} [{plot_unit}]'
     else:
         ystr = ylabel
 
