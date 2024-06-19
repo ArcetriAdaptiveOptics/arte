@@ -4,7 +4,6 @@ from arte.utils.help import add_help
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import data_loader_factory
 from arte.dataelab.unit_handler import UnitHandler
-from arte.dataelab.dataelab_utils import setup_dataelab_logging
 
 
 @add_help
@@ -14,16 +13,16 @@ class BaseData():
 
     parameters
     ----------
-    loader_or_data: instance of DataLoader or derived class, filename, or numpy array
+    data: instance of DataLoader or derived class, filename, or numpy array
         data to load
     astropy_unit: unit
         if possible, astropy unit to use with the data.
     data_label: str, optional
         human-readable label for plot (e.g.: "Surface modal coefficients" )
     '''
-    def __init__(self, loader_or_data, astropy_unit=None, data_label=None, logger=None):
+    def __init__(self, data, astropy_unit=None, data_label=None):
         
-        data_loader = data_loader_factory(loader_or_data, allow_none=False, name='loader_or_data')
+        data_loader = data_loader_factory(data, allow_none=False, name='data')
 
         try:
             # Test that the data file is there, when possible
@@ -38,8 +37,6 @@ class BaseData():
         self._astropy_unit = astropy_unit
         self._data_label = data_label
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
-        self._logger = logger
-        setup_dataelab_logging()
 
     def filename(self):
         '''Data filename (full path)'''

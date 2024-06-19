@@ -238,6 +238,8 @@ def data_loader_factory(obj, allow_none=False, name=''):
             return FitsDataLoader(obj)
         elif obj.endswith('.npy') or obj.endswith('.npz'):
             return NumpyDataLoader(obj)
+        elif obj.endswith('.txt'):
+            return TxtDataLoader(obj)
         else:
             raise ValueError(f'Cannot guess correct DataLoader instance for filename {obj}')
     elif isinstance(obj, np.ndarray):
