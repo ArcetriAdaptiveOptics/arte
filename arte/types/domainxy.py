@@ -302,7 +302,7 @@ class DomainXY():
         delta = vector[1:] - vector[:-1]
 
         # np.isclose() does not like quantities
-        d0, p2v = delta[0], delta.ptp()
+        d0, p2v = delta[0], np.ptp(delta)
         if isinstance(p2v, u.Quantity):
             d0, p2v = d0.value, p2v.value
         assert np.isclose(0, p2v, atol=1e-6 * d0)
