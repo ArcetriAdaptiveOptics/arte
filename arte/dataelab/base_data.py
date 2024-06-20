@@ -1,9 +1,11 @@
 import numpy as np
+import astropy.units as u
 
-from arte.utils.help import add_help
+from arte.utils.help import add_help, modify_help
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import data_loader_factory
 from arte.dataelab.unit_handler import UnitHandler
+from arte.utils.displays import imshow
 
 
 @add_help
@@ -77,9 +79,17 @@ class BaseData():
 
     def get_display(self, *args, **kwargs):
         '''Data mapped in 2d'''
-        return np.atleast_2d(self.get_data(*args, **kwargs))
+        data_to_display = self.get_data(*args, **kwargs)
+        display_data = np.atleast_2d(data_to_display)
+        if isinstance(display_data, u.Quantity):
+            return display_data.value
+        else:
+            return display_data
     
-
+    def imshow(self, *args, **kwargs):
+        '''Display data as a movie'''
+        data = self.get_display(*args, **kwargs)
+        imshow(data)
 
 
 # __oOo__
