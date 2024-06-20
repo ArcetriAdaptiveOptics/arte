@@ -50,6 +50,6 @@ class Base2dMap(BaseData):
         nonzero = np.nonzero(self.get_data())
         frame = np.zeros((len(data), self.shape[0], self.shape[1]), dtype=np.float32)
         if len(nonzero[0]) != data.shape[1]:
-            raise ValueError('Cannot build display: data shape and subap map shape do not match')
+            raise ValueError(f'Cannot build display: data shape and subap map shape do not match: %s and %d elements' % (data.shape, len(nonzero[0])))
         frame[:, nonzero[0], nonzero[1]] = data
         return frame
