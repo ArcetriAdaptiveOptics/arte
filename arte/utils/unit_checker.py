@@ -41,12 +41,12 @@ def separate_value_and_unit(var):
 
     Examples
     --------
-    >>> a = 42 * u.m
-    >>> separate_value_and_unit(a)
+    > a = 42 * u.m
+    > separate_value_and_unit(a)
     (42.0, Unit("m"))
 
-    >>> b = 42
-    >>> separate_value_and_unit(b)
+    > b = 42
+    > separate_value_and_unit(b)
     (42, 1)
     '''
     if isinstance(var, u.Quantity):
