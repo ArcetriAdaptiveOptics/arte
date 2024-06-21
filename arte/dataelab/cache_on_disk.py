@@ -234,7 +234,7 @@ class DiskCacher():
             else:
                 pickle.dump(self._data, open(self.fullpath(), 'wb'))
         except Exception as e:
-            logger.debug('Exception saving to disk: '+str(e))
+            self.log('Exception saving to disk: '+str(e))
 
     def _load_from_disk(self):
         self.log('Reading ' + self.fullpath())

@@ -57,7 +57,7 @@ class FitsDataLoader(DataLoader):
         self._postprocess = postprocess
 
     def assert_exists(self):
-        assert os.path.exists(self._filename)
+        assert os.path.exists(self._filename), 'File Not Found: ' + self._filename
 
     def filename(self):
         return self._filename
@@ -105,7 +105,7 @@ class NumpyDataLoader(DataLoader):
         self._postprocess = postprocess
 
     def assert_exists(self):
-        assert os.path.exists(self._filename)
+        assert os.path.exists(self._filename), 'File Not Found: ' + self._filename
 
     def filename(self):
         return self._filename
@@ -146,7 +146,7 @@ class TxtDataLoader(DataLoader):
         self._postprocess = postprocess
 
     def assert_exists(self):
-        assert os.path.exists(self._filename)
+        assert os.path.exists(self._filename), 'File Not Found: ' + self._filename
 
     def filename(self):
         return self._filename
@@ -204,6 +204,7 @@ class ConstantDataLoader(DataLoader):
 
     def load(self):
         return self._data
+
 
 def data_loader_factory(obj, allow_none=False, name=''):
     '''

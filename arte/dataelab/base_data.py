@@ -1,9 +1,11 @@
 import numpy as np
+import astropy.units as u
 
 from arte.utils.help import add_help
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import data_loader_factory
 from arte.dataelab.unit_handler import UnitHandler
+from arte.utils.show_array import show_array
 
 
 @add_help
@@ -28,7 +30,8 @@ class BaseData():
             # Test that the data file is there, when possible
             _ = data_loader.assert_exists()
 
-        except AssertionError:
+        except AssertionError as e:
+            print(e)
             NotAvailable.transformInNotAvailable(self)
             return
 
@@ -64,11 +67,11 @@ class BaseData():
 
     def data_label(self):
         '''Long-form data label (for plots)'''
-        return self._data_label
+        return self._data_label or ''
 
     def data_unit(self):
         '''Data unit string (for plots)'''
-        return self._unit_handler.actual_unit_name()
+        return self._unit_handler.actual_unit_name() or ''
 
     def astropy_unit(self):
         '''Data unit as an astropy unit'''
@@ -76,8 +79,24 @@ class BaseData():
 
     def get_display(self, *args, **kwargs):
         '''Data mapped in 2d'''
-        return np.atleast_2d(self.get_data(*args, **kwargs))
-    
+        data_to_display = self.get_data(*args, **kwargs)
+        display_data = np.atleast_2d(data_to_display)
+        if isinstance(display_data, u.Quantity):
+            return display_data.value
+        else:
+            return display_data
+
+    def imshow(self, cut_wings=0, title='', xlabel='', ylabel='', **kwargs):
+        '''
+        Display X and Y slope 2d images
+        cut_wings=x means that colorbar is saturated for array values below x percentile
+        and above 100-x percentile. Default is 0, i.e. all data are displayed; values below
+        0 are forced to 0, values above 50 are set to 50.
+        '''
+        if not title:
+            title = self.data_label()
+        array2show = self.get_display()
+        return show_array(array2show, cut_wings, title, xlabel, ylabel, self.data_unit(), **kwargs)
 
 
 

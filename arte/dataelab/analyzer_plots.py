@@ -9,11 +9,11 @@ from arte.utils.not_available import NotAvailable
 from arte.utils.unit_checker import make_sure_its_a, separate_value_and_unit
 
 
-def modalplot(residual_modes_vector, pol_modes_vector, unit=u.nm,
+def modalplot(residual_modes_vector, pol_modes_vector, unit=None,
             overplot=False, plot_to=None,
             title=None, xlabel='Mode index', ylabel='wavefront rms', add_unit_to_ylabel=True,
-            cl_label='residual modes', cl_color='red',
-            ol_label='POL modes', ol_color='black'):
+            res_label='residual modes', res_color='red',
+            pol_label='POL modes', pol_color='black'):
     '''
     Example to apply an optical gain of 2:
 
@@ -27,8 +27,8 @@ def modalplot(residual_modes_vector, pol_modes_vector, unit=u.nm,
     else:
         plt = pyplot
 
-    cl_std = residual_modes_vector
-    ol_std = pol_modes_vector
+    res_data = residual_modes_vector
+    pol_data = pol_modes_vector
 
     if not overplot:
         plt.cla()
@@ -36,25 +36,39 @@ def modalplot(residual_modes_vector, pol_modes_vector, unit=u.nm,
         if title is None:
             raise ValueError('Title must be set when not overplotting')
 
-    maxlen = 0
-    if not isinstance(cl_std, NotAvailable):
-        if unit:
-            cl_std = make_sure_its_a(unit, cl_std)
-        value, _ = separate_value_and_unit(cl_std)
-        plt.plot(np.arange(len(cl_std)), value,
-                    color=ol_color, label=cl_label)
-        maxlen = max(maxlen, len(cl_std))
+    # Make sure that the two units match if at all possible,
+    # taking care of leaving NotAvailable values untouched.
+    res_valid = not isinstance(res_data, NotAvailable)
+    pol_valid = not isinstance(pol_data, NotAvailable)
+    res_quantity = isinstance(res_data, u.Quantity)
+    pol_quantity = isinstance(pol_data, u.Quantity)
+    if unit is not None:
+        res_data = make_sure_its_a(unit, res_data)
+        pol_data = make_sure_its_a(unit, pol_data)
+    elif res_valid and pol_valid and (res_quantity or pol_quantity):
+        pol_data = make_sure_its_a(res_data.unit, pol_data)
 
-    if not isinstance(ol_std, NotAvailable):
-        if unit:
-            ol_std = make_sure_its_a(unit, ol_std)
-        value, _ = separate_value_and_unit(ol_std)
-        plt.plot(np.arange(len(ol_std)), value,
-                    color=cl_color, label=ol_label)
-        maxlen = max(maxlen, len(ol_std))
+    res_value, res_unit = separate_value_and_unit(res_data)
+    pol_value, pol_unit = separate_value_and_unit(pol_data)
 
-    if add_unit_to_ylabel and unit:
-        ystr = f'{ylabel} [{unit.name}]'
+    # Select what to display on the Y axis.
+    plot_unit = ''
+    if res_quantity:
+        plot_unit = res_unit
+    elif pol_quantity:
+        plot_unit = pol_unit
+    if not isinstance(plot_unit, u.UnitBase):
+        plot_unit = 'a.u.'
+
+    plt.plot(np.arange(len(res_data)), res_value,
+                color=res_color, label=res_label)
+    plt.plot(np.arange(len(pol_data)), pol_value,
+                color=pol_color, label=pol_label)
+
+    maxlen = max(len(res_data), len(pol_data))
+
+    if add_unit_to_ylabel:
+        ystr = f'{ylabel} [{plot_unit}]'
     else:
         ystr = ylabel
 
@@ -73,6 +87,6 @@ def modalplot(residual_modes_vector, pol_modes_vector, unit=u.nm,
             plt.ylabel(ystr)
             if title is not None:
                 plt.title(title)
-            if not (cl_label is None and ol_label is None):
+            if not (res_label is None and pol_label is None):
                 plt.legend()
     return plt
