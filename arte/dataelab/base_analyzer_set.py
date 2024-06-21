@@ -21,7 +21,7 @@ class BaseAnalyzerSet():
     '''
     Analyzer set. Holds a list of Analyzer objects
     '''
-    def __init__(self, from_or_list, to=None, recalc=False, logger=None, *,
+    def __init__(self, from_or_list, to=None, recalc=False, *,
                        file_walker, analyzer_type):
         '''
         This constructor only builds the list of tags but does not allocate any Analyzer.
@@ -34,14 +34,11 @@ class BaseAnalyzerSet():
             sigle tag, or None
         recalc: bool
             if True, all analyzers will be recalculated (lazy recalc, only when actually accessed)
-        logger:
-            if set, logger to use for all analyzers
         file_walker: BaseFileWalker or derived class instance
             file walker used to find tag data (required keyword argument)
         analyzer_type: BaseAnalyzer or derived class (not an instance).
             analyzer type to instance for each tag. Must define a get() classmethod (required keyword argument).
         '''
-        self._logger = logger
         self._analyzer_args = []
         self._analyzer_kwargs = {}
         self._file_walker = file_walker
@@ -78,7 +75,7 @@ class BaseAnalyzerSet():
         my_recalc = self._init_recalcs[tag] or recalc
         self._init_recalcs[tag] = False
         return self._analyzer_type.get(tag, *self._analyzer_args,
-                                    recalc=my_recalc, logger=self._logger, **self._analyzer_kwargs)
+                                    recalc=my_recalc, **self._analyzer_kwargs)
 
     def __getitem__(self, idx_or_tag):
         if isinstance(idx_or_tag, int):

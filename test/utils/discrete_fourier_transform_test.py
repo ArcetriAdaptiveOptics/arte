@@ -39,7 +39,7 @@ class BidimensionalFourierTransformTest(unittest.TestCase):
         deltaMap[sz2, sz2] = 1.0
         res = bfft.inverse_transform(deltaMap)
         self.assertEqual((sz, sz), res.shape)
-        self.assertEqual(0, np.ptp(res)
+        self.assertEqual(0, np.ptp(res))
         self._checkParseval(deltaMap, res)
 
     def _makeSinusMap(self, sizeInPoints, pixelSize,
@@ -227,7 +227,7 @@ class BidimensionalFourierTransformTest(unittest.TestCase):
         fftFunct = bfft.reverse(xyFunct)
         spectralMap = fftFunct.values
         self.assertEqual((sz, sz), spectralMap.shape)
-        self.assertEqual(0, np.ptp(spectralMap)
+        self.assertEqual(0, np.ptp(spectralMap))
         self._checkParseval(deltaMap, spectralMap)
 
     def test_rectangular_domain(self):
