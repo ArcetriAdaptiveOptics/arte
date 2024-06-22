@@ -36,14 +36,16 @@ class BaseTimeSeries(TimeSeries):
          if possible, astropy unit to use with the data.
     data_label: string or None
          human-readable label for plot (e.g.: "Surface modal coefficients" )
+    axes: sequence or None
+         sequence of axes names, optional
     '''
-    def __init__(self, data, time_vector=None, astropy_unit=None, data_label=None):
+    def __init__(self, data, time_vector=None, astropy_unit=None, data_label=None, axes=None):
 
         data_loader = data_loader_factory(data, allow_none=False, name='data')
         time_vector_loader = data_loader_factory(time_vector, allow_none=True, name='time_vector')
 
         try:
-            super().__init__()
+            super().__init__(axes=axes)
 
             # Also test that the data file is there, when possible
             _ = data_loader.assert_exists()
