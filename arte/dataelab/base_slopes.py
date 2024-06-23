@@ -19,11 +19,12 @@ class BaseSlopes(BaseTimeSeries):
     as well the imshow() and vecshow() methods.
     '''
 
-    def __init__(self, data, time_vector=None, astropy_unit=signal_unit, data_label='slopes'):
+    def __init__(self, data, time_vector=None, astropy_unit=signal_unit, data_label='slopes', axes=None):
         super().__init__(data=data,
                          time_vector=time_vector,
                          astropy_unit=astropy_unit,
-                         data_label=data_label)
+                         data_label=data_label,
+                         axes=axes)
         self._indexer = Indexer()
 
     def get_index_of(self, *args, **kwargs):

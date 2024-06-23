@@ -13,7 +13,10 @@ class AxisHandler():
         axes: sequence of str, optional
             Initial axis order. If None, no axis transpositions will be possible.
         '''
-        self._axes = tuple(axes)
+        if axes is None:
+            self._axes = ()
+        else:
+            self._axes = tuple(axes)
 
     def transpose(self, data, axes=None):
         '''

@@ -7,6 +7,17 @@ from arte.time_series.axis_handler import AxisHandler
 
 class AxisHandlerTest(unittest.TestCase):
 
+    def test_no_axes(self):
+        handler = AxisHandler(axes=None)
+        data = np.zeros((5, 4))
+        assert handler.transpose(data, axes=None).shape == (5, 4)
+
+    def test_no_axes_fails_if_asked(self):
+        handler = AxisHandler(axes=None)
+        data = np.zeros((5, 4))
+        with self.assertRaises(ValueError):
+            _ = handler.transpose(data, axes='foo')
+
     def test_axes_1d_same_order(self):
         handler = AxisHandler(axes=('time', 'data'))
         data = np.zeros((5, 4))
