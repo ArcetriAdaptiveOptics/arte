@@ -13,7 +13,10 @@ class AxisHandler():
         axes: sequence of str, optional
             Initial axis order. If None, no axis transpositions will be possible.
         '''
-        self._axes = tuple(axes)
+        if axes is None:
+            self._axes = None
+        else:
+            self._axes = tuple(axes)
 
     def transpose(self, data, axes=None):
         '''
@@ -25,6 +28,8 @@ class AxisHandler():
             axis order to apply. If None, no transposition is done.
         '''
         if axes is not None:
+            if self._axes is None:
+                raise ValueError('No axes have been initialized')
             if type(axes) is str:
                 axes = [axes]
             # Use an explicit for loop in order to capture an erroneus axis name
