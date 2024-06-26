@@ -164,7 +164,7 @@ class BaseTimeSeries(TimeSeries):
         return func(self.get_data(), other.get_data())
 
     def _operator(self, other, func, check):
-        if isinstance(other, (numbers.Number, u.Quantity)):
+        if isinstance(other, (numbers.Number, u.Quantity, np.ndarray)):
             new_data = func(self.get_data(), other)
         elif not is_dataelab(other):
             return NotImplemented

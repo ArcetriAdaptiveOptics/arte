@@ -207,3 +207,17 @@ class TestBaseTimeSeriesMath(unittest.TestCase):
         with self.assertRaises(ValueError):
             result = (a - b).get_data()
 
+    def test_shape_broadcasting_ndarray(self):
+        a = BaseTimeSeries(np.arange(2 * 3 * 4).reshape(2, 3, 4))
+        b = np.arange(1 * 3 * 4).reshape(1, 3, 4)
+        result = a - b
+        wanted_result = np.arange(2 * 3 * 4).reshape(2, 3, 4) - \
+                        np.arange(1 * 3 * 4).reshape(1, 3, 4)
+        np.testing.assert_array_equal(result.get_data(), wanted_result)
+
+    def test_invalid_shape_broadcasting_ndarray(self):
+        a = BaseTimeSeries(np.arange(2 * 3 * 4).reshape(2, 3, 4))
+        b = np.arange(1 * 3 * 4).reshape(1, 4, 3)
+        with self.assertRaises(ValueError):
+            result = (a - b).get_data()
+
