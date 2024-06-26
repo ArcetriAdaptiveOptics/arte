@@ -41,3 +41,6 @@ class AxisHandler():
                 raise ValueError(f'Axis {ax} not found')
             data = data.transpose(idx)
         return data
+
+    def axes(self):
+        return self._axes

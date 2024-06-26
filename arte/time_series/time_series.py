@@ -44,6 +44,11 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def _get_not_indexed_data(self):
         pass
 
+    @property
+    def axes(self):
+        '''Data series shape'''
+        return self._axis_handler.axes()
+
     @cache
     def _get_time_vector(self):
         '''Override to provide a custom time vector'''
