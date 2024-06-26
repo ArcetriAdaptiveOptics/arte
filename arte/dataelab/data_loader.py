@@ -260,4 +260,16 @@ def data_loader_factory(obj, allow_none=False, name=''):
             errstr = f'{name} must be a Loader class, a numpy array, or a filename or Path instance.'
         raise ValueError(errstr)
 
+def data_axes(obj):
+    '''
+    Returns
+    -------
+    axes: tuple(str) or None
+        axes names tuple
+    '''
+    if is_dataelab(obj):
+        return obj.axes
+    else:
+        return None
+
 # __oOo__

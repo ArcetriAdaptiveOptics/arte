@@ -6,7 +6,7 @@ from astropy import units as u
 from arte.time_series.time_series import TimeSeries
 from arte.utils.help import modify_help
 from arte.utils.not_available import NotAvailable
-from arte.dataelab.data_loader import data_loader_factory
+from arte.dataelab.data_loader import data_loader_factory, data_axes
 from arte.dataelab.unit_handler import UnitHandler
 from arte.dataelab.dataelab_utils import is_dataelab
 from arte.time_series.indexer import DefaultIndexer
@@ -43,6 +43,9 @@ class BaseTimeSeries(TimeSeries):
 
         data_loader = data_loader_factory(data, allow_none=False, name='data')
         time_vector_loader = data_loader_factory(time_vector, allow_none=True, name='time_vector')
+        if axes is None:
+            # Try to derive from input data
+            axes = data_axes(data)
 
         try:
             super().__init__(axes=axes)
@@ -70,7 +73,11 @@ class BaseTimeSeries(TimeSeries):
 
     @cached_property
     def shape(self):
-        '''Data series shape'''
+        '''Data series shape
+
+        TODO depending on the data loader, it could be found
+        without loading the entire data array
+        '''
         return self.get_data().shape
 
     @cache

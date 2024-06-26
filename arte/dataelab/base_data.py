@@ -100,6 +100,11 @@ class BaseData():
         '''
         if not title:
             title = self.data_label()
+        axes = self._axis_handler.axes()
+        if not xlabel and axes and len(axes) > 0:
+            ylabel = axes[0]
+        if not ylabel and axes and len(axes) > 1:
+            xlabel = axes[1]
         array2show = self.get_display()
         return show_array(array2show, cut_wings, title, xlabel, ylabel, self.data_unit(), **kwargs)
 

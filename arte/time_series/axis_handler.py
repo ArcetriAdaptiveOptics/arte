@@ -15,6 +15,8 @@ class AxisHandler():
         '''
         if axes is None:
             self._axes = ()
+        elif isinstance(axes, str):
+            self._axes = (axes,)
         else:
             self._axes = tuple(axes)
 
@@ -39,3 +41,6 @@ class AxisHandler():
                 raise ValueError(f'Axis {ax} not found')
             data = data.transpose(idx)
         return data
+
+    def axes(self):
+        return self._axes
