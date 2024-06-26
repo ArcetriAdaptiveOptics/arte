@@ -37,6 +37,9 @@ class BaseData():
             print(e)
             NotAvailable.transformInNotAvailable(self)
             return
+        
+        if data_label is None:
+            data_label = self.__class__.__name__
 
         self._data_loader = data_loader
         self._astropy_unit = astropy_unit
@@ -101,9 +104,9 @@ class BaseData():
         if not title:
             title = self.data_label()
         axes = self._axis_handler.axes()
-        if not xlabel and axes and len(axes) > 0:
+        if not ylabel and axes and len(axes) > 0:
             ylabel = axes[0]
-        if not ylabel and axes and len(axes) > 1:
+        if not xlabel and axes and len(axes) > 1:
             xlabel = axes[1]
         array2show = self.get_display()
         return show_array(array2show, cut_wings, title, xlabel, ylabel, self.data_unit(), **kwargs)
