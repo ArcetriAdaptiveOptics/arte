@@ -125,6 +125,15 @@ class CircularMask(BaseMask):
             ((x - cc[1]) ** 2 + (y - cc[0]) ** 2) <= r ** 2, False, True)
 
     def asTransmissionValue(self):
+        '''
+        Mask as a transmission mask: 1 for non-masked elements,
+        0 for masked elements.
+
+        Returns
+        -------
+        transmission_value: ndarray[int]
+            transmission mask as a numpy array with dtype int
+        '''
         return np.logical_not(self._mask).astype(int)
 
     def radius(self):

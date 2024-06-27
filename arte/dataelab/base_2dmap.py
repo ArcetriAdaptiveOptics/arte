@@ -31,7 +31,7 @@ class Base2dMap(BaseData):
     def remap_image(self, data):
         '''
         Remap a 2d time series data into a 3d cube, where each
-        cube slice is a 2d pupil image. If a 1d array is passed,
+        cube slice is a 2d image. If a 1d array is passed,
         the resulting 3d array will have a first dimension with length 1.
         
         Parameters
