@@ -6,11 +6,12 @@ from astropy import units as u
 from arte.time_series.time_series import TimeSeries
 from arte.utils.help import modify_help
 from arte.utils.not_available import NotAvailable
-from arte.dataelab.data_loader import data_loader_factory
+from arte.dataelab.data_loader import data_loader_factory, data_axes
 from arte.dataelab.unit_handler import UnitHandler
 from arte.dataelab.dataelab_utils import is_dataelab
 from arte.time_series.indexer import DefaultIndexer
 from arte.utils.displays import movie, tile, savegif
+from arte.utils.show_array import show_array
 
 class BaseTimeSeries(TimeSeries):
     '''
@@ -36,14 +37,19 @@ class BaseTimeSeries(TimeSeries):
          if possible, astropy unit to use with the data.
     data_label: string or None
          human-readable label for plot (e.g.: "Surface modal coefficients" )
+    axes: sequence or None
+         sequence of axes names, optional
     '''
-    def __init__(self, data, time_vector=None, astropy_unit=None, data_label=None):
+    def __init__(self, data, time_vector=None, astropy_unit=None, data_label=None, axes=None):
 
         data_loader = data_loader_factory(data, allow_none=False, name='data')
         time_vector_loader = data_loader_factory(time_vector, allow_none=True, name='time_vector')
+        if axes is None:
+            # Try to derive from input data
+            axes = data_axes(data)
 
         try:
-            super().__init__()
+            super().__init__(axes=axes)
 
             # Also test that the data file is there, when possible
             _ = data_loader.assert_exists()
@@ -68,7 +74,11 @@ class BaseTimeSeries(TimeSeries):
 
     @cached_property
     def shape(self):
-        '''Data series shape'''
+        '''Data series shape
+
+        TODO depending on the data loader, it could be found
+        without loading the entire data array
+        '''
         return self.get_data().shape
 
     @cache
@@ -130,6 +140,10 @@ class BaseTimeSeries(TimeSeries):
             return display_data.value
         else:
             return display_data
+    
+    def get_display_axes(self):
+        '''Display cube axes names as a list of 3 strings'''
+        return ('time', '', '')
 
     @modify_help(arg_str='[series_idx], [times=[from, to]]')
     def movie(self, *args, interval=0.1, **kwargs):
@@ -149,9 +163,8 @@ class BaseTimeSeries(TimeSeries):
         frames = self.get_display(*args, **kwargs)
         savegif(frames, filename, interval=interval, loop=loop)
 
-    def _check_equal(self, other):
-        if not self.shape == other.shape:
-            raise ValueError(f'Data dimensions do not match: {self.shape} and {other.shape}')
+    def _check_broadcast(self, other):
+        _ = np.broadcast_shapes(self.shape, other.shape)
 
     def _check_mult(self, other):
         if not self.shape[1] == other.shape[0]:
@@ -165,7 +178,7 @@ class BaseTimeSeries(TimeSeries):
         return func(self.get_data(), other.get_data())
 
     def _operator(self, other, func, check):
-        if isinstance(other, (numbers.Number, u.Quantity)):
+        if isinstance(other, (numbers.Number, u.Quantity, np.ndarray)):
             new_data = func(self.get_data(), other)
         elif not is_dataelab(other):
             return NotImplemented
@@ -181,34 +194,52 @@ class BaseTimeSeries(TimeSeries):
                          data_label=self._data_label)
 
     def __add__(self, other):
-        return self._operator(other, lambda x, y: x + y, self._check_equal)
+        return self._operator(other, lambda x, y: x + y, self._check_broadcast)
 
     def __sub__(self, other):
-        return self._operator(other, lambda x, y: x - y, self._check_equal)
+        return self._operator(other, lambda x, y: x - y, self._check_broadcast)
 
     def __mul__(self, other):
-        return self._operator(other, lambda x, y: x * y, self._check_equal)
+        return self._operator(other, lambda x, y: x * y, self._check_broadcast)
 
     def __truediv__(self, other):
-        return self._operator(other, lambda x, y: x / y, self._check_equal)
+        return self._operator(other, lambda x, y: x / y, self._check_broadcast)
 
     def __floordiv__(self, other):
-        return self._operator(other, lambda x, y: x // y, self._check_equal)
+        return self._operator(other, lambda x, y: x // y, self._check_broadcast)
 
     def __mod__(self, other):
-        return self._operator(other, lambda x, y: x % y, self._check_equal)
+        return self._operator(other, lambda x, y: x % y, self._check_broadcast)
 
     def __matmul__(self, other):
         return self._operator(other, lambda x, y: x @ y, self._check_mult)
 
     def __pow__(self, other):
-        return self._operator(other, lambda x, y: x ** y, self._check_equal)
+        return self._operator(other, lambda x, y: x ** y, self._check_broadcast)
 
     def __neg__(self):
         return self._operator(self, lambda x, y: -x, self._check_none)
 
     def __abs__(self):
         return self._operator(self, lambda x, y: abs(x), self._check_none)
+
+    def imshow(self, *args, cut_wings=0, title='', xlabel='', ylabel='', **kwargs):
+        '''
+        Display X and Y slope 2d images
+        cut_wings=x means that colorbar is saturated for array values below x percentile
+        and above 100-x percentile. Default is 0, i.e. all data are displayed; values below
+        0 are forced to 0, values above 50 are set to 50.
+        '''
+        array2show = self.get_display(*args, **kwargs).mean(axis=0)
+        _, default_xlabel, default_ylabel = self.get_display_axes()
+        if not xlabel:
+            xlabel = default_xlabel
+        if not ylabel:
+            ylabel = default_ylabel
+        if not title:
+            title = self.data_label()
+
+        return show_array(array2show, cut_wings, title, xlabel, ylabel, self.data_unit())
 
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,

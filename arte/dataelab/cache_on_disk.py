@@ -169,7 +169,7 @@ class DiskCacher():
         self._prefix = 'cache'
 
     def set_tag(self, tag, instance_name):
-        '''Unique tag identifying the Elab instance'''
+        '''Set the tag used to make cached data persistent'''
         self._tag = tag
         self._funcid = instance_name + '.' + self._method_name
 

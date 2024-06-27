@@ -31,7 +31,7 @@ class Base2dMap(BaseData):
     def remap_image(self, data):
         '''
         Remap a 2d time series data into a 3d cube, where each
-        cube slice is a 2d pupil image. If a 1d array is passed,
+        cube slice is a 2d image. If a 1d array is passed,
         the resulting 3d array will have a first dimension with length 1.
         
         Parameters
@@ -48,7 +48,7 @@ class Base2dMap(BaseData):
             data = np.expand_dims(data, axis=0)
 
         nonzero = np.nonzero(self.get_data())
-        frame = np.zeros((len(data), self.shape[0], self.shape[1]), dtype=np.float32)
+        frame = np.zeros((len(data), self.shape[0], self.shape[1]), dtype=data.dtype)
         if len(nonzero[0]) != data.shape[1]:
             raise ValueError(f'Cannot build display: data shape and subap map shape do not match: %s and %d elements' % (data.shape, len(nonzero[0])))
         frame[:, nonzero[0], nonzero[1]] = data

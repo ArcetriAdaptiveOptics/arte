@@ -59,11 +59,13 @@ def modalplot(residual_modes_vector, pol_modes_vector, unit=None,
         plot_unit = pol_unit
     if not isinstance(plot_unit, u.UnitBase):
         plot_unit = 'a.u.'
-
-    plt.plot(np.arange(len(res_data)), res_value,
-                color=res_color, label=res_label)
-    plt.plot(np.arange(len(pol_data)), pol_value,
-                color=pol_color, label=pol_label)
+    
+    if len(res_data) > 0:
+        plt.plot(np.arange(len(res_data)), res_value,
+                    color=res_color, label=res_label)
+    if len(pol_data) > 0:
+        plt.plot(np.arange(len(pol_data)), pol_value,
+                    color=pol_color, label=pol_label)
 
     maxlen = max(len(res_data), len(pol_data))
 

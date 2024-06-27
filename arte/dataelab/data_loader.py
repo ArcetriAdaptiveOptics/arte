@@ -1,11 +1,14 @@
 import os
 import abc
+import zipfile
 from pathlib import Path
 
 import numpy as np
 from astropy.io import fits
 from arte.utils.help import add_help
 from arte.dataelab.dataelab_utils import is_dataelab
+from arte.utils.not_available import NotAvailable
+
 
 @add_help
 class DataLoader():
@@ -106,6 +109,10 @@ class NumpyDataLoader(DataLoader):
 
     def assert_exists(self):
         assert os.path.exists(self._filename), 'File Not Found: ' + self._filename
+        if self._filename.endswith('.npz'):
+            npyname = self._key+'.npy'
+            assert npyname in zipfile.ZipFile(self._filename).namelist(), \
+                 f'Key not found: {npyname} in file: {self._filename}'
 
     def filename(self):
         return self._filename
@@ -121,6 +128,7 @@ class NumpyDataLoader(DataLoader):
             data = self._postprocess(data)
         return data
 
+        
 class TxtDataLoader(DataLoader):
     '''Loader for data stored into txt files
 
@@ -259,5 +267,17 @@ def data_loader_factory(obj, allow_none=False, name=''):
         else:
             errstr = f'{name} must be a Loader class, a numpy array, or a filename or Path instance.'
         raise ValueError(errstr)
+
+def data_axes(obj):
+    '''
+    Returns
+    -------
+    axes: tuple(str) or None
+        axes names tuple
+    '''
+    if is_dataelab(obj):
+        return obj.axes
+    else:
+        return None
 
 # __oOo__
