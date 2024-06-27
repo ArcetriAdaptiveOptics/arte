@@ -6,6 +6,7 @@ from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import data_loader_factory
 from arte.dataelab.unit_handler import UnitHandler
 from arte.utils.show_array import show_array
+from arte.time_series.axis_handler import AxisHandler
 
 
 @add_help
@@ -20,9 +21,11 @@ class BaseData():
     astropy_unit: unit
         if possible, astropy unit to use with the data.
     data_label: str, optional
-        human-readable label for plot (e.g.: "Surface modal coefficients" )
+        human-readable label for plot (e.g.: "Surface modal coefficients")
+    axes: sequence or None
+         sequence of axes names, optional
     '''
-    def __init__(self, data, astropy_unit=None, data_label=None):
+    def __init__(self, data, astropy_unit=None, data_label=None, axes=None):
         
         data_loader = data_loader_factory(data, allow_none=False, name='data')
 
@@ -34,25 +37,30 @@ class BaseData():
             print(e)
             NotAvailable.transformInNotAvailable(self)
             return
+        
+        if data_label is None:
+            data_label = self.__class__.__name__
 
         self._data_loader = data_loader
         self._astropy_unit = astropy_unit
         self._data_label = data_label
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
+        self._axis_handler = AxisHandler(axes)
 
     def filename(self):
         '''Data filename (full path)'''
         return self._data_loader.filename()
 
-    def get_data(self, *args, **kwargs):
+    def get_data(self, *args, axes=None, **kwargs):
         '''Raw data, selecting elements based on the indexer'''
 
         raw_data = self._get_not_indexed_data()
         index = self.get_index_of(*args, **kwargs)
         if index is None:
-            return raw_data
+            data = raw_data
         else:
-            return raw_data[index]
+            data = raw_data[index]
+        return self._axis_handler.transpose(data, axes)
 
     def _get_not_indexed_data(self):
         return self._unit_handler.apply_unit(self._data_loader.load())
@@ -99,6 +107,11 @@ class BaseData():
         '''
         if not title:
             title = self.data_label()
+        axes = self._axis_handler.axes()
+        if not ylabel and axes and len(axes) > 0:
+            ylabel = axes[0]
+        if not xlabel and axes and len(axes) > 1:
+            xlabel = axes[1]
         array2show = self.get_display()
         return show_array(array2show, cut_wings, title, xlabel, ylabel, self.data_unit(), **kwargs)
 
