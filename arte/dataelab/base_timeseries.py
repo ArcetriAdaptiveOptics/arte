@@ -11,6 +11,7 @@ from arte.dataelab.unit_handler import UnitHandler
 from arte.dataelab.dataelab_utils import is_dataelab
 from arte.time_series.indexer import DefaultIndexer
 from arte.utils.displays import movie, tile, savegif
+from arte.utils.show_array import show_array
 
 class BaseTimeSeries(TimeSeries):
     '''
@@ -139,6 +140,10 @@ class BaseTimeSeries(TimeSeries):
             return display_data.value
         else:
             return display_data
+    
+    def get_display_axes(self):
+        '''Display cube axes names as a list of 3 strings'''
+        return ('time', '', '')
 
     @modify_help(arg_str='[series_idx], [times=[from, to]]')
     def movie(self, *args, interval=0.1, **kwargs):
@@ -217,6 +222,24 @@ class BaseTimeSeries(TimeSeries):
 
     def __abs__(self):
         return self._operator(self, lambda x, y: abs(x), self._check_none)
+
+    def imshow(self, *args, cut_wings=0, title='', xlabel='', ylabel='', **kwargs):
+        '''
+        Display X and Y slope 2d images
+        cut_wings=x means that colorbar is saturated for array values below x percentile
+        and above 100-x percentile. Default is 0, i.e. all data are displayed; values below
+        0 are forced to 0, values above 50 are set to 50.
+        '''
+        array2show = self.get_display(*args, **kwargs).mean(axis=0)
+        _, default_xlabel, default_ylabel = self.get_display_axes()
+        if not xlabel:
+            xlabel = default_xlabel
+        if not ylabel:
+            ylabel = default_ylabel
+        if not title:
+            title = self.data_label()
+
+        return show_array(array2show, cut_wings, title, xlabel, ylabel, self.data_unit())
 
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
