@@ -148,6 +148,36 @@ class ModeIndexer(Indexer):
         return np.arange(from_mode, to_mode)
 
 
+class DefaultIndexer(Indexer):
+
+    def __init__(self):
+        super().__init__()
+
+    def elements(self, *args, **kwargs):
+        '''
+        default: all elements
+        element = single element
+        elements = list of elements
+        from_element = first element
+        to_element = last element
+        '''
+        elements = None
+        from_element = None
+        to_element = None
+        if (len(args) > 0) & (len(args) < 2):
+            elements = args[0]
+        for k, v in kwargs.items():
+            if k == 'elements' or k == 'element':
+                elements = v
+            if k == 'from_element':
+                from_element = v
+            if k == 'to_element':
+                to_element = v
+        if elements is not None:
+            return elements
+        return slice(from_element, to_element)
+
+
 class RowColIndexer(Indexer):
 
     def __init__(self):

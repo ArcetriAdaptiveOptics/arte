@@ -1,12 +1,13 @@
 import abc
 import math
 import collections
-from functools import cached_property
+from functools import cache, cached_property
 
 import numpy as np
 from scipy.signal import welch
 from astropy import units as u
 
+from arte.time_series.axis_handler import AxisHandler
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
 from arte.utils.unit_checker import make_sure_its_a
@@ -31,17 +32,24 @@ class TimeSeries(metaclass=abc.ABCMeta):
     Originally implemented as part of the ARGOS codebase.
     '''
 
-    def __init__(self):
+    def __init__(self, axes=None):
         self._frequency = None
         self._last_cut_frequency = None
         self._power = None
         self._segment_factor = None
         self._window = None
+        self._axis_handler = AxisHandler(axes)
 
     @abc.abstractmethod
     def _get_not_indexed_data(self):
         pass
 
+    @property
+    def axes(self):
+        '''Data series shape'''
+        return self._axis_handler.axes()
+
+    @cache
     def _get_time_vector(self):
         '''Override to provide a custom time vector'''
         return np.arange(len(self._get_not_indexed_data()))
@@ -57,7 +65,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
             except TypeError as e:
                 raise TimeSeriesException('Cannot convert _get_time_vector() result to numpy array') from e
 
-    def get_data(self, *args, times=None, **kwargs):
+    def get_data(self, *args, times=None, axes=None, **kwargs):
         '''Raw data as a matrix [time, series]'''
 
         data = self._get_not_indexed_data()
@@ -83,7 +91,9 @@ class TimeSeries(metaclass=abc.ABCMeta):
             data = data[idxs]
 
         index = self.get_index_of(*args, **kwargs)
-        return self._index_data(data, index)
+        data = self._index_data(data, index)
+        data = self._axis_handler.transpose(data, axes)
+        return data
 
     def _index_data(self, data, index):
         if index is None:
@@ -134,11 +144,13 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def last_cut_frequency(self):
         return self._last_cut_frequency
 
+    @cache
     def ensemble_size(self):
         '''Number of distinct series in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
         return math.prod(not_indexed_data.shape[1:])
 
+    @cache
     def time_size(self):
         '''Number of time samples in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
@@ -204,8 +216,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return np.sqrt(np.mean(np.abs(x)**2, axis=1))
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
-    def power(self, from_freq=None, to_freq=None,
-              segment_factor=None, window='boxcar', *args, **kwargs):
+    def power(self, *args, from_freq=None, to_freq=None,
+              segment_factor=None, window='boxcar', **kwargs):
         '''Power Spectral Density across specified series'''
 
         if segment_factor is None:

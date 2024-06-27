@@ -1,6 +1,5 @@
 import datetime
 import functools
-import logging
 
 from arte.utils.help import add_help
 from arte.dataelab.cache_on_disk import set_tag, clear_cache
@@ -25,12 +24,9 @@ class BaseAnalyzer(metaclass=PostInitCaller):
     should be initialized (if they are missing, their value will be NA)
     '''
 
-    def __init__(self, snapshot_tag, recalc=False, logger=None):
+    def __init__(self, snapshot_tag, recalc=False):
         self._snapshot_tag = snapshot_tag
         self._recalc = recalc
-        self._logger = logger or logging.getLogger(f'an_{snapshot_tag}')
-        self._logger.info(f'creating analyzer for tag {snapshot_tag}')
-
  
     def _post_init(self):
         '''Initialize disk cache
@@ -44,7 +40,7 @@ class BaseAnalyzer(metaclass=PostInitCaller):
             self._recalc = False
 
     @classmethod
-    def get(cls, tag, recalc=False, logger=None):
+    def get(cls, tag, *args, recalc=False, **kwargs):
         '''Get the Analyzer instance (or derived class) corresponding to *tag*.
 
         This method mantains an internal cache. If a tag is requested
@@ -57,15 +53,16 @@ class BaseAnalyzer(metaclass=PostInitCaller):
         recalc: bool, optional
             if set to True, any cached data for this tag will be deleted and
             computed again when requested
-        logger: Logger instance, optional
-            logger to use for errors and warning. If not set, a default logger
-            will be used.
-        '''
-        return cls._get(tag, recalc=recalc, logger=logger)
+         '''
+        analyzer = cls._get(tag, *args, **kwargs)
+        # Special recalc handling, must be set again for a cached instance
+        if recalc:
+            analyzer.recalc()
+        return analyzer
 
     @classmethod
     @functools.cache
-    def _get(cls, tag, recalc=False, logger=None):
+    def _get(cls, tag, *args, recalc=False, **kwargs):
         '''Get a new Analyzer instance 
 
         Added one level of indirection (get() calls _get())
@@ -74,7 +71,7 @@ class BaseAnalyzer(metaclass=PostInitCaller):
 
         Also makes it easier to override it in classes
         '''
-        return cls(tag, recalc=recalc, logger=logger)
+        return cls(tag, *args, recalc=recalc, **kwargs)
 
     def recalc(self):
         '''Force recalculation of this analyzer data'''

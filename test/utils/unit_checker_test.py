@@ -4,10 +4,14 @@ import doctest
 import unittest
 import numpy as np
 import astropy.units as u
+<<<<<<< HEAD
 from astropy.utils.masked import Masked
 
 from arte.utils.unit_checker import make_sure_its_a, separate_value_and_unit
 from arte.utils.unit_checker import assert_array_almost_equal_w_units, unit_check
+=======
+from arte.utils.unit_checker import unit_check, make_sure_its_a
+>>>>>>> master
 
 class UnitCheckTest(unittest.TestCase):
 
@@ -112,3 +116,22 @@ class UnitCheckTest(unittest.TestCase):
         value, unit = separate_value_and_unit(v)
         np.testing.assert_array_equal(value, data)
         assert unit == u.s
+
+    def test_make_sure_its_a_with_masked_array_returns_masked_array(self):
+        mask = np.array([[True, False], [False, False]])
+        data = np.arange(4).reshape((2, 2))
+        v = np.ma.array(data, mask=mask)
+        c = make_sure_its_a(u.m, v)
+        self.assertTrue(isinstance(c, np.ma.MaskedArray))
+        self.assertFalse(np.isnan(c).data.value.any())
+
+    def test_make_sure_its_a_with_masked_array_and_unit_returns_masked_array(self):
+        mask = np.array([[True, False], [False, False]])
+        data = np.arange(4).reshape((2, 2)) * u.cm
+        v = np.ma.array(data, mask=mask)
+        c = make_sure_its_a(u.m, v)
+        self.assertTrue(isinstance(c, np.ma.MaskedArray))
+        self.assertTrue(isinstance(c.data, u.Quantity))
+        assert c.data.unit == u.m
+        np.testing.assert_array_almost_equal(c.data.value,data.value * 0.01)
+

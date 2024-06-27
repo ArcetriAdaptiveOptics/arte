@@ -1,47 +1,63 @@
+import numbers
+from functools import cached_property, cache
 import numpy as np
-import logging
 from astropy import units as u
 
 from arte.time_series.time_series import TimeSeries
 from arte.utils.help import modify_help
 from arte.utils.not_available import NotAvailable
-from arte.dataelab.data_loader import data_loader_factory
+from arte.dataelab.data_loader import data_loader_factory, data_axes
 from arte.dataelab.unit_handler import UnitHandler
-from arte.dataelab.dataelab_utils import setup_dataelab_logging
-
+from arte.dataelab.dataelab_utils import is_dataelab
+from arte.time_series.indexer import DefaultIndexer
+from arte.utils.displays import movie, tile, savegif
+from arte.utils.show_array import show_array
 
 class BaseTimeSeries(TimeSeries):
     '''
     Generic time series.
 
+    A time series holds:
+        - N samples of numeric data of arbitrary type and dimensions, with an optional astropy unit.
+        - sampling time for each sample
+        - optionally, a data label for plots and displays
+
+    Data is accessed with the get_data() method. Derived classes can define specialized
+    arguments to return data subsets, e.g. get_data(quadrant=2)
+    Basic arithmetic operations (sum, div, etc) are supported. Astropy units, if present,
+    will be enforced.
+
     Parameters
     ----------
-    data_loader: instance of DataLoader or derived class, or numpy array
-         time series data
+    data_loader: instance of DataLoader or derived class, or numpy array, or filename (string or pathlib instance)
+         time series data [time, data_d0 [, data_d1...]]
     time_vector: instance of DataLoader or derived class, or numpy_array, or None
          time vector data. If None, a default counter from 0 to N-1 samples will be assigned
     astropy_unit: astropy unit or None
          if possible, astropy unit to use with the data.
     data_label: string or None
          human-readable label for plot (e.g.: "Surface modal coefficients" )
-    logger: Logger instance or None
-         logger to use for warnings and errors. If not set, a default logger will be used
-
+    axes: sequence or None
+         sequence of axes names, optional
     '''
-    def __init__(self, loader_or_data, time_vector=None, astropy_unit=None, data_label=None, logger=None):
+    def __init__(self, data, time_vector=None, astropy_unit=None, data_label=None, axes=None):
 
-        data_loader = data_loader_factory(loader_or_data, allow_none=False, name='loader_or_data')
+        data_loader = data_loader_factory(data, allow_none=False, name='data')
         time_vector_loader = data_loader_factory(time_vector, allow_none=True, name='time_vector')
+        if axes is None:
+            # Try to derive from input data
+            axes = data_axes(data)
 
         try:
-            super().__init__()
+            super().__init__(axes=axes)
 
             # Also test that the data file is there, when possible
             _ = data_loader.assert_exists()
             if time_vector_loader is not None:
                 _ = time_vector_loader.assert_exists()
 
-        except AssertionError:
+        except AssertionError as e:
+            print(e)
             NotAvailable.transformInNotAvailable(self)
             return
 
@@ -50,19 +66,28 @@ class BaseTimeSeries(TimeSeries):
         self._astropy_unit = astropy_unit
         self._data_label = data_label
         self._unit_handler = UnitHandler(wanted_unit = astropy_unit)
-        self._logger = logger or logging.getLogger(__name__)
-        setup_dataelab_logging()
+        self._default_indexer = DefaultIndexer()
 
     def filename(self):
         '''Data filename (full path)'''
         return self._data_loader.filename()
 
+    @cached_property
+    def shape(self):
+        '''Data series shape
+
+        TODO depending on the data loader, it could be found
+        without loading the entire data array
+        '''
+        return self.get_data().shape
+
+    @cache
     def _get_not_indexed_data(self):
-        '''Reimplementation for lazy loading and astropy units'''
+        '''Lazy loading of raw data and astropy unit application'''
         return self._unit_handler.apply_unit(self._data_loader.load())
 
     def _get_time_vector(self):
-        '''Reimplementation for lazy loading'''
+        '''Lazy loading of time vector'''
         if self._time_vector_loader is not None:
             return self._time_vector_loader.load()
         else:
@@ -88,7 +113,7 @@ class BaseTimeSeries(TimeSeries):
            For a detailed explanation, see the "Advanced indexing" topic at
            https://numpy.org/doc/stable/user/basics.indexing.html#advanced-indexing
         '''
-        pass
+        return self._default_indexer.elements(*args, **kwargs)
 
     def data_label(self):
         return self._data_label
@@ -115,7 +140,107 @@ class BaseTimeSeries(TimeSeries):
             return display_data.value
         else:
             return display_data
-        
+    
+    def get_display_axes(self):
+        '''Display cube axes names as a list of 3 strings'''
+        return ('time', '', '')
+
+    @modify_help(arg_str='[series_idx], [times=[from, to]]')
+    def movie(self, *args, interval=0.1, **kwargs):
+        '''Display data as a movie'''
+        frames = self.get_display(*args, **kwargs)
+        movie(frames, interval=interval)
+
+    @modify_help(arg_str='[series_idx], [times=[from, to]]')
+    def tile(self, *args, rowlength=10, **kwargs):
+        '''Display data as a tiled 2d frame'''
+        frames = self.get_display(*args, **kwargs)
+        return tile(frames, rowlength=rowlength)
+
+    @modify_help(arg_str='filename, [series_idx], [times=[from, to]]')
+    def savegif(self, filename, *args, interval=0.1, loop=0, **kwargs):
+        '''Save data as an animated GIF'''
+        frames = self.get_display(*args, **kwargs)
+        savegif(frames, filename, interval=interval, loop=loop)
+
+    def _check_broadcast(self, other):
+        _ = np.broadcast_shapes(self.shape, other.shape)
+
+    def _check_mult(self, other):
+        if not self.shape[1] == other.shape[0]:
+            raise ValueError(f'Data dimensions do not match: {self.shape} and {other.shape}')
+
+    def _check_none(self, other):
+        return None
+
+    def _check_and_execute(self, check, other, func):
+        check(other)
+        return func(self.get_data(), other.get_data())
+
+    def _operator(self, other, func, check):
+        if isinstance(other, (numbers.Number, u.Quantity, np.ndarray)):
+            new_data = func(self.get_data(), other)
+        elif not is_dataelab(other):
+            return NotImplemented
+        else:
+            new_data = lambda: self._check_and_execute(check, other, func)
+
+        if self.__class__ == other.__class__:
+            new_class = self.__class__
+        else:
+            new_class = BaseTimeSeries
+        return new_class(new_data, time_vector=self._get_time_vector,
+                         astropy_unit=None,
+                         data_label=self._data_label)
+
+    def __add__(self, other):
+        return self._operator(other, lambda x, y: x + y, self._check_broadcast)
+
+    def __sub__(self, other):
+        return self._operator(other, lambda x, y: x - y, self._check_broadcast)
+
+    def __mul__(self, other):
+        return self._operator(other, lambda x, y: x * y, self._check_broadcast)
+
+    def __truediv__(self, other):
+        return self._operator(other, lambda x, y: x / y, self._check_broadcast)
+
+    def __floordiv__(self, other):
+        return self._operator(other, lambda x, y: x // y, self._check_broadcast)
+
+    def __mod__(self, other):
+        return self._operator(other, lambda x, y: x % y, self._check_broadcast)
+
+    def __matmul__(self, other):
+        return self._operator(other, lambda x, y: x @ y, self._check_mult)
+
+    def __pow__(self, other):
+        return self._operator(other, lambda x, y: x ** y, self._check_broadcast)
+
+    def __neg__(self):
+        return self._operator(self, lambda x, y: -x, self._check_none)
+
+    def __abs__(self):
+        return self._operator(self, lambda x, y: abs(x), self._check_none)
+
+    def imshow(self, *args, cut_wings=0, title='', xlabel='', ylabel='', **kwargs):
+        '''
+        Display X and Y slope 2d images
+        cut_wings=x means that colorbar is saturated for array values below x percentile
+        and above 100-x percentile. Default is 0, i.e. all data are displayed; values below
+        0 are forced to 0, values above 50 are set to 50.
+        '''
+        array2show = self.get_display(*args, **kwargs).mean(axis=0)
+        _, default_xlabel, default_ylabel = self.get_display_axes()
+        if not xlabel:
+            xlabel = default_xlabel
+        if not ylabel:
+            ylabel = default_ylabel
+        if not title:
+            title = self.data_label()
+
+        return show_array(array2show, cut_wings, title, xlabel, ylabel, self.data_unit())
+
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
                   overplot=None, plot_to=None,
@@ -240,9 +365,9 @@ class BaseTimeSeries(TimeSeries):
                                 overplot=False, plot_rms=False, lineary=False,
                                 **kwargs):
         '''Plot cumulative PSD'''
-        power = self.power(from_freq, to_freq,
-                           segment_factor,
-                           *args, **kwargs)
+        power = self.power(*args, from_freq=from_freq, to_freq=to_freq,
+                           segment_factor=segment_factor,
+                           **kwargs)
         freq = self.last_cut_frequency()
         freq_bin = freq[1]-freq[0] # frequency bin
 
