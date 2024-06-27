@@ -48,7 +48,7 @@ class Base2dMap(BaseData):
             data = np.expand_dims(data, axis=0)
 
         nonzero = np.nonzero(self.get_data())
-        frame = np.zeros((len(data), self.shape[0], self.shape[1]), dtype=np.float32)
+        frame = np.zeros((len(data), self.shape[0], self.shape[1]), dtype=data.dtype)
         if len(nonzero[0]) != data.shape[1]:
             raise ValueError(f'Cannot build display: data shape and subap map shape do not match: %s and %d elements' % (data.shape, len(nonzero[0])))
         frame[:, nonzero[0], nonzero[1]] = data
