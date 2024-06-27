@@ -158,9 +158,8 @@ class BaseTimeSeries(TimeSeries):
         frames = self.get_display(*args, **kwargs)
         savegif(frames, filename, interval=interval, loop=loop)
 
-    def _check_equal(self, other):
-        if not self.shape == other.shape:
-            raise ValueError(f'Data dimensions do not match: {self.shape} and {other.shape}')
+    def _check_broadcast(self, other):
+        _ = np.broadcast_shapes(self.shape, other.shape)
 
     def _check_mult(self, other):
         if not self.shape[1] == other.shape[0]:
@@ -174,7 +173,7 @@ class BaseTimeSeries(TimeSeries):
         return func(self.get_data(), other.get_data())
 
     def _operator(self, other, func, check):
-        if isinstance(other, (numbers.Number, u.Quantity)):
+        if isinstance(other, (numbers.Number, u.Quantity, np.ndarray)):
             new_data = func(self.get_data(), other)
         elif not is_dataelab(other):
             return NotImplemented
@@ -190,28 +189,28 @@ class BaseTimeSeries(TimeSeries):
                          data_label=self._data_label)
 
     def __add__(self, other):
-        return self._operator(other, lambda x, y: x + y, self._check_equal)
+        return self._operator(other, lambda x, y: x + y, self._check_broadcast)
 
     def __sub__(self, other):
-        return self._operator(other, lambda x, y: x - y, self._check_equal)
+        return self._operator(other, lambda x, y: x - y, self._check_broadcast)
 
     def __mul__(self, other):
-        return self._operator(other, lambda x, y: x * y, self._check_equal)
+        return self._operator(other, lambda x, y: x * y, self._check_broadcast)
 
     def __truediv__(self, other):
-        return self._operator(other, lambda x, y: x / y, self._check_equal)
+        return self._operator(other, lambda x, y: x / y, self._check_broadcast)
 
     def __floordiv__(self, other):
-        return self._operator(other, lambda x, y: x // y, self._check_equal)
+        return self._operator(other, lambda x, y: x // y, self._check_broadcast)
 
     def __mod__(self, other):
-        return self._operator(other, lambda x, y: x % y, self._check_equal)
+        return self._operator(other, lambda x, y: x % y, self._check_broadcast)
 
     def __matmul__(self, other):
         return self._operator(other, lambda x, y: x @ y, self._check_mult)
 
     def __pow__(self, other):
-        return self._operator(other, lambda x, y: x ** y, self._check_equal)
+        return self._operator(other, lambda x, y: x ** y, self._check_broadcast)
 
     def __neg__(self):
         return self._operator(self, lambda x, y: -x, self._check_none)

@@ -6,7 +6,7 @@ Display functions
 import numpy as np
 
 
-def movie(frames, interval=0.1):
+def movie(frames, interval=0.1, *args, **kwargs):
     '''
     Parameters
     ----------
@@ -20,7 +20,7 @@ def movie(frames, interval=0.1):
 
     for i, frame in enumerate(frames):
         if i == 0:
-            img = ax.imshow(frame)
+            img = ax.imshow(frame, *args, **kwargs)
         else:
             img.set_data(frame)
         fig.canvas.draw_idle()

@@ -96,7 +96,6 @@ class BaseTimeSeriesTest(unittest.TestCase):
 
 
 class TestBaseTimeSeriesMath(unittest.TestCase):
-    '''Written by ChaptGPT, correct on the first try'''
 
     def test_addition_numpy_arrays(self):
         a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
@@ -193,3 +192,32 @@ class TestBaseTimeSeriesMath(unittest.TestCase):
         a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
         with self.assertRaises(TypeError):
             _ = a / "invalid"
+
+    def test_shape_broadcasting(self):
+        a = BaseTimeSeries(np.arange(2 * 3 * 4).reshape(2, 3, 4))
+        b = BaseTimeSeries(np.arange(1 * 3 * 4).reshape(1, 3, 4))
+        result = a - b
+        wanted_result = np.arange(2 * 3 * 4).reshape(2, 3, 4) - \
+                        np.arange(1 * 3 * 4).reshape(1, 3, 4)
+        np.testing.assert_array_equal(result.get_data(), wanted_result)
+
+    def test_invalid_shape_broadcasting(self):
+        a = BaseTimeSeries(np.arange(2 * 3 * 4).reshape(2, 3, 4))
+        b = BaseTimeSeries(np.arange(1 * 3 * 4).reshape(1, 4, 3))
+        with self.assertRaises(ValueError):
+            result = (a - b).get_data()
+
+    def test_shape_broadcasting_ndarray(self):
+        a = BaseTimeSeries(np.arange(2 * 3 * 4).reshape(2, 3, 4))
+        b = np.arange(1 * 3 * 4).reshape(1, 3, 4)
+        result = a - b
+        wanted_result = np.arange(2 * 3 * 4).reshape(2, 3, 4) - \
+                        np.arange(1 * 3 * 4).reshape(1, 3, 4)
+        np.testing.assert_array_equal(result.get_data(), wanted_result)
+
+    def test_invalid_shape_broadcasting_ndarray(self):
+        a = BaseTimeSeries(np.arange(2 * 3 * 4).reshape(2, 3, 4))
+        b = np.arange(1 * 3 * 4).reshape(1, 4, 3)
+        with self.assertRaises(ValueError):
+            result = (a - b).get_data()
+

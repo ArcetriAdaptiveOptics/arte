@@ -85,10 +85,14 @@ class BaseData():
         '''Data unit as an astropy unit'''
         return self._unit_handler.actual_unit()
 
+    # Override to provide custom displays
+    def _get_display_frame(self, data_to_display):
+        return np.atleast_2d(data_to_display)
+
     def get_display(self, *args, **kwargs):
         '''Data mapped in 2d'''
         data_to_display = self.get_data(*args, **kwargs)
-        display_data = np.atleast_2d(data_to_display)
+        display_data = self._get_display_frame(data_to_display)
         if isinstance(display_data, u.Quantity):
             return display_data.value
         else:
