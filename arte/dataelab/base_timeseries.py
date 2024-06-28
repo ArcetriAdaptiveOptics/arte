@@ -225,7 +225,8 @@ class BaseTimeSeries(TimeSeries):
 
     def imshow(self, *args, cut_wings=0, title='', xlabel='', ylabel='', **kwargs):
         '''
-        Display X and Y slope 2d images
+        Display a 2d image.
+
         cut_wings=x means that colorbar is saturated for array values below x percentile
         and above 100-x percentile. Default is 0, i.e. all data are displayed; values below
         0 are forced to 0, values above 50 are set to 50.

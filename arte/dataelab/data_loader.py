@@ -168,20 +168,6 @@ class TxtDataLoader(DataLoader):
         return data
 
 
-class DummyLoader(DataLoader):
-    '''Dummy loader for data not stored anywhere'''
-    def __init__(self):
-        super().__init__()
-
-    def assert_exists(self):
-        pass
-
-    def filename(self):
-        return None
-
-    def load(self):
-        return None
-
 class OnTheFlyLoader(DataLoader):
     '''Loader for data calculated on the fly'''
     def __init__(self, func):
