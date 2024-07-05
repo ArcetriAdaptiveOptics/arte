@@ -1,16 +1,33 @@
-import numpy as np
-from scipy.linalg import pinv
-from arte.utils.decorator import cacheResult, returns
-from arte.utils.zernike_generator import ZernikeGenerator
+from warnings import warn
 from arte.types.zernike_coefficients import ZernikeCoefficients
-from arte.atmo.utils import getFullKolmogorovCovarianceMatrix
-from arte.types.mask import CircularMask, BaseMask
-from arte.types.wavefront import Wavefront
-from arte.types.slopes import Slopes
+from arte.utils.decorator import returns
 from arte.utils.zernike_decomposer import ZernikeModalDecomposer
 
 
-# write the class ZernikeDecomposer here derived from ModalDecomposer and is a copy o that with only the name changed
 class ModalDecomposer(ZernikeModalDecomposer):
-    def __init__(self, nModes):
-        super().__init__(nModes)
+    '''
+    Backward compatibility with old ModalDecomposer class
+    '''
+    def __init__(self, n_modes=None, n_zernike_modes=None):
+        if n_zernike_modes is not None:
+            n_modes = n_zernike_modes
+        if n_modes is None and n_zernike_modes is None:
+            raise ValueError("either n_modes or n_zernike_modes must be specified")
+        super().__init__(n_modes)
+        warn(
+            f"{self.__class__.__name__} will be deprecated or change use. Use ZernikeModalDecomposer instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+    @returns(ZernikeCoefficients)
+    def measureZernikeCoefficientsFromWavefront(self, wavefront, circular_mask,
+                                                user_mask=None, nModes=None, dtype=float):
+        return self.measureModalCoefficientsFromWavefront(wavefront, circular_mask,
+                                                       user_mask, nModes, dtype=dtype)
+
+    @returns(ZernikeCoefficients)
+    def measureZernikeCoefficientsFromSlopes(self, slopes, circular_mask,
+                                             user_mask=None, nModes=None, dtype=float):
+        return self.measureModalCoefficientsFromSlopes(slopes, circular_mask,
+                                                       user_mask, nModes, dtype=dtype)

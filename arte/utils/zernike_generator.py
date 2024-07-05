@@ -111,6 +111,12 @@ class ZernikeGenerator(object):
         '''
         return self._center
 
+    def first_mode(self):
+        '''
+        Index of first mode, excluding piston
+        '''
+        return 2
+
     def _derivativeCoeffX(self, index):
         if (self._dx is None) or (self._dx.shape[0] < index):
             self._dx = self._computeDerivativeCoeffX(index)
@@ -231,6 +237,9 @@ class ZernikeGenerator(object):
         for index in indexVector:
             ret[index] = self.getZernike(index)
         return ret
+
+    def getModesDict(self, indexVector):
+        return self.getZernikeDict(indexVector)
 
     def getZernike(self, index):
         if not self._is_integer_num(index):

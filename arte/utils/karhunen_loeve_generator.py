@@ -112,6 +112,12 @@ class KarhunenLoeveGenerator(object):
         """
         return self._center
 
+    def first_mode(self):
+        '''
+        First mode index
+        '''
+        return 0
+    
     def _derivativeCoeffX(self, index):
         raise Exception("Not available here")
 
@@ -235,6 +241,9 @@ class KarhunenLoeveGenerator(object):
         for index in indexVector:
             ret[index] = self.getKL(index)
         return ret
+
+    def getModesDict(self, indexVector):
+        return self.getKLDict(indexVector)
 
     def getKL(self, index):
         # Return the KL polynomial corresponding to the input index

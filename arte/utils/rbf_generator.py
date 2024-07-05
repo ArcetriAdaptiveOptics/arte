@@ -59,11 +59,6 @@ class RBFGenerator(object):
     >>> plt.imshow(rbfCube[:,:,0])
     '''
 
-    
-    
-
-
-
     def __init__(self, pupil, coords, rbfFunction="TPS_RBF", eps=1.0):
         
         if isinstance(pupil, CircularMask):
@@ -145,6 +140,9 @@ class RBFGenerator(object):
     def inv_multiquadric(self, r,eps):
         return 1/np.sqrt(1+(eps*r)**2)
 
+    def getModesDict(self, indexVector):
+        return self.getRBFDict(indexVector)
 
-
+    def first_mode(self):
+        return 0
 

@@ -1,18 +1,11 @@
 import numpy as np
-from scipy.linalg import pinv
-from arte.utils.decorator import cacheResult, returns
-from arte.utils.zernike_generator import ZernikeGenerator
-from arte.types.zernike_coefficients import ZernikeCoefficients
-from arte.atmo.utils import getFullKolmogorovCovarianceMatrix
-from arte.utils.karhunen_loeve_generator import KarhunenLoeveGenerator as KLGenerator
 from arte.utils.rbf_generator import RBFGenerator
-from arte.types.modal_coefficients import ModalCoefficients
-from arte.types.mask import CircularMask, BaseMask
+from arte.types.mask import CircularMask
 from arte.types.wavefront import Wavefront
-from arte.types.slopes import Slopes
+from arte.utils.base_modal_decomposer import BaseModalDecomposer
 
 
-class RadialBasisModalDecomposer(object):
+class RadialBasisModalDecomposer(BaseModalDecomposer):
 
     # write class and method documentation here
     """
@@ -31,116 +24,12 @@ class RadialBasisModalDecomposer(object):
 
     def __init__(self, coordinates_list):
         self.coordinates_list = coordinates_list
-        self.nModes = len(coordinates_list)
-        self.reconstructor = None
-        self.baseName = None
-        self.baseModes = None
-        self.baseDecomposition = None
-        self.rank = None
-        self.mask = None
-        self.modesGenerator = None
+        super().__init__(n_modes = len(coordinates_list))
 
-    def getModalBase(self):
-        return self.base
-
-    def getModalReconstructor(self):
-        return self.reconstructor
-
-    def getModalBaseDecomposition(self):
-        return self.baseDecomposition
-
-    def getRank(self):
-        return self.rank
-
-    def mask(self):
-        return self.mask
-
-    @cacheResult
-    def _synthModeRecFromWavefront(self):
-
-        rbf = RBFGenerator(
-            self.circular_mask, self.coordinates_list, rbfFunction=self.base
-        )
+    def generator(self, nModes, circular_mask, user_mask, rbfFunction=None, **kwargs):
+        rbf = RBFGenerator(circular_mask, self.coordinates_list, rbfFunction=rbfFunction)
         rbf.generate()
-        self.modesGenerator = rbf
-        wf = rbf.getRBFDict(list(range(self.nModes)))
-
-        im = np.zeros((self.nModes, self.user_mask.as_masked_array().compressed().size))
-        # modesIdx = list(range(start_mode, start_mode + nModes))
-        modesIdx = list(range(self.nModes))
-
-        i = 0
-        for idx in modesIdx:
-            wf_masked = np.ma.masked_array(wf[idx].data, mask=self.user_mask.mask())
-            im[i, :] = wf_masked.compressed()
-            i += 1
-        self.baseModes = im
-        return pinv(im, return_rank=True)
-        
-    def _uncachedSynthModeRecFromWavefront(self, **kwargs):
-
-        rbf = RBFGenerator(
-            self.circular_mask, self.coordinates_list, rbfFunction=self.base
-        )
-        rbf.generate()
-        self.modesGenerator = rbf
-        wf = rbf.getRBFDict(list(range(self.nModes)))
-
-        im = np.zeros((self.nModes, self.user_mask.as_masked_array().compressed().size))
-        # modesIdx = list(range(start_mode, start_mode + nModes))
-        modesIdx = list(range(self.nModes))
-
-        i = 0
-        for idx in modesIdx:
-            wf_masked = np.ma.masked_array(wf[idx].data, mask=self.user_mask.mask())
-            im[i, :] = wf_masked.compressed()
-            i += 1
-        self.baseModes = im
-        return pinv(im, return_rank=True, **kwargs)
-
-
-    @returns(ModalCoefficients)
-    def measureModalCoefficientsFromWavefront(
-        self, wavefront, base, circular_mask, user_mask, coordinates_list=None, **kwargs
-    ):
-        assert isinstance(wavefront, Wavefront), (
-            "wavefront argument must be of type Wavefront, instead is %s"
-            % wavefront.__class__.__name__
-        )
-        assert isinstance(circular_mask, CircularMask), (
-            "Circular mask argument must be of type CircularMask, instead is %s"
-            % circular_mask.__class__.__name__
-        )
-        assert isinstance(user_mask, BaseMask), (
-            "User mask argument must be of type BaseMask, instead is %s"
-            % user_mask.__class__.__name__
-        )
-        if not np.all(
-            circular_mask.as_masked_array() * user_mask.as_masked_array()
-            == user_mask.as_masked_array()
-        ):
-            raise Exception("User mask must be fully contained in circular mask")
-
-        if coordinates_list is not None:
-            self.coordinates_list = coordinates_list
-        self.circular_mask = circular_mask
-        self.user_mask = user_mask
-        self.mask = user_mask
-        self.base = base
-
-        if len(kwargs.keys()) == 0:
-            self.reconstructor, self.rank = self._synthModeRecFromWavefront()
-        else:
-            self.reconstructor, self.rank = self._uncachedSynthModeRecFromWavefront(**kwargs)
-        wavefrontInMaskVector = np.ma.masked_array(
-            wavefront.toNumpyArray(), user_mask.mask()
-        ).compressed()
-        wavefrontInMaskVectorNoPiston = (
-            wavefrontInMaskVector - wavefrontInMaskVector.mean()
-        )
-        return ModalCoefficients.fromNumpyArray(
-            np.dot(wavefrontInMaskVectorNoPiston, self.reconstructor)
-        )
+        return rbf
 
 
 # write test class for ModalDecomposer here derived from unittest.TestCase
@@ -195,9 +84,9 @@ class ModalDecomposerTest(unittest.TestCase):
 
         c2test = self._modal_decomposer.measureModalCoefficientsFromWavefront(
             self._wavefront,
-            self._base,
             self._mask,
             self._user_mask,
+            rbfFunction=self._base,
             coordinates_list=self._coords,
         )
 

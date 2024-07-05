@@ -7,6 +7,7 @@ from arte.utils.karhunen_loeve_decomposer import KarhunenLoeveModalDecomposer
 from arte.types.wavefront import Wavefront
 from arte.types.slopes import Slopes
 from arte.types.modal_coefficients import ModalCoefficients
+from arte.types.zernike_coefficients import ZernikeCoefficients
 from arte.utils.modal_decomposer import ModalDecomposer
 from arte.utils.radial_basis_decomposer import RadialBasisModalDecomposer
 
@@ -41,18 +42,6 @@ class ModalDecomposerTest(unittest.TestCase):
             self._wavefront, self._mask, self._user_mask, 10, start_mode=1
         )
         cTemplate = [
-            -1.30027833e-02,
-            -3.22827224e-05,
-            -1.06959015e-01,
-            8.49964362e-03,
-            1.51368177e-17,
-            -7.18398687e-17,
-            9.10631412e-02,
-            2.74849775e-05,
-            -1.24063393e-04,
-            3.74452222e-08,
-        ]
-        cTemplate = [
             0.00875421,
             -0.00187142,
             -0.17916746,
@@ -73,7 +62,7 @@ class ModalDecomposerTest(unittest.TestCase):
             start_mode=1,
             rtol=0.995,
         )
-        np.testing.assert_allclose(self._modal_decomposer.getRank(), 3)
+        np.testing.assert_allclose(self._modal_decomposer.getLastRank(), 3)
 
     def testRBFModalDecomposer(self):
         self._base = "TPS_RBF"
@@ -93,9 +82,9 @@ class ModalDecomposerTest(unittest.TestCase):
 
         c2test = self._modal_decomposer.measureModalCoefficientsFromWavefront(
             self._wavefront,
-            self._base,
             self._mask,
             self._user_mask,
+            rbfFunction=self._base,
             coordinates_list=self._coords,
         )
 
@@ -116,14 +105,14 @@ class ModalDecomposerTest(unittest.TestCase):
 
         tmp = self._modal_decomposer.measureModalCoefficientsFromWavefront(
             self._wavefront,
-            self._base,
             self._mask,
             self._user_mask,
+            rbfFunction=self._base,
             coordinates_list=self._coords,
             atol=0.995,
         )
 
-        np.testing.assert_allclose(self._modal_decomposer.getRank(), 7)
+        np.testing.assert_allclose(self._modal_decomposer.getLastRank(), 7)
 
     def testKarhunenLoeveModalDecomposer(self):
         self._base = "KL"
@@ -149,7 +138,7 @@ class ModalDecomposerTest(unittest.TestCase):
         tmp = self._modal_decomposer.measureModalCoefficientsFromWavefront(
             self._wavefront, self._mask, self._user_mask, 10, rtol=0.995
         )
-        np.testing.assert_allclose(self._modal_decomposer.getRank(), 3)
+        np.testing.assert_allclose(self._modal_decomposer.getLastRank(), 3)
 
     def testMeasureZernikeCoefficientsFromSlopes(self):
         radius = 4
@@ -171,10 +160,10 @@ class ModalDecomposerTest(unittest.TestCase):
         md = ModalDecomposer(11)
         diameter = 100
         n_modes = 10
-        rec1 = md._synthZernikeRecFromSlopes(n_modes, diameter)
-        rec2 = md._synthZernikeRecFromSlopes(n_modes, diameter)
+        rec1 = md.cachedSyntheticReconstructorFromSlopes(n_modes, CircularMask((diameter, diameter)))
+        rec2 = md.cachedSyntheticReconstructorFromSlopes(n_modes, CircularMask((diameter, diameter)))
         self.assertTrue(rec1 is rec2)
-        rec3 = md._synthZernikeRecFromSlopes(1, diameter)
+        rec3 = md.cachedSyntheticReconstructorFromSlopes(1, CircularMask((diameter, diameter)))
         self.assertFalse(rec1 is rec3)
 
     def testRaiseOnWrongArguments(self):
@@ -201,7 +190,7 @@ class ModalDecomposerTest(unittest.TestCase):
             "zernike decomposition is %s" % str(zernike),
         )
         zernike42 = modalDecomposer.measureZernikeCoefficientsFromSlopes(
-            slopes, mask, 42
+            slopes, mask, nModes=42
         )
         self.assertTrue(42, len(zernike42.toNumpyArray()))
         self.assertTrue(
@@ -294,14 +283,14 @@ class ModalDecomposerTest(unittest.TestCase):
 
         return coordinates
 
-    def testMeasureZernikeCoefficientsFromWavefront(self):
+    def testMeasureZernikeCoefficientsFromWavefront2(self):
         self._modal_decomposer = ModalDecomposer(self._nModes)
         modal_coefficients = (
             self._modal_decomposer.measureModalCoefficientsFromWavefront(
                 self._wavefront, self._mask, self._user_mask, self._nModes, start_mode=1
             )
         )
-        self.assertIsInstance(modal_coefficients, ModalCoefficients)
+        self.assertIsInstance(modal_coefficients, ZernikeCoefficients)
         self.assertEqual(modal_coefficients.numberOfModes(), self._nModes)
         self.assertEqual(modal_coefficients.counter(), 0)
 
@@ -336,9 +325,9 @@ class ModalDecomposerTest(unittest.TestCase):
         modal_coefficients = (
             self._modal_decomposer.measureModalCoefficientsFromWavefront(
                 self._wavefront,
-                "TPS_RBF",
                 self._mask,
                 self._user_mask,
+                rbfFunction="TPS_RBF",
             )
         )
         self.assertIsInstance(modal_coefficients, ModalCoefficients)
