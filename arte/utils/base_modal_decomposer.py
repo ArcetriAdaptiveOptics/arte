@@ -63,7 +63,8 @@ class BaseModalDecomposer(abc.ABC):
 
     def _syntheticReconstructor(self, im_func, nModes,
                                 circular_mask, user_mask=None,
-                                dtype=float, start_mode=None, **kwargs):
+                                dtype=float, start_mode=None,
+                                return_rank=False, **kwargs):
         '''Generates a synthetic reconstructor given a certain IM function'''
         if user_mask is None:
             user_mask = circular_mask
@@ -85,27 +86,29 @@ class BaseModalDecomposer(abc.ABC):
         modesIdx = list(range(first_mode, first_mode + nModes))
         im = im_func(modes_generator, modesIdx, user_mask, dtype)
         self.lastIM = im
-        return pinv(im, return_rank=True, atol=atol, rtol=rtol, check_finite=check_finite)
+        return pinv(im, return_rank=return_rank, atol=atol, rtol=rtol, check_finite=check_finite)
 
     @functools.cache
     def cachedSyntheticReconstructorFromWavefront(self, nModes,
                                                   circular_mask, user_mask=None,
-                                                  dtype=float, start_mode=None, **kwargs):
+                                                  dtype=float, start_mode=None,
+                                                  return_rank=False, **kwargs):
         '''Generates a synthetic reconstructor instance using the
            modal basis returned by self.generator()'''
-        return self._syntheticReconstructor(self.wfIm, nModes,
+        return self._syntheticReconstructor(self.wfIm, nModes, 
                                             circular_mask, user_mask,
-                                            dtype, start_mode, **kwargs)
+                                            dtype, start_mode, return_rank, **kwargs)
 
     @functools.cache
     def cachedSyntheticReconstructorFromSlopes(self, nModes,
                                                   circular_mask, user_mask=None,
-                                                  dtype=float, start_mode=None, **kwargs):
+                                                  dtype=float, start_mode=None,
+                                                  return_rank=False, **kwargs):
         '''Generates a synthetic reconstructor instance using the
            modal basis returned by self.generator()'''
         return self._syntheticReconstructor(self.slopesIm, nModes,
                                             circular_mask, user_mask,
-                                            dtype, start_mode, **kwargs)
+                                            dtype, start_mode, return_rank, **kwargs)
 
     def measureModalCoefficientsFromWavefront(
         self, wavefront, circular_mask, user_mask, nModes=None, dtype=float, **kwargs
@@ -115,7 +118,7 @@ class BaseModalDecomposer(abc.ABC):
             nModes = self.nModes
 
         reconstructor, rank = self.cachedSyntheticReconstructorFromWavefront(
-            nModes, circular_mask, user_mask, dtype=dtype, **kwargs
+            nModes, circular_mask, user_mask, dtype=dtype, return_rank=True, **kwargs
         )
 
         wavefrontInMaskVector = np.ma.masked_array(
@@ -143,7 +146,7 @@ class BaseModalDecomposer(abc.ABC):
             user_mask = circular_mask
 
         reconstructor, rank = self.cachedSyntheticReconstructorFromSlopes(
-            nModes, circular_mask, user_mask, dtype)
+            nModes, circular_mask, user_mask, dtype=dtype, return_rank=True)
 
         slopesInMaskVector = np.hstack(
             (np.ma.masked_array(slopes.mapX(), user_mask.mask()).compressed(),

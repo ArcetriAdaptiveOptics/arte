@@ -25,6 +25,11 @@ class CanBeIncomplete(object):
             if self._verbose:
                 print('iPython completer I got you!')
             raise AttributeError
+    
+        # Numpy array casting: will result in an empty array
+        if attr.startswith('__array'):
+            raise AttributeError
+
         return NotAvailable()
 
 

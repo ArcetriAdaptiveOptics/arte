@@ -7,7 +7,6 @@ import astropy.units as u
 
 from arte.math.make_xy import make_xy
 from arte.types.domainxy import DomainXY
-from arte.utils.unit_checker import assert_array_almost_equal_w_units
 
 
 class DomainXYTest(unittest.TestCase):
@@ -337,8 +336,10 @@ class DomainXYTest(unittest.TestCase):
         domain = DomainXY.from_linspace(-1 * u.mm, 1 * u.mm, 11)
         box = domain.boundingbox(0.32 * u.mm, -0.25 * u.mm, span=1)
 
-        assert_array_almost_equal_w_units(box.xcoord, [0.2, 0.4] * u.mm)
-        assert_array_almost_equal_w_units(box.ycoord, [-0.4, -0.2] * u.mm)
+        box_xcoord = box.xcoord.to(u.mm).data
+        box_ycoord = box.ycoord.to(u.mm).data
+        np.testing.assert_array_almost_equal(box_xcoord, [0.2, 0.4])
+        np.testing.assert_array_almost_equal(box_ycoord, [-0.4, -0.2])
 
         # Raise if incompatible unit
         with self.assertRaises(AssertionError):

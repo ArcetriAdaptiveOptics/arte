@@ -43,7 +43,7 @@ class UnitHandler():
         # Cache unit if applied
         if isinstance(newdata, u.Quantity):
             self._actual_unit = newdata.unit
-            self._actual_unit_name = newdata.unit.to_string()
+            self._actual_unit_name = newdata.unit.to_string() or 'dimensionless'
         else:
             self._actual_unit = None
             self._actual_unit_name = None

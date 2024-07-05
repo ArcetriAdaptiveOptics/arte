@@ -13,7 +13,11 @@ class ZernikeModalDecomposer(BaseModalDecomposer):
         Number of modes to decompose the wavefront into.
     """
 
-    def __init__(self, n_modes=None):
+    def __init__(self, n_modes=None, n_zernike_modes=None):
+        if n_modes is None and n_zernike_modes is None:
+            raise ValueError("either n_modes or n_zernike_modes must be specified")
+        if n_zernike_modes is not None:
+            n_modes = n_zernike_modes
         super().__init__(n_modes)
 
     def generator(self, nModes, circular_mask, user_mask, **kwargs):

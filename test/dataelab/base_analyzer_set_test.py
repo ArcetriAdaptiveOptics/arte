@@ -9,7 +9,7 @@ from arte.utils.not_available import NotAvailable
 from arte.dataelab.base_analyzer import BaseAnalyzer
 from arte.dataelab.base_analyzer_set import BaseAnalyzerSet
 from arte.dataelab.base_file_walker import AbstractFileNameWalker
-
+from arte.dataelab.cache_on_disk import cache_on_disk, clear_cache
 
 class TestFileWalker(AbstractFileNameWalker):
 
@@ -27,21 +27,24 @@ class TestFileWalker(AbstractFileNameWalker):
             tags += list(filter(lambda x: x >=tag_start and x<tag_stop, lst))
         return tags
 
-
 class TestAnalyzer(BaseAnalyzer):
-    def __init__(self, snapshot_tag, recalc=False, logger=None):
-       super().__init__(snapshot_tag, recalc=recalc, logger=logger)
-       if not os.path.exists(TestFileWalker().snapshot_dir(snapshot_tag)):
+    def __init__(self, snapshot_tag, recalc=False):
+        super().__init__(snapshot_tag, recalc=recalc)
+        self._counter = 0
+        if not os.path.exists(TestFileWalker().snapshot_dir(snapshot_tag)):
             NotAvailable.transformInNotAvailable(self)
             return
 
+    @cache_on_disk
+    def a_method(self):
+        self._counter += 1
+        return self._counter
+
 
 class TestAnalyzerSet(BaseAnalyzerSet):
-    def _get_file_walker(self):
-        return TestFileWalker()
-
-    def _get_type(self):
-        return TestAnalyzer
+    def __init__(self, first, last=None, recalc=False):
+        super().__init__(first, last, recalc=recalc,
+                         file_walker=TestFileWalker(), analyzer_type=TestAnalyzer)
 
 
 class BaseAnalyzerSetTest(unittest.TestCase):
@@ -63,11 +66,12 @@ class BaseAnalyzerSetTest(unittest.TestCase):
 
     def test_creation_list_notfound(self):
         set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'])
-        assert len(set) == 1
+        assert len(set) == 2
 
     def test_creation_invalid(self):
-        set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'], skip_invalid=False)
-        assert len(set) == 2
+        set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'])
+        set.remove_invalids()
+        assert len(set) == 1
 
     def test_attribute(self):
         set = TestAnalyzerSet('20240404_024500', '20240404_024501')
@@ -87,3 +91,13 @@ class BaseAnalyzerSetTest(unittest.TestCase):
         set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'])
         for ee in set:
             _ = ee.snapshot_tag()
+
+    def test_recalc_works(self):
+        set = TestAnalyzerSet(['20240404_024500'], recalc=True)
+        a = set.a_method()
+        b = set.a_method()
+        set = TestAnalyzerSet(['20240404_024500'], recalc=True)
+        c = set.a_method()
+        assert a == b
+        for aa, cc, in zip(a,c):
+            assert cc == aa + 1

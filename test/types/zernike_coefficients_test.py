@@ -3,8 +3,6 @@ import unittest
 import numpy as np
 from arte.types.zernike_coefficients import ZernikeCoefficients
 
-__version__ = "$Id: zernike_coefficients_test.py 168 2016-12-06 21:33:24Z lbusoni $"
-
 
 class ZernikeCoefficientsTest(unittest.TestCase):
 
@@ -35,7 +33,8 @@ class ZernikeCoefficientsTest(unittest.TestCase):
         counter = 12
         z = ZernikeCoefficients.fromNumpyArray(coeffs, counter)
         d = z.toDictionary()
-        self.assertTrue(np.array_equal(list(d.keys()), np.array([2, 3, 4])))
+        self.assertTrue(np.array_equal(list(d.keys()), np.array(
+            np.arange(3)+ZernikeCoefficients.FIRST_ZERNIKE_MODE)))
         self.assertTrue(np.array_equal(list(d.values()), np.array([0, 0.1, 0.2])))
 
     def testReturnLength(self):
@@ -45,7 +44,8 @@ class ZernikeCoefficientsTest(unittest.TestCase):
     def testGetZ(self):
         self._createZ()
         wantZernIndexes = [2, 4, 21]
-        shouldGet = (np.array(wantZernIndexes) - 2).astype(np.float32)
+        shouldGet = (np.array(wantZernIndexes) -
+                     ZernikeCoefficients.FIRST_ZERNIKE_MODE).astype(np.float32)
         didGet = self._z.getZ(wantZernIndexes)
         self.assertTrue(
             np.array_equal(shouldGet, didGet), "wanted %s got %s" % (shouldGet, didGet)

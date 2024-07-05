@@ -31,3 +31,11 @@ class ModalDecomposer(ZernikeModalDecomposer):
                                              user_mask=None, nModes=None, dtype=float):
         return self.measureModalCoefficientsFromSlopes(slopes, circular_mask,
                                                        user_mask, nModes, dtype=dtype)
+
+    def synthZernikeRecFromSlopes(self, nModes, circular_mask, user_mask=None, dtype=float):
+        return self.cachedSyntheticReconstructorFromSlopes(nModes, circular_mask,
+                                                           user_mask, dtype=dtype)
+
+    def synthZernikeRecFromWavefront(self, nModes, circular_mask, user_mask=None, dtype=float):
+        return self.cachedSyntheticReconstructorFromWavefront(nModes, circular_mask,
+                                                           user_mask, dtype=dtype)

@@ -2,7 +2,7 @@ import os
 import numpy as np
 import unittest
 from pathlib import Path
-from arte.dataelab.data_loader import FitsDataLoader, NumpyDataLoader, guess_data_loader
+from arte.dataelab.data_loader import FitsDataLoader, NumpyDataLoader, data_loader_factory
 
 class DataLoaderTest(unittest.TestCase):
 
@@ -61,20 +61,24 @@ class DataLoaderTest(unittest.TestCase):
         np.testing.assert_almost_equal(loader.load(), np.arange(18).reshape(2,3,3))
 
     def test_guess_fits(self):
-        loader = guess_data_loader('foo.fits')
+        loader = data_loader_factory('foo.fits')
         assert isinstance(loader, FitsDataLoader)
 
     def test_guess_npy(self):
-        loader = guess_data_loader('foo.npy')
+        loader = data_loader_factory('foo.npy')
         assert isinstance(loader, NumpyDataLoader)
 
     def test_guess_npz(self):
-        loader = guess_data_loader('foo.npz')
+        loader = data_loader_factory('foo.npz')
         assert isinstance(loader, NumpyDataLoader)
 
     def test_guess_unknown(self):
         with self.assertRaises(ValueError):
-            _ = guess_data_loader('foo.bar')
+            _ = data_loader_factory('foo.bar')
+            
+    def test_guess_pathlib(self):
+        loader = data_loader_factory(Path('foo.npz'))
+        assert isinstance(loader, NumpyDataLoader)
 
 if __name__ == "__main__":
     unittest.main()

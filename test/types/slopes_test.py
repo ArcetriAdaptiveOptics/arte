@@ -12,7 +12,7 @@ class SlopesTest(unittest.TestCase):
             np.arange(self._n_slopes, dtype=np.float32))
         self._mapy = np.ma.masked_array(
             np.arange(self._n_slopes, dtype=np.float32)) * 10
-        self._slopes = Slopes(self._mapx, self._mapy)
+        self._slopes = Slopes.from_2dmaps(self._mapx, self._mapy)
 
     def testNumpy(self):
         slopes = Slopes.fromNumpyArray(self._mapx, self._mapy)

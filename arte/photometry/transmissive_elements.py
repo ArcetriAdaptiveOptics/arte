@@ -195,6 +195,34 @@ class TransmissiveElement():
     @property
     def emissivity(self):
         return self.absorptance
+    
+    def _compute_average_in_band(self, spectral_el, wv_band, atol):
+        id_wv_min = np.where(np.isclose(self.waveset, wv_band[0], atol=atol[0]))[0]
+        wv_min = self.waveset[id_wv_min]
+        if len(wv_min) != 1:
+            raise ValueError(f'Wavelength found: {wv_min}. Change atol.')
+        
+        id_wv_max = np.where(np.isclose(self.waveset, wv_band[1], atol=atol[1]))[0]
+        wv_max = self.waveset[id_wv_max]
+        if len(wv_max) != 1:
+            raise ValueError(f'Wavelength found: {wv_max}. Change atol.')
+    
+        return wv_min, wv_max, np.mean(spectral_el(self.waveset)[id_wv_min[0]:id_wv_max[0]+1]) 
+
+    def transmittance_in_band(self, wv_band, atol=(1, 1)):
+        wv_min, wv_max, t_mean = self._compute_average_in_band(self.transmittance, wv_band, atol)
+        print(f'Average transmittance in band {(wv_min, wv_max)}: {t_mean}')
+        return t_mean
+    
+    def reflectance_in_band(self, wv_band, atol=(1, 1)):
+        wv_min, wv_max, r_mean = self._compute_average_in_band(self.reflectance, wv_band, atol)
+        print(f'Average reflectance in band {(wv_min, wv_max)}: {r_mean}')
+        return r_mean
+    
+    def emissivity_in_band(self, wv_band, atol=(1, 1)):
+        wv_min, wv_max, e_mean = self._compute_average_in_band(self.emissivity, wv_band, atol)
+        print(f'Average emissivity in band {(wv_min, wv_max)}: {e_mean}')
+        return e_mean
 
     def _insert_spectral_element(self, spectral_element, new_values, wavelengths):
         if new_values is None:

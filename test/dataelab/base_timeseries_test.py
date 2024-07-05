@@ -93,3 +93,131 @@ class BaseTimeSeriesTest(unittest.TestCase):
     def test_timevector_wrong_filename1(self):
         with self.assertRaises(ValueError):
             _ = BaseTimeSeries(self.testdata, time_vector=set())
+
+
+class TestBaseTimeSeriesMath(unittest.TestCase):
+
+    def test_addition_numpy_arrays(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
+        b = BaseTimeSeries(np.array([[5, 6], [7, 8]]))
+        result = a + b
+        np.testing.assert_array_equal(result.get_data(), np.array([[6, 8], [10, 12]]))
+
+    def test_subtraction_numpy_arrays(self):
+        a = BaseTimeSeries(np.array([[9, 8], [7, 6]]))
+        b = BaseTimeSeries(np.array([[5, 4], [3, 2]]))
+        result = a - b
+        np.testing.assert_array_equal(result.get_data(), np.array([[4, 4], [4, 4]]))
+
+    def test_multiplication_numpy_arrays(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
+        b = BaseTimeSeries(np.array([[5, 6], [7, 8]]))
+        result = a * b
+        np.testing.assert_array_equal(result.get_data(), np.array([[5, 12], [21, 32]]))
+
+    def test_division_numpy_arrays(self):
+        a = BaseTimeSeries(np.array([[8, 12], [18, 24]]))
+        b = BaseTimeSeries(np.array([[2, 3], [6, 8]]))
+        result = a / b
+        np.testing.assert_array_equal(result.get_data(), np.array([[4, 4], [3, 3]]))
+
+    def test_addition_astropy_quantities(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]) * u.m)
+        b = BaseTimeSeries(np.array([[5, 6], [7, 8]]) * u.m)
+        result = a + b
+        np.testing.assert_array_equal(result.get_data().value, np.array([[6, 8], [10, 12]]))
+        self.assertEqual(result.get_data().unit, u.m)
+
+    def test_addition_astropy_quantities_with_numpy_array(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
+        b = BaseTimeSeries(np.array([[5, 6], [7, 8]]) * u.m)
+        with self.assertRaises(u.UnitConversionError):
+            _ = (a + b).get_data()
+
+    def test_addition_numpy_array_with_astropy_quantities(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
+        b = BaseTimeSeries(np.array([[5, 6], [7, 8]]) * u.m)
+        with self.assertRaises(u.UnitConversionError):
+            _ = (a + b).get_data()
+
+    def test_subtraction_astropy_quantities(self):
+        a = BaseTimeSeries(np.array([[9, 8], [7, 6]]) * u.m)
+        b = BaseTimeSeries(np.array([[5, 4], [3, 2]]) * u.m)
+        result = a - b
+        np.testing.assert_array_equal(result.get_data().value, np.array([[4, 4], [4, 4]]))
+        self.assertEqual(result.get_data().unit, u.m)
+
+    def test_multiplication_astropy_quantities(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]) * u.m)
+        b = BaseTimeSeries(np.array([[5, 6], [7, 8]]))
+        result = a * b
+        np.testing.assert_array_equal(result.get_data().value, np.array([[5, 12], [21, 32]]))
+        self.assertEqual(result.get_data().unit, u.m)
+
+    def test_division_astropy_quantities(self):
+        a = BaseTimeSeries(np.array([[8, 12], [18, 24]]) * u.m)
+        b = BaseTimeSeries(np.array([[2, 3], [6, 8]]))
+        result = a / b
+        np.testing.assert_array_equal(result.get_data().value, np.array([[4, 4], [3, 3]]))
+        self.assertEqual(result.get_data().unit, u.m)
+
+    def test_addition_mismatched_units(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]) * u.m)
+        b = BaseTimeSeries(np.array([[5, 6], [7, 8]]) * u.s)
+        with self.assertRaises(u.UnitConversionError):
+            _ = (a + b).get_data()
+
+    def test_subtraction_mismatched_units(self):
+        a = BaseTimeSeries(np.array([[9, 8], [7, 6]]) * u.m)
+        b = BaseTimeSeries(np.array([[5, 4], [3, 2]]) * u.s)
+        with self.assertRaises(u.UnitConversionError):
+            _ = (a + b).get_data()
+
+    def test_invalid_addition(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
+        with self.assertRaises(TypeError):
+            _ = a + "invalid"
+
+    def test_invalid_subtraction(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
+        with self.assertRaises(TypeError):
+            _ = a - "invalid"
+
+    def test_invalid_multiplication(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
+        with self.assertRaises(TypeError):
+            _ = a * "invalid"
+
+    def test_invalid_division(self):
+        a = BaseTimeSeries(np.array([[1, 2], [3, 4]]))
+        with self.assertRaises(TypeError):
+            _ = a / "invalid"
+
+    def test_shape_broadcasting(self):
+        a = BaseTimeSeries(np.arange(2 * 3 * 4).reshape(2, 3, 4))
+        b = BaseTimeSeries(np.arange(1 * 3 * 4).reshape(1, 3, 4))
+        result = a - b
+        wanted_result = np.arange(2 * 3 * 4).reshape(2, 3, 4) - \
+                        np.arange(1 * 3 * 4).reshape(1, 3, 4)
+        np.testing.assert_array_equal(result.get_data(), wanted_result)
+
+    def test_invalid_shape_broadcasting(self):
+        a = BaseTimeSeries(np.arange(2 * 3 * 4).reshape(2, 3, 4))
+        b = BaseTimeSeries(np.arange(1 * 3 * 4).reshape(1, 4, 3))
+        with self.assertRaises(ValueError):
+            result = (a - b).get_data()
+
+    def test_shape_broadcasting_ndarray(self):
+        a = BaseTimeSeries(np.arange(2 * 3 * 4).reshape(2, 3, 4))
+        b = np.arange(1 * 3 * 4).reshape(1, 3, 4)
+        result = a - b
+        wanted_result = np.arange(2 * 3 * 4).reshape(2, 3, 4) - \
+                        np.arange(1 * 3 * 4).reshape(1, 3, 4)
+        np.testing.assert_array_equal(result.get_data(), wanted_result)
+
+    def test_invalid_shape_broadcasting_ndarray(self):
+        a = BaseTimeSeries(np.arange(2 * 3 * 4).reshape(2, 3, 4))
+        b = np.arange(1 * 3 * 4).reshape(1, 4, 3)
+        with self.assertRaises(ValueError):
+            result = (a - b).get_data()
+

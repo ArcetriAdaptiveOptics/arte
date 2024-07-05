@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def show_array(array, cut_wings=0, title=None, xlabel='column', ylabel='row', units=None):
+def show_array(array, cut_wings=0, title=None, xlabel='column', ylabel='row', units=None, **kwargs):
     '''
     pyplot.matshow() wrapper to add a colorbar and title/labels
 
@@ -12,7 +12,7 @@ def show_array(array, cut_wings=0, title=None, xlabel='column', ylabel='row', un
     import matplotlib.pyplot as plt
 
     if cut_wings <= 0:
-        imgplt = plt.matshow(array)
+        imgplt = plt.matshow(array, **kwargs)
         clb = plt.colorbar()
     else:
         if cut_wings >= 50:
@@ -22,7 +22,7 @@ def show_array(array, cut_wings=0, title=None, xlabel='column', ylabel='row', un
         
         vmin = np.percentile(array, tmp_cut_wings)
         vmax = np.percentile(array, 100-tmp_cut_wings)
-        imgplt = plt.matshow(array, vmin=vmin, vmax=vmax)
+        imgplt = plt.matshow(array, vmin=vmin, vmax=vmax, **kwargs)
         clb = plt.colorbar(extend='both')
     
     if units is not None:

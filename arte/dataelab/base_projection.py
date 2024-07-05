@@ -5,15 +5,14 @@ from arte.dataelab.data_loader import OnTheFlyLoader
 
 class BaseProjection(BaseTimeSeries):
 
-    def __init__(self, source_timeseries, projection_matrix, astropy_unit=None, data_label=None, logger=None):
+    def __init__(self, source_timeseries, projection_matrix, astropy_unit=None, data_label=None):
         try:
             assert not isinstance(source_timeseries, NotAvailable)
             assert not isinstance(projection_matrix, NotAvailable)
-            super().__init__(loader_or_data=OnTheFlyLoader(self.project),
+            super().__init__(data=OnTheFlyLoader(self.project),
                              time_vector=OnTheFlyLoader(source_timeseries.get_time_vector),
                              astropy_unit=astropy_unit,
-                             data_label=data_label,
-                             logger=logger)
+                             data_label=data_label)
             self._unit_handler.set_force(True)
 
         except AssertionError as e:

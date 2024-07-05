@@ -58,7 +58,7 @@ class TestZernikeProjectionOnSubaperture(unittest.TestCase):
 
         spup_wf = Wavefront(zern_in_mask)
         md = ZernikeModalDecomposer(n_zernike_modes=j - 1)
-        spup_zern = md.measureZernikeCoefficientsFromWavefront(
+        spup_zern = md.measureModalCoefficientsFromWavefront(
             wavefront=spup_wf, circular_mask=spup, user_mask=spup
         ).toNumpyArray()
 

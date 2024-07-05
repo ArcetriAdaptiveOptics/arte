@@ -2,7 +2,7 @@
 import unittest
 import numpy as np
 from arte.utils.zernike_generator import ZernikeGenerator
-from arte.types.mask import CircularMask
+from arte.types.mask import CircularMask, BaseMask
 from arte.utils.karhunen_loeve_decomposer import KarhunenLoeveModalDecomposer
 from arte.types.wavefront import Wavefront
 from arte.types.slopes import Slopes
@@ -144,11 +144,12 @@ class ModalDecomposerTest(unittest.TestCase):
         radius = 4
         zg = ZernikeGenerator(2 * radius)
         mask = CircularMask((2 * radius, 2 * radius), radius)
-        dx = zg.getDerivativeXDict(list(range(2, 6)))
-        dy = zg.getDerivativeYDict(list(range(2, 6)))
+        modes_idxs = list(range(2, 6))
+        dx = zg.getDerivativeXDict(modes_idxs)
+        dy = zg.getDerivativeYDict(modes_idxs)
         mapX = 2.5 * dx[2] - 4 * dx[3] + 3 * dx[5]
         mapY = 2.5 * dy[2] - 4 * dy[3] + 3 * dy[5]
-        slopes = Slopes(mapX, mapY)
+        slopes = Slopes.from_2dmaps(mapX, mapY)
         modalDecomposer = ModalDecomposer(5)
         zernike = modalDecomposer.measureZernikeCoefficientsFromSlopes(slopes, mask)
         self.assertTrue(
@@ -166,6 +167,17 @@ class ModalDecomposerTest(unittest.TestCase):
         rec3 = md.cachedSyntheticReconstructorFromSlopes(1, CircularMask((diameter, diameter)))
         self.assertFalse(rec1 is rec3)
 
+    def testZernikeRecUserMaskDefault(self):
+        md = ModalDecomposer(11)
+        diameter = 100
+        n_modes = 10
+        circ_mask = CircularMask((diameter, diameter))
+        rec1 = md.synthZernikeRecFromSlopes(n_modes, circ_mask, circ_mask)
+        rec2 = md.synthZernikeRecFromSlopes(n_modes, circ_mask, None)
+        print(rec1)
+        print(rec2)
+        np.testing.assert_array_equal(rec1, rec2)
+
     def testRaiseOnWrongArguments(self):
         md = ModalDecomposer(3)
         slopes = np.ones(100)
@@ -178,11 +190,12 @@ class ModalDecomposerTest(unittest.TestCase):
         radius = 4
         zg = ZernikeGenerator(2 * radius)
         mask = CircularMask((2 * radius, 2 * radius), radius)
-        dx = zg.getDerivativeXDict(list(range(2, 6)))
-        dy = zg.getDerivativeYDict(list(range(2, 6)))
+        modes_idxs = list(range(2, 6))
+        dx = zg.getDerivativeXDict(modes_idxs)
+        dy = zg.getDerivativeYDict(modes_idxs)
         mapX = 2.5 * dx[2] - 4 * dx[3] + 3 * dx[5]
         mapY = 2.5 * dy[2] - 4 * dy[3] + 3 * dy[5]
-        slopes = Slopes(mapX, mapY)
+        slopes = Slopes.from_2dmaps(mapX, mapY)
         modalDecomposer = ModalDecomposer(8)
         zernike = modalDecomposer.measureZernikeCoefficientsFromSlopes(slopes, mask)
         self.assertTrue(
@@ -202,7 +215,7 @@ class ModalDecomposerTest(unittest.TestCase):
         md = ModalDecomposer(3)
         mapX = np.ma.masked_array(np.arange(40000).reshape((200, 200)))
         mapY = mapX.T
-        slopes = Slopes(mapX, mapY)
+        slopes = Slopes.from_2dmaps(mapX, mapY)
         for maskRadius in np.arange(1, 90, 7):
             mask = CircularMask((200, 200), maskRadius, [101, 100])
             md.measureZernikeCoefficientsFromSlopes(slopes, mask)
@@ -211,7 +224,8 @@ class ModalDecomposerTest(unittest.TestCase):
         radius = 4
         zg = ZernikeGenerator(2 * radius)
         mask = CircularMask((2 * radius, 2 * radius), radius)
-        zernModes = zg.getZernikeDict(list(range(2, 6)))
+        modes_idxs = list(range(2, 6))
+        zernModes = zg.getZernikeDict(modes_idxs)
         wavefront = 2.5 * zernModes[2] - 4 * zernModes[3] + 3 * zernModes[5]
 
         modalDecomposer = ModalDecomposer(5)
@@ -222,13 +236,14 @@ class ModalDecomposerTest(unittest.TestCase):
             np.allclose(np.array([2.5, -4, 0, 3.0]), zernike.toNumpyArray()[0:4]),
             "zernike decomposition is %s" % str(zernike),
         )
-
+ 
     def testMeasureZernikeCoefficientsFromWavefrontUsingDifferentMasks(self):
         radius = 4
         zg = ZernikeGenerator(2 * radius)
         mask1 = CircularMask((2 * radius, 2 * radius), radius)
         mask2 = CircularMask((2 * radius, 2 * radius), radius / 2)
-        zernModes = zg.getZernikeDict(list(range(2, 6)))
+        modes_idxs = list(range(2, 6))
+        zernModes = zg.getZernikeDict(modes_idxs)
         wavefront = 2.5 * zernModes[2] - 4 * zernModes[3] + 3 * zernModes[5]
 
         modalDecomposer = ModalDecomposer(5)
@@ -334,6 +349,17 @@ class ModalDecomposerTest(unittest.TestCase):
         self.assertEqual(modal_coefficients.numberOfModes(), 10)
         self.assertEqual(modal_coefficients.counter(), 0)
 
+    def testMaskWithSmallerSlopeMap(self):
+        md = ModalDecomposer(3)
+        slopeMask = CircularMask((200, 200), 90, [100, 100])
+        slopeMask.mask()[100, 100] = True   # Mask out slopes inside the pupil
+        mapX = np.ma.masked_array(np.arange(40000).reshape(
+            (200, 200)), mask=slopeMask.mask())
+        mapY = mapX.T
+        slopes = Slopes.from_2dmaps(mapX, mapY)
+        mask = CircularMask((200, 200), 90, [100, 100])
+        md.measureZernikeCoefficientsFromSlopes(
+            slopes, mask, BaseMask(slopeMask.mask()))
 
 if __name__ == "__main__":
     unittest.main()
