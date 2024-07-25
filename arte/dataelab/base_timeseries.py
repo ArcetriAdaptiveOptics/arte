@@ -310,10 +310,9 @@ class BaseTimeSeries(TimeSeries):
                      lineary=False, linearx=False,
                      **kwargs):
         '''Plot PSD'''
-        power = self.power(from_freq, to_freq,
-                           segment_factor,
-                           *args, **kwargs)
-        freq = self.last_cut_frequency()
+        power, freq = self.power(from_freq, to_freq,
+                                 segment_factor,
+                                 *args, **kwargs)
 
         # linearx=True forces lineary to True
         if linearx: lineary=True
@@ -376,10 +375,9 @@ class BaseTimeSeries(TimeSeries):
                                 overplot=False, plot_rms=False, lineary=False,
                                 **kwargs):
         '''Plot cumulative PSD'''
-        power = self.power(*args, from_freq=from_freq, to_freq=to_freq,
-                           segment_factor=segment_factor,
-                           **kwargs)
-        freq = self.last_cut_frequency()
+        power, freq = self.power(*args, from_freq=from_freq, to_freq=to_freq,
+                                 segment_factor=segment_factor,
+                                 **kwargs)
         freq_bin = freq[1]-freq[0] # frequency bin
 
         from matplotlib.axes import Axes

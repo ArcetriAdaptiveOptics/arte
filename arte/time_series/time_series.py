@@ -1,6 +1,7 @@
 import abc
 import math
-import collections
+from collections import namedtuple
+from collections.abc import Sequence
 from functools import cache, cached_property
 
 import numpy as np
@@ -15,6 +16,9 @@ from arte.utils.unit_checker import make_sure_its_a
 
 class TimeSeriesException(Exception):
     '''Exception raised by TimeSeries'''
+
+
+SeriesPower = namedtuple('SeriesPower', 'power freq')
 
 
 @add_help
@@ -33,11 +37,6 @@ class TimeSeries(metaclass=abc.ABCMeta):
     '''
 
     def __init__(self, axes=None):
-        self._frequency = None
-        self._last_cut_frequency = None
-        self._power = None
-        self._segment_factor = None
-        self._window = None
         self._axis_handler = AxisHandler(axes)
 
     @abc.abstractmethod
@@ -70,7 +69,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
 
         data = self._get_not_indexed_data()
         if times is not None:
-            if not isinstance(times, collections.abc.Sequence) or len(times) != 2:
+            if not isinstance(times, Sequence) or len(times) != 2:
                 raise TimeSeriesException('Times keywords must be a sequence of two elements: [start, stop]')
             time_vector = self.get_time_vector()
             if len(time_vector) != len(data):
@@ -134,15 +133,9 @@ class TimeSeries(metaclass=abc.ABCMeta):
             else:
                 return 1
 
-    def frequency(self):
-        return self._frequency
-
     def get_time_vector(self):
         '''Return the series time vector'''
         return self._get_time_vector_check()
-
-    def last_cut_frequency(self):
-        return self._last_cut_frequency
 
     @cache
     def ensemble_size(self):
@@ -156,18 +149,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
         not_indexed_data = self._get_not_indexed_data()
         return not_indexed_data.shape[0]
 
-    def _data_flattened(self, data):
-        '''Flatten data over all non-time dimensions'''
-        return data.reshape(data.shape[0], self._data_sample_size(data))
-
-    def _data_sample_shape(self, data):
-        return data.shape[1:]
-
     def _data_sample_axes(self, data):
         return tuple(range(len(data.shape))[1:])
-
-    def _data_sample_size(self, data):
-        return math.prod(data.shape[1:])
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def time_median(self, *args, times=None, **kwargs):
@@ -221,50 +204,49 @@ class TimeSeries(metaclass=abc.ABCMeta):
         '''Power Spectral Density across specified series'''
 
         if segment_factor is None:
-            if self._segment_factor is None:
-                self._segment_factor = 1.0
-        else:
-            if self._segment_factor != segment_factor:
-                self._segment_factor = segment_factor
-                self._power = None
-        if self._window != window:
-            self._power = None
-            self._window = window
-        if self._power is None:
-            data = self._get_not_indexed_data()
-            # Perform power on flattened data and restore the shape afterwards
-            power = self._compute_power(self._data_flattened(data))
-            self._power = power.reshape((power.shape[0],) + self._data_sample_shape(data))
-        if from_freq is None:
-            output = self._power
-            self._last_cut_frequency = self._frequency
-        else:
-            ul = self._frequency <= to_freq
-            dl = self._frequency >= from_freq
-            ul |= np.isclose(self._frequency, to_freq)
-            dl |= np.isclose(self._frequency, from_freq)
+            segment_factor = 1.0
+        if from_freq is None and to_freq is not None:
+            raise ValueError('to_freq must not be None if from_freq is specified')
+        if from_freq is not None and to_freq is None:
+            raise ValueError('from_freq must not be None if to_freq is specified')
+
+        power, frequency = self._compute_power_and_frequency(segment_factor,
+                                                             window)
+        if from_freq is not None:
+            ul = frequency <= to_freq
+            dl = frequency >= from_freq
+            ul |= np.isclose(frequency, to_freq)
+            dl |= np.isclose(frequency, from_freq)
             lim = ul & dl
-            self._last_cut_frequency = self._frequency[lim]
-            output = self._power[lim]
+            power = power[lim]
+            frequency = frequency[lim]
         index = self.get_index_of(*args, **kwargs)
-        return self._index_data(output, index)
+        return SeriesPower(power = self._index_data(power, index),
+                           freq = frequency)
 
-    def _compute_power(self, data):
+    @cache
+    def _compute_power_and_frequency(self, segment_factor, window):
+        '''Compute PSD and frequency vector'''
+        assert segment_factor != 0
 
+        # Flatten data
+        data = self._get_not_indexed_data()
+        flat_data = data.reshape(data.shape[0], math.prod(data.shape[1:]))
         if isinstance(data, NotAvailable):
-            raise Exception('Cannot calculate power: data is not available')
-        
+            return NotAvailable()
+
         delta_time = self.delta_time
         if isinstance(delta_time, u.Quantity):
             value_hz = (1 / delta_time).to_value(u.Hz)
         else:
             value_hz = 1 / delta_time
 
-        self._frequency, x = welch(data.T, value_hz,
-                                   window=self._window,
-                                   nperseg=data.shape[0] / self._segment_factor)
-        df = np.diff(self._frequency)[0]
-        return x.T * df
-
+        frequency, x = welch(flat_data.T, value_hz,
+                                    window=window,
+                                    nperseg=flat_data.shape[0] / segment_factor)
+        df = np.diff(frequency)[0]
+        power = x.T * df
+        # Restore original shape
+        return power.reshape((power.shape[0],) + data.shape[1:]), frequency
 
 # ___oOo___

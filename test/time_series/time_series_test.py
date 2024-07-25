@@ -77,13 +77,11 @@ class TimeSeriesTest(unittest.TestCase):
         self._ts_no_units.use_units = False
 
     def test_power_works_without_units(self):
-        power = self._ts_no_units.power()
-        freq = self._ts_no_units.frequency()
+        power, freq = self._ts_no_units.power()
         self.assertAlmostEqual(freq[np.argmax(power[:, 0])], 10.)
-    
+
     def test_power_return_correct_freq(self):
-        power = self._ts.power()
-        freq = self._ts.frequency()
+        power, freq = self._ts.power()
         self.assertAlmostEqual(freq[np.argmax(power[:, 0])], 10.)
 
     def test_ensemble_size(self):
@@ -93,38 +91,34 @@ class TimeSeriesTest(unittest.TestCase):
         self.assertEqual(self._ts.time_size(), self._ts.nsamples)
 
     def test_power_return_with_modes(self):
-        power = self._ts.power(modes=4)
-        freq = self._ts.frequency()
+        power, freq = self._ts.power(modes=4)
         self.assertAlmostEqual(freq[np.argmax(power[:, 0])],
                                self._ts.disturbFreq[4])
 
     def test_power_with_from_to(self):
-        power = self._ts.power(from_freq=30, to_freq=100)
-        freq = self._ts.last_cut_frequency()
-        self.assertAlmostEqual(freq[np.argmax(power[:, 3])],
-                               self._ts.disturbFreq[3])
+        power, freq = self._ts.power(from_freq=30, to_freq=100)
+        print(freq)
         self.assertAlmostEqual(np.min(freq), 30)
         self.assertAlmostEqual(np.max(freq), 100)
+        self.assertAlmostEqual(freq[np.argmax(power[:, 3])],
+                               self._ts.disturbFreq[3])
 
     def test_power_outside_range_higher(self):
-        power = self._ts.power(from_freq=30, to_freq=1000)
-        freq = self._ts.last_cut_frequency()
+        power, freq = self._ts.power(from_freq=30, to_freq=1000)
         self.assertAlmostEqual(freq[np.argmax(power[:, 3])],
                                self._ts.disturbFreq[3])
         self.assertAlmostEqual(np.min(freq), 30)
         self.assertAlmostEqual(np.max(freq), 500)
 
     def test_power_outside_range_lower(self):
-        power = self._ts.power(from_freq=0.001, to_freq=100)
-        freq = self._ts.last_cut_frequency()
+        power, freq = self._ts.power(from_freq=0.001, to_freq=100)
         self.assertAlmostEqual(freq[np.argmax(power[:, 3])],
                                self._ts.disturbFreq[3])
         self.assertAlmostEqual(np.min(freq), 1)
         self.assertAlmostEqual(np.max(freq), 100)
 
     def test_power_outside_range_completely(self):
-        power = self._ts.power(from_freq=800, to_freq=1000)
-        freq = self._ts.last_cut_frequency()
+        power, freq = self._ts.power(from_freq=800, to_freq=1000)
         assert len(power) == 0
         assert len(freq) == 0
 
