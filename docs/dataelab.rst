@@ -1,6 +1,16 @@
 Data elab
 =========
 
+This library is intended for analysis of laboratory-generated datasets
+with the following charateristics:
+* grouped into discrete sets
+* each set contains a snapshot of the system state, plus one or more time series 
+of fast-varying data (pixel frames, DM commands, etc),
+usually a few hundreds or thousands of samples each, stored in numpy, FITS
+or other numeric formats.
+
+Tags
+----
 
 The elaboration library is based on the concept of *tag*: 
 a name for a file collection corresponding to a snapshot
@@ -50,7 +60,6 @@ method and an additional method for each file that you want to load::
         def slopes(self, tag):
             return self.snapshot_dir(tag) / 'slopes.fits'
 
-
 Time Series
 -----------
 
@@ -61,8 +70,8 @@ DM commands, etc), define a class derived from
     from arte.dataelab.base_timeseries import BaseTimeseries
 
     class LBTSlopes(BaseTimeseries):
-        def __init__(self, loader_or_data, time_vector=None, astropy_unit=None):
-            super().__init__(loader_or_data, time_vector, astropy_unit)
+        def __init__(self, data, time_vector=None, astropy_unit=None):
+            super().__init__(data, time_vector, astropy_unit)
 
 By default, the :py:meth:`~arte.time_series.time_series.TimeSeries.get_data`
 method of this class will retrieve the entire data array. In order
@@ -77,8 +86,8 @@ the even and odd data members::
     from arte.dataelab.base_timeseries import BaseTimeseries
 
     class LBTSlopes(BaseTimeseries):
-        def __init__(self, loader_or_data, time_vector=None):
-            super().__init__(loader_or_data, time_vector)
+        def __init__(self, data, time_vector=None):
+            super().__init__(data, time_vector)
 
         def get_index_of(self, *args, **kwargs):
             '''Select the x or y slopes'''
@@ -92,6 +101,42 @@ the even and odd data members::
 Thanks to the base time series class, your one will inherit a number
 of useful methods. Please have a look at the :py:class:`~arte.dataelab.base_timeseries.BaseTimeSeries`
 class documentation for a list.
+
+Data Loaders
+------------
+
+Data loaders enable the elaboration library to use *lazy loading*, where the
+data is only loaded when needed and not before. Thus, instead of initializing
+time series with a raw numpy array, you should instead pass them data loaders.
+
+The simplest data loader is just a standard Python function that will return
+data. The `~arte.dataelab.base_timeseries.BaseTimeSeries`
+will call this function only when data is accessed and not before.
+Any Python callable will work this way.
+
+A data loader instance derived from `~arte.dataelab.data_loader.DataLoader`
+allows one more lazy check: if the data loaded is from a file, the loader
+*exists()* method allows the time series to check whether the file exist,
+and thus stop early in case of missing files.
+ 
+For numpy (\*.npy and \*.npz) and FITS files you can use one of the built-ins
+`~arte.dataelab.data_loader.NumpyDataLoader` and
+`~arte.dataelab.data_loader.FitsDataLoader`. Otherwise, you can
+implement your own deriving from the abstract `~arte.dataelab.data_loader.DataLoader` class.
+
+The numpy data loader can automatically handle compressed numpy files (\*.npz).
+Since \*.npz files work like dictionaries, the optional *key* argument is needed
+to specify which array from the archive must be loaded. For example::
+
+    from arte.dataelab.base_timeseries import BaseTimeseries
+    from arte.dataelab.data_loader import NumpyDataLoader
+
+    class LBTSlopes(BaseTimeseries):
+        def __init__(self, filename, time_vector=None, astropy_unit=None):
+            loader = NumpyDataLoader(filename, key='slopes')
+            super().__init__(loader, time_vector, astropy_unit)
+
+As seen in this example, the loader instance is passed in place of the data.
 
 Main analyzer
 -------------
@@ -201,6 +246,11 @@ method must return a list of tags between the two extremes
 
 Disk cache
 ----------
+
+TODO
+
+Not available
+-------------
 
 TODO
 
