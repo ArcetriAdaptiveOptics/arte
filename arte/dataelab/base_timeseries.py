@@ -242,6 +242,17 @@ class BaseTimeSeries(TimeSeries):
 
         return show_array(array2show, cut_wings, title, xlabel, ylabel, self.data_unit())
 
+    def plot(self, *args, cut_wings=0, title='', xlabel='', ylabel='', **kwargs):
+        '''
+        Plot timeseries
+        '''
+        import matplotlib.pyplot as plt
+
+        data = self.get_data(*args, **kwargs)
+        for index in range(data.shape[1]):
+            plt.plot(data[:,index])
+        return plt
+            
     @modify_help(call='plot_hist([series_idx], from_freq=xx, to_freq=xx, )')
     def plot_hist(self, *args, from_t=None, to_t=None,
                   overplot=None, plot_to=None,

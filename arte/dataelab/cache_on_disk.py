@@ -100,18 +100,19 @@ def set_prefix(root_obj, prefix):
         cacher_list[instance].set_prefix(prefix)
 
 
-logger = None
+_logger = None
 
 def set_logfile(filename, level=logging.DEBUG, name='cache_on_disk'):
-    global logger
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
+    '''Set the file where log output will be written'''
+    global _logger
+    _logger = logging.getLogger(name)
+    _logger.setLevel(level)
     formatter = logging.Formatter('%(asctime)s.%(msecs)03d %(message)s',
                                 datefmt='%Y-%m-%d:%H:%M:%S')
     file_handler = logging.FileHandler(filename)
     file_handler.setLevel(level)
     file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+    _logger.addHandler(file_handler)
 
 
 def _discover_cachers(obj, objname='root', seen=None):
@@ -187,24 +188,24 @@ class DiskCacher():
         if self._tag:
             self._delete_from_disk()
 
-    def log(self, message):
-        if logger:
-            logger.debug(' '.join((self._tag, self._funcid, message)))
+    def _log(self, message):
+        if _logger:
+            _logger.debug(' '.join((self._tag, self._funcid, message)))
 
     def execute(self, *args, **kwargs):
         '''Cache lookup'''
         if self._tag is not None:
             # Local memory cache
             if self._data is not None:
-                self.log('Internal cache hit')
+                self._log('Internal cache hit')
                 return self._data
             # Disk cache
             try:
                 self._data = self._load_from_disk()
                 return self._data
             except FileNotFoundError as e:
-                self.log('Exception reading from disk: '+str(e))
-                self.log('Calling function to cache')
+                self._log('Exception reading from disk: '+str(e))
+                self._log('Calling function to cache')
                 self._data = self._original_function(*args, **kwargs)
                 self._save_to_disk()
                 return self._data
@@ -220,7 +221,7 @@ class DiskCacher():
         return os.path.join(self._tmpdir, self._prefix + self._tag, self._funcid + '.npy')
 
     def _save_to_disk(self):
-        self.log('Saving ' + self.fullpath())
+        self._log('Saving ' + self.fullpath())
         try:
             os.mkdir(os.path.join(os.path.dirname(self.fullpath())))
         except FileExistsError:
@@ -234,14 +235,14 @@ class DiskCacher():
             else:
                 pickle.dump(self._data, open(self.fullpath(), 'wb'))
         except Exception as e:
-            self.log('Exception saving to disk: '+str(e))
+            self._log('Exception saving to disk: '+str(e))
 
     def _load_from_disk(self):
-        self.log('Reading ' + self.fullpath())
+        self._log('Reading ' + self.fullpath())
         return np.load(self.fullpath(), allow_pickle=True)
 
     def _delete_from_disk(self):
-        self.log('Deleting ' + self.fullpath())
+        self._log('Deleting ' + self.fullpath())
         if os.path.exists(self.fullpath()):
             os.unlink(self.fullpath())
 

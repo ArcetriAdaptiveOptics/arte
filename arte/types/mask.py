@@ -135,6 +135,10 @@ class CircularMask(BaseMask):
             transmission mask as a numpy array with dtype int
         '''
         return np.logical_not(self._mask).astype(int)
+    
+    #def as_masked_array(self):
+    #    return np.ma.array(np.array(self.asTransmissionValue(), dtype=float),
+    #                       mask=self.mask())
 
     def radius(self):
         '''
