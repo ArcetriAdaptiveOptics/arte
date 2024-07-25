@@ -9,9 +9,11 @@ from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import data_loader_factory, data_axes
 from arte.dataelab.unit_handler import UnitHandler
 from arte.dataelab.dataelab_utils import is_dataelab
+from arte.dataelab.analyzer_plots import setup_plot
 from arte.time_series.indexer import DefaultIndexer
 from arte.utils.displays import movie, tile, savegif
 from arte.utils.show_array import show_array
+from arte.utils.unit_checker import make_sure_its_a, separate_value_and_unit
 
 class BaseTimeSeries(TimeSeries):
     '''
@@ -251,11 +253,13 @@ class BaseTimeSeries(TimeSeries):
 
         return show_array(array2show, cut_wings, title, xlabel, ylabel, self.data_unit())
 
-    def plot(self, *args, cut_wings=0, title='', xlabel='', ylabel='', **kwargs):
+    def plot(self, *args, plot_to=None, overplot=False, title=None,
+             title='', xlabel='', ylabel='', **kwargs):
         '''
         Plot timeseries
         '''
-        import matplotlib.pyplot as plt
+        plt = setup_plot(plot_to=plot_to, overplot=overplot, title=title,
+                         xlabel=xlabel, ylabel=ylabel)
 
         data = self.get_data(*args, **kwargs)
         for index in range(data.shape[1]):
@@ -277,16 +281,6 @@ class BaseTimeSeries(TimeSeries):
         t = t[lim]
         hist = hist[lim]
 
-        from matplotlib.axes import Axes
-        if plot_to is None:
-            import matplotlib.pyplot as plt
-        else:
-            plt = plot_to
-        if not overplot:
-            plt.cla()
-            plt.clf()
-
-        lines = plt.plot(t, hist)
         if self.data_unit() is None:
             units = "(a.u.)"
         else:
@@ -299,149 +293,89 @@ class BaseTimeSeries(TimeSeries):
             title = title + " of " + self.data_label()
             ylabel = self.data_label() + " " + ylabel
 
-        if isinstance(plt, Axes):
-            plt.set(title=title, xlabel=xlabel, ylabel=ylabel)
-        else:
-            plt.title(title)
-            plt.xlabel(xlabel)
-            plt.ylabel(ylabel)
-            if label is not None:
-                if isinstance(label, str):
-                    plt.legend([label] * len(lines))
-                else:
-                    plt.legend(label)
-        return plt
+        plt = setup_plot(plot_to=plot_to, overplot=overplot, title=title,
+                         xlabel=xlabel, ylabel=ylabel)
 
-    @modify_help(call='plot_spectra([series_idx], from_freq=xx, to_freq=xx)')
-    def plot_spectra(self, *args, from_freq=None, to_freq=None,
-                     segment_factor=None,
-                     overplot=False,
-                     label=None, plot_to=None,
-                     lineary=False, linearx=False,
-                     **kwargs):
-        '''Plot PSD'''
-        power, freq = self.power(from_freq, to_freq,
-                                 segment_factor,
-                                 *args, **kwargs)
+        lines = plt.plot(t, hist)
 
-        # linearx=True forces lineary to True
-        if linearx: lineary=True
-        if lineary and not linearx:
-            p_shape = power.shape
-            if len(p_shape)== 1:
-                power *= freq
+        if label is not None:
+            if isinstance(label, str):
+                plt.legend([label] * len(lines))
             else:
-                power *= np.repeat(freq.reshape(p_shape[0],1), p_shape[1], axis=1)
-
-        from matplotlib.axes import Axes
-
-        if plot_to is None:
-            import matplotlib.pyplot as plt
-        else:
-            plt = plot_to
-
-        if not overplot:
-            plt.cla()
-            plt.clf()
-        lines = plt.plot(freq[1:], power[1:])
-
-        if lineary and not linearx:
-            plt.semilogx()
-        elif linearx and not lineary:
-            plt.semilogy()
-        elif not (linearx and lineary):
-            plt.loglog()
-
-        if self.data_unit() is None:
-            units = "(a.u.)"
-        else:
-            units = self.data_unit()
-
-        title = 'PSD'
-        if self.data_label() is not None:
-            title = title + " of " + self.data_label()
-        xlabel = 'frequency [Hz]'
-        if lineary and not linearx:
-            ylabel = 'frequency*PSD ['+units+'^2]'
-        else:
-            ylabel = 'PSD ['+units+'^2]/Hz'
-        if isinstance(plt, Axes):
-            plt.set(title=title, xlabel=xlabel, ylabel=ylabel)
-        else:
-            plt.title(title)
-            plt.xlabel(xlabel)
-            plt.ylabel(ylabel)
-            if label is not None:
-                if isinstance(label, str):
-                    plt.legend([label] * len(lines))
-                else:
-                    plt.legend(label)
+                plt.legend(label)
         return plt
 
-    @modify_help(call='plot_cumulative_spectra([series_idx], from_freq=xx, to_freq=xx)')
+    @modify_help(call='plot_cumulative_spectra([series_idx], from_freq=xx, to_freq=xx, ...)')
     def plot_cumulative_spectra(self, *args, from_freq=None, to_freq=None,
-                                segment_factor=None,
+                                segment_factor=None, cumulative=False,
                                 label=None, plot_to=None,
                                 overplot=False, plot_rms=False, lineary=False,
-                                **kwargs):
+                                unit=None, **kwargs):
+
+        return self._plot_spectra(*args, from_freq=from_freq, to_freq=to_freq,
+                                 segment_factor=segment_factor, cumulative=True,
+                                 label=label, plot_to=plot_to, overplot=overplot,
+                                 plot_rms=plot_rms, lineary=lineary, unit=unit, **kwargs)
+
+    @modify_help(call='plot_cumulative_spectra([series_idx], from_freq=xx, to_freq=xx, ...)')
+    def plot_spectra(self, *args, from_freq=None, to_freq=None,
+                            segment_factor=None, cumulative=False,
+                            label=None, plot_to=None,
+                            overplot=False, plot_rms=False, lineary=False,
+                            unit=None, **kwargs):
+
+        return self._plot_spectra(*args, from_freq=from_freq, to_freq=to_freq,
+                                 segment_factor=segment_factor, cumulative=False,
+                                 label=label, plot_to=plot_to, overplot=overplot,
+                                 plot_rms=plot_rms, lineary=lineary, unit=unit, **kwargs)
+
+    def _plot_spectra(self, *args, from_freq=None, to_freq=None,
+                            segment_factor=None, cumulative=False,
+                            label=None, plot_to=None,
+                            overplot=False, plot_rms=False, lineary=False,
+                            unit=None, **kwargs):
         '''Plot cumulative PSD'''
         power, freq = self.power(*args, from_freq=from_freq, to_freq=to_freq,
                                  segment_factor=segment_factor,
                                  **kwargs)
-        freq_bin = freq[1]-freq[0] # frequency bin
+        if unit is not None:
+            power = make_sure_its_a(unit, power)
 
-        from matplotlib.axes import Axes
-
-        if plot_to is None:
-            import matplotlib.pyplot as plt
-        else:
-            plt = plot_to
-
-        if not overplot:
-            plt.cla()
-            plt.clf()
-
-        # cumulated PSD
-        cumpsd = np.cumsum(power, 0) * freq_bin
+        # RMS/Variance
         if plot_rms:
-            # cumulated RMS
-            cumpsd = np.sqrt(cumpsd)
+            power = np.sqrt(power)
             label_str = "RMS"
-            label_pow = ""
         else:
-            # cumulated PSD
             label_str = "Variance"
-            label_pow = "^2"
-
-        lines = plt.plot(freq[1:], cumpsd[1:])
-        if lineary:
-            plt.semilogx()
+        # Cumulative flag
+        if cumulative:
+            freq_bin = freq[1] - freq[0]
+            plot_data = np.cumsum(power, 0) * freq_bin
         else:
-            plt.loglog()
-
-        if self.data_unit() is None:
-            units = "(a.u.)"
-        else:
-            units = self.data_unit()
+            plot_data = power
+        _, plot_unit = separate_value_and_unit(plot_data)
 
         title = "Cumulated " + label_str
-        if self.data_unit() is not None:
+        if self.data_label() is not None:
             title = title + " of " + self.data_label()
-        xlabel = 'frequency [Hz]'
-        ylabel = 'Cumulated '+label_str+' ['+units+label_pow+']'
-        if isinstance(plt, Axes):
-            plt.set(title=title, xlabel=xlabel, ylabel=ylabel)
+        if isinstance(freq, u.Quantity):
+            freq_unit = f'{freq.unit:console}'
         else:
-            plt.title(title)
-            plt.xlabel(xlabel)
-            plt.ylabel(ylabel)
-            if label is not None:
-                if isinstance(label, str):
-                    plt.legend([label] * len(lines))
-                else:
-                    plt.legend(label)
+            freq_unit = 'a.u.'
+        xlabel = f'Frequency [{freq_unit}]'
+        ylabel = f'Cumulated {label_str} [{plot_unit:console}]'
+
+        plt = setup_plot(plot_to=plot_to, overplot=overplot, title=title,
+                         xlabel=xlabel, ylabel=ylabel, logx=True, logy=not lineary)
+
+        lines = plt.plot(freq[1:], plot_data[1:])
+
+        if label is not None:
+            if isinstance(label, str):
+                plt.legend([label] * len(lines))
+            else:
+                plt.legend(label)
+
         return plt
-
-
 
 # __oOo__
