@@ -238,8 +238,10 @@ class TimeSeries(metaclass=abc.ABCMeta):
         delta_time = self.delta_time
         if isinstance(delta_time, u.Quantity):
             value_hz = (1 / delta_time).to_value(u.Hz)
+            f_unit = u.Hz
         else:
             value_hz = 1 / delta_time
+            f_unit = 1.0
 
         frequency, x = welch(flat_data.T, value_hz,
                                     window=window,
@@ -247,6 +249,6 @@ class TimeSeries(metaclass=abc.ABCMeta):
         df = np.diff(frequency)[0]
         power = x.T * df
         # Restore original shape
-        return power.reshape((power.shape[0],) + data.shape[1:]), frequency
+        return power.reshape((power.shape[0],) + data.shape[1:]), frequency * f_unit
 
 # ___oOo___
