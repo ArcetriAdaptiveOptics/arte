@@ -223,6 +223,16 @@ class BaseTimeSeries(TimeSeries):
     def __abs__(self):
         return self._operator(self, lambda x, y: abs(x), self._check_none)
 
+    def power(self, *args, from_freq=None, to_freq=None,
+              segment_factor=None, window='boxcar', **kwargs):
+        '''Power Spectral Density across specified series'''
+        power, freq = TimeSeries.power(self, *args, from_freq=from_freq,
+                                       to_freq=to_freq, segment_factor=segment_factor,
+                                       window=window, **kwargs)
+        if self.astropy_unit():
+            power = power * self.astropy_unit() ** 2
+        return power, freq
+
     def imshow(self, *args, cut_wings=0, title='', xlabel='', ylabel='', **kwargs):
         '''
         Display X and Y slope 2d images
