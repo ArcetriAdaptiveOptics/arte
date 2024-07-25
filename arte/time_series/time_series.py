@@ -13,21 +13,6 @@ from arte.utils.help import add_help, modify_help
 from arte.utils.unit_checker import make_sure_its_a
 
 
-def _wrap_masked_Quantity(f, arr, *args, **kwargs):
-    '''
-    Workaround for the masked array with astropy quantities bug:
-    execute f(arr), but if arr is an instance of masked_Quantity, that is,
-    a masked array with astropy Quantities, extract the masked array without
-    the units, execute f(arr) on that, and apply the unit again.
-    '''
-    if isinstance(arr, np.ma.MaskedArray) and isinstance(arr.data, u.quantity.Quantity):
-        value_with_no_quantity, unit = np.ma.MaskedArray(arr.data.value, arr.mask), arr.data.unit
-        result = f(value_with_no_quantity, *args, **kwargs)
-        return np.ma.MaskedArray(result.data * unit, result.mask)
-    else:
-        return f(arr *args, **kwargs)
-
-
 class TimeSeriesException(Exception):
     '''Exception raised by TimeSeries'''
 
@@ -216,19 +201,19 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def ensemble_std(self, *args, times=None, **kwargs):
         '''Standard deviation across series at each sampling time'''
         data = self.get_data(*args, times=times, **kwargs)
-        return _wrap_masked_Quantity(np.std, data, axis=self._data_sample_axes(data))
+        return np.std(data, axis=self._data_sample_axes(data))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_median(self, *args, times=None, **kwargs):
         '''Median across series at each sampling time'''
         data = self.get_data(*args, times=times, **kwargs)
-        return _wrap_masked_Quantity(np.median, data, axis=self._data_sample_axes(data))
+        return np.median(data, axis=self._data_sample_axes(data))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_rms(self, *args, times=None, **kwargs):
         '''Root-Mean-Square across series at each sampling time'''
-        data = self.get_data(*args, times=times, **kwargs)
-        return np.sqrt(np.mean(np.power(np.abs(data), 2), axis=self._data_sample_axes(data)))
+        x = self.get_data(*args, times=times, **kwargs)
+        return np.sqrt(np.mean(np.abs(x)**2, axis=1))
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, *args, from_freq=None, to_freq=None,
