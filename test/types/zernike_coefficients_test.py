@@ -51,6 +51,80 @@ class ZernikeCoefficientsTest(unittest.TestCase):
             np.array_equal(shouldGet, didGet), "wanted %s got %s" % (shouldGet, didGet)
         )
 
+    def test_neg(self):
+        z1 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 42)
+        zneg = -z1
+        np.testing.assert_allclose(
+            zneg.toNumpyArray(), -z1.toNumpyArray())
+
+    def test_sum_easy(self):
+        z1 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 42)
+        z2 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 43)
+        zsum = z1+z2
+        np.testing.assert_allclose(
+            zsum.toNumpyArray(), z1.toNumpyArray()+z2.toNumpyArray())
+
+    def test_sum_scalar(self):
+        z1 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 42)
+        z2 = 3.14
+        zsum = z1+z2
+        np.testing.assert_allclose(
+            zsum.toNumpyArray(), z1.toNumpyArray()+z2)
+
+    def test_sum_scalar_r(self):
+        z1 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 42)
+        z2 = 3.14
+        zsum = z2+z1
+        np.testing.assert_allclose(
+            zsum.toNumpyArray(), z1.toNumpyArray()+z2)
+
+    def test_sum_not_supported_raises(self):
+        z1 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 42)
+        z2 = 'sadf'
+
+        def callit():
+            return z1+z2
+        self.assertRaises(TypeError, callit)
+
+    def test_sum_in_place(self):
+        z1 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 42)
+        zorig = z1*1
+        z2 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 43)
+        z1 += z2
+        np.testing.assert_allclose(
+            z1.toNumpyArray(), z2.toNumpyArray()+zorig.toNumpyArray())
+
+    def test_difference_easy(self):
+        z1 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 42)
+        z2 = ZernikeCoefficients(np.arange(21, dtype=np.float32)*3, 43)
+        zsum = z2-z1
+        np.testing.assert_allclose(
+            zsum.toNumpyArray(), z2.toNumpyArray()-z1.toNumpyArray())
+
+    def test_sum_different_size(self):
+        z1 = ZernikeCoefficients(np.arange(10, dtype=np.float32), 42)
+        z2 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 43)
+        zsum = z1+z2
+        wanted = np.zeros(21)
+        wanted[:10] = np.arange(10)
+        wanted += np.arange(21)
+        np.testing.assert_allclose(
+            zsum.toNumpyArray(), wanted)
+
+    def test_sum_different_size_in_place(self):
+        z1 = ZernikeCoefficients(np.arange(10, dtype=np.float32), 42)
+        z2 = ZernikeCoefficients(np.arange(21, dtype=np.float32), 43)
+        z1 += z2
+        wanted = np.zeros(21)
+        wanted[:10] = np.arange(10)
+        wanted += np.arange(21)
+        np.testing.assert_allclose(z1.toNumpyArray(), wanted)
+
+    def test_scalar_multiplication(self):
+        z1 = ZernikeCoefficients(np.arange(10, dtype=np.float32), 42)
+        z2 = z1*3.14
+        np.testing.assert_allclose(z2.toNumpyArray(), z1.toNumpyArray()*3.14)
+
 
 if __name__ == "__main__":
     unittest.main()
