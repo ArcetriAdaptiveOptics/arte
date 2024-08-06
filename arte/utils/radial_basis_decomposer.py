@@ -26,7 +26,7 @@ class RadialBasisModalDecomposer(BaseModalDecomposer):
         self.coordinates_list = coordinates_list
         super().__init__(n_modes = len(coordinates_list))
 
-    def generator(self, nModes, circular_mask, user_mask, rbfFunction=None, **kwargs):
+    def _generator(self, nModes, circular_mask, user_mask, rbfFunction=None, **kwargs):
         rbf = RBFGenerator(circular_mask, self.coordinates_list, rbfFunction=rbfFunction)
         rbf.generate()
         return rbf

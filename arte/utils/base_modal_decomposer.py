@@ -15,14 +15,14 @@ class BaseModalDecomposer(abc.ABC):
 
     def __init__(self, n_modes=None):
         self.nModes = n_modes
-        self.lastModesGenerator = None
-        self.lastIM = None
-        self.lastRank = None
-        self.lastReconstructor = None
-        self.lastMask = None
+        self._lastModesGenerator = None
+        self._lastIM = None
+        self._lastRank = None
+        self._lastReconstructor = None
+        self._lastMask = None
 
     @abc.abstractmethod
-    def generator(self, nModes, circular_mask, user_mask, **kwargs):
+    def _generator(self, nModes, circular_mask, user_mask, **kwargs):
         '''Override to return a modal generator instance'''
 
     def _numpy2coefficients(self, coeff_array):
@@ -31,7 +31,7 @@ class BaseModalDecomposer(abc.ABC):
         return ModalCoefficients(coeff_array)
 
     def getLastRank(self):
-        return self.lastRank
+        return self._lastRank
 
     def _wavefront_interaction_matrix(self, modes_generator, modesIdx, user_mask, dtype):
         wf = modes_generator.getModesDict(modesIdx)
@@ -71,18 +71,18 @@ class BaseModalDecomposer(abc.ABC):
 
         self._assert_types(circular_mask, user_mask)
 
-        modes_generator = self.generator(
+        modes_generator = self._generator(
             nModes, circular_mask, user_mask, **kwargs)
         if start_mode is None:
             first_mode = modes_generator.first_mode()
         else:
             first_mode = start_mode
 
-        self.lastModesGenerator = modes_generator
+        self._lastModesGenerator = modes_generator
 
         modesIdx = list(range(first_mode, first_mode + nModes))
         im = im_func(modes_generator, modesIdx, user_mask, dtype)
-        self.lastIM = im
+        self._lastIM = im
         return im
 
     def _syntheticReconstructor(self, im_func, nModes,
@@ -174,9 +174,9 @@ class BaseModalDecomposer(abc.ABC):
             np.dot(wavefrontInMaskVectorNoPiston, reconstructor)
         )
         # Remember last used values
-        self.lastRank = rank
-        self.lastMask = user_mask
-        self.lastReconstructor = reconstructor
+        self._lastRank = rank
+        self._lastMask = user_mask
+        self._lastReconstructor = reconstructor
         return result
 
     def measureModalCoefficientsFromSlopes(self, slopes, circular_mask,
@@ -198,9 +198,9 @@ class BaseModalDecomposer(abc.ABC):
 
         result = self._numpy2coefficients(np.dot(slopesInMaskVector, reconstructor))
         # Remember last used values
-        self.lastRank = rank
-        self.lastMask = user_mask
-        self.lastReconstructor = reconstructor
+        self._lastRank = rank
+        self._lastMask = user_mask
+        self._lastReconstructor = reconstructor
         return result
 
     def _assert_types(self, circular_mask, user_mask=None, wavefront=None,
