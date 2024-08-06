@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
 import numpy as np
+from arte.utils.zernike_decomposer import ZernikeModalDecomposer
 from arte.utils.zernike_generator import ZernikeGenerator
 from arte.types.mask import CircularMask, BaseMask
 from arte.utils.karhunen_loeve_decomposer import KarhunenLoeveModalDecomposer
@@ -360,6 +361,20 @@ class ModalDecomposerTest(unittest.TestCase):
         mask = CircularMask((200, 200), 90, [100, 100])
         md.measureZernikeCoefficientsFromSlopes(
             slopes, mask, BaseMask(slopeMask.mask()))
+
+    def testRecomposeWavefrontFromZernikeCoefficients(self):
+        zern_coeff = ZernikeCoefficients.fromNumpyArray([0, 1, 0])
+        zmd = ZernikeModalDecomposer(n_modes=10)
+        radius = 4
+        mask = CircularMask((2 * radius, 2 * radius), radius)
+        wf = zmd.recomposeWavefrontFromModalCoefficients(zern_coeff, mask)
+        self.assertIsInstance(wf, Wavefront)
+        self.assertEqual(wf.toNumpyArray().shape, (2*radius, 2*radius))
+        wanted = 2*(radius-0.5)/radius
+        np.testing.assert_allclose(
+            wf.toNumpyArray().max(), wanted)
+        np.testing.assert_allclose(wf.toNumpyArray().min(), -wanted)
+
 
 if __name__ == "__main__":
     unittest.main()

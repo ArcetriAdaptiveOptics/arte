@@ -18,7 +18,7 @@ class KarhunenLoeveModalDecomposer(BaseModalDecomposer):
     def __init__(self, n_modes=None):
         super().__init__(n_modes)
 
-    def generator(self, nModes, circular_mask, user_mask, **kwargs):
+    def _generator(self, nModes, circular_mask, user_mask, **kwargs):
         zz = ZernikeGenerator(circular_mask)
         zbase = np.rollaxis(
             np.ma.masked_array([zz.getZernike(n) for n in range(2, self.nModes + 2)]),

@@ -20,7 +20,7 @@ class ZernikeModalDecomposer(BaseModalDecomposer):
             n_modes = n_zernike_modes
         super().__init__(n_modes)
 
-    def generator(self, nModes, circular_mask, user_mask, **kwargs):
+    def _generator(self, nModes, circular_mask, user_mask, **kwargs):
         return ZernikeGenerator(circular_mask)
 
     def _numpy2coefficients(self, coeff_array):
