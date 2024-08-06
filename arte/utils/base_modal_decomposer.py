@@ -33,7 +33,7 @@ class BaseModalDecomposer(abc.ABC):
     def getLastRank(self):
         return self.lastRank
 
-    def wfIm(self, modes_generator, modesIdx, user_mask, dtype):
+    def _wavefront_interaction_matrix(self, modes_generator, modesIdx, user_mask, dtype):
         wf = modes_generator.getModesDict(modesIdx)
         nslopes = user_mask.as_masked_array().compressed().size
         im = np.zeros((len(modesIdx), nslopes), dtype=dtype)
@@ -42,7 +42,7 @@ class BaseModalDecomposer(abc.ABC):
             im[i, :] = wf_masked.compressed()
         return im
     
-    def slopesIm(self, modes_generator, modesIdx, user_mask, dtype):
+    def _slopes_interaction_matrix(self, modes_generator, modesIdx, user_mask, dtype):
 
         if not hasattr(modes_generator, 'getDerivativeXDict') or \
            not hasattr(modes_generator, 'getDerivativeYDict'):
@@ -61,6 +61,30 @@ class BaseModalDecomposer(abc.ABC):
                 (dx_masked.compressed(), dy_masked.compressed()))
         return im
 
+    def _syntheticInteractionMatrix(self, im_func, nModes,
+                                    circular_mask, user_mask=None,
+                                    dtype=float, start_mode=None,
+                                    **kwargs):
+        '''Generates a synthetic reconstructor given a certain IM function'''
+        if user_mask is None:
+            user_mask = circular_mask
+
+        self._assert_types(circular_mask, user_mask)
+
+        modes_generator = self.generator(
+            nModes, circular_mask, user_mask, **kwargs)
+        if start_mode is None:
+            first_mode = modes_generator.first_mode()
+        else:
+            first_mode = start_mode
+
+        self.lastModesGenerator = modes_generator
+
+        modesIdx = list(range(first_mode, first_mode + nModes))
+        im = im_func(modes_generator, modesIdx, user_mask, dtype)
+        self.lastIM = im
+        return im
+
     def _syntheticReconstructor(self, im_func, nModes,
                                 circular_mask, user_mask=None,
                                 dtype=float, start_mode=None,
@@ -75,18 +99,23 @@ class BaseModalDecomposer(abc.ABC):
 
         self._assert_types(circular_mask, user_mask)
 
-        modes_generator = self.generator(nModes, circular_mask, user_mask, **kwargs)
-        if start_mode is None:
-            first_mode = modes_generator.first_mode()
-        else:
-            first_mode = start_mode
-
-        self.lastModesGenerator = modes_generator
-
-        modesIdx = list(range(first_mode, first_mode + nModes))
-        im = im_func(modes_generator, modesIdx, user_mask, dtype)
-        self.lastIM = im
+        im = self._syntheticInteractionMatrix(im_func, nModes,
+                                              circular_mask, user_mask=user_mask,
+                                              dtype=dtype, start_mode=start_mode,
+                                              **kwargs)
         return pinv(im, return_rank=return_rank, atol=atol, rtol=rtol, check_finite=check_finite)
+
+    @functools.cache
+    def cachedSyntheticInteractionMatrixFromWavefront(self, nModes,
+                                                      circular_mask, user_mask=None,
+                                                      dtype=float, start_mode=None,
+                                                      **kwargs):
+        '''Generates a synthetic interaction matrix instance using the
+           modal basis returned by self.generator()'''
+        return self._syntheticInteractionMatrix(self._wavefront_interaction_matrix, nModes,
+                                                circular_mask, user_mask=user_mask,
+                                                dtype=dtype, start_mode=start_mode, **kwargs)
+
 
     @functools.cache
     def cachedSyntheticReconstructorFromWavefront(self, nModes,
@@ -95,7 +124,7 @@ class BaseModalDecomposer(abc.ABC):
                                                   return_rank=False, **kwargs):
         '''Generates a synthetic reconstructor instance using the
            modal basis returned by self.generator()'''
-        return self._syntheticReconstructor(self.wfIm, nModes, 
+        return self._syntheticReconstructor(self._wavefront_interaction_matrix, nModes,
                                             circular_mask, user_mask,
                                             dtype, start_mode, return_rank, **kwargs)
 
@@ -106,9 +135,23 @@ class BaseModalDecomposer(abc.ABC):
                                                   return_rank=False, **kwargs):
         '''Generates a synthetic reconstructor instance using the
            modal basis returned by self.generator()'''
-        return self._syntheticReconstructor(self.slopesIm, nModes,
+        return self._syntheticReconstructor(self._slopes_interaction_matrix, nModes,
                                             circular_mask, user_mask,
                                             dtype, start_mode, return_rank, **kwargs)
+
+    def recomposeWavefrontFromModalCoefficients(
+            self, modal_coefficients, circular_mask, dtype=float, **kwargs):
+        self._assert_types(
+            circular_mask, modal_coefficients=modal_coefficients)
+        nModes = modal_coefficients.numberOfModes()
+        interaction_matrix = self.cachedSyntheticInteractionMatrixFromWavefront(
+            nModes, circular_mask, circular_mask, dtype=dtype, return_rank=True, **kwargs
+        )
+        wf = np.dot(modal_coefficients.toNumpyArray(), interaction_matrix)
+        wfm = np.ma.masked_array(
+            np.zeros(circular_mask.shape()), mask=circular_mask.mask())
+        wfm[~wfm.mask] = wf
+        return Wavefront.fromNumpyArray(wfm)
 
     def measureModalCoefficientsFromWavefront(
         self, wavefront, circular_mask, user_mask, nModes=None, dtype=float, **kwargs
@@ -160,7 +203,8 @@ class BaseModalDecomposer(abc.ABC):
         self.lastReconstructor = reconstructor
         return result
 
-    def _assert_types(self, circular_mask, user_mask=None, wavefront=None, slopes=None):
+    def _assert_types(self, circular_mask, user_mask=None, wavefront=None,
+                      slopes=None, modal_coefficients=None):
         '''
         Make sure that:
          1) circular_mask is of type CircularMask
@@ -168,6 +212,7 @@ class BaseModalDecomposer(abc.ABC):
          3) user_mask, if specified, is fully contained into circular_mask
          4) wavefront, if specified, is of type Wavefront
          5) slopes, if specified, is of type Slopes
+         6) modal_coefficients, if specified, is of type ModalCoefficient
 
         Raise an AssertionError if not.
         '''
@@ -195,4 +240,9 @@ class BaseModalDecomposer(abc.ABC):
             assert isinstance(slopes, Slopes), (
                 "slopes argument must be of type Slopes, instead is %s"
                 % slopes.__class__.__name__
+            )
+        if modal_coefficients:
+            assert isinstance(modal_coefficients, ModalCoefficients), (
+                "modal_coefficients argument must be of type ModalCoefficients, instead is %s"
+                % modal_coefficients.__class__.__name__
             )
