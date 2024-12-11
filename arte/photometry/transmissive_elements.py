@@ -210,16 +210,34 @@ class TransmissiveElement():
         return wv_min, wv_max, np.mean(spectral_el(self.waveset)[id_wv_min[0]:id_wv_max[0]+1]) 
 
     def transmittance_in_band(self, wv_band, atol=(1, 1)):
+        '''
+        Parameters
+        ----------
+        wv_band: astropy.units.quantity.Quantity
+            Bounds of the wavelength range where to compute the average transmittance of the TransmissiveElement.
+        '''
         wv_min, wv_max, t_mean = self._compute_average_in_band(self.transmittance, wv_band, atol)
         print(f'Average transmittance in band {(wv_min, wv_max)}: {t_mean}')
         return t_mean
     
     def reflectance_in_band(self, wv_band, atol=(1, 1)):
+        '''
+        Parameters
+        ----------
+        wv_band: astropy.units.quantity.Quantity
+            Bounds of the wavelength range where to compute the average reflectance of the TransmissiveElement.
+        '''
         wv_min, wv_max, r_mean = self._compute_average_in_band(self.reflectance, wv_band, atol)
         print(f'Average reflectance in band {(wv_min, wv_max)}: {r_mean}')
         return r_mean
     
     def emissivity_in_band(self, wv_band, atol=(1, 1)):
+        '''
+        Parameters
+        ----------
+        wv_band: astropy.units.quantity.Quantity
+            Bounds of the wavelength range where to compute the average emissivity of the TransmissiveElement.
+        '''
         wv_min, wv_max, e_mean = self._compute_average_in_band(self.emissivity, wv_band, atol)
         print(f'Average emissivity in band {(wv_min, wv_max)}: {e_mean}')
         return e_mean

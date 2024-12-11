@@ -375,6 +375,58 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    def ohara_STIM27_3_5mm_internal_001(cls):
+        '''
+        Ohara S-TIM27 substrate of 3.5 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_STIM27_3.5mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def ohara_SFPM2_6mm_internal_001(cls):
+        '''
+        Ohara S-FPM2 substrate of 6 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_SFPM2_6mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def ohara_SLAH96_10_5mm_internal_001(cls):
+        '''
+        Ohara S-LAH96 substrate of 10.5 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_SLAH96_10.5mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def ohara_SNBH56_9_9mm_internal_001(cls):
+        '''
+        Ohara S-NBH56 substrate of 9.9 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_SNBH56_9.9mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
     def schott_NSF2_9dot8_mm_internal_001(cls):
         '''
         Schott N-SF2 substrate of 9.8 mm thickness.
@@ -387,6 +439,32 @@ class GlassesCatalog():
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
     
+    @classmethod
+    def schott_NSF6_4_mm_internal_001(cls):
+        '''
+        Schott N-SF6 substrate of 4 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('schott_NSF6_4mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+    @classmethod
+    def schott_NLAK22_6_5_mm_internal_001(cls):
+        '''
+        Schott N-LAK22 substrate of 6.5 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('schott_NLAK22_6.5mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
     @classmethod
     def schott_NPSK53A_10_mm_internal_001(cls):
         '''
@@ -441,7 +519,9 @@ class FiltersCatalog():
     
     @classmethod
     def bessel_H(cls):
-        t = Filters.get(Filters.BESSEL_H)
-        a = Bandpass.zero()
-        te = TransmissiveElement(transmittance=t, absorptance=a)
+        t = Filters.get(Filters.BESSELL_H)
+        # a = Bandpass.zero()
+        # te = TransmissiveElement(transmittance=t, absorptance=a)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
