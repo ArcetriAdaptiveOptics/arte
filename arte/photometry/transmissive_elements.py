@@ -209,7 +209,7 @@ class TransmissiveElement():
     
         return wv_min, wv_max, np.mean(spectral_el(self.waveset)[id_wv_min[0]:id_wv_max[0]+1]) 
 
-    def transmittance_in_band(self, wv_band, atol=(1, 1)):
+    def transmittance_in_band(self, wv_band, atol=(1, 1), verbose=True):
         '''
         Parameters
         ----------
@@ -217,10 +217,11 @@ class TransmissiveElement():
             Bounds of the wavelength range where to compute the average transmittance of the TransmissiveElement.
         '''
         wv_min, wv_max, t_mean = self._compute_average_in_band(self.transmittance, wv_band, atol)
-        print(f'Average transmittance in band {(wv_min, wv_max)}: {t_mean}')
+        if verbose:
+            print(f'Average transmittance in band {(wv_min, wv_max)}: {t_mean}')
         return t_mean
     
-    def reflectance_in_band(self, wv_band, atol=(1, 1)):
+    def reflectance_in_band(self, wv_band, atol=(1, 1), verbose=True):
         '''
         Parameters
         ----------
@@ -228,7 +229,8 @@ class TransmissiveElement():
             Bounds of the wavelength range where to compute the average reflectance of the TransmissiveElement.
         '''
         wv_min, wv_max, r_mean = self._compute_average_in_band(self.reflectance, wv_band, atol)
-        print(f'Average reflectance in band {(wv_min, wv_max)}: {r_mean}')
+        if verbose:
+            print(f'Average reflectance in band {(wv_min, wv_max)}: {r_mean}')
         return r_mean
     
     def emissivity_in_band(self, wv_band, atol=(1, 1)):
@@ -314,10 +316,10 @@ class TransmissiveSystem():
         self._elements = []
         self._waveset = np.array([1000]) * u.nm
 
-    def add(self, transmissive_element, direction):
+    def add(self, transmissive_element, direction, name=''):
         self._elements.append(
             {'element': transmissive_element,
-             # 'name': f'{transmissive_element = }'.split()[0],
+             'name': name,
              'direction': direction})
         self._waveset = merge_wavelengths(
             self._waveset.to(u.nm).value,
@@ -362,10 +364,15 @@ class TransmissiveSystem():
     def _sum_absorptance(self, a, b):
         return Bandpass.from_array(self._waveset,
                                    a(self._waveset) + b(self._waveset))
-
+    
     @property
-    def number_of_transmissive_elements(self):
-        return len(self._elements)
+    def elements(self):
+        return self._elements
+    
+    def element_idx_from_name(self, name):
+        el_idx = np.argwhere(list(map(lambda x: x['name']==name, self._elements))) 
+        return el_idx[0][0]
+        # return self._elements[el_idx[0][0]]['element']
     
     def as_transmissive_element(self):
         return TransmissiveElement(transmittance=self.transmittance,
