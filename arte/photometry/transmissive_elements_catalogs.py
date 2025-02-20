@@ -375,6 +375,19 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    def ohara_STIM27_3mm_internal_001(cls):
+        '''
+        Ohara S-TIM27 substrate of 3 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_STIM27_3mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
     def ohara_STIM27_3_5mm_internal_001(cls):
         '''
         Ohara S-TIM27 substrate of 3.5 mm thickness.

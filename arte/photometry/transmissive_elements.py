@@ -71,7 +71,7 @@ class Bandpass():
                 cls._MIN_LAMBDA_NM, l - dl, l, l + dl, cls._MAX_LAMBDA_NM]) * u.nm,
             lookup_table=np.array([
                 low_ampl, low_ampl, high_ampl, low_ampl, low_ampl]))
-        
+ 
     @classmethod
     def top_hat(cls, peak_wl, delta_wl, high_ampl, low_ampl):
         '''
@@ -87,6 +87,20 @@ class Bandpass():
                 l + dl + 1e-8, cls._MAX_LAMBDA_NM]) * u.nm,
             lookup_table=np.array([
                 low_ampl, low_ampl, high_ampl, high_ampl, low_ampl, low_ampl]))
+
+    @classmethod
+    def top_hat_ramped(cls, low_wl_start, high_wl_start,
+                        high_wl_end, low_wl_end,
+                       low_ampl, high_ampl):
+        l1 = low_wl_start.to(u.nm).value
+        l2 = high_wl_start.to(u.nm).value
+        l3 = high_wl_end.to(u.nm).value
+        l4 = low_wl_end.to(u.nm).value 
+        return SpectralElement(
+            Empirical1D,
+            points=np.array([cls._MIN_LAMBDA_NM, l1, l2, l3, l4, cls._MAX_LAMBDA_NM]
+                            ) * u.nm,
+            lookup_table=np.array([low_ampl, low_ampl, high_ampl, high_ampl, low_ampl, low_ampl])) 
 
     @classmethod
     def step(cls, wl, low_ampl, high_ampl):
