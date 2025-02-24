@@ -16,7 +16,7 @@ def external_transmittance_calculator(l1, l2, t1, a):
     external transmittance of a same glass but with different thickness l1.
     The computation is based on the equation for the external transmittance:
     
-    T = (1 - R**2) * exp(-a * l)
+    T = (1 - R)**2 * exp(-a * l)
     
     where R is the reflectance, a is the attenuation coefficient and l is the
     thickness of the glass. If we consider two different values of thickness, 
@@ -48,7 +48,7 @@ def attenuation_coefficient_calculator(l1, l2, t1, t2):
     The computation is based on the equation for the external transmittance
     of a glass:
     
-    T = (1 - R**2) * exp(-a * l)
+    T = (1 - R)**2 * exp(-a * l)
     
     where R is the reflectance, a is the attenuation coefficient and l is the
     thickness of the glass. If we consider two different values of thickness, 
@@ -62,3 +62,33 @@ def attenuation_coefficient_calculator(l1, l2, t1, t2):
     '''
     a = (np.log(t2) - np.log(t1)) / (l1 - l2)
     return a
+
+
+def internal_transmittance_from_external_one(t_ext1, t_ext2, l1, l2):
+    '''
+    Compute the internal transmittance of a substrate with thickness = l2, knowing 
+    the external transmittances for both l1 and l2.
+
+    Considering that the ratio between external transmittances and internal ones is the same:
+
+    T_ext(l1) / T_ext(l2) = ((1 - R)**2 * exp(-a * l1)) / ((1 - R)**2 * exp(-a * l2))
+                          = exp(-a * l1)) / exp(-a * l2))
+                          = T_int(l1) / T_int(l2)
+
+    and considering the relationship between internal transmittances:
+
+    T_int(l1) = T_int(l2)**(l1/l2)
+
+    we can compute:
+
+    T_ext(l1) / T_ext(l2) = T_int(l2)**((l1 - l2) / l2)
+
+    thus:
+
+    T_int(l2) = (T_ext(l1) / T_ext(l2))**(l2 / (l1 - l2))  
+    '''
+
+    t_int2 = (t_ext1 / t_ext2) ** (l2 / (l1 - l2))
+    return t_int2
+
+
