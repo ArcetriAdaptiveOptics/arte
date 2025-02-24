@@ -1,11 +1,10 @@
 import os
 import astropy.units as u
-from arte.photometry.transmissive_elements import Bandpass, TransmissiveElement, \
-    TransmissiveSystem, Direction
+from arte.photometry.transmissive_elements import Bandpass, TransmissiveElement
 from arte.utils.package_data import dataRootDir
 from synphot.spectrum import SpectralElement
 from arte.photometry.transmittance_calculator import interface_glass_to_glass, \
-    internal_transmittance_calculator
+    internal_transmittance_calculator, internal_transmittance_from_external_one
 from synphot.models import Empirical1D
 from arte.photometry.filters import Filters
 
@@ -156,7 +155,61 @@ class GlassesCatalog():
             RestoreTransmissiveElements.transmissive_elements_folder(),
             'glasses',
             foldername)
-        
+
+
+    @classmethod
+    def sapphire_2mm_internal_001(cls):
+        sap_ext_10mm = GlassesCatalog.sapphire_10mm_001()
+        sap_ext_5mm = GlassesCatalog.sapphire_5mm_001()
+        wv = sap_ext_10mm.waveset
+        t_ext_1 = sap_ext_10mm.transmittance(wv)
+        t_ext_2 = sap_ext_5mm.transmittance(wv)
+        l1 = 10
+        l2 = 5
+        l3 = 2
+        t_int_2 = internal_transmittance_from_external_one(
+            t_ext_1, t_ext_2, l1, l2)
+        t_int_3 = internal_transmittance_calculator(l2, l3, t_int_2)
+        t = SpectralElement(
+            Empirical1D, points=wv,
+            lookup_table=t_int_3)
+        r = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
+        return te 
+    
+
+    @classmethod
+    def sapphire_5mm_001(cls):
+        '''
+        Sapphire substrate of 5 mm thickness.
+        Transmittance is total.
+        Data from Thorlabs website.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('sapphire_5mm_001'), u.um
+        )
+        # Not really true, but we don't use a in this case.
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+
+
+    @classmethod
+    def sapphire_10mm_001(cls):
+        '''
+        Sapphire substrate of 10 mm thickness.
+        Transmittance is total.
+        Data from Thorlabs website.
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('sapphire_10mm_001'), u.nm
+        )
+        # Not really true, but we don't use a in this case.
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+
+
     @classmethod
     def cdgm_HQK3L_7mm_internal_001(cls):
         '''
