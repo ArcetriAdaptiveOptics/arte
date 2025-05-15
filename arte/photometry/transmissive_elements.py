@@ -219,29 +219,41 @@ class TransmissiveElement():
         wv_min = wv[id_wv_min]
         if len(wv_min) == 0:
             raise ValueError('No wavelength found. Increase atol.')
-        elif len(wv_min) == 2:
+        elif len(wv_min) > 1:
             diff = (wv_band[0] - wv_min).value
-            if np.equal(np.round(abs(diff)[0]), 
-                        np.round(abs(diff)[1])):
+            if np.all(np.isclose(0, diff)):
                 wv_min = wv_min[0]
             else:
                 raise ValueError(f'Too many wavelengths found: {wv_min}. Change atol.')
-        elif len(wv_min) > 2:
-            raise ValueError(f'Too many wavelengths found: {wv_min}. Change atol.')
+        # elif len(wv_min) == 2:
+        #     diff = (wv_band[0] - wv_min).value
+        #     if np.equal(np.round(abs(diff)[0]), 
+        #                 np.round(abs(diff)[1])):
+        #         wv_min = wv_min[0]
+        #     else:
+        #         raise ValueError(f'Too many wavelengths found: {wv_min}. Change atol.')
+        # elif len(wv_min) > 2:
+        #     raise ValueError(f'Too many wavelengths found: {wv_min}. Change atol.')
         
         id_wv_max = np.where(np.isclose(wv, wv_band[1], atol=atol[1]))[0]
         wv_max = wv[id_wv_max]
         if len(wv_max) == 0:
             raise ValueError('No wavelength found. Increase atol.')
-        elif len(wv_max) == 2:
-            diff = (wv_band[1] - wv_max).value
-            if np.equal(np.round(abs(diff)[0]), 
-                        np.round(abs(diff)[1])):
+        elif len(wv_max) > 1:
+            diff = (wv_band[0] - wv_max).value
+            if np.all(np.isclose(0, diff)):
                 wv_max = wv_max[0]
             else:
                 raise ValueError(f'Too many wavelengths found: {wv_max}. Change atol.')
-        elif len(wv_max) > 2:
-            raise ValueError(f'Too many wavelengths found: {wv_max}. Change atol.')
+        # elif len(wv_max) == 2:
+        #     diff = (wv_band[1] - wv_max).value
+        #     if np.equal(np.round(abs(diff)[0]), 
+        #                 np.round(abs(diff)[1])):
+        #         wv_max = wv_max[0]
+        #     else:
+        #         raise ValueError(f'Too many wavelengths found: {wv_max}. Change atol.')
+        # elif len(wv_max) > 2:
+        #     raise ValueError(f'Too many wavelengths found: {wv_max}. Change atol.')
             
         return wv_min, wv_max, np.mean(spectral_el(wv)[id_wv_min[0]:id_wv_max[0]+1]) 
 
