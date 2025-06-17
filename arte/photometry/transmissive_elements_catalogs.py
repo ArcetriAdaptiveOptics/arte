@@ -67,7 +67,7 @@ class CoatingsCatalog():
         a peak of 0.995 (as indicated in E-MAO-SF0-INA-DER-001_02 MAORY  System
         Optical Design and Analysis Report) at 589 nm.
         '''
-        t = Bandpass.top_hat(589 * u.nm, 1 * u.nm, 0.995, 0)
+        t = Bandpass.top_hat(589 * u.nm, 10 * u.nm, 0.995, 0)
         a = Bandpass.zero()
         te = TransmissiveElement(absorptance=a, transmittance=t)
         return te
@@ -108,6 +108,15 @@ class CoatingsCatalog():
         te = TransmissiveElement(reflectance=r, absorptance=a)
         return te
 
+    @classmethod
+    def ar_coating_R_band_flat(cls):
+        '''
+        AR coating assumed flat in 0.6-1.0 um with R=1%.
+        '''
+        t = Bandpass.top_hat_ramped(0.55*u.um, 0.6*u.um, 1.0*u.um, 1.05*u.um, 0., 0.990)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
 
 class CoatedGlassesCatalog():
     
@@ -514,6 +523,19 @@ class GlassesCatalog():
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
             cls._GlassesFolder('schott_NSF6_4mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+    
+    @classmethod
+    def schott_NBK7_5_mm_internal_001(cls):
+        '''
+        Schott N-BK7 substrate of 5 mm thickness.
+        Transmittance is internal.
+        Data from RefractiveInfo website. 
+        '''
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('schott_NBK7_5mm_internal_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
