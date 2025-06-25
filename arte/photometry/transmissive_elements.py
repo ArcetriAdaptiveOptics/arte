@@ -363,7 +363,11 @@ class TransmissiveSystem():
 
     def _compute_transmittance(self, from_element=0, to_element=None):
         t = 1
-        for el in self._elements[from_element:to_element]:
+        if not to_element:
+            end_element = to_element
+        else:
+            end_element = to_element + 1
+        for el in self._elements[from_element:end_element]:
             direction = el['direction']
             if direction == Direction.TRANSMISSION:
                 t *= el['element'].transmittance
