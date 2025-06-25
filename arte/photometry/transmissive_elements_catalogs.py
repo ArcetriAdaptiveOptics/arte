@@ -109,7 +109,7 @@ class CoatingsCatalog():
         return te
 
     @classmethod
-    def ar_coating_R_band_flat(cls):
+    def ar_coating_RI_band_flat(cls):
         '''
         AR coating assumed flat in 0.6-1.0 um with R=1%.
         '''
