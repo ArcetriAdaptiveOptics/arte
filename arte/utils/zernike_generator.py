@@ -2,6 +2,7 @@ import numpy as np
 from functools import cache
 from scipy.special import factorial
 from arte.types.mask import CircularMask
+from scipy.special import jacobi
 
 
 class ZernikeGenerator(object):
@@ -40,6 +41,9 @@ class ZernikeGenerator(object):
             If a scalar value, the argument is used as pupil diameter in pixels.
             If a `~arte.types.mask.CircularMask`, the argument is used as mask
             representing the unit disk.
+        useJacobi: bool, optional
+            If True, the Jacobi polynomials are used to compute Zernike polynomials.
+
 
 
     Notes
@@ -50,6 +54,11 @@ class ZernikeGenerator(object):
     .. [1] Noll, R. J., “Zernike polynomials and atmospheric
        turbulence.”, Journal of the Optical Society of America
        (1917-1983), vol. 66, pp. 207–211, 1976.
+    .. [2] Born, M. and Wolf, E., "Principles of Optics", 7th edition,
+       Cambridge University Press, 1999.
+    .. [3] Magnus W., Oberhettinger F., and Soni R.P., "Formulas and
+       Theorems for the Special Functions of Mathematical Physics",
+       Springer-Verlag, New York, 1966.
 
 
     Examples
@@ -66,7 +75,7 @@ class ZernikeGenerator(object):
 
     '''
 
-    def __init__(self, pupil):
+    def __init__(self, pupil, useJacobi=False):
         if isinstance(pupil, CircularMask):
             self._radius = pupil.radius()
             self._shape = pupil.shape()
@@ -81,6 +90,7 @@ class ZernikeGenerator(object):
                 self._shape, maskCenter=self._center, maskRadius=self._radius)
             self._boolean_mask = cm.mask()
 
+        self.useJacobi = useJacobi
         self._rhoMap, self._thetaMap = self._polar_array()
         self._dx = None
         self._dy = None
@@ -150,7 +160,7 @@ class ZernikeGenerator(object):
             raise Exception("The following must be true |m|<=n. Got %d, %d" %
                             (n, m))
 
-        if(n == 0 and m == 0):
+        if (n == 0 and m == 0):
             return np.ones(rho.shape)
         rho = np.where(rho < 0, 0, rho)
         Rnm = np.zeros(rho.shape)
@@ -163,12 +173,36 @@ class ZernikeGenerator(object):
             Rnm = Rnm + p
         return Rnm
 
+    def _rnm_jacobi(self, radialDegree, azimuthalFrequency, rhoArray):
+        n = radialDegree
+        m = azimuthalFrequency
+        rho = rhoArray
+        if (n - m) % 2 != 0:
+            raise Exception("n-m must be even. Got %d-%d" % (n, m))
+        if abs(m) > n:
+            raise Exception("The following must be true |m|<=n. Got %d, %d" %
+                            (n, m))
+
+        if (n == 0 and m == 0):
+            return np.ones(rho.shape)
+        rho = np.where(rho < 0, 0, rho)
+        Rnm = np.zeros(rho.shape)
+        K = (n - abs(m)) / 2
+        const = 1/jacobi(K, 0, m, monic=True)(1)  # BW pg 770, Magnus pg 210
+        cJ = jacobi(K, 0, m, monic=True)(2 * rho**2 - 1)
+        Rnm = const * pow(rho, m) * cJ
+        return Rnm
+
     def _polar(self, index, rhoArray, thetaArray):
         n, m = self.degree(index)
         rho = rhoArray
         theta = thetaArray
 
-        Rnm = self._rnm(n, m, rho)
+        if self.useJacobi:
+            # Use Jacobi polynomials for Zernike polynomials
+            Rnm = self._rnm_jacobi(n, m, rho)
+        else:
+            Rnm = self._rnm(n, m, rho)
         NC = np.sqrt(2 * (n + 1))
         if m == 0:
             return np.sqrt(0.5) * NC * Rnm
@@ -417,10 +451,10 @@ class ZernikeGenerator(object):
         names: dict
             dictionary of Zernike mode names: int -> str
         '''
-        return {1:'piston',
-                2:'tip',
-                3:'tilt',
-                4:'focus'}
+        return {1: 'piston',
+                2: 'tip',
+                3: 'tilt',
+                4: 'focus'}
 
     @classmethod
     @cache
@@ -433,7 +467,7 @@ class ZernikeGenerator(object):
         names: dict
             dictionary of Zernike indexes: str -> int
         '''
-        return {v: k for k,v in cls.index_to_name_dict().items()}
+        return {v: k for k, v in cls.index_to_name_dict().items()}
 
 
 def _isOdd(num):

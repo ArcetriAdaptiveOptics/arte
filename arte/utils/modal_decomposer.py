@@ -8,7 +8,7 @@ class ModalDecomposer(ZernikeModalDecomposer):
     '''
     Backward compatibility with old ModalDecomposer class
     '''
-    def __init__(self, n_modes=None, n_zernike_modes=None):
+    def __init__(self, n_modes=None, n_zernike_modes=None, useJacobi=False):
         if n_zernike_modes is not None:
             n_modes = n_zernike_modes
         if n_modes is None and n_zernike_modes is None:
@@ -22,9 +22,9 @@ class ModalDecomposer(ZernikeModalDecomposer):
 
     @returns(ZernikeCoefficients)
     def measureZernikeCoefficientsFromWavefront(self, wavefront, circular_mask,
-                                                user_mask=None, nModes=None, dtype=float):
+                                                user_mask=None, nModes=None, dtype=float, useJacobi=False):
         return self.measureModalCoefficientsFromWavefront(wavefront, circular_mask,
-                                                       user_mask, nModes, dtype=dtype)
+                                                       user_mask, nModes, dtype=dtype, useJacobi=useJacobi)
 
     @returns(ZernikeCoefficients)
     def measureZernikeCoefficientsFromSlopes(self, slopes, circular_mask,
