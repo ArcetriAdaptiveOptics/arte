@@ -40,7 +40,8 @@ class ModalDecomposerTest(unittest.TestCase):
         self._base = "ZERNIKE"
         self._modal_decomposer = ModalDecomposer(self._nModes)
         c2test = self._modal_decomposer.measureModalCoefficientsFromWavefront(
-            self._wavefront, self._mask, self._user_mask, 10, start_mode=1
+            self._wavefront, self._mask, self._user_mask, 10, start_mode=1,
+            useJacobi=True
         )
         cTemplate = [
             0.00875421,
@@ -64,6 +65,37 @@ class ModalDecomposerTest(unittest.TestCase):
             rtol=0.995,
         )
         np.testing.assert_allclose(self._modal_decomposer.getLastRank(), 3)
+
+    def testZernikeWithJacobiModalDecomposer(self):
+        self._base = "ZERNIKE"
+        self._modal_decomposer = ModalDecomposer(self._nModes)
+        c2test = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront, self._mask, self._user_mask, 10, start_mode=1, 
+            useJacobi=True
+        )
+        cTemplate = [
+            0.00875421,
+            -0.00187142,
+            -0.17916746,
+            0.04178357,
+            0.03762525,
+            -0.02406837,
+            0.00624326,
+            -0.00212699,
+            -0.00512877,
+            -0.00418178,
+        ]
+        np.testing.assert_allclose(c2test.toNumpyArray(), cTemplate, rtol=1e-5)
+        tmp = self._modal_decomposer.measureModalCoefficientsFromWavefront(
+            self._wavefront,
+            self._mask,
+            self._user_mask,
+            10,
+            start_mode=1,
+            rtol=0.995,
+        )
+        np.testing.assert_allclose(self._modal_decomposer.getLastRank(), 3)
+
 
     def testRBFModalDecomposer(self):
         self._base = "TPS_RBF"
