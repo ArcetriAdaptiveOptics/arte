@@ -130,5 +130,8 @@ dmypy.json
 /.project
 /.pydevproject
 /.DS_Store
+notebook/.DS_Store
+test/.DS_Store
+arte/.DS_Store
 .settings/org.eclipse.core.resources.prefs
 .vscode/settings.json
