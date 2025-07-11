@@ -41,8 +41,6 @@ class ZernikeGenerator(object):
             If a scalar value, the argument is used as pupil diameter in pixels.
             If a `~arte.types.mask.CircularMask`, the argument is used as mask
             representing the unit disk.
-        useJacobi: bool, optional
-            If True, the Jacobi polynomials are used to compute Zernike polynomials.
 
 
 
@@ -75,7 +73,7 @@ class ZernikeGenerator(object):
 
     '''
 
-    def __init__(self, pupil, useJacobi=False):
+    def __init__(self, pupil):
         if isinstance(pupil, CircularMask):
             self._radius = pupil.radius()
             self._shape = pupil.shape()
@@ -90,7 +88,6 @@ class ZernikeGenerator(object):
                 self._shape, maskCenter=self._center, maskRadius=self._radius)
             self._boolean_mask = cm.mask()
 
-        self.useJacobi = useJacobi
         self._rhoMap, self._thetaMap = self._polar_array()
         self._dx = None
         self._dy = None
@@ -150,7 +147,7 @@ class ZernikeGenerator(object):
         azimuthalFrequency = m
         return radialDegree, azimuthalFrequency
 
-    def _rnm(self, radialDegree, azimuthalFrequency, rhoArray):
+    def _rnm_obsolete(self, radialDegree, azimuthalFrequency, rhoArray):
         n = radialDegree
         m = azimuthalFrequency
         rho = rhoArray
@@ -198,11 +195,7 @@ class ZernikeGenerator(object):
         rho = rhoArray
         theta = thetaArray
 
-        if self.useJacobi:
-            # Use Jacobi polynomials for Zernike polynomials
-            Rnm = self._rnm_jacobi(n, m, rho)
-        else:
-            Rnm = self._rnm(n, m, rho)
+        Rnm = self._rnm_jacobi(n, m, rho)
         NC = np.sqrt(2 * (n + 1))
         if m == 0:
             return np.sqrt(0.5) * NC * Rnm
