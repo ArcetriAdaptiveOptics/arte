@@ -59,16 +59,16 @@ class TestZernikeGenerator(unittest.TestCase):
 
     def testRmn(self):
         self.assertTrue(np.allclose(
-            self.generator._rnm(0, 0, np.array([0, 0.5, 1])),
+            self.generator._rnm_jacobi(0, 0, np.array([0, 0.5, 1])),
             np.array([1, 1, 1])))
         self.assertTrue(np.allclose(
-            self.generator._rnm(1, 1, np.array([0, 0.5, 1])),
+            self.generator._rnm_jacobi(1, 1, np.array([0, 0.5, 1])),
             np.array([0, 0.5, 1])))
         self.assertTrue(np.allclose(
-            self.generator._rnm(2, 0, np.array([0, 0.5, 1])),
+            self.generator._rnm_jacobi(2, 0, np.array([0, 0.5, 1])),
             np.array([-1, -0.5, 1])))
         self.assertTrue(np.allclose(
-            self.generator._rnm(5, 1, np.array([0, 0.5, 1])),
+            self.generator._rnm_jacobi(5, 1, np.array([0, 0.5, 1])),
             np.array([0, 0.3125, 1])))
 
     def testPolar(self):
@@ -209,6 +209,10 @@ class TestZernikeGenerator(unittest.TestCase):
         zg = ZernikeGenerator(nPx)
         index_vector = np.arange(2,4)
         zg.getZernikeDict(index_vector)
+
+    def testRmsOfMode2347(self):
+        zg = ZernikeGenerator(256)
+        self.assertAlmostEqual(1., np.std(zg.getZernike(2347)), delta=0.02)
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ def quadraticSum(arrayOfErrorsWithSign):
     Sum in quadrature of errors, considering sign
 
     5 = quadraticSum([3, 4])
-    8 = quadraticSum(10, -6])
+    8 = quadraticSum([10, -6])
 
     Inputs can be numpy arrays
     '''
