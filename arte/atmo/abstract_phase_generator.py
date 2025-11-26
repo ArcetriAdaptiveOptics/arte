@@ -5,6 +5,22 @@ from arte.utils.discrete_fourier_transform \
 from abc import ABC, abstractmethod
 
 class PhaseGenerator(ABC):
+    """
+    Abstract base class for phase screen generators
+
+    Example use:
+    >>> class MyPhaseGenerator(PhaseGenerator):
+    ...     def _get_power_spectral_density(self, freqMap):
+    ...         return np.exp(-freqMap)
+    ...
+    ...     def _get_scaling(self):
+    ...         return 1.0
+    >>> phs = MyPhaseGenerator(screenSizeInPixels=256,
+    ...                        screenSizeInMeters=10.0,
+    ...                        seed=42)
+    >>> phs.generate_normalized_phase_screens(numberOfScreens=5)
+    >>> phaseScreens = phs._phaseScreens  # access generated screens
+    """
 
     def __init__(self,
                  screenSizeInPixels,
@@ -21,13 +37,13 @@ class PhaseGenerator(ABC):
             self._seed = seed
 
     @abstractmethod
-    def _get_power_spectral_density(self, freqMap):
+    def _get_power_spectral_density(self, freqMap, **kwargs):
         """ Override with the function defining
         the desired power spectral density """
     
     def _get_scaling(self, **kwargs):
         """ Override if needed, to get the correct
-        scaling given the pixel size"""
+        scaling given the pixel size """
         return 1.0
 
     def _spatial_frequency(self, screenSizeInPixels):
@@ -52,7 +68,7 @@ class PhaseGenerator(ABC):
     def _generate_phase_screen_with_fft(self, **kwargs):
         ''' Normalized to 1pix/r0 '''
         freqMap = self._spatial_frequency(self._screenSzInPx)
-        modul = self._get_power_spectral_density(freqMap)
+        modul = self._get_power_spectral_density(freqMap,**kwargs)
         phaseScreen = np.fft.fft2(modul * np.exp(self._random_phase() * 1j))
         phaseScreen *= self._get_scaling(**kwargs)
         return phaseScreen

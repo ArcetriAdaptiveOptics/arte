@@ -5,6 +5,20 @@ from astropy.io import fits
 from typing import override
 
 class PhaseScreenGenerator(PhaseGenerator):
+    """ 
+    Class for atmospheric phase screens generation
+
+    Example use:
+    >>> phs = PhaseScreenGenerator(screenSizeInPixels=256,
+    ...                            screenSizeInMeters=10.0,
+    ...                            outerScaleInMeters=25.0,
+    ...                            seed=42)
+    >>> phs.generate_normalized_phase_screens(numberOfScreens=5)
+    >>> phs.rescale_to(15e-2)  # r0 at 500nm = 15 cm
+    >>> phaseScreensInM = phs.get_in_meters()
+    >>> phaseScreensAt1um = phs.get_in_radians_at(1e-6)
+    """
+
 
     def __init__(self,
                  screenSizeInPixels,
@@ -17,6 +31,7 @@ class PhaseScreenGenerator(PhaseGenerator):
 
     @override
     def _get_power_spectral_density(self, freqMap):
+        """ Von Karman PSD """
         mappa = (freqMap**2 + (self._screenSzInM / self._outerScaleInM)**2)**(
             -11. / 12)
         mappa[0, 0] = 0
@@ -24,6 +39,7 @@ class PhaseScreenGenerator(PhaseGenerator):
     
     @override
     def _get_scaling(self):
+        """ Scaling factor for Von Karman spectrum """
         return np.sqrt(0.0228) * self._screenSzInPx**(5. / 6)
 
     def rescale_to(self, r0At500nm):
