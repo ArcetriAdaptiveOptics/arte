@@ -12,7 +12,7 @@ class PhaseScreenGenerator(PhaseGenerator):
                  outerScaleInMeters,
                  seed:int=None,
                  nSubHarmonics:int=8):
-        super().__init__(screenSizeInPixels,screenSizeInMeters,nSubHarmonics,seed)
+        super().__init__(screenSizeInPixels,screenSizeInMeters,seed,nSubHarmonics)
         self._outerScaleInM = float(outerScaleInMeters)
 
     @override
