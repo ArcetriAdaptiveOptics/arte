@@ -9,8 +9,8 @@ class PhaseGenerator(ABC):
     def __init__(self,
                  screenSizeInPixels,
                  screenSizeInMeters,
-                 nSubHarmonics:int=8,
-                 seed:int=None):
+                 seed:int=None,
+                 nSubHarmonics:int=8):
         self._screenSzInPx = screenSizeInPixels
         self._screenSzInM = float(screenSizeInMeters)
         self._phaseScreens = None
@@ -21,7 +21,7 @@ class PhaseGenerator(ABC):
             self._seed = seed
 
     @abstractmethod
-    def _get_power_psectral_density(self, freqMap):
+    def _get_power_spectral_density(self, freqMap):
         """ Override with the function defining
         the desired power spectral density """
     
