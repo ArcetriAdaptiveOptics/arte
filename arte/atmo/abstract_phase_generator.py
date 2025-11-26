@@ -52,7 +52,7 @@ class PhaseGenerator(ABC):
     def _generate_phase_screen_with_fft(self, **kwargs):
         ''' Normalized to 1pix/r0 '''
         freqMap = self._spatial_frequency(self._screenSzInPx)
-        modul = self._get_power_psectral_density(freqMap)
+        modul = self._get_power_spectral_density(freqMap)
         phaseScreen = np.fft.fft2(modul * np.exp(self._random_phase() * 1j))
         phaseScreen *= self._get_scaling(**kwargs)
         return phaseScreen
@@ -77,7 +77,7 @@ class PhaseGenerator(ABC):
             freqMod /= nSub
             freqX /= nSub
             freqY /= nSub
-            modul = self._get_power_psectral_density(freqMod)
+            modul = self._get_power_spectral_density(freqMod)
             for ix in range(nSub):
                 for jx in range(nSub):
                     sh = np.exp(2 * np.pi * 1j *
