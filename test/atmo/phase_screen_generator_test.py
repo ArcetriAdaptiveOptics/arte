@@ -2,8 +2,6 @@
 import unittest
 import numpy as np
 from arte.atmo.phase_screen_generator import PhaseScreenGenerator
-from arte.types.domainxy import DomainXY
-from arte.types.scalar_bidimensional_function import ScalarBidimensionalFunction
 from arte.types.mask import CircularMask
 from arte.atmo import von_karman_psd
 import astropy.units as u
