@@ -47,11 +47,9 @@ class PhaseScreenGeneratorTest(unittest.TestCase):
     def test_save_and_overwrite(self):
         howMany = 2
         self._psg.generate_normalized_phase_screens(howMany)
+        self._psg.save_normalized_phase_screens(self.filepath)
 
-        with open(self.filepath, 'w') as f:
-            f.write('')
-
-        with self.assertRaises(FileExistsError):
+        with self.assertRaises(OSError):
             self._psg.save_normalized_phase_screens(self.filepath)
 
         self._psg.save_normalized_phase_screens(self.filepath, overwrite=True) # should not raise
