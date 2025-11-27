@@ -6,6 +6,9 @@ from arte.types.mask import CircularMask
 from arte.atmo import von_karman_psd
 import astropy.units as u
 
+import os
+import tempfile
+
 
 class PhaseScreenGeneratorTest(unittest.TestCase):
 
@@ -17,6 +20,8 @@ class PhaseScreenGeneratorTest(unittest.TestCase):
         self._psg = PhaseScreenGenerator(self._screenSizeInPixels,
                                          self._screenSizeInMeters,
                                          self._outerScaleInMeters)
+        tempdir = tempfile.mkdtemp()
+        self.filepath = os.path.join(tempdir, 'test_screens.fits')
 
     def testGeneratePhaseScreens(self):
         howMany = 2
@@ -38,6 +43,19 @@ class PhaseScreenGeneratorTest(unittest.TestCase):
         self.assertAlmostEqual(0, phaseScreens[0].mean())
         self.assertAlmostEqual(0, phaseScreens[1].mean())
 
+
+    def test_save_and_overwrite(self):
+        howMany = 2
+        self._psg.generate_normalized_phase_screens(howMany)
+
+        with open(self.filepath, 'w') as f:
+            f.write('')
+
+        with self.assertRaises(FileExistsError):
+            self._psg.save_normalized_phase_screens(self.filepath)
+
+        self._psg.save_normalized_phase_screens(self.filepath, overwrite=True) # should not raise
+        
 
 
 class TestPhaseScreens(unittest.TestCase):
