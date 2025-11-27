@@ -1,56 +1,48 @@
 import numpy as np
-from arte.utils.discrete_fourier_transform \
-    import BidimensionalFourierTransform as bfft
-
+from arte.atmo.abstract_phase_screen_generator import AbstractPhaseScreenGenerator
 from astropy.io import fits
 
-class PhaseScreenGenerator(object):
+from typing import override
+
+class PhaseScreenGenerator(AbstractPhaseScreenGenerator):
+    """ 
+    Class for atmospheric phase screens generation
+
+    Example use:
+    >>> phs = PhaseScreenGenerator(screenSizeInPixels=256,
+    ...                            screenSizeInMeters=10.0,
+    ...                            outerScaleInMeters=25.0,
+    ...                            seed=42)
+    >>> phs.generate_normalized_phase_screens(numberOfScreens=5)
+    >>> phs.rescale_to(15e-2)  # r0 at 500nm = 15 cm
+    >>> phaseScreensInM = phs.get_in_meters()
+    >>> phaseScreensAt1um = phs.get_in_radians_at(1e-6)
+    """
+
 
     def __init__(self,
                  screenSizeInPixels,
                  screenSizeInMeters,
                  outerScaleInMeters,
-                 seed=None):
-        self._screenSzInPx = screenSizeInPixels
-        self._screenSzInM = float(screenSizeInMeters)
+                 seed:int=None,
+                 nSubHarmonics:int=8):
+        super().__init__(screenSizeInPixels,screenSizeInMeters,seed,nSubHarmonics)
         self._outerScaleInM = float(outerScaleInMeters)
-        self._phaseScreens = None
-        self._nSubHarmonicsToUse = 8
-        if seed is None:
-            self._seed = np.random.randint(2**32 - 1, dtype=np.uint32)
-        else:
-            self._seed = seed
-
-    def _spatial_frequency(self, screenSizeInPixels):
-        a = np.tile(np.fft.fftfreq(screenSizeInPixels, d=1. / screenSizeInPixels),
-                    (screenSizeInPixels, 1))
-        return np.linalg.norm(np.dstack((a, a.T)), axis=2)
-
-    def generate_normalized_phase_screens(self, numberOfScreens):
-        np.random.seed(self._seed)
-        nIters = int(np.ceil(numberOfScreens / 2))
-        ret = np.zeros((2 * nIters, self._screenSzInPx, self._screenSzInPx))
-        for i in range(nIters):
-            ps = self._generate_phase_screen_with_fft()
-            ps += self._generate_sub_harmonics(self._nSubHarmonicsToUse)
-            ret[2* i, :, :]= self._remove_piston(np.sqrt(2)* ps.real)
-            ret[2* i + 1, :, :]= self._remove_piston(np.sqrt(2)* ps.imag)
-        self._phaseScreens= ret[:numberOfScreens]
 
 
-    def _remove_piston(self, scrn):
-        return scrn-scrn.mean()
+    @override
+    def _get_power_spectral_density(self, freqMap):
+        """ Von Karman PSD """
+        mappa = (freqMap**2 + (self._screenSzInM / self._outerScaleInM)**2)**(
+            -11. / 12)
+        mappa[0, 0] = 0
+        return mappa
+    
+    @override
+    def _get_scaling(self):
+        """ Scaling factor for Von Karman spectrum """
+        return np.sqrt(0.0228) * self._screenSzInPx**(5. / 6)
 
-
-    def _generate_phase_screen_with_fft(self):
-        '''
-        Normalized to 1pix/r0
-        '''
-        freqMap = self._spatial_frequency(self._screenSzInPx)
-        modul = self._kolmogorov_amplitude_map_no_piston(freqMap)
-        phaseScreen = np.sqrt(0.0228) * self._screenSzInPx**(5. / 6) * \
-            np.fft.fft2(modul * np.exp(self._random_phase() * 1j))
-        return phaseScreen
 
     def rescale_to(self, r0At500nm):
         self._normalizationFactor = \
@@ -63,73 +55,33 @@ class PhaseScreenGenerator(object):
     def get_in_meters(self):
         return self._normalizationFactor * self._phaseScreens / \
             (2 * np.pi) * 500e-9
-
-    def _random_phase(self):
-        return np.random.rand(self._screenSzInPx, self._screenSzInPx) * 2 * np.pi
-
-    def _kolmogorov_amplitude_map_no_piston(self, freqMap):
-        mappa = (freqMap**2 + (self._screenSzInM / self._outerScaleInM)**2)**(
-            -11. / 12)
-        mappa[0, 0] = 0
-        return mappa
-
-    def _generate_sub_harmonics(self, numberOfSubHarmonics):
-        nSub = 3
-        lowFreqScreen = np.zeros((self._screenSzInPx, self._screenSzInPx),
-                                 dtype=np.complex128)
-        freqX = bfft.frequencies_x_map(nSub, 1. / nSub)
-        freqY = bfft.frequencies_y_map(nSub, 1. / nSub)
-        freqMod = bfft.frequencies_norm_map(nSub, 1. / nSub)
-        vv = np.arange(self._screenSzInPx) / self._screenSzInPx
-        xx = np.tile(vv, (self._screenSzInPx, 1))
-        yy = xx.T
-        depth = 0
-        while depth < numberOfSubHarmonics:
-            depth += 1
-            phase = self._random_phase()
-            freqMod /= nSub
-            freqX /= nSub
-            freqY /= nSub
-            modul = self._kolmogorov_amplitude_map_no_piston(freqMod)
-            for ix in range(nSub):
-                for jx in range(nSub):
-                    sh = np.exp(2 * np.pi * 1j *
-                                (xx * freqX[ix, jx] + yy * freqY[ix, jx] + phase[ix, jx]))
-                    sh0 = sh.sum() / self._screenSzInPx**2
-                    lowFreqScreen += 1. / nSub**depth * \
-                        modul[ix, jx] * (sh - sh0)
-        lowFreqScreen *= np.sqrt(0.0228) * self._screenSzInPx**(5. / 6)
-        return lowFreqScreen
-
-    def _determineNumberOfSubHarmonics(self):
-        maxNoOfSubHarm = 8
-        pass
     
-    def save_normalized_phase_screens(self, fname):
+    def save_normalized_phase_screens(self, filepath:str, overwrite:bool=False):
         hdr = fits.Header()
         hdr['SZ_IN_PX'] =  self._screenSzInPx
         hdr['SZ_IN_M'] = self._screenSzInM
         hdr['OS_IN_M'] = self._outerScaleInM
         hdr['SEED'] = self._seed
+        hdr['NSUBHARM'] = self._nSubHarmonicsToUse
+        fits.writeto(filepath, self._phaseScreens, hdr, overwrite=overwrite)
         
-        fits.writeto(fname, self._phaseScreens, hdr)
-        
-    
     @staticmethod 
-    def load_normalized_phase_screens(fname):
-        header = fits.getheader(fname)
+    def load_normalized_phase_screens(filepath:str):
+        header = fits.getheader(filepath)
         screenSizeInPixels = header['SZ_IN_PX'] 
         screenSizeInMeters = header['SZ_IN_M'] 
         outerScaleInMeters = header['OS_IN_M'] 
         seed = header['SEED'] 
-        
+        try: # added for retro-compatibility
+            nSubHarmonics = header['NSUBHARM']
+        except KeyError:
+            nSubHarmonics = 8
         psg = PhaseScreenGenerator(
             screenSizeInPixels,
             screenSizeInMeters,
             outerScaleInMeters,
+            nSubHarmonics,
             seed)
-        
-        hduList = fits.open(fname)
+        hduList = fits.open(filepath)
         psg._phaseScreens = hduList[0].data
-        
         return psg
