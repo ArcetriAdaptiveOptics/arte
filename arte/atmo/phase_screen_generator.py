@@ -1,10 +1,10 @@
 import numpy as np
-from arte.atmo.abstract_phase_generator import PhaseGenerator
+from arte.atmo.abstract_phase_screen_generator import AbstractPhaseScreenGenerator
 from astropy.io import fits
 
 from typing import override
 
-class PhaseScreenGenerator(PhaseGenerator):
+class PhaseScreenGenerator(AbstractPhaseScreenGenerator):
     """ 
     Class for atmospheric phase screens generation
 
@@ -29,6 +29,7 @@ class PhaseScreenGenerator(PhaseGenerator):
         super().__init__(screenSizeInPixels,screenSizeInMeters,seed,nSubHarmonics)
         self._outerScaleInM = float(outerScaleInMeters)
 
+
     @override
     def _get_power_spectral_density(self, freqMap):
         """ Von Karman PSD """
@@ -42,6 +43,7 @@ class PhaseScreenGenerator(PhaseGenerator):
         """ Scaling factor for Von Karman spectrum """
         return np.sqrt(0.0228) * self._screenSzInPx**(5. / 6)
 
+
     def rescale_to(self, r0At500nm):
         self._normalizationFactor = \
             ((self._screenSzInM / self._screenSzInPx) / r0At500nm) ** (5. / 6)
@@ -54,18 +56,18 @@ class PhaseScreenGenerator(PhaseGenerator):
         return self._normalizationFactor * self._phaseScreens / \
             (2 * np.pi) * 500e-9
     
-    def save_normalized_phase_screens(self, fname, overwrite:bool=False):
+    def save_normalized_phase_screens(self, filepath:str, overwrite:bool=False):
         hdr = fits.Header()
         hdr['SZ_IN_PX'] =  self._screenSzInPx
         hdr['SZ_IN_M'] = self._screenSzInM
         hdr['OS_IN_M'] = self._outerScaleInM
         hdr['SEED'] = self._seed
         hdr['NSUBHARM'] = self._nSubHarmonicsToUse
-        fits.writeto(fname, self._phaseScreens, hdr, overwrite=overwrite)
+        fits.writeto(filepath, self._phaseScreens, hdr, overwrite=overwrite)
         
     @staticmethod 
-    def load_normalized_phase_screens(fname):
-        header = fits.getheader(fname)
+    def load_normalized_phase_screens(filepath:str):
+        header = fits.getheader(filepath)
         screenSizeInPixels = header['SZ_IN_PX'] 
         screenSizeInMeters = header['SZ_IN_M'] 
         outerScaleInMeters = header['OS_IN_M'] 
@@ -80,6 +82,6 @@ class PhaseScreenGenerator(PhaseGenerator):
             outerScaleInMeters,
             nSubHarmonics,
             seed)
-        hduList = fits.open(fname)
+        hduList = fits.open(filepath)
         psg._phaseScreens = hduList[0].data
         return psg

@@ -4,12 +4,12 @@ from arte.utils.discrete_fourier_transform \
 
 from abc import ABC, abstractmethod
 
-class PhaseGenerator(ABC):
+class AbstractPhaseScreenGenerator(ABC):
     """
     Abstract base class for phase screen generators
 
     Example use:
-    >>> class MyPhaseGenerator(PhaseGenerator):
+    >>> class MyPhaseGenerator(AbstractPhaseScreenGenerator):
     ...     def _get_power_spectral_density(self, freqMap):
     ...         return np.exp(-freqMap)
     ...
@@ -19,7 +19,7 @@ class PhaseGenerator(ABC):
     ...                        screenSizeInMeters=10.0,
     ...                        seed=42)
     >>> phs.generate_normalized_phase_screens(numberOfScreens=5)
-    >>> phaseScreens = phs._phaseScreens  # access generated screens
+    >>> phaseScreens = phs.get_phase_screens()  # access generated screens
     """
 
     def __init__(self,
@@ -34,22 +34,18 @@ class PhaseGenerator(ABC):
         if seed is None:
             self._seed = np.random.randint(2**32 - 1, dtype=np.uint32)
         else:
-            self._seed = seed
+            self._seed = seed       
+
 
     @abstractmethod
     def _get_power_spectral_density(self, freqMap, **kwargs):
         """ Override with the function defining
         the desired power spectral density """
-    
+
     def _get_scaling(self, **kwargs):
         """ Override if needed, to get the correct
         scaling given the pixel size """
         return 1.0
-
-    def _spatial_frequency(self, screenSizeInPixels):
-        a = np.tile(np.fft.fftfreq(screenSizeInPixels, d=1. / screenSizeInPixels),
-                    (screenSizeInPixels, 1))
-        return np.linalg.norm(np.dstack((a, a.T)), axis=2)
 
     def generate_normalized_phase_screens(self, numberOfScreens, **kwargs):
         np.random.seed(self._seed)
@@ -62,19 +58,9 @@ class PhaseGenerator(ABC):
             ret[2* i + 1, :, :]= self._remove_piston(np.sqrt(2)* ps.imag)
         self._phaseScreens= ret[:numberOfScreens]
 
-    def _remove_piston(self, scrn):
-        return scrn-scrn.mean()
-
-    def _generate_phase_screen_with_fft(self, **kwargs):
-        ''' Normalized to 1pix/r0 '''
-        freqMap = self._spatial_frequency(self._screenSzInPx)
-        modul = self._get_power_spectral_density(freqMap,**kwargs)
-        phaseScreen = np.fft.fft2(modul * np.exp(self._random_phase() * 1j))
-        phaseScreen *= self._get_scaling(**kwargs)
-        return phaseScreen
-
-    def _random_phase(self):
-        return np.random.rand(self._screenSzInPx, self._screenSzInPx) * 2 * np.pi
+    def get_phase_screens(self):
+        return self._phaseScreens
+    
 
     def _generate_sub_harmonics(self, numberOfSubHarmonics, **kwargs):
         nSub = 3
@@ -103,3 +89,22 @@ class PhaseGenerator(ABC):
                         modul[ix, jx] * (sh - sh0)
         lowFreqScreen *= self._get_scaling(**kwargs)
         return lowFreqScreen
+
+    def _generate_phase_screen_with_fft(self, **kwargs):
+        ''' Normalized to 1pix/r0 '''
+        freqMap = self._spatial_frequency(self._screenSzInPx)
+        modul = self._get_power_spectral_density(freqMap,**kwargs)
+        phaseScreen = np.fft.fft2(modul * np.exp(self._random_phase() * 1j))
+        phaseScreen *= self._get_scaling(**kwargs)
+        return phaseScreen
+    
+    def _spatial_frequency(self, screenSizeInPixels):
+        a = np.tile(np.fft.fftfreq(screenSizeInPixels, d=1. / screenSizeInPixels),
+                    (screenSizeInPixels, 1))
+        return np.linalg.norm(np.dstack((a, a.T)), axis=2)
+
+    def _remove_piston(self, scrn):
+        return scrn-scrn.mean()
+
+    def _random_phase(self):
+        return np.random.rand(self._screenSzInPx, self._screenSzInPx) * 2 * np.pi
