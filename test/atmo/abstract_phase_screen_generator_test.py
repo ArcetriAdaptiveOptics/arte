@@ -24,7 +24,7 @@ class AbstractPhaseScreenGeneratorTest(unittest.TestCase):
         return np.mean(np.std(ps, axis=(1, 2)))
 
     def test_white_noise(self):    
-        self._psg.generate_normalized_phase_screens(numberOfScreens=6)
+        self._psg.generate_normalized_phase_screens(numberOfScreens=6, scale_amp=1.0)
         ps = self._psg.get_phase_screens()
         want = self._psg._screenSzInPx
         got = self.meanStd(ps)
