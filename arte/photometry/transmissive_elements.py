@@ -211,7 +211,7 @@ class TransmissiveElement():
         return self.absorptance
     
     def _compute_average_in_band(self, spectral_el, wv_band, atol, ext_waveset):
-        if not ext_waveset:
+        if ext_waveset is None:
             wv = self.waveset
         else:
             wv = ext_waveset
@@ -363,7 +363,7 @@ class TransmissiveSystem():
 
     def _compute_transmittance(self, from_element=0, to_element=None):
         t = 1
-        if not to_element:
+        if to_element is None:
             end_element = to_element
         else:
             end_element = to_element + 1
