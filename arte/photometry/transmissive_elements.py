@@ -342,14 +342,25 @@ class TransmissiveSystem():
         self._elements = []
         self._waveset = np.array([1000]) * u.nm
 
-    def add(self, transmissive_element, direction, name=''):
-        self._elements.append(
-            {'element': transmissive_element,
-             'name': name,
-             'direction': direction})
-        self._waveset = merge_wavelengths(
-            self._waveset.to(u.nm).value,
-            transmissive_element.waveset.to(u.nm).value) * u.nm
+    def add(self, transmissive_element_or_system, direction=None, name=''):
+        if isinstance(transmissive_element_or_system, TransmissiveSystem):
+            # Aggiungi tutti gli elementi del sistema
+            for el in transmissive_element_or_system._elements:
+                self._elements.append(el)
+                self._waveset = merge_wavelengths(
+                    self._waveset.to(u.nm).value,
+                    el['element'].waveset.to(u.nm).value) * u.nm
+        else:
+            # Aggiungi un singolo elemento
+            if direction is None:
+                raise ValueError("direction must be specified when adding a TransmissiveElement")
+            self._elements.append(
+                {'element': transmissive_element_or_system,
+                 'name': name,
+                 'direction': direction})
+            self._waveset = merge_wavelengths(
+                self._waveset.to(u.nm).value,
+                transmissive_element_or_system.waveset.to(u.nm).value) * u.nm
 
     def remove(self, element_index):
         del self._elements[element_index]
@@ -410,4 +421,4 @@ class TransmissiveSystem():
 
     def plot(self, **kwargs):
         self.as_transmissive_element().plot(reflectance=False, **kwargs)
-        
+
