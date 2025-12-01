@@ -1,11 +1,8 @@
 import numpy as np
 from arte.atmo.abstract_phase_screen_generator import AbstractPhaseScreenGenerator
 from astropy.io import fits
+from arte.utils.decorator import override
 
-try:
-    from typing import override
-except:
-    from typing_extensions import override
 
 class PhaseScreenGenerator(AbstractPhaseScreenGenerator):
     """ 
