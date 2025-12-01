@@ -2,7 +2,10 @@ import numpy as np
 from arte.atmo.abstract_phase_screen_generator import AbstractPhaseScreenGenerator
 from astropy.io import fits
 
-from typing import override
+try:
+    from typing import override
+except:
+    from typing_extensions import override
 
 class PhaseScreenGenerator(AbstractPhaseScreenGenerator):
     """ 
@@ -28,7 +31,6 @@ class PhaseScreenGenerator(AbstractPhaseScreenGenerator):
                  nSubHarmonics:int=8):
         super().__init__(screenSizeInPixels,screenSizeInMeters,seed,nSubHarmonics)
         self._outerScaleInM = float(outerScaleInMeters)
-
 
     @override
     def _get_power_spectral_density(self, freqMap):

@@ -8,7 +8,7 @@ class MyWhiteNoisePhaseScreenGenerator(AbstractPhaseScreenGenerator):
         return np.ones_like(freqMap)
     
     def _get_scaling(self):
-        return 1.0
+        return 1/self._screenSzInPx
 
 
 class AbstractPhaseScreenGeneratorTest(unittest.TestCase):
@@ -24,9 +24,9 @@ class AbstractPhaseScreenGeneratorTest(unittest.TestCase):
         return np.mean(np.std(ps, axis=(1, 2)))
 
     def test_white_noise(self):    
-        self._psg.generate_normalized_phase_screens(numberOfScreens=6, scale_amp=1.0)
+        self._psg.generate_normalized_phase_screens(numberOfScreens=6)
         ps = self._psg.get_phase_screens()
-        want = self._psg._screenSzInPx
+        want = 1.0
         got = self.meanStd(ps)
         self.assertAlmostEqual(want, got, delta=0.1 * want)
 
