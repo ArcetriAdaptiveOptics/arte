@@ -24,7 +24,7 @@ class MyCoronographTest(Coronograph):
 
     @override
     def _get_pupil_mask(self, field):
-        return np.ones_like(field)
+        return np.ones(field.shape)
     
     @override
     def _get_apodizer(self):
@@ -38,12 +38,12 @@ class AbstractCoronographTest(unittest.TestCase):
         self._coro = MyCoronographTest(scaleVal=scaleVal)
 
 
-    def test_white_noise(self):    
+    def test_coro_psf(self):    
         Npix = 32
         oversampling = 2
         psfExpectedShape = (Npix*oversampling,Npix*oversampling)
         fieldAmp = np.ones([Npix,Npix])
-        field = fieldAmp * np.exp(1j*np.random.randn([Npix,Npix]),dtype=np.complex128)
+        field = fieldAmp * np.exp(1j*np.random.randn(Npix,Npix),dtype=np.complex128)
 
         psf = self._coro.get_coronographic_psf(field, oversampling=oversampling)
         self.assertEqual(psf.shape, psfExpectedShape) # check the shape
