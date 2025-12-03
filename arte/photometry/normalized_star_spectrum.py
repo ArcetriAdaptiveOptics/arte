@@ -1,8 +1,34 @@
-
 import synphot
 from synphot import SourceSpectrum
 from arte.photometry.spectral_types import PickelsLibrary
 from arte.photometry.filters import Filters
+import time
+
+
+def from_vega():
+    """Get Vega spectrum with up to 3 retries if download fails.
+    Needed to overcome occasional network issues when downloading from STScI."""
+    for attempt in range(3):
+        try:
+            return SourceSpectrum.from_vega()
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(1)
+            else:
+                raise RuntimeError(f"Failed to download Vega spectrum after 3 attempts: {e}")
+
+
+def from_file(filename):
+    """Get spectrum from file with up to 3 retries if download fails.
+    Needed to overcome occasional network issues when downloading from STScI."""
+    for attempt in range(3):
+        try:
+            return SourceSpectrum.from_file(filename)
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(1)
+            else:
+                raise RuntimeError(f"Failed to download spectrum file '{filename}' after 3 attempts: {e}")
 
 
 def get_normalized_star_spectrum(spectral_type, magnitude, filter_name):
@@ -17,9 +43,6 @@ def get_normalized_star_spectrum(spectral_type, magnitude, filter_name):
 
     Parameters
     ----------
-        r0AtZenith: float
-                    overall r0 at zenith [m]
-
         spectral_type:  string.
                         spectral type and luminosity class (e.g. G2V or M4III) or 'vega'
         magnitude:  float.
@@ -49,16 +72,15 @@ def get_normalized_star_spectrum(spectral_type, magnitude, filter_name):
 """
     # read the sourcespectrum
     if spectral_type == 'vega':
-        spectrum = SourceSpectrum.from_vega()
+        spectrum = from_vega()
     else:
-        spectrum = SourceSpectrum.from_file(
-            PickelsLibrary.filename(spectral_type))
+        spectrum = from_file(PickelsLibrary.filename(spectral_type))
 
     bandpass = Filters.get(filter_name)
 
     spectrum_norm = spectrum.normalize(
         magnitude * synphot.units.VEGAMAG,
         bandpass,
-        vegaspec=SourceSpectrum.from_vega())
+        vegaspec=from_vega())
 
     return spectrum_norm
