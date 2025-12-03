@@ -3,6 +3,7 @@ import unittest
 
 from requests import get
 from arte.photometry import get_normalized_star_spectrum
+from arte.photometry import normalized_star_spectrum
 from arte.photometry.filters import Filters
 from astropy import units as u
 from astropy.tests.helper import assert_quantity_allclose
@@ -21,7 +22,7 @@ class NormalizedStarSpectrumTest(unittest.TestCase):
 
         sp_vega_norm = get_normalized_star_spectrum(
             'vega', 0, Filters.JOHNSON_R)
-        sp_vega = get_normalized_star_spectrum.from_vega()
+        sp_vega = normalized_star_spectrum.from_vega()
         wv = sp_vega_norm.waveset
         assert_quantity_allclose(sp_vega_norm(wv), sp_vega(wv))
 
@@ -89,7 +90,7 @@ class NormalizedStarSpectrumTest(unittest.TestCase):
         sp_oaa = SourceSpectrum(synphot.spectrum.Empirical1D,
                                 points=oaa_l, lookup_table=oaa_s)
 
-        sp_syn = get_normalized_star_spectrum.from_vega()
+        sp_syn = normalized_star_spectrum.from_vega()
 
         assert_quantity_allclose(sp_syn.integrate(np.arange(600, 1000)*u.nm),
                                  sp_oaa.integrate(np.arange(600, 1000)*u.nm), rtol=0.02)
