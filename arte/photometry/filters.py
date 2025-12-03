@@ -2,7 +2,17 @@ from arte.utils.package_data import dataRootDir
 import os
 from synphot.spectrum import SpectralElement
 from astropy import units as u
+import time
 
+def from_filter(filter_name, retries=3, delay=1):
+    for attempt in range(retries):
+        try:
+            return SpectralElement.from_filter(filter_name)
+        except Exception as e:
+            if attempt < retries - 1:
+                time.sleep(delay)
+            else:
+                raise RuntimeError(f"Failed to download filter '{filter_name}' after {retries} attempts: {e}")
 
 class Filters(object):
 
@@ -87,7 +97,7 @@ class Filters(object):
         The list of available filter is accessible via Filters.names()
         '''
         if filter_name in cls.SYNPHOT:
-            return SpectralElement.from_filter(filter_name)
+            return from_filter(filter_name)
         else:
             method_to_call = getattr(cls, '_%s' % filter_name)
             return method_to_call()
