@@ -1,6 +1,6 @@
 import os
 import astropy.units as u
-from arte.photometry.transmissive_elements import Bandpass, TransmissiveElement
+from arte.photometry.transmissive_elements import Bandpass, TransmissiveElement, set_element_id_from_method
 from arte.utils.package_data import dataRootDir
 from synphot.spectrum import SpectralElement
 from arte.photometry.transmittance_calculator import interface_glass_to_glass, \
@@ -48,6 +48,7 @@ class CoatingsCatalog():
             foldername)
         
     @classmethod
+    @set_element_id_from_method
     def ar_coating_589nm_001(cls):
         '''
         Narrowband (589 nm) AR coating. This is a simplified version, i.e.
@@ -61,6 +62,7 @@ class CoatingsCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def ar_coating_589nm_002(cls):
         '''
         Narrowband (589 nm) AR coating. This is a simplified version, i.e.
@@ -73,6 +75,7 @@ class CoatingsCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def ar_coating_broadband_001(cls):
         '''
         Broadband AR coating for CPM.
@@ -85,6 +88,7 @@ class CoatingsCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def ar_coating_swir_001(cls):
         '''
         SWIR AR coating.
@@ -97,6 +101,7 @@ class CoatingsCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def ar_coating_nir_i_001(cls):
         '''
         NIR I AR coating.
@@ -109,6 +114,7 @@ class CoatingsCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def ar_coating_RI_band_flat(cls):
         '''
         AR coating assumed flat in 0.6-1.0 um with R=1%.
@@ -128,6 +134,7 @@ class CoatedGlassesCatalog():
             foldername)
         
     @classmethod
+    @set_element_id_from_method
     def infrasil_1mm_B_coated_001(cls):
         '''
         Infrasil window B-coated.
@@ -142,6 +149,7 @@ class CoatedGlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def infrasil_1mm_C_coated_001(cls):
         '''
         Infrasil window C-coated.
@@ -167,6 +175,7 @@ class GlassesCatalog():
 
 
     @classmethod
+    @set_element_id_from_method
     def sapphire_2mm_internal_001(cls):
         sap_ext_10mm = GlassesCatalog.sapphire_10mm_001()
         sap_ext_5mm = GlassesCatalog.sapphire_5mm_001()
@@ -188,6 +197,7 @@ class GlassesCatalog():
     
 
     @classmethod
+    @set_element_id_from_method
     def sapphire_5mm_001(cls):
         '''
         Sapphire substrate of 5 mm thickness.
@@ -204,6 +214,7 @@ class GlassesCatalog():
 
 
     @classmethod
+    @set_element_id_from_method
     def sapphire_10mm_001(cls):
         '''
         Sapphire substrate of 10 mm thickness.
@@ -220,6 +231,7 @@ class GlassesCatalog():
 
 
     @classmethod
+    @set_element_id_from_method
     def cdgm_HQK3L_7mm_internal_001(cls):
         '''
         CDGM H-QK3L substrate of 7 mm thickness.
@@ -233,6 +245,7 @@ class GlassesCatalog():
         return te    
 
     @classmethod
+    @set_element_id_from_method
     def ohara_SFTM16_3mm_internal_001(cls):
         '''
         Ohara S-FTM16 substrate of 3 mm thickness.
@@ -246,6 +259,7 @@ class GlassesCatalog():
         return te    
         
     @classmethod
+    @set_element_id_from_method
     def infrasil_1mm_001(cls):
         '''
         Infrasil window.
@@ -261,6 +275,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def suprasil3001_3mm_internal_001(cls):
         '''
         Suprasil 3001 substrate of 3 mm thickness.
@@ -281,6 +296,7 @@ class GlassesCatalog():
         return te
         
     @classmethod
+    @set_element_id_from_method
     def suprasil3002_10mm_internal_001(cls):
         '''
         Suprasil 3002 substrate of 10 mm thickness.
@@ -294,6 +310,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def suprasil3002_40mm_internal_001(cls):
         '''
         Suprasil 3002 substrate of 40 mm thickness.
@@ -307,6 +324,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def suprasil3002_60mm_internal_001(cls):
         '''
         Suprasil 3002 substrate of 60 mm thickness.
@@ -320,6 +338,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def suprasil3002_70mm_internal_001(cls):
         '''
         Suprasil 3002 substrate of 70 mm thickness.
@@ -333,6 +352,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def suprasil3002_80mm_internal_001(cls):
         '''
         Suprasil 3002 substrate of 80 mm thickness.
@@ -345,6 +365,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def suprasil3002_85mm_internal_001(cls):
         '''
         Suprasil 3002 substrate of 85 mm thickness.
@@ -359,6 +380,7 @@ class GlassesCatalog():
         return te
         
     @classmethod
+    @set_element_id_from_method
     def suprasil3002_108mm_internal_001(cls):
         '''
         Suprasil 3002 substrate of 108 mm thickness.
@@ -372,6 +394,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def ohara_quartz_SK1300_10mm_internal_001(cls):
         '''
         Ohara quartz SK-1300 substrate of 10 mm thickness.
@@ -385,6 +408,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def ohara_quartz_SK1300_85mm_internal_001(cls):
         '''
         Ohara quartz SK-1300 substrate of 85 mm thickness.
@@ -398,6 +422,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def ohara_SFPL51_10mm_internal_001(cls):
         '''
         Ohara SFPL-51 substrate of 10 mm thickness.
@@ -411,6 +436,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def ohara_PBL35Y_10mm_internal_001(cls):
         '''
         Ohara PBL-35Y substrate of 10 mm thickness.
@@ -424,6 +450,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def ohara_PBL35Y_3mm_internal_001(cls):
         '''
         Ohara PBL-35Y substrate of 3 mm thickness.
@@ -437,6 +464,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def ohara_STIM27_3mm_internal_001(cls):
         '''
         Ohara S-TIM27 substrate of 3 mm thickness.
@@ -450,6 +478,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def ohara_STIM27_3_5mm_internal_001(cls):
         '''
         Ohara S-TIM27 substrate of 3.5 mm thickness.
@@ -463,6 +492,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def ohara_SFPM2_6mm_internal_001(cls):
         '''
         Ohara S-FPM2 substrate of 6 mm thickness.
@@ -476,6 +506,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def ohara_SLAH96_10_5mm_internal_001(cls):
         '''
         Ohara S-LAH96 substrate of 10.5 mm thickness.
@@ -489,6 +520,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def ohara_SNBH56_9_9mm_internal_001(cls):
         '''
         Ohara S-NBH56 substrate of 9.9 mm thickness.
@@ -502,6 +534,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def schott_NSF2_9dot8_mm_internal_001(cls):
         '''
         Schott N-SF2 substrate of 9.8 mm thickness.
@@ -515,6 +548,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def schott_NSF6_4_mm_internal_001(cls):
         '''
         Schott N-SF6 substrate of 4 mm thickness.
@@ -528,6 +562,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def schott_NBK7_5_mm_internal_001(cls):
         '''
         Schott N-BK7 substrate of 5 mm thickness.
@@ -541,6 +576,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def schott_NLAK22_6_5_mm_internal_001(cls):
         '''
         Schott N-LAK22 substrate of 6.5 mm thickness.
@@ -554,6 +590,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def schott_NPSK53A_10_mm_internal_001(cls):
         '''
         Schott N-PSK53A substrate of 10 mm thickness.
@@ -567,6 +604,7 @@ class GlassesCatalog():
         return te
 
     @classmethod
+    @set_element_id_from_method
     def interface_ohara_SFPL51_to_ohara_PBL35Y_001(cls):
         '''
         Interface between Ohara SFPL-51 and Ohara PBL-35Y.
@@ -585,6 +623,7 @@ class GlassesCatalog():
         return te
     
     @classmethod
+    @set_element_id_from_method
     def interface_schott_NSF2_to_schott_NPSK53A_001(cls):
         '''
         Interface between Schott N-SF2 and Schott N-PSK53A.
@@ -606,6 +645,7 @@ class GlassesCatalog():
 class FiltersCatalog():
     
     @classmethod
+    @set_element_id_from_method
     def bessel_H(cls):
         t = Filters.get(Filters.BESSELL_H)
         # a = Bandpass.zero()

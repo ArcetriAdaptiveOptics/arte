@@ -1,3 +1,5 @@
+from math import e
+import warnings
 import numpy as np
 from astropy import units as u
 from synphot.spectrum import SpectralElement
@@ -6,8 +8,21 @@ from synphot.utils import generate_wavelengths, merge_wavelengths
 from astropy.io import fits
 
 
+def set_element_id_from_method(func):
+    """
+    Decorator that sets the 'id' attribute of a returned TransmissiveElement
+    to the name of the method.
+    """
+    def wrapper(cls, *args, **kwargs):
+        element = func(cls, *args, **kwargs)
+        if isinstance(element, TransmissiveElement):
+            element.set_id(func.__name__)
+        return element
+    return wrapper
+
+
 class Bandpass():
-    
+
     _MIN_LAMBDA_NM = 200
     _MAX_LAMBDA_NM = 10000
     _DELTA_LAMBDA_NM = 10
@@ -52,7 +67,7 @@ class Bandpass():
             points=np.array([cls._MIN_LAMBDA_NM, l1, l2, cls._MAX_LAMBDA_NM]
                             ) * u.nm,
             lookup_table=np.array([low_ampl, low_ampl, high_ampl, high_ampl]))
-        
+
     @classmethod
     def peak(cls, peak_wl, delta_wl, high_ampl, low_ampl):
         '''
@@ -71,7 +86,7 @@ class Bandpass():
                 cls._MIN_LAMBDA_NM, l - dl, l, l + dl, cls._MAX_LAMBDA_NM]) * u.nm,
             lookup_table=np.array([
                 low_ampl, low_ampl, high_ampl, low_ampl, low_ampl]))
- 
+
     @classmethod
     def top_hat(cls, peak_wl, delta_wl, high_ampl, low_ampl):
         '''
@@ -90,17 +105,17 @@ class Bandpass():
 
     @classmethod
     def top_hat_ramped(cls, low_wl_start, high_wl_start,
-                        high_wl_end, low_wl_end,
+                       high_wl_end, low_wl_end,
                        low_ampl, high_ampl):
         l1 = low_wl_start.to(u.nm).value
         l2 = high_wl_start.to(u.nm).value
         l3 = high_wl_end.to(u.nm).value
-        l4 = low_wl_end.to(u.nm).value 
+        l4 = low_wl_end.to(u.nm).value
         return SpectralElement(
             Empirical1D,
             points=np.array([cls._MIN_LAMBDA_NM, l1, l2, l3, l4, cls._MAX_LAMBDA_NM]
                             ) * u.nm,
-            lookup_table=np.array([low_ampl, low_ampl, high_ampl, high_ampl, low_ampl, low_ampl])) 
+            lookup_table=np.array([low_ampl, low_ampl, high_ampl, high_ampl, low_ampl, low_ampl]))
 
     @classmethod
     def step(cls, wl, low_ampl, high_ampl):
@@ -137,8 +152,9 @@ class TransmissiveElement():
             spectral absorptance of the element (in wavelength)
     '''
 
-    def __init__(self, transmittance=None, reflectance=None, absorptance=None):
+    def __init__(self, transmittance=None, reflectance=None, absorptance=None, id=""):
         self._initialize(transmittance, reflectance, absorptance)
+        self._id = id
 
     def _initialize(self, transmittance=None, reflectance=None, absorptance=None):
         t, r, a = self._check_params(transmittance, reflectance, absorptance)
@@ -167,11 +183,30 @@ class TransmissiveElement():
     def _computeThird(self, a, b):
         wv = a.waveset
         ones = Bandpass.one()
+        lookup_values = ones(wv) - a(wv) - b(wv)
+        
+        # Check in range [0,1]
+        min_val = np.min(lookup_values)
+        max_val = np.max(lookup_values)
+        
+        NUMERICAL_ERROR_THRESHOLD = 1e-10
+        
+        if min_val < -NUMERICAL_ERROR_THRESHOLD:
+            warnings.warn(
+                f"t+r+a=1 cannot be fulfilled: minimum value is {min_val:.2e} "
+                f"(threshold: {-NUMERICAL_ERROR_THRESHOLD:.2e})")
+        
+        if max_val > (1.0 + NUMERICAL_ERROR_THRESHOLD):
+            warnings.warn(
+                f"t+r+a=1 cannot be fulfilled: maximum value is {max_val:.2e} "
+                f"(threshold: {1.0 + NUMERICAL_ERROR_THRESHOLD:.2e})")
+        
+        # If we reach here, the errors are numerical: clip the values
+        lookup_values = np.clip(lookup_values, 0, 1)
+        
         c = SpectralElement(
             Empirical1D, points=wv,
-            lookup_table=ones(wv) - a(wv) - b(wv))
-        if (np.max(c(wv)) > 1.0) or (np.min(c(wv) < 0)):
-            raise ValueError("t+r+a=1 cannot be fulfilled")
+            lookup_table=lookup_values)
         return c
 
     def plot(self, transmittance=True, reflectance=True,
@@ -209,7 +244,14 @@ class TransmissiveElement():
     @property
     def emissivity(self):
         return self.absorptance
-    
+
+    @property
+    def id(self):
+        return self._id
+
+    def set_id(self, id):
+        self._id = id
+
     def _compute_average_in_band(self, spectral_el, wv_band, atol, ext_waveset):
         if ext_waveset is None:
             wv = self.waveset
@@ -218,26 +260,26 @@ class TransmissiveElement():
         id_wv_min = np.where(np.isclose(wv, wv_band[0], atol=atol[0]))[0]
         wv_min = wv[id_wv_min]
         if len(wv_min) == 0:
-            raise ValueError('No wavelength found. Increase atol.')
+            raise ValueError(f'No wavelength found for wv_band[0]={wv_band[0]}. Increase atol. Element id: {self.id}')
         elif len(wv_min) > 1:
-            diff = (wv_band[0] - wv_min).value
-            if np.all(np.isclose(0, diff)) or np.isclose(abs(diff[0]), abs(diff[1])):
-                wv_min = wv_min[0]
-            else:
-                raise ValueError(f'Too many wavelengths found: {wv_min}. Change atol.')
-            
+            # Scegli la wavelength più vicina
+            diff = np.abs((wv_band[0] - wv_min).value)
+            idx_closest = np.argmin(diff)
+            wv_min = wv_min[idx_closest]
+            id_wv_min = id_wv_min[idx_closest:idx_closest+1]
+
         id_wv_max = np.where(np.isclose(wv, wv_band[1], atol=atol[1]))[0]
         wv_max = wv[id_wv_max]
         if len(wv_max) == 0:
-            raise ValueError('No wavelength found. Increase atol.')
+            raise ValueError(f'No wavelength found for wv_band[1]={wv_band[1]}. Increase atol. Element id: {self.id}')
         elif len(wv_max) > 1:
-            diff = (wv_band[1] - wv_max).value
-            if np.all(np.isclose(0, diff)) or np.isclose(abs(diff[0]), abs(diff[1])):
-                wv_max = wv_max[0]
-            else:
-                raise ValueError(f'Too many wavelengths found: {wv_max}. Change atol.')
-            
-        return wv_min, wv_max, np.mean(spectral_el(wv)[id_wv_min[0]:id_wv_max[0]+1]) 
+            # Scegli la wavelength più vicina
+            diff = np.abs((wv_band[1] - wv_max).value)
+            idx_closest = np.argmin(diff)
+            wv_max = wv_max[idx_closest]
+            id_wv_max = id_wv_max[idx_closest:idx_closest+1]
+
+        return wv_min, wv_max, np.mean(spectral_el(wv)[id_wv_min[0]:id_wv_max[0]+1])
 
     def transmittance_in_band(self, wv_band, atol=(1, 1), ext_waveset=None):
         '''
@@ -246,9 +288,10 @@ class TransmissiveElement():
         wv_band: astropy.units.quantity.Quantity
             Bounds of the wavelength range where to compute the average transmittance of the TransmissiveElement.
         '''
-        wv_min, wv_max, t_mean = self._compute_average_in_band(self.transmittance, wv_band, atol, ext_waveset)
+        wv_min, wv_max, t_mean = self._compute_average_in_band(
+            self.transmittance, wv_band, atol, ext_waveset)
         return t_mean, wv_min, wv_max
-    
+
     def reflectance_in_band(self, wv_band, atol=(1, 1), ext_waveset=None):
         '''
         Parameters
@@ -256,9 +299,10 @@ class TransmissiveElement():
         wv_band: astropy.units.quantity.Quantity
             Bounds of the wavelength range where to compute the average reflectance of the TransmissiveElement.
         '''
-        wv_min, wv_max, r_mean = self._compute_average_in_band(self.reflectance, wv_band, atol, ext_waveset)
+        wv_min, wv_max, r_mean = self._compute_average_in_band(
+            self.reflectance, wv_band, atol, ext_waveset)
         return r_mean, wv_min, wv_max
-    
+
     def emissivity_in_band(self, wv_band, atol=(1, 1)):
         '''
         Parameters
@@ -266,7 +310,8 @@ class TransmissiveElement():
         wv_band: astropy.units.quantity.Quantity
             Bounds of the wavelength range where to compute the average emissivity of the TransmissiveElement.
         '''
-        wv_min, wv_max, e_mean = self._compute_average_in_band(self.emissivity, wv_band, atol)
+        wv_min, wv_max, e_mean = self._compute_average_in_band(
+            self.emissivity, wv_band, atol)
         print(f'Average emissivity in band {(wv_min, wv_max)}: {e_mean}')
         return e_mean
 
@@ -276,17 +321,17 @@ class TransmissiveElement():
         ws = spectral_element.waveset
         ii = np.searchsorted(ws, wavelengths)
         new_waveset = np.insert(ws, ii, wavelengths)
-        
+
         r_arr = spectral_element(ws)
         new_r = np.insert(r_arr, ii, new_values)
         return SpectralElement(Empirical1D,
-                            points=new_waveset,
-                            lookup_table=new_r)
-       
+                               points=new_waveset,
+                               lookup_table=new_r)
+
     def add_spectral_points(self, wavelengths, transmittance=None,
                             reflectance=None, absorptance=None):
         new_t = self._insert_spectral_element(self.transmittance, transmittance,
-                                               wavelengths)
+                                              wavelengths)
         new_r = self._insert_spectral_element(self.reflectance, reflectance,
                                               wavelengths)
         new_a = self._insert_spectral_element(self.absorptance, absorptance,
@@ -294,7 +339,7 @@ class TransmissiveElement():
 
         self._initialize(transmittance=new_t, reflectance=new_r,
                          absorptance=new_a)
-        
+
     def to_dat(self, filepath, data_type):
         if data_type == 'transmittance':
             data = self.transmittance(self.waveset).value
@@ -330,6 +375,51 @@ class TransmissiveElement():
                             lookup_table=fits.getdata(filename, 2))
         return TransmissiveElement(transmittance=t, absorptance=a)
 
+    @staticmethod
+    def ideal():
+        """
+        Creates an ideal transmissive element with unit transmittance across all wavelengths.
+        
+        Returns
+        -------
+        TransmissiveElement
+            A transmissive element with transmittance = 1.0 everywhere,
+            reflectance = 0.0 everywhere, and absorptance = 0.0 everywhere.
+        """
+        return TransmissiveElement(transmittance=Bandpass.one(), 
+                                   reflectance=Bandpass.zero())
+
+    @staticmethod
+    def flat(transmittance=1.0, reflectance=0.0):
+        """
+        Creates a transmissive element with constant values across all wavelengths.
+        
+        Parameters
+        ----------
+        transmittance : float, optional
+            Constant transmittance value in [0,1]. Default is 1.0.
+        reflectance : float, optional
+            Constant reflectance value in [0,1]. Default is 0.0.
+        
+        Returns
+        -------
+        TransmissiveElement
+            A transmissive element with constant transmittance and reflectance,
+            and absorptance computed from t + r + a = 1.
+            
+        Raises
+        ------
+        ValueError
+            If transmittance + reflectance > 1.
+        """
+        if transmittance + reflectance > 1.0:
+            raise ValueError(
+                f"transmittance ({transmittance}) + reflectance ({reflectance}) > 1.0")
+        
+        return TransmissiveElement(
+            transmittance=Bandpass.flat(transmittance),
+            reflectance=Bandpass.flat(reflectance))
+
 
 class Direction(object):
     TRANSMISSION = 'transmission'
@@ -338,22 +428,24 @@ class Direction(object):
 
 class TransmissiveSystem():
 
-    def __init__(self):
+    def __init__(self, name="Transmissive System"):
+        self._name = name
         self._elements = []
         self._waveset = np.array([1000]) * u.nm
 
     def add(self, transmissive_element_or_system, direction=None, name=''):
+        if transmissive_element_or_system is None:
+            warnings.warn(
+                "Trying to add a None element (named '%s') to TransmissiveSystem. Ignoring" % name)
+            return
         if isinstance(transmissive_element_or_system, TransmissiveSystem):
-            # Aggiungi tutti gli elementi del sistema
-            for el in transmissive_element_or_system._elements:
-                self._elements.append(el)
-                self._waveset = merge_wavelengths(
-                    self._waveset.to(u.nm).value,
-                    el['element'].waveset.to(u.nm).value) * u.nm
+            for el in transmissive_element_or_system.elements:
+                self.add(el['element'], direction=el['direction'],
+                         name=el['name'])
         else:
-            # Aggiungi un singolo elemento
             if direction is None:
-                raise ValueError("direction must be specified when adding a TransmissiveElement")
+                raise ValueError(
+                    "direction must be specified when adding a TransmissiveElement")
             self._elements.append(
                 {'element': transmissive_element_or_system,
                  'name': name,
@@ -368,9 +460,20 @@ class TransmissiveSystem():
     @property
     def transmittance(self):
         return self._compute_transmittance()
-    
+
     def transmittance_from_to(self, from_element=0, to_element=None):
         return self._compute_transmittance(from_element, to_element)
+
+    def subsystem_from_to(self, from_element=0, to_element=None):
+        subsystem = TransmissiveSystem(name=self._name)
+        if to_element is None:
+            end_element = len(self._elements)
+        else:
+            end_element = to_element + 1
+        for el in self._elements[from_element:end_element]:
+            subsystem.add(el['element'], direction=el['direction'], name=el['name'])
+        return subsystem
+        
 
     def _compute_transmittance(self, from_element=0, to_element=None):
         t = 1
@@ -385,7 +488,8 @@ class TransmissiveSystem():
             elif direction == Direction.REFLECTION:
                 t *= el['element'].reflectance
             else:
-                raise ValueError('Unknown propagation direction %s' % direction)
+                raise ValueError(
+                    'Unknown propagation direction %s' % direction)
         return t
 
     @property
@@ -405,16 +509,17 @@ class TransmissiveSystem():
     def _sum_absorptance(self, a, b):
         return Bandpass.from_array(self._waveset,
                                    a(self._waveset) + b(self._waveset))
-    
+
     @property
     def elements(self):
         return self._elements
-    
+
     def element_idx_from_name(self, name):
-        el_idx = np.argwhere(list(map(lambda x: x['name']==name, self._elements))) 
+        el_idx = np.argwhere(
+            list(map(lambda x: x['name'] == name, self._elements)))
         return el_idx[0][0]
         # return self._elements[el_idx[0][0]]['element']
-    
+
     def as_transmissive_element(self):
         return TransmissiveElement(transmittance=self.transmittance,
                                    absorptance=self.emissivity)
@@ -422,3 +527,59 @@ class TransmissiveSystem():
     def plot(self, **kwargs):
         self.as_transmissive_element().plot(reflectance=False, **kwargs)
 
+    def list_elements_transmittance(self, band, atol=None):
+        """
+        Print the transmittance (or reflectance) in band for each element of the system.
+        band: tuple (min, max) with band limits (units compatible with waveset)
+        atol: optional tuple to pass to transmittance_in_band/reflectance_in_band
+        """
+        for el in self._elements:
+            name = el['name'] if el['name'] else '(no name)'
+            id = el['element'].id
+            direction = el['direction']
+            elem = el['element']
+            if direction == Direction.TRANSMISSION:
+                if hasattr(elem, 'transmittance_in_band'):
+                    val = elem.transmittance_in_band(
+                        band, atol) if atol else elem.transmittance_in_band(band)
+                    print(f"{name} ({id}) [T] {val[0]:.3f}")
+                else:
+                    print(f"{name} ({id}) [T] N/A")
+            elif direction == Direction.REFLECTION:
+                if hasattr(elem, 'reflectance_in_band'):
+                    val = elem.reflectance_in_band(
+                        band, atol) if atol else elem.reflectance_in_band(band)
+                    print(f"{name} ({id}) [R] {val[0]:.3f}")
+                else:
+                    print(f"{name} ({id}) [R] N/A")
+            else:
+                print(f"{name} ({id}) ? N/A")
+        total_val = self.total_transmittance(band, atol)
+        print(f"Total ({id}) [T] {total_val[0]:.3f}")
+
+    def print_elements_list(self):
+        """
+        Prints the list of elements with name and direction.
+        """
+        print(f"System: {self._name}")
+        for i, el in enumerate(self._elements):
+            name = el['name'] if el['name'] else '(no name)'
+            id = el['element'].id
+            if el['direction'] == Direction.REFLECTION:
+                direction = 'R'
+            elif el['direction'] == Direction.TRANSMISSION:
+                direction = 'T'
+            else:
+                direction = '?'
+            print(f"{i}: {name} ({id}) [{direction}]")
+            
+    def total_transmittance(self, band, atol=None):
+        """
+        Print the total transmittance (or reflectance) in band for the system.
+        band: tuple (min, max) with band limits (units compatible with waveset)
+        atol: optional tuple to pass to transmittance_in_band/reflectance_in_band
+        """
+        elem = self.as_transmissive_element()
+        val = elem.transmittance_in_band(
+            band, atol) if atol else elem.transmittance_in_band(band)
+        return val
