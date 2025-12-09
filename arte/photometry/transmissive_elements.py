@@ -230,6 +230,10 @@ class TransmissiveElement():
         return self.transmittance.waveset
 
     @property
+    def waverange(self):
+        return self.transmittance.waverange
+
+    @property
     def transmittance(self):
         return self._t
 
@@ -253,33 +257,73 @@ class TransmissiveElement():
         self._id = id
 
     def _compute_average_in_band(self, spectral_el, wv_band, atol, ext_waveset):
+        """
+        Compute average of spectral element in a wavelength band using linear interpolation.
+        
+        This method interpolates the spectral element at the exact band limits
+        rather than searching for nearest wavelengths, eliminating the need for atol.
+        
+        Parameters
+        ----------
+        spectral_el : SpectralElement
+            The spectral element to average
+        wv_band : tuple of Quantity
+            (wv_min, wv_max) wavelength band limits
+        atol : tuple
+            Ignored in this implementation (kept for backward compatibility)
+        ext_waveset : array-like or None
+            Optional external waveset for integration
+            
+        Returns
+        -------
+        wv_min, wv_max, average : tuple
+            The band limits and the average value in the band
+            
+        Risks
+        -----
+        - Extrapolation: If band limits are outside the spectral element's waveset,
+          synphot will extrapolate (usually as constant). Check that wv_band is
+          within the valid range of the spectral element.
+        - Interpolation accuracy: Linear interpolation may not accurately represent
+          sharp features in the spectrum. For spectral elements with high-frequency
+          variations, ensure adequate sampling.
+        """
         if ext_waveset is None:
             wv = self.waveset
         else:
             wv = ext_waveset
-        id_wv_min = np.where(np.isclose(wv, wv_band[0], atol=atol[0]))[0]
-        wv_min = wv[id_wv_min]
-        if len(wv_min) == 0:
-            raise ValueError(f'No wavelength found for wv_band[0]={wv_band[0]}. Increase atol. Element id: {self.id}')
-        elif len(wv_min) > 1:
-            # Scegli la wavelength più vicina
-            diff = np.abs((wv_band[0] - wv_min).value)
-            idx_closest = np.argmin(diff)
-            wv_min = wv_min[idx_closest]
-            id_wv_min = id_wv_min[idx_closest:idx_closest+1]
-
-        id_wv_max = np.where(np.isclose(wv, wv_band[1], atol=atol[1]))[0]
-        wv_max = wv[id_wv_max]
-        if len(wv_max) == 0:
-            raise ValueError(f'No wavelength found for wv_band[1]={wv_band[1]}. Increase atol. Element id: {self.id}')
-        elif len(wv_max) > 1:
-            # Scegli la wavelength più vicina
-            diff = np.abs((wv_band[1] - wv_max).value)
-            idx_closest = np.argmin(diff)
-            wv_max = wv_max[idx_closest]
-            id_wv_max = id_wv_max[idx_closest:idx_closest+1]
-
-        return wv_min, wv_max, np.mean(spectral_el(wv)[id_wv_min[0]:id_wv_max[0]+1])
+        
+        wv_min = wv_band[0]
+        wv_max = wv_band[1]
+        
+        # Ensure both are in the same unit
+        wv_min = wv_min.to(wv.unit)
+        wv_max = wv_max.to(wv.unit)
+        
+        # Check if band limits are within waveset bounds
+        if wv_min < np.min(wv) or wv_max > np.max(wv):
+            warnings.warn(
+                f"Band limits [{wv_min}, {wv_max}] extend beyond waveset range "
+                f"[{np.min(wv)}, {np.max(wv)}]. Extrapolation will be used. "
+                f"Element id: {self.id}")
+        
+        # Generate dense waveset within the band for accurate integration
+        # Use the original sampling if possible
+        delta_wv = np.median(np.diff(wv.value))
+        n_points = max(int((wv_max.value - wv_min.value) / delta_wv), 100)
+        wv_band_dense = np.linspace(wv_min.value, wv_max.value, n_points) * wv.unit
+        
+        # Remove any potential duplicates
+        wv_band_dense = np.unique(wv_band_dense)
+        
+        # Evaluate spectral element at dense points
+        values = spectral_el(wv_band_dense)
+        
+        # Compute mean using trapezoidal integration
+        average = np.trapz(values.value, wv_band_dense.to(wv.unit).value) / \
+                (wv_max - wv_min).to(wv.unit).value
+        
+        return wv_min, wv_max, average
 
     def transmittance_in_band(self, wv_band, atol=(1, 1), ext_waveset=None):
         '''
@@ -458,6 +502,14 @@ class TransmissiveSystem():
         del self._elements[element_index]
 
     @property
+    def name(self):
+        return self._name
+
+    @property
+    def waveset(self):
+        return self._waveset
+
+    @property
     def transmittance(self):
         return self._compute_transmittance()
 
@@ -518,7 +570,9 @@ class TransmissiveSystem():
         el_idx = np.argwhere(
             list(map(lambda x: x['name'] == name, self._elements)))
         return el_idx[0][0]
-        # return self._elements[el_idx[0][0]]['element']
+
+    def element_from_name(self, name):
+        return self._elements[self.element_idx_from_name(name)]['element']
 
     def as_transmissive_element(self):
         return TransmissiveElement(transmittance=self.transmittance,
@@ -527,11 +581,10 @@ class TransmissiveSystem():
     def plot(self, **kwargs):
         self.as_transmissive_element().plot(reflectance=False, **kwargs)
 
-    def list_elements_transmittance(self, band, atol=None):
+    def list_elements_transmittance(self, band):
         """
         Print the transmittance (or reflectance) in band for each element of the system.
         band: tuple (min, max) with band limits (units compatible with waveset)
-        atol: optional tuple to pass to transmittance_in_band/reflectance_in_band
         """
         for el in self._elements:
             name = el['name'] if el['name'] else '(no name)'
@@ -540,22 +593,20 @@ class TransmissiveSystem():
             elem = el['element']
             if direction == Direction.TRANSMISSION:
                 if hasattr(elem, 'transmittance_in_band'):
-                    val = elem.transmittance_in_band(
-                        band, atol) if atol else elem.transmittance_in_band(band)
+                    val = elem.transmittance_in_band(band)
                     print(f"{name} ({id}) [T] {val[0]:.3f}")
                 else:
                     print(f"{name} ({id}) [T] N/A")
             elif direction == Direction.REFLECTION:
                 if hasattr(elem, 'reflectance_in_band'):
-                    val = elem.reflectance_in_band(
-                        band, atol) if atol else elem.reflectance_in_band(band)
+                    val = elem.reflectance_in_band(band)
                     print(f"{name} ({id}) [R] {val[0]:.3f}")
                 else:
                     print(f"{name} ({id}) [R] N/A")
             else:
                 print(f"{name} ({id}) ? N/A")
-        total_val = self.total_transmittance(band, atol)
-        print(f"Total ({id}) [T] {total_val[0]:.3f}")
+        total_val = self.total_transmittance(band)
+        print(f"Total ({id}) [T] {total_val:.3f}")
 
     def print_elements_list(self):
         """
@@ -573,13 +624,11 @@ class TransmissiveSystem():
                 direction = '?'
             print(f"{i}: {name} ({id}) [{direction}]")
             
-    def total_transmittance(self, band, atol=None):
+    def total_transmittance(self, band):
         """
         Print the total transmittance (or reflectance) in band for the system.
         band: tuple (min, max) with band limits (units compatible with waveset)
-        atol: optional tuple to pass to transmittance_in_band/reflectance_in_band
         """
         elem = self.as_transmissive_element()
-        val = elem.transmittance_in_band(
-            band, atol) if atol else elem.transmittance_in_band(band)
-        return val
+        val = elem.transmittance_in_band(band) 
+        return val[0]
