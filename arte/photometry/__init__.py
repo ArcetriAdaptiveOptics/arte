@@ -1,2 +1,3 @@
 
 from .normalized_star_spectrum import get_normalized_star_spectrum
+from .expected_flux import expected_flux
