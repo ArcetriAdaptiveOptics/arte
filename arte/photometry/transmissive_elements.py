@@ -632,3 +632,40 @@ class TransmissiveSystem():
         elem = self.as_transmissive_element()
         val = elem.transmittance_in_band(band) 
         return val[0]
+
+    @staticmethod
+    def combine(*transmissive_systems, name="Combined Transmissive System"):
+        """
+        Combine multiple TransmissiveSystems into a single system.
+        
+        Parameters
+        ----------
+        *transmissive_systems : TransmissiveSystem or list of TransmissiveSystem
+            Variable number of TransmissiveSystem objects to combine, or a single list of systems.
+        
+        name : str, optional
+            Name for the combined transmissive system. Default is "Combined Transmissive System".
+        
+        Returns
+        -------
+        TransmissiveSystem
+            A new TransmissiveSystem containing all elements from the input systems.
+        
+        Examples
+        --------
+        >>> elt_ts = TransmissiveSystem("ELT")
+        >>> mpo_ts = TransmissiveSystem("MPO")
+        >>> # Both syntaxes work:
+        >>> combined = TransmissiveSystem.combine(elt_ts, mpo_ts, name="ELT+MPO")
+        >>> combined = TransmissiveSystem.combine([elt_ts, mpo_ts], name="ELT+MPO")
+        """
+        # Se il primo argomento è una lista/tupla, usala
+        if len(transmissive_systems) == 1 and isinstance(transmissive_systems[0], (list, tuple)):
+            systems = transmissive_systems[0]
+        else:
+            systems = transmissive_systems
+        
+        combined_system = TransmissiveSystem(name=name)
+        for ts in systems:
+            combined_system.add(ts)
+        return combined_system
