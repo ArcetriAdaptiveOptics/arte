@@ -65,14 +65,27 @@ class CoatingsCatalog():
     @set_element_id_from_method
     def ar_coating_589nm_002(cls):
         '''
-        Narrowband (589 nm) AR coating. This is a simplified version, i.e.
-        a peak of 0.995 (as indicated in E-MAO-SF0-INA-DER-001_02 MAORY  System
-        Optical Design and Analysis Report) at 589 nm.
+        Narrowband (589 nm) simplified AR coating.
+        Top-hat width 20nm, peak 0.995
         '''
         t = Bandpass.top_hat(589 * u.nm, 10 * u.nm, 0.995, 0)
         a = Bandpass.zero()
         te = TransmissiveElement(absorptance=a, transmittance=t)
         return te
+
+    @classmethod
+    @set_element_id_from_method
+    def ar_coating_589nm_003(cls):
+        '''
+        Narrowband (589 nm) simplified AR coating.
+        Top-hat width 40nm, peak 0.995
+        '''
+        t = Bandpass.top_hat(589 * u.nm, 20 * u.nm, 0.995, 0)
+        a = Bandpass.zero()
+        te = TransmissiveElement(absorptance=a, transmittance=t)
+        return te
+
+
 
     @classmethod
     @set_element_id_from_method
@@ -123,6 +136,30 @@ class CoatingsCatalog():
         a = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, absorptance=a)
         return te
+
+    @classmethod
+    @set_element_id_from_method
+    def ar_coating_RI_band_flat_003(cls):
+        '''
+        AR coating assumed flat in 0.4-1.1 um with R=1%.
+        '''
+        t = Bandpass.top_hat_ramped(0.35*u.um, 0.4*u.um, 1.1*u.um, 1.15*u.um, 0., 0.990)
+        a = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, absorptance=a)
+        return te
+
+    @classmethod
+    @set_element_id_from_method
+    def thorlabs_ab_broadband_ar_001(cls):
+        '''
+        Thorlabs AB broadband AR coating 
+        '''
+        r = RestoreTransmissiveElements.restore_reflectance_from_dat(
+            cls._CoatingsFolder('thorlabs_ab_broadband_ar_001'), u.um)
+        a = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, absorptance=a)
+        return te
+
 
 class CoatedGlassesCatalog():
     
