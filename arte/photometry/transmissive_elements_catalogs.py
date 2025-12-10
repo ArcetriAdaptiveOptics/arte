@@ -7,14 +7,14 @@ from arte.photometry.transmittance_calculator import interface_glass_to_glass, \
     internal_transmittance_calculator, internal_transmittance_from_external_one
 from synphot.models import Empirical1D
 from arte.photometry.filters import Filters
-
+from pathlib import Path
 
 class RestoreTransmissiveElements(object):
 
     @classmethod
     def transmissive_elements_folder(cls):
-        rootDir = dataRootDir()
-        dirname = os.path.join(rootDir, 'photometry', 'transmissive_elements')
+        rootDir = str(dataRootDir())
+        dirname = Path(rootDir) / 'photometry' / 'transmissive_elements'
         return dirname
 
     @classmethod
@@ -509,7 +509,7 @@ class GlassesCatalog():
         Data from RefractiveInfo website. 
         '''
         t = RestoreTransmissiveElements.restore_transmittance_from_dat(
-            cls._GlassesFolder('ohara_SBSM2_10_7mm_internal_001'), u.um)
+            cls._GlassesFolder('ohara_SBSM2_10.7mm_internal_001'), u.um)
         r = Bandpass.zero()
         te = TransmissiveElement(transmittance=t, reflectance=r)
         return te
@@ -573,6 +573,34 @@ class GlassesCatalog():
 
     @classmethod
     @set_element_id_from_method
+    def ohara_SFPM2_7mm_internal_001(cls):
+        '''
+        Ohara S-FPM2 substrate of 7 mm thickness.
+        Transmittance is internal.
+        Data extrapolated from 6 mm curves.
+        '''
+        orig=cls.ohara_SFPM2_6mm_internal_001()
+        wv = orig.waveset
+        t2 = internal_transmittance_calculator(6, 7, orig.transmittance(wv))
+        t = SpectralElement(
+            Empirical1D, points=wv,
+            lookup_table=t2)
+        r = Bandpass.zero()
+        te = TransmissiveElement(reflectance=r, transmittance=t)
+        return te
+
+        
+        
+        t = RestoreTransmissiveElements.restore_transmittance_from_dat(
+            cls._GlassesFolder('ohara_SFPM2_6mm_internal_001'), u.um)
+        r = Bandpass.zero()
+        te = TransmissiveElement(transmittance=t, reflectance=r)
+        return te
+
+
+
+    @classmethod
+    @set_element_id_from_method
     def ohara_SLAH96_10_5mm_internal_001(cls):
         '''
         Ohara S-LAH96 substrate of 10.5 mm thickness.
@@ -590,16 +618,13 @@ class GlassesCatalog():
     @set_element_id_from_method
     def ohara_SNBH56_5_8mm_internal_001(cls):
         '''
-        Ohara S-NBH56 substrate of 9.9 mm thickness.
+        Ohara S-NBH56 substrate of 5.8 mm thickness.
         Transmittance is internal.
-        Data from RefractiveInfo website. 
+        Data extrapolated from 9.9 mm curves.
         '''
         orig = cls.ohara_SNBH56_9_9mm_internal_001()
         wv = orig.waveset
-        t1 = orig.transmittance(wv)
-        l1 = 9.9
-        l2 = 5.8
-        t2 = internal_transmittance_calculator(l1, l2, t1)
+        t2 = internal_transmittance_calculator(9.9, 5.8, orig.transmittance(wv))
         t = SpectralElement(
             Empirical1D, points=wv,
             lookup_table=t2)
