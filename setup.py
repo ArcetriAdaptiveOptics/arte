@@ -84,7 +84,10 @@ setup(name=NAME,
                 'arte.utils',
                 ],
       package_data={
-          'arte': ['data/*'],
+            'arte': [
+                'data/*',
+                'data/**/*',
+            ],
       },
       python_requires='>=3.8.0',
       install_requires=["numpy>1.17",
