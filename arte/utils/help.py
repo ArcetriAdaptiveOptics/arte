@@ -146,8 +146,9 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
 
         items = [k for k in dir(self) if k not in properties]
 
-        methods = {k: getattr(self, k) for k in items if callable(getattr(self, k))}
-        members = {k: getattr(self, k) for k in items if not callable(getattr(self, k))}
+        items_with_values = [(k, getattr(self, k)) for k in items]
+        methods = {k: v for k, v in items_with_values if callable(v)}
+        members = {k: v for k, v in items_with_values if not callable(v)}
         methods.update(properties)
 
         methods = {k: v for k, v in methods.items() if _is_public_method(k) \
@@ -190,9 +191,12 @@ def add_help(cls=None, *, help_function='help', classmethod=False):
     def decorate(cls):
         setattr(cls, HIDDEN_HELP, False)  # Set attr but do not define a string
         if classmethod:
-            func = partial(help, self=cls())
-            func.__name__ = help.__name__
-            setattr(cls, help_function, hide_from_help(func))
+            # Expose a class-level help that calls instance help without binding issues
+            def _class_help(search='', prefix='', __cls=cls):
+                return help(__cls(), search=search, prefix=prefix)
+            _class_help.__name__ = help.__name__
+            # Hide from recursive listing and assign as staticmethod to avoid FutureWarning
+            setattr(cls, help_function, staticmethod(hide_from_help(_class_help)))
         else:
             setattr(cls, help_function, hide_from_help(help))
         return cls

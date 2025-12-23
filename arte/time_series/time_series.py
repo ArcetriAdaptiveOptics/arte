@@ -172,17 +172,26 @@ class TimeSeries(metaclass=abc.ABCMeta):
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def time_median(self, *args, times=None, **kwargs):
         '''Median over time for each series'''
-        return np.median(self.get_data(*args, times=times, **kwargs), axis=0)
+        data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.ma.median(data, axis=0)
+        return np.median(data, axis=0)
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def time_std(self, *args, times=None, **kwargs):
         '''Standard deviation over time for each series'''
-        return np.std(self.get_data(*args, times=times, **kwargs), axis=0)
+        data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.ma.std(data, axis=0)
+        return np.std(data, axis=0)
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def time_average(self, *args, times=None, **kwargs):
         '''Average value over time for each series'''
-        return np.mean(self.get_data(*args, times=times, **kwargs), axis=0)
+        data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.ma.mean(data, axis=0)
+        return np.mean(data, axis=0)
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def time_rms(self, *args, times=None, **kwargs):
@@ -195,24 +204,32 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def ensemble_average(self, *args, times=None, **kwargs):
         '''Average across series at each sampling time'''
         data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.ma.mean(data, axis=self._data_sample_axes(data))
         return np.mean(data, axis=self._data_sample_axes(data))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_std(self, *args, times=None, **kwargs):
         '''Standard deviation across series at each sampling time'''
         data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.ma.std(data, axis=self._data_sample_axes(data))
         return np.std(data, axis=self._data_sample_axes(data))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_median(self, *args, times=None, **kwargs):
         '''Median across series at each sampling time'''
         data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.ma.median(data, axis=self._data_sample_axes(data))
         return np.median(data, axis=self._data_sample_axes(data))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_rms(self, *args, times=None, **kwargs):
         '''Root-Mean-Square across series at each sampling time'''
         x = self.get_data(*args, times=times, **kwargs)
+        if isinstance(x, np.ma.MaskedArray):
+            return np.sqrt(np.ma.mean(np.abs(x)**2, axis=1))
         return np.sqrt(np.mean(np.abs(x)**2, axis=1))
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')

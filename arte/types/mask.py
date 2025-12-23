@@ -207,7 +207,7 @@ class CircularMask(BaseMask):
                 centerYX = np.roll(im.centroid(), 1)
                 radius = again * np.min(im.semiAxes())
                 circularMask = CircularMask(shape, radius, centerYX)
-                if np.in1d(circularMask.in_mask_indices(),
+                if np.isin(circularMask.in_mask_indices(),
                            np.argwhere(maskedArray.mask.flatten() == False)).all():
                     again = False
                 if radius < 1:
@@ -289,7 +289,7 @@ class CircularMask(BaseMask):
         else:
             raise ValueError("Unknown method %s" % method)
 
-        if not np.in1d(circularMask.in_mask_indices(),
+        if not np.isin(circularMask.in_mask_indices(),
                        np.argwhere(maskedArray.mask.flatten() == False)).all():
             warnings.warn(
                 "The generated CircularMask is not completely included in the passed masked array")

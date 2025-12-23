@@ -340,11 +340,12 @@ class Cn2Profile(object):
             theta0 (float): isoplanatic angle at specified lambda and zenith
                 angle [arcsec]
         '''
-        return (2.914 * self._airmass ** (8. / 3) * 
-                (2 * np.pi / self._lambda) ** 2 * 
-                np.sum(self._layersJs * 
-                       self._layersAltitudeInMeterAtZenith ** (5. / 3))
-                ) ** (-3. / 5) * RAD2ARCSEC * u.arcsec
+        with np.errstate(divide='ignore', invalid='ignore'):
+            return (2.914 * self._airmass ** (8. / 3) * 
+                    (2 * np.pi / self._lambda) ** 2 * 
+                    np.sum(self._layersJs * 
+                           self._layersAltitudeInMeterAtZenith ** (5. / 3))
+                    ) ** (-3. / 5) * RAD2ARCSEC * u.arcsec
 
     def tau0(self):
         '''

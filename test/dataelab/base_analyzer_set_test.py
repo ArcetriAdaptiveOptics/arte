@@ -27,7 +27,7 @@ class TestFileWalker(AbstractFileNameWalker):
             tags += list(filter(lambda x: x >=tag_start and x<tag_stop, lst))
         return tags
 
-class TestAnalyzer(BaseAnalyzer):
+class DummyAnalyzer(BaseAnalyzer):
     def __init__(self, snapshot_tag, recalc=False):
         super().__init__(snapshot_tag, recalc=recalc)
         self._counter = 0
@@ -41,62 +41,62 @@ class TestAnalyzer(BaseAnalyzer):
         return self._counter
 
 
-class TestAnalyzerSet(BaseAnalyzerSet):
+class DummyAnalyzerSet(BaseAnalyzerSet):
     def __init__(self, first, last=None, recalc=False):
         super().__init__(first, last, recalc=recalc,
-                         file_walker=TestFileWalker(), analyzer_type=TestAnalyzer)
+                         file_walker=TestFileWalker(), analyzer_type=DummyAnalyzer)
 
 
 class BaseAnalyzerSetTest(unittest.TestCase):
     def test_creation_fromto(self):
-        set = TestAnalyzerSet('20240404_024500', '20240404_024501')
+        set = DummyAnalyzerSet('20240404_024500', '20240404_024501')
         assert len(set) == 1
 
     def test_creation_single(self):
-        set = TestAnalyzerSet('20240404_024500')
+        set = DummyAnalyzerSet('20240404_024500')
         assert len(set) == 1
 
     def test_creation_recalc(self):
-        set = TestAnalyzerSet('20240404_024500', recalc=True)
+        set = DummyAnalyzerSet('20240404_024500', recalc=True)
         assert len(set) == 1
 
     def test_creation_list(self):
-        set = TestAnalyzerSet(['20240404_024500'])
+        set = DummyAnalyzerSet(['20240404_024500'])
         assert len(set) == 1
 
     def test_creation_list_notfound(self):
-        set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'])
+        set = DummyAnalyzerSet(['20240404_024500', '20240404_0245002'])
         assert len(set) == 2
 
     def test_creation_invalid(self):
-        set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'])
+        set = DummyAnalyzerSet(['20240404_024500', '20240404_0245002'])
         set.remove_invalids()
         assert len(set) == 1
 
     def test_attribute(self):
-        set = TestAnalyzerSet('20240404_024500', '20240404_024501')
+        set = DummyAnalyzerSet('20240404_024500', '20240404_024501')
         assert len(set.snapshot_tag()) == 1
 
     def test_invalid_attribute(self):
-        set = TestAnalyzerSet('20240404_024500', '20240404_024501')
+        set = DummyAnalyzerSet('20240404_024500', '20240404_024501')
         with self.assertRaises(AttributeError):
             _ = set.foo()
 
     def test_get(self):
-        set = TestAnalyzerSet('20240404_024500')
-        ee = TestAnalyzer.get('20240404_024500')
+        set = DummyAnalyzerSet('20240404_024500')
+        ee = DummyAnalyzer.get('20240404_024500')
         assert id(set['20240404_024500']) == id(ee)
 
     def test_for(self):
-        set = TestAnalyzerSet(['20240404_024500', '20240404_0245002'])
+        set = DummyAnalyzerSet(['20240404_024500', '20240404_0245002'])
         for ee in set:
             _ = ee.snapshot_tag()
 
     def test_recalc_works(self):
-        set = TestAnalyzerSet(['20240404_024500'], recalc=True)
+        set = DummyAnalyzerSet(['20240404_024500'], recalc=True)
         a = set.a_method()
         b = set.a_method()
-        set = TestAnalyzerSet(['20240404_024500'], recalc=True)
+        set = DummyAnalyzerSet(['20240404_024500'], recalc=True)
         c = set.a_method()
         assert a == b
         for aa, cc, in zip(a,c):
