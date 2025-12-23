@@ -453,7 +453,7 @@ class PollingTestTask(object):
                     self._timeoutSec, self._probe.errorMessage()))
 
 
-class TestSuiteTask(object):
+class SuiteTask(object):
 
     def __init__(self, testTasks):
         self._testTasks = testTasks

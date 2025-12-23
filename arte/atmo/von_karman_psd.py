@@ -39,7 +39,7 @@ class VonKarmanPsd():
     >>> freqs = np.logspace(-8, 4, 1000)
     >>> bess = scipy.special.jv(1, 2*np.pi*R*freqs)
     >>> psdPistonRem = psd.spatial_psd(freqs) * (1 - (bess/(np.pi*R*freqs))**2)
-    >>> varInRad2 = np.trapz(psdPistonRem*2*np.pi*freqs, freqs)
+    >>> varInRad2 = np.trapezoid(psdPistonRem*2*np.pi*freqs, freqs)
     >>> varInRad2Noll = 1.029*(2*R/r0)**(5./3)
     >>> print("%g %g" % (varInRad2, varInRad2Noll))
     2214.36 2216.91
@@ -142,6 +142,6 @@ def rms(diameter: u.m,
     bess = jv(1, 2 * np.pi * R * freqs)
     psdTotal = psd.spatial_psd(freqs)
     psdPistonRem = psdTotal * (1 - (bess / (np.pi * R * freqs)) ** 2)
-    varInRad2 = np.trapz(psdPistonRem * 2 * np.pi * freqs, freqs)
+    varInRad2 = np.trapezoid(psdPistonRem * 2 * np.pi * freqs, freqs)
     return np.sqrt(varInRad2) * wl / 2 / np.pi * u.nm
 

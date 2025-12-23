@@ -320,7 +320,7 @@ class TransmissiveElement():
         values = spectral_el(wv_band_dense)
         
         # Compute mean using trapezoidal integration
-        average = np.trapz(values.value, wv_band_dense.to(wv.unit).value) / \
+        average = np.trapezoid(values.value, wv_band_dense.to(wv.unit).value) / \
                 (wv_max - wv_min).to(wv.unit).value
         
         return wv_min, wv_max, average

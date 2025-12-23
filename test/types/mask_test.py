@@ -158,7 +158,7 @@ class MaskTest(unittest.TestCase):
                                         mask=aSquareMask.astype(bool))
         retrievedMask= CircularMask.fromMaskedArray(maskedArray)
         self.assertTrue(
-            np.in1d(retrievedMask.in_mask_indices(),
+            np.isin(retrievedMask.in_mask_indices(),
                     np.argwhere(aSquareMask.flatten() == False)).all())
 
 

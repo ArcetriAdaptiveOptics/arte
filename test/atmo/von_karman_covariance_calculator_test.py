@@ -130,7 +130,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
 
         phaseCov = vk.getPhaseCovariance().value
         phaseCPSD = vk.getPhaseCPSD(temporal_freqs).value
-        phaseCovFromCPSD = np.trapz(2 * np.real(phaseCPSD), temporal_freqs)
+        phaseCovFromCPSD = np.trapezoid(2 * np.real(phaseCPSD), temporal_freqs)
         np.testing.assert_allclose(phaseCovFromCPSD, phaseCov, rtol=0.01)
 
     def testIntegrationOfZernikeCPSDWithZernikeCovariance(self):
@@ -155,7 +155,7 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
         cpsdMatrix = 2 * np.real(vkCpsd.getZernikeCPSD(j, k, temporal_freqs
                                                        ).value)
         covarianceMatrix = vkCov.getZernikeCovariance(j, k).value
-        covFromCPSD = np.trapz(cpsdMatrix, temporal_freqs)
+        covFromCPSD = np.trapezoid(cpsdMatrix, temporal_freqs)
         np.testing.assert_allclose(
             covFromCPSD, covarianceMatrix, rtol=0.01, atol=1e-3)
 
@@ -198,10 +198,10 @@ class VonKarmanCovarianceCalculatorTest(unittest.TestCase):
             source, source, aperture, aperture, cn2, spatial_freqs)
 
         cpsd = vk.getZernikeCPSD(j, k, temporal_freqs)
-        cov_from_cpsd = np.trapz(2 * np.real(cpsd), temporal_freqs).value
+        cov_from_cpsd = np.trapezoid(2 * np.real(cpsd), temporal_freqs).value
 
         general_cpsd = vk.getGeneralZernikeCPSD(j, k, temporal_freqs)
-        cov_from_general_cpsd = np.trapz(general_cpsd, temporal_freqs).value
+        cov_from_general_cpsd = np.trapezoid(general_cpsd, temporal_freqs).value
 
         np.testing.assert_allclose(
             cov_from_cpsd, cov_from_general_cpsd, atol=1e-14)

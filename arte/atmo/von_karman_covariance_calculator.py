@@ -316,7 +316,7 @@ class VonKarmanSpatioTemporalCovariance():
         if self._xp == cp:
             zernikeIntegrand = self._xp.asnumpy(zernikeIntegrand)
             f = self._xp.asnumpy(f)
-        zernikeCovOneLayer = np.trapz(zernikeIntegrand, f)
+        zernikeCovOneLayer = np.trapezoid(zernikeIntegrand, f)
         return zernikeCovOneLayer
 
     def _computeZernikeCovarianceAllLayers(self, j, k):
@@ -392,7 +392,7 @@ class VonKarmanSpatioTemporalCovariance():
 
         phaseIntegrand = 2 * np.pi * self._spat_freqs * psd * b0Phase * (
             self._b1Phase - self._b2Phase * self._b3Phase)
-        phaseCovOneLayer = np.trapz(phaseIntegrand, self._spat_freqs)
+        phaseCovOneLayer = np.trapezoid(phaseIntegrand, self._spat_freqs)
         return phaseCovOneLayer
 
     def _getZernikeCPSDAllTemporalFrequenciesOneLayer(self, j, k, nLayer,
@@ -400,7 +400,7 @@ class VonKarmanSpatioTemporalCovariance():
 
         integrand, fPerp = self.integrandOfZernikeCPSD(j, k, nLayer,
                                                        temp_freqs)
-        cpsdZernikeOneLayer = np.trapz(integrand, fPerp, axis=0)
+        cpsdZernikeOneLayer = np.trapezoid(integrand, fPerp, axis=0)
         return cpsdZernikeOneLayer
 
     def _getZernikeCPSDAllLayers(self, j, k, temp_freqs):
@@ -417,7 +417,7 @@ class VonKarmanSpatioTemporalCovariance():
 
         integrand, fPerp = self.integrandOfGeneralZernikeCPSD(j, k, nLayer,
                                                               temp_freqs)
-        cpsdGeneralZernikeOneLayer = np.trapz(integrand, fPerp, axis=0)
+        cpsdGeneralZernikeOneLayer = np.trapezoid(integrand, fPerp, axis=0)
         return cpsdGeneralZernikeOneLayer
 
     def _getGeneralZernikeCPSDAllLayers(self, j, k, temp_freqs):
@@ -430,13 +430,13 @@ class VonKarmanSpatioTemporalCovariance():
 
     def _getPhaseCPSDAllTemporalFrequenciesOneLayer(self, nLayer, t_freqs):
         func, fPerp = self.integrandOfPhaseCPSD(nLayer, t_freqs)
-        cpsdPhaseOneLayer = np.trapz(func, fPerp, axis=0)
+        cpsdPhaseOneLayer = np.trapezoid(func, fPerp, axis=0)
         return cpsdPhaseOneLayer
 
     def _getGeneralPhaseCPSDAllTemporalFrequenciesOneLayer(self, nLayer,
                                                            t_freqs):
         func, fPerp = self.integrandOfGeneralPhaseCPSD(nLayer, t_freqs)
-        genCpsdPhaseOneLayer = np.trapz(func, fPerp, axis=0)
+        genCpsdPhaseOneLayer = np.trapezoid(func, fPerp, axis=0)
 #         inte = self.integrandOfGeneralPhaseCPSD(nLayer, t_freqs)(
 #             self._spat_freqs)
 #         genCpsdPhaseOneLayer, _ = integrate.quad_vec(inte,
