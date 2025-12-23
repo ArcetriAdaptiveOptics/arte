@@ -197,6 +197,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def time_rms(self, *args, times=None, **kwargs):
         '''Root-Mean-Square value over time for each series'''
         x = self.get_data(*args, times=times, **kwargs)
+        if isinstance(x, np.ma.MaskedArray):
+            return np.sqrt(np.ma.mean(np.abs(x)**2, axis=0))
         return np.sqrt(np.mean(np.abs(x)**2, axis=0))
 
 
@@ -270,6 +272,10 @@ class TimeSeries(metaclass=abc.ABCMeta):
 
         if isinstance(data, NotAvailable):
             raise Exception('Cannot calculate power: data is not available')
+        
+        # Convert MaskedArray to regular array for scipy.signal.welch compatibility
+        if isinstance(data, np.ma.MaskedArray):
+            data = data.filled(0)
         
         delta_time = self.delta_time
         if isinstance(delta_time, u.Quantity):
