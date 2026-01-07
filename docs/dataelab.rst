@@ -25,6 +25,18 @@ following characteristics:
 * Typically hundreds to thousands of samples per time series
 * Data stored in numpy, FITS, or other numeric formats
 
+Tutorial
+--------
+
+See the :doc:`Jupyter notebook tutorial <notebook/dataelab/dataelab_example>` for a
+complete working example showing how to:
+
+* Generate synthetic time series data
+* Create custom FileWalker and Analyzer classes
+* Load and analyze data
+* Compute statistics and power spectral densities
+* Visualize results
+
 Key Features
 ------------
 
