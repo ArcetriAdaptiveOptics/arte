@@ -43,8 +43,35 @@ class MultiTimeSeries(TimeSeries):
                           for v in self._series])
         
     def is_homogeneous(self, *args, **kwargs):
-        '''Returns True if all selected series have the same
-        :py:attr:`~arte.time_series.time_series.TimeSeries.delta_time`
+        '''
+        Check if selected series have compatible sampling rates.
+        
+        Parameters
+        ----------
+        *args, **kwargs
+            Passed to :meth:`get_index_of` for series selection.
+        
+        Returns
+        -------
+        bool
+            True if all selected series have identical `delta_time`,
+            False otherwise.
+        
+        Notes
+        -----
+        This check is necessary before calling ensemble-wise operations
+        like :meth:`ensemble_average` or :meth:`ensemble_std`, which
+        require uniform time sampling across all series.
+        
+        Examples
+        --------
+        >>> multi = MultiTimeSeries(series_1khz, series_500hz)
+        >>> multi.is_homogeneous()  # False - different sampling rates
+        False
+        >>> 
+        >>> multi2 = MultiTimeSeries(series1_1khz, series2_1khz)
+        >>> multi2.is_homogeneous()  # True - same sampling
+        True
         '''
         dt = [x.value for x in self.delta_times(*args, **kwargs)]
         return len(set(dt)) == 1
