@@ -3,6 +3,15 @@ Tutorial
 Stub for tutorials. Add Jupyter notebooks here
 
 
+Dataelab
+--------
+
+.. toctree::
+    :maxdepth: 4
+
+    notebook/dataelab/dataelab_example
+
+
 Atmo
 ----
 
