@@ -1,247 +1,65 @@
-utils
-=====================
+Utilities
+=========
 
-Submodules
-----------
+Overview
+--------
 
-arte.utils.capture_output module
---------------------------------
+The **utils** module provides a collection of general-purpose utilities used throughout
+the arte library:
 
-.. automodule:: arte.utils.capture_output
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Mathematical Tools:**
 
-arte.utils.circular_buffer module
-----------------------------------
+- **discrete_fourier_transform**: FFT operations and Fourier analysis
+- **modal_decomposer**: Decomposition of 2D fields into orthogonal modes
+- **radial_profile**: Extract radial profiles from 2D arrays
+- **rebin**: Array rebinning and downsampling
+- **zernike_generator**: Generate Zernike polynomials
+- **zernike_projection_on_subaperture**: Project Zernike modes on subapertures
+- **math**: General mathematical utilities
+- **image_moments**: Compute image moments and centroids
+- **generalized_fitting_error**: Fitting error calculations for adaptive optics
+- **marechal**: Strehl ratio and Maréchal approximation
+- **noise_propagation**: Propagate uncertainties through calculations
+- **quadratic_sum**: Quadratic sum utilities for error propagation
 
-.. automodule:: arte.utils.circular_buffer
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Data Structures:**
 
-arte.utils.compareIDL module
-------------------------------
+- **circular_buffer**: Fixed-size circular buffer for streaming data
+- **shared_array**: Shared memory arrays for multiprocessing
 
-.. automodule:: arte.utils.compareIDL
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**I/O and Logging:**
 
-arte.utils.constants module
-------------------------------
+- **logger**: Logging utilities for simulations and analysis
+- **capture_output**: Capture and redirect stdout/stderr
+- **tabular_report**: Create formatted tabular reports
 
-.. automodule:: arte.utils.constants
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Package Management:**
 
-arte.utils.decorator module
-------------------------------
+- **package_data**: Access package data files
+- **locate**: Locate files and resources
+- **help**: Enhanced help system and documentation access
 
-.. automodule:: arte.utils.decorator
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Analysis Tools:**
 
-arte.utils.discrete\_fourier\_transform module
--------------------------------------------------
+- **compareIDL**: Compare results with IDL implementations
+- **footprint_geometry**: Geometric footprint calculations
+- **paste**: Array pasting utilities
+- **unit_checker**: Check physical unit consistency
 
-.. automodule:: arte.utils.discrete_fourier_transform
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Utilities:**
 
-arte.utils.executor module
------------------------------
+- **decorator**: Useful decorators for caching, timing, etc.
+- **executor**: Execute external programs
+- **iterators**: Custom iterators
+- **timestamp**: Time stamping utilities for data tracking
+- **constants**: Physical and mathematical constants
 
-.. automodule:: arte.utils.executor
-   :members:
-   :undoc-members:
-   :show-inheritance:
+API Reference
+-------------
 
-arte.utils.footprint\_geometry module
-----------------------------------------
+For detailed API documentation of all submodules, see:
 
-.. automodule:: arte.utils.footprint_geometry
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 1
 
-arte.utils.generalized\_fitting\_error module
-------------------------------------------------
-
-.. automodule:: arte.utils.generalized_fitting_error
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.help module
-----------------------
-
-.. automodule:: arte.utils.help
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-arte.utils.image\_moments module
------------------------------------
-
-.. automodule:: arte.utils.image_moments
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.iterators module
--------------------------------
-
-.. automodule:: arte.utils.iterators
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.locate module
-------------------------------
-
-.. automodule:: arte.utils.locate
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.logger module
----------------------------
-
-.. automodule:: arte.utils.logger
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.marechal module
-----------------------------------
-
-.. automodule:: arte.utils.marechal
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.math module
--------------------------
-
-.. automodule:: arte.utils.math
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.modal\_decomposer module
---------------------------------------
-
-.. automodule:: arte.utils.modal_decomposer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.noise\_propagation module
----------------------------------------
-
-.. automodule:: arte.utils.noise_propagation
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.package\_data module
-----------------------------------
-
-.. automodule:: arte.utils.package_data
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.paste module
-----------------------------------
-
-.. automodule:: arte.utils.paste
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.quadratic\_sum module
------------------------------------
-
-.. automodule:: arte.utils.quadratic_sum
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.radial\_profile module
-------------------------------------
-
-.. automodule:: arte.utils.radial_profile
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.rebin module
---------------------------
-
-.. automodule:: arte.utils.rebin
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.shared_array module
-------------------------------
-
-.. automodule:: arte.utils.shared_array
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.timestamp module
-------------------------------
-
-.. automodule:: arte.utils.timestamp
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.tabular_report module
---------------------------------
-
-.. automodule:: arte.utils.tabular_report
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.unit_checker module
---------------------------------
-
-.. automodule:: arte.utils.unit_checker
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.zernike\_generator module
----------------------------------------
-
-.. automodule:: arte.utils.zernike_generator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.utils.zernike\_projection\_on\_subaperture module
----------------------------------------------------------
-
-.. automodule:: arte.utils.zernike_projection_on_subaperture
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: arte.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   utils_submodules

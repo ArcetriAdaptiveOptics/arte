@@ -1,24 +1,18 @@
-astro
-=====
+Astronomy Module (`arte.astro`)
+================================
 
-Module contents
----------------
+Overview
+--------
 
-.. automodule:: arte.astro
-   :members:
-   :undoc-members:
-   :show-inheritance:
+The `arte.astro` module provides astronomical utilities for adaptive optics
+applications, including telescope definitions and related calculations.
 
+API Reference
+-------------
 
-Submodules
-----------
+For detailed API documentation, see:
 
-arte.astro.telescopes module
-----------------------------
+.. toctree::
+   :maxdepth: 1
 
-.. automodule:: arte.astro.telescopes
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
+   astro_submodules

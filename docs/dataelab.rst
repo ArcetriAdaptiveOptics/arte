@@ -1,5 +1,13 @@
-Data Elaboration Module (`arte.dataelab`)
+Data Analysis Framework (`arte.dataelab`)
 ==========================================
+
+.. admonition:: Why "dataelab"?
+   :class: note
+
+   The module name `dataelab` comes from the Italian *"elaborazione dati"*
+   (data elaboration/processing), reflecting its Arcetri origins. While the package name preserves
+   this heritage, the documentation uses the more standard English term
+   "Data Analysis Framework".
 
 Overview
 --------

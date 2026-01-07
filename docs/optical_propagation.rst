@@ -1,51 +1,18 @@
-Optical propagation module (`arte.optical_propagation`)
-=======================================================
+Optical Propagation (`arte.optical_propagation`)
+=================================================
 
-Introduction
-------------
+Overview
+--------
 
 `arte.optical_propagation` provides tools for optical wave propagation
 simulation and coronagraph modeling.
 
-Submodules
-----------
+API Reference
+-------------
 
-abstract\_coronograph module
------------------------------
+For detailed API documentation of all submodules, see:
 
-.. automodule:: arte.optical_propagation.abstract_coronograph
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 1
 
-four\_quadrant\_coronograph module
------------------------------------
-
-.. automodule:: arte.optical_propagation.four_quadrant_coronograph
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-lyot\_coronograph module
--------------------------
-
-.. automodule:: arte.optical_propagation.lyot_coronograph
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-perfect\_coronograph module
-----------------------------
-
-.. automodule:: arte.optical_propagation.perfect_coronograph
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-vortex\_coronograph module
----------------------------
-
-.. automodule:: arte.optical_propagation.vortex_coronograph
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   optical_propagation_submodules

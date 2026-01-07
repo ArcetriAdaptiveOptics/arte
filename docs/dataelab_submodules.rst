@@ -1,5 +1,5 @@
-Data Elaboration API Reference
-===============================
+Data Analysis Framework API Reference
+======================================
 
 This page lists all the submodules and classes in `arte.dataelab`.
 

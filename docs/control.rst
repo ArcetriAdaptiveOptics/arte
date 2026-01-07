@@ -1,19 +1,18 @@
-Control systems module (`arte.control`)
-=======================================
+Control Systems (`arte.control`)
+=================================
 
-Introduction
-------------
+Overview
+--------
 
 `arte.control` provides tools for analysis and design of control systems,
 particularly for adaptive optics applications.
 
-Submodules
-----------
+API Reference
+-------------
 
-transfer\_function module
--------------------------
+For detailed API documentation, see:
 
-.. automodule:: arte.control.transfer_function
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 1
+
+   control_submodules

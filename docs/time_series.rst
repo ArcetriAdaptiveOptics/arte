@@ -1,38 +1,31 @@
-time_series
-===========
+Time Series Analysis
+====================
 
-Submodules
-----------
+Overview
+--------
 
-arte.time_series.time_series module
------------------------------------
+The **time_series** module provides classes and functions for analyzing temporal data,
+particularly useful for adaptive optics telemetry and signal processing:
 
-.. automodule:: arte.time_series.time_series
-   :members:
-   :undoc-members:
-   :show-inheritance:
+- **TimeSeries**: Container class for temporal data with time stamps, units, and metadata
+- **MultiTimeSeries**: Handle multiple synchronized time series
+- **Indexer**: Index and access time series data efficiently
+- **PSD Computer**: Power spectral density analysis and temporal frequency analysis
 
-arte.time_series.multi_time_series module
------------------------------------------
+These tools support:
 
-.. automodule:: arte.time_series.multi_time_series
-   :members:
-   :undoc-members:
-   :show-inheritance:
+- Data storage with proper time stamps and physical units
+- Resampling and interpolation
+- Statistical analysis (mean, variance, temporal structure)
+- Frequency domain analysis
+- Data merging and synchronization
 
-arte.time_series.indexer module
--------------------------------
+API Reference
+-------------
 
-.. automodule:: arte.time_series.indexer
-   :members:
-   :undoc-members:
-   :show-inheritance:
+For detailed API documentation of all submodules, see:
 
+.. toctree::
+   :maxdepth: 1
 
-Module contents
----------------
-
-.. automodule:: arte.misc
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   time_series_submodules

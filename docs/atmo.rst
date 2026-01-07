@@ -17,47 +17,12 @@ Covariances and cross-power-spectral-densities of Von Karman turbulence
 are computed in :func:`~arte.atmo.von_karman_covariance_calculator`   
 
 
-Submodules
-----------
+API Reference
+-------------
 
-cn2\_profile module
---------------------------------
+For detailed API documentation of all submodules, see:
 
-.. automodule:: arte.atmo.cn2_profile
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 1
 
-phase\_screen\_generator module
---------------------------------------------
-
-.. automodule:: arte.atmo.phase_screen_generator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-utils module
--------------------------
-
-.. automodule:: arte.atmo.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-von\_karman\_psd module
--------------------------------------
-
-.. automodule:: arte.atmo.von_karman_psd
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-von\_karman\_covariance\_calculator module
--------------------------------------------------------
-
-.. automodule:: arte.atmo.von_karman_covariance_calculator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
+   atmo_submodules

@@ -1,94 +1,40 @@
-types
-=====================
+Data Types
+==========
 
-Submodules
-----------
+Overview
+--------
 
-arte.types.aperture module
------------------------------
+The **types** module defines specialized data types used throughout the arte library.
+These classes provide structured representations of optical and adaptive optics concepts:
 
-.. automodule:: arte.types.aperture
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Geometric Types:**
 
-arte.types.domainxy module
------------------------------
+- **Aperture**: Telescope pupil definitions (circular, annular, segmented)
+- **Mask**: Binary masks for pupil and image plane operations
+- **DomainXY**: 2D coordinate systems and spatial domains
+- **RegionOfInterest**: Define subregions for analysis
 
-.. automodule:: arte.types.domainxy
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Wavefront Representations:**
 
-arte.types.fisba\_measure module
------------------------------------
+- **Wavefront**: Phase maps with physical units and metadata
+- **ZernikeCoefficients**: Modal decomposition in Zernike basis
+- **Slopes**: Wavefront sensor measurements (local gradients)
+- **FisbaMeasure**: FISBA interferometer measurements
 
-.. automodule:: arte.types.fisba_measure
-   :members:
-   :undoc-members:
-   :show-inheritance:
+**Control and Calibration:**
 
-arte.types.guide\_source module
-----------------------------------
+- **GuideSource**: Natural or laser guide star definitions
+- **ScalarBidimensionalFunction**: Generic 2D scalar fields
 
-.. automodule:: arte.types.guide_source
-   :members:
-   :undoc-members:
-   :show-inheritance:
+These types ensure consistency, proper unit handling, and clear interfaces throughout
+the adaptive optics simulation and analysis pipeline.
 
-arte.types.mask module
--------------------------
+API Reference
+-------------
 
-.. automodule:: arte.types.mask
-   :members:
-   :undoc-members:
-   :show-inheritance:
+For detailed API documentation of all submodules, see:
 
-arte.types.region\_of\_interest module
------------------------------------------
+.. toctree::
+   :maxdepth: 1
 
-.. automodule:: arte.types.region_of_interest
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.types.scalar\_bidimensional\_function module
-----------------------------------------------------
-
-.. automodule:: arte.types.scalar_bidimensional_function
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.types.slopes module
----------------------------
-
-.. automodule:: arte.types.slopes
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.types.wavefront module
-------------------------------
-
-.. automodule:: arte.types.wavefront
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.types.zernike\_coefficients module
-------------------------------------------
-
-.. automodule:: arte.types.zernike_coefficients
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: arte.types
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   types_submodules
