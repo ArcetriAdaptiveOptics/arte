@@ -20,16 +20,73 @@ class TimeSeriesException(Exception):
 @add_help
 class TimeSeries(metaclass=abc.ABCMeta):
     '''
-    Base class for implementing operations on data representing time series.
+    Base class for time series analysis of adaptive optics telemetry data.
 
-    Derived classes must implement a `_get_not_indexed_data()` method
-    that returns a numpy array of shape (n_time_elements, n_ensemble_elements).
-
-    Derived classes must also implement a `get_index_of()` method to add
-    ensemble indexing with arbitrary *args and **kwargs parameters
-    (e.g. returning of partial subset based on indexes or names).
-
+    This class provides a framework for analyzing time-evolving data where multiple
+    "sister" quantities (ensemble elements) are sampled simultaneously over time.
+    Examples include:
+    
+    - Camera pixel intensities evolving over multiple frames
+    - Deformable mirror actuator commands over time
+    - Wavefront sensor slopes for multiple subapertures
+    - Modal coefficients (Zernike, KL modes) during AO operation
+    
+    The data structure is always `(n_time_samples, ...ensemble_shape...)` where
+    the first dimension is time and remaining dimensions define the ensemble geometry.
+    
+    Subclasses must implement:
+    
+    - :meth:`_get_not_indexed_data`: Return raw data as numpy array with time as first axis
+    - :meth:`get_index_of`: Define ensemble indexing logic (select specific elements)
+    
+    The class supports:
+    
+    - Time-domain statistics (mean, std, rms over time for each ensemble element)
+    - Ensemble statistics (mean, std, rms across ensemble at each time step)
+    - Power spectral density analysis with Welch method
+    - Time-based filtering (analyze specific time intervals)
+    - Physical units support via astropy.units
+    - Masked arrays for missing/invalid data (e.g., points outside circular pupil)
+    
+    Parameters
+    ----------
+    axes : sequence of str, optional
+        Named axes for the ensemble dimensions, enabling axis transposition.
+        If None, no axis reordering is possible.
+    
+    Notes
+    -----
+    MaskedArray support: Use `numpy.ma.MaskedArray` to handle missing data in the
+    ensemble dimension (e.g., wavefront defined only inside a circular pupil).
+    Temporal masking is possible but may cause issues with FFT-based operations
+    if sampling becomes non-uniform.
+    
     Originally implemented as part of the ARGOS codebase.
+    
+    See Also
+    --------
+    MultiTimeSeries : Combine multiple TimeSeries with different sampling rates
+    
+    Examples
+    --------
+    >>> class MyTimeSeries(TimeSeries):
+    ...     def __init__(self, data):
+    ...         super().__init__()
+    ...         self._data = data  # shape: (n_times, n_elements)
+    ...     
+    ...     def _get_not_indexed_data(self):
+    ...         return self._data
+    ...     
+    ...     def get_index_of(self, *args, **kwargs):
+    ...         if len(args) == 0:
+    ...             return None  # Return all elements
+    ...         return args[0]   # Return specific index
+    >>> 
+    >>> # Analyze DM commands for 1000 time steps, 100 actuators
+    >>> dm_commands = np.random.randn(1000, 100)
+    >>> ts = MyTimeSeries(dm_commands)
+    >>> rms_per_actuator = ts.time_rms()  # RMS over time for each actuator
+    >>> avg_command = ts.ensemble_average()  # Average across actuators at each time
     '''
 
     def __init__(self, axes=None):
@@ -66,7 +123,38 @@ class TimeSeries(metaclass=abc.ABCMeta):
                 raise TimeSeriesException('Cannot convert _get_time_vector() result to numpy array') from e
 
     def get_data(self, *args, times=None, axes=None, **kwargs):
-        '''Raw data as a matrix [time, series]'''
+        '''
+        Retrieve time series data with optional filtering and indexing.
+        
+        Parameters
+        ----------
+        *args, **kwargs
+            Passed to :meth:`get_index_of` for ensemble element selection.
+        times : sequence of 2 elements, optional
+            Time range `[start, stop]` for filtering. Can be None (no filtering),
+            or contain None elements for one-sided filtering.
+            Units must match the time vector if using astropy quantities.
+        axes : sequence of str, optional
+            Reorder axes to specified order. Requires axis names to be defined
+            during initialization.
+        
+        Returns
+        -------
+        ndarray
+            Data array with shape `(n_times, ...ensemble_shape...)` after
+            applying time filtering, ensemble indexing, and axis transposition.
+        
+        Examples
+        --------
+        >>> # Get all data
+        >>> data = ts.get_data()
+        >>> 
+        >>> # Get data for specific time range (closed-loop only)
+        >>> data = ts.get_data(times=[1.0 * u.s, 5.0 * u.s])
+        >>> 
+        >>> # Get data for specific ensemble elements
+        >>> data = ts.get_data(modes=[2, 3, 4])  # Assuming mode-based indexing
+        '''
 
         data = self._get_not_indexed_data()
         if times is not None:
@@ -237,7 +325,49 @@ class TimeSeries(metaclass=abc.ABCMeta):
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, *args, from_freq=None, to_freq=None,
               segment_factor=None, window='boxcar', **kwargs):
-        '''Power Spectral Density across specified series'''
+        '''
+        Compute Power Spectral Density using Welch's method.
+        
+        Parameters
+        ----------
+        *args, **kwargs
+            Passed to :meth:`get_index_of` for ensemble element selection.
+        from_freq : float, optional
+            Lower frequency bound for output. If None, starts from DC.
+        to_freq : float, optional
+            Upper frequency bound for output. If None, goes to Nyquist.
+        segment_factor : float, optional
+            Segment length factor for Welch method. Larger values give better
+            frequency resolution but worse variance. Default is 1.0 (one segment).
+        window : str, optional
+            Window function name for Welch method. Default is 'boxcar' (no windowing).
+            See scipy.signal.welch for available windows.
+        
+        Returns
+        -------
+        ndarray
+            Power spectral density with shape `(n_frequencies, ...ensemble_shape...)`.
+            Units are data_unit^2 * Hz if applicable.
+        
+        Notes
+        -----
+        The PSD is computed using scipy.signal.welch and normalized by frequency
+        bin width. Results are cached unless segment_factor or window changes.
+        
+        For MaskedArrays, masked values are filled with zeros before FFT computation.
+        
+        Examples
+        --------
+        >>> # Compute full PSD
+        >>> psd = ts.power()
+        >>> freq = ts.frequency()
+        >>> 
+        >>> # Analyze only low frequencies (< 100 Hz)
+        >>> psd = ts.power(from_freq=0, to_freq=100)
+        >>> 
+        >>> # Use Hanning window with 4 segments for variance reduction
+        >>> psd = ts.power(segment_factor=4, window='hann')
+        '''
 
         if segment_factor is None:
             if self._segment_factor is None:

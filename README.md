@@ -5,7 +5,17 @@ developed by the Arcetri Astrophysical Observatory's AO group.
 
 ## Documentation
 
-See readthedocs https://arte.readthedocs.io
+Online documentation: https://arte.readthedocs.io
+
+To build documentation locally:
+
+```bash
+cd docs
+pip install -r requirements.txt
+make html
+```
+
+See `docs/README.md` for more details.
 
 ## Installation
 __arte__ is tested on python 3.6+ only

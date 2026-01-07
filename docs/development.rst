@@ -24,12 +24,7 @@ Coding style
 
 More details at https://github.com/ArcetriAdaptiveOptics/arte/blob/master/arte/code_convention.py
 
-that is rendered like this:
-
-.. toctree::
-   :maxdepth: 1
-
-   code_convention
+See also :doc:`code_convention` for the full coding conventions reference.
 
 
 Developing guide
@@ -120,8 +115,20 @@ If the branch have been kept updated, no conflicts should arise during merge.
 After each push, github automatically runs all tests on a virtual machine.
 To see the result, click on the small icon next to the "Latest commit..."
 line on the right.
-Documentation at https://arte.readthedocs.io/en/latest/index.htm is also
+Documentation at https://arte.readthedocs.io/en/latest/index.html is also
 automatically updated.
+
+Build documentation locally
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To build and test documentation locally before pushing:
+
+* Install documentation dependencies: ``pip install -r docs/requirements.txt``
+* Build HTML documentation: ``cd docs && make html``
+* View in browser: open ``docs/_build/html/index.html``
+* Clean build artifacts: ``make clean``
+
+See ``docs/README.md`` for more details on building documentation.
 
 Delete branch (optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~

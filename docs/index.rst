@@ -31,33 +31,20 @@ Developer Documentation
 If you're interested in contributing to arte, start here:
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   development
+   developer_documentation
 
-
-.. module:: arte
 
 API Reference
 -------------
 
-The exact API of all functions and classes, as given by the docstrings. The API
-documents expected types and allowed features for all functions, and all
-parameters available for the algorithms.
+Complete reference documentation for all arte modules and functions:
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   atmo
-   astro
-   dataelab
-   math
-   misc
-   photometry
-   time_series
-   types
-   utils
-   wfs
+   api
  
 Indices and tables
 ==================

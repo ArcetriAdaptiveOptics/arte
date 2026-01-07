@@ -11,20 +11,61 @@ from arte.time_series.axis_handler import AxisHandler
 
 @add_help
 class BaseData():
-    '''
-    Generic static data
-
-    parameters
+    """Generic static data container with lazy loading.
+    
+    BaseData represents static (non-time-series) data such as calibration
+    matrices, reference frames, or configuration parameters. It supports:
+    
+    - Lazy loading from files or direct numpy arrays
+    - Optional physical units via astropy.units
+    - Automatic unit conversion
+    - Integration with NotAvailable pattern for missing data
+    
+    Parameters
     ----------
-    data: instance of DataLoader or derived class, filename, or numpy array
-        data to load
-    astropy_unit: unit
-        if possible, astropy unit to use with the data.
-    data_label: str, optional
-        human-readable label for plot (e.g.: "Surface modal coefficients")
-    axes: sequence or None
-         sequence of axes names, optional
-    '''
+    data : DataLoader, str, Path, or ndarray
+        Data source. Can be:
+        - DataLoader instance for lazy loading
+        - Filename (string or Path) to load from
+        - Numpy array for direct initialization
+    astropy_unit : astropy.units.Unit, optional
+        Physical unit for the data
+    data_label : str, optional
+        Human-readable label for plots (e.g., 'Interaction Matrix')
+    axes : sequence, optional
+        Names for data axes
+    
+    Attributes
+    ----------
+    _data_loader : DataLoader
+        Internal data loader instance
+    _astropy_unit : Unit
+        Unit for the data
+    _data_label : str
+        Label for the data
+    
+    Examples
+    --------
+    >>> # Load from file
+    >>> interaction_matrix = BaseData('imat.npy',
+    ...     data_label='Interaction Matrix')
+    >>> data = interaction_matrix.get_data()
+    
+    >>> # Direct initialization
+    >>> reference = BaseData(np.zeros((512, 512)),
+    ...     astropy_unit=u.nm,
+    ...     data_label='Reference Frame')
+    
+    >>> # With lazy loading
+    >>> from arte.dataelab.data_loader import NumpyDataLoader
+    >>> loader = NumpyDataLoader('data.npy')
+    >>> data = BaseData(loader)
+    
+    See Also
+    --------
+    BaseTimeSeries : For time-varying data
+    DataLoader : Base class for lazy data loading
+    """
     def __init__(self, data, astropy_unit=None, data_label=None, axes=None):
         
         data_loader = data_loader_factory(data, allow_none=False, name='data')

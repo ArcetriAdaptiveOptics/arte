@@ -9,15 +9,45 @@ signal_unit = u.def_unit('signal')
 
 
 class BaseSlopes(BaseTimeSeries):
-    '''Slopes recorded from a generic WFS
+    """Wavefront sensor slopes time series.
     
-    Slopes are by default in xxxxyyyy order
-    (all X slopes followed by all Y slopes).
-
-    This class adds a default slope indexer accepting 'x' and 'y' arguments,
-
-    Derived classes can change the order using a different indexer.
-    '''
+    This class handles slopes (wavefront gradients) recorded from wavefront
+    sensors. Slopes are stored as vectors where typically half the elements
+    are x-slopes and half are y-slopes.
+    
+    By default, slopes are in xxxxyyyy order (all X slopes followed by all Y
+    slopes). Individual slope components can be accessed using 'x' and 'y'
+    selectors.
+    
+    Slopes can be remapped into 2D arrays representing the telescope pupil,
+    where each subaperture position shows its measured slope value.
+    
+    Parameters
+    ----------
+    data : array_like or DataLoader
+        Slope data with shape (nframes, nslopes) or (nslopes,)
+    time_vector : array_like or DataLoader, optional
+        Time vector for each frame
+    astropy_unit : astropy.units.Unit, optional
+        Physical unit for slope values (default: signal_unit)
+    data_label : str, optional
+        Label for plots (default: 'slopes')
+    axes : sequence, optional
+        Names for data axes
+    
+    Examples
+    --------
+    >>> slopes = BaseSlopes('slopes.fits')
+    >>> sx = slopes.get_data('x')  # Get x-slopes only
+    >>> sy = slopes.get_data('y')  # Get y-slopes only
+    >>> slopes.imshow()  # Display as 2D pupil maps
+    >>> slopes.vecshow()  # Display as vector field
+    
+    Notes
+    -----
+    Derived classes can customize the slope order by providing a different
+    indexer implementation.
+    """
 
     def __init__(self, data, time_vector=None, astropy_unit=signal_unit, data_label='slopes', axes=None):
         super().__init__(data=data,

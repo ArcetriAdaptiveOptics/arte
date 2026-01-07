@@ -18,9 +18,65 @@ class _AnalyzerStub(list):
 
 
 class BaseAnalyzerSet():
-    '''
-    Analyzer set. Holds a list of Analyzer objects
-    '''
+    """Collection of Analyzer objects for batch analysis.
+    
+    AnalyzerSet manages multiple Analyzer instances across a range of tags,
+    enabling batch analysis and comparison of datasets. It provides:
+    
+    - Lazy instantiation of analyzers (created only when accessed)
+    - Iteration over all analyzers in the set
+    - Array-like access by tag or index
+    - Automatic attribute forwarding to all analyzers
+    
+    Parameters
+    ----------
+    from_or_list : str or list
+        Either a single tag, a list of tags, or a start tag
+    to : str, optional
+        End tag when using a date range. If None, from_or_list must be
+        a list of tags
+    recalc : bool, optional
+        If True, force recalculation of cached data for all analyzers
+        (default: False)
+    file_walker : AbstractFileNameWalker instance
+        File walker to find tags and their data (required keyword argument)
+    analyzer_type : BaseAnalyzer class
+        Analyzer class to instantiate (not an instance). Must implement
+        a get() classmethod (required keyword argument)
+    
+    Attributes
+    ----------
+    tag_list : list of str
+        Sorted list of tags in this set
+    
+    Examples
+    --------
+    >>> # Create analyzer set from tag range
+    >>> aset = MyAnalyzerSet(
+    ...     '20240101_000000', '20240101_235959',
+    ...     file_walker=my_walker,
+    ...     analyzer_type=MyAnalyzer
+    ... )
+    
+    >>> # Remove invalid tags
+    >>> aset.remove_invalids()
+    
+    >>> # Iterate over analyzers
+    >>> for analyzer in aset:
+    ...     print(analyzer.residual_modes.time_std())
+    
+    >>> # Access by tag
+    >>> analyzer = aset['20240101_120000']
+    
+    >>> # Attribute forwarding (returns list of results)
+    >>> all_std = aset.residual_modes.time_std()
+    
+    Notes
+    -----
+    Attribute access on AnalyzerSet returns an _AnalyzerStub that forwards
+    the same attribute/method call to all analyzers and returns the results
+    as a list.
+    """
     def __init__(self, from_or_list, to=None, recalc=False, *,
                        file_walker, analyzer_type):
         '''

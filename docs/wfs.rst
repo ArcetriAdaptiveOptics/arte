@@ -1,22 +1,18 @@
-wfs
-===================
+Wavefront Sensing (`arte.wfs`)
+===============================
 
-Submodules
-----------
+Overview
+--------
 
-arte.wfs.sh\_lenslet\_parameters module
-------------------------------------------
+The `arte.wfs` module provides tools for wavefront sensor analysis and
+configuration, including Shack-Hartmann lenslet array parameters.
 
-.. automodule:: arte.wfs.sh_lenslet_parameters
-   :members:
-   :undoc-members:
-   :show-inheritance:
+API Reference
+-------------
 
+For detailed API documentation, see:
 
-Module contents
----------------
+.. toctree::
+   :maxdepth: 1
 
-.. automodule:: arte.wfs
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   wfs_submodules

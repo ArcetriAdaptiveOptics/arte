@@ -1,21 +1,19 @@
-math
-====================
+Mathematical Utilities (`arte.math`)
+=====================================
 
-Submodules
-----------
+Overview
+--------
 
-arte.math.make_xy module
-------------------------
+The `arte.math` module provides mathematical utilities and helper functions
+for adaptive optics calculations, including coordinate generation, masking,
+and array manipulation tools.
 
-.. automodule:: arte.math.make_xy
-   :members:
-   :undoc-members:
-   :show-inheritance:
+API Reference
+-------------
 
-Module contents
----------------
+For detailed API documentation of all submodules, see:
 
-.. automodule:: arte.math
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 1
+
+   math_submodules

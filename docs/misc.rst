@@ -1,23 +1,18 @@
-misc
-====================
+Miscellaneous Utilities (`arte.misc`)
+======================================
 
-Submodules
-----------
+Overview
+--------
 
-arte.misc.fourier\_adaptive\_optics module
----------------------------------------------
+The `arte.misc` module provides miscellaneous utilities for adaptive optics,
+including Fourier-based AO calculations.
 
-.. automodule:: arte.misc.fourier_adaptive_optics
-   :members:
-   :undoc-members:
-   :show-inheritance:
+API Reference
+-------------
 
+For detailed API documentation, see:
 
+.. toctree::
+   :maxdepth: 1
 
-Module contents
----------------
-
-.. automodule:: arte.misc
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   misc_submodules

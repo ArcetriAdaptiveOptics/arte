@@ -1,64 +1,25 @@
-photometry
-==========================
+Photometry
+==========
 
-Submodules
-----------
+Overview
+--------
 
-eso_sky_calc module
--------------------------------
+The **photometry** module provides tools for astronomical photometric calculations,
+particularly useful for adaptive optics systems and astronomical observations:
 
-.. automodule:: arte.photometry.eso_sky_calc
-   :members:
-   :undoc-members:
-   :show-inheritance:
+- **Magnitude conversions**: Converting between different magnitude systems
+- **Sky brightness**: Modeling sky background and atmospheric emission
+- **Spectral analysis**: Working with stellar and atmospheric spectra
+- **Filter systems**: Standard photometric filter definitions and conversions
+- **Source flux calculations**: Computing photon counts from astronomical sources
+- **ESO Sky Calculator integration**: Interface to ESO sky background models
 
-filters module
--------------------------------
+API Reference
+-------------
 
-.. automodule:: arte.photometry.filters
-   :members:
-   :undoc-members:
-   :show-inheritance:
+For detailed API documentation of all submodules, see:
 
-spectral\_types module
------------------------------------------
+.. toctree::
+   :maxdepth: 1
 
-.. automodule:: arte.photometry.spectral_types
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-normalized_star_spectrum module
------------------------------------------
-
-.. automodule:: arte.photometry.normalized_star_spectrum
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-mag_estimator module
--------------------------------
-
-.. automodule:: arte.photometry.mag_estimator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-n_phot module
-------------------------
-
-.. automodule:: arte.photometry.n_phot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-
-Module contents
----------------
-
-.. automodule:: arte.photometry
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   photometry_submodules

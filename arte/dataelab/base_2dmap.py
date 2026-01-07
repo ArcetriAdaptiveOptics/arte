@@ -3,10 +3,36 @@ import numpy as np
 from arte.dataelab.base_data import BaseData
 
 class Base2dMap(BaseData):
-    '''
-    2d map. Initialize with a 2d map
-    where valid elements are 1 and not used elements are 0.
-    '''
+    """Two-dimensional map for spatial data representation.
+    
+    This class represents 2D spatial maps derived from time-series data,
+    such as camera images, wavefront maps on telescope pupil, or deformable
+    mirror shapes. It handles mapping between 1D data vectors and 2D spatial
+    representations.
+    
+    The map defines which elements are valid (value=1) and which are not used
+    (value=0), enabling proper reshaping of vectorized data into 2D images.
+    
+    Parameters
+    ----------
+    map2d : ndarray
+        2D boolean or integer array where valid elements are 1 (or True)
+        and unused elements are 0 (or False)
+    
+    Examples
+    --------
+    >>> # Create a circular pupil map
+    >>> pupil = np.zeros((100, 100))
+    >>> y, x = np.ogrid[-50:50, -50:50]
+    >>> mask = x**2 + y**2 <= 40**2
+    >>> pupil[mask] = 1
+    >>> map2d = Base2dMap(pupil)
+    >>> print(map2d.nvalid)  # Number of valid pixels
+    
+    >>> # Remap 1D vector data to 2D image
+    >>> data_1d = np.random.randn(100, map2d.nvalid)  # 100 frames
+    >>> data_2d = map2d.remap_image(data_1d)  # Shape: (100, 100, 100)
+    """
     def __init__(self, map2d):
         super().__init__(map2d)
 
@@ -39,8 +65,8 @@ class Base2dMap(BaseData):
         data: ndarray
             2d numpy array [time, values] or 1d numpy array [values]
         
-        Result
-        ------
+        Returns
+        -------
         frame: ndarray
             3d numpy array [time, x, y]
         '''

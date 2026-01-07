@@ -1,13 +1,51 @@
-Data elab
-=========
+Data Analysis Framework (`arte.dataelab`)
+==========================================
 
-This library is intended for analysis of laboratory-generated datasets
-with the following charateristics:
-* grouped into discrete sets
-* each set contains a snapshot of the system state, plus one or more time series 
-of fast-varying data (pixel frames, DM commands, etc),
-usually a few hundreds or thousands of samples each, stored in numpy, FITS
-or other numeric formats.
+.. admonition:: Why "dataelab"?
+   :class: note
+
+   The module name `dataelab` comes from the Italian *"elaborazione dati"*
+   (data elaboration/processing), reflecting its Arcetri origins. While the package name preserves
+   this heritage, the documentation uses the more standard English term
+   "Data Analysis Framework".
+
+Overview
+--------
+
+The `arte.dataelab` module provides a framework for analyzing time-series data
+from adaptive optics laboratory experiments. It implements a pattern-based
+architecture designed for datasets organized by unique tags (typically timestamps).
+
+The library is intended for analysis of laboratory-generated datasets with the
+following characteristics:
+
+* Data grouped into discrete sets identified by tags
+* Each set contains a snapshot of system state plus time series of fast-varying
+  data (pixel frames, DM commands, slopes, etc.)
+* Typically hundreds to thousands of samples per time series
+* Data stored in numpy, FITS, or other numeric formats
+
+Tutorial
+--------
+
+See the :doc:`Jupyter notebook tutorial <notebook/dataelab/dataelab_example>` for a
+complete working example showing how to:
+
+* Generate synthetic time series data
+* Create custom FileWalker and Analyzer classes
+* Load and analyze data
+* Compute statistics and power spectral densities
+* Visualize results
+
+Key Features
+------------
+
+* **Lazy Loading**: Data loaded only when accessed, not at initialization
+* **Disk Caching**: Expensive computations cached to disk for performance
+* **Unit Handling**: Automatic unit conversion using astropy.units
+* **Flexible Indexing**: Select data subsets (e.g., x/y slopes, time ranges)
+* **Batch Analysis**: Analyze multiple tags together via AnalyzerSet
+* **Type Safety**: NotAvailable pattern for missing data
 
 Tags
 ----
@@ -247,45 +285,26 @@ method must return a list of tags between the two extremes
 Disk cache
 ----------
 
-TODO
+The `@cache_on_disk` decorator enables persistent caching of expensive computations.
+Methods decorated with this will store their results to disk and reuse them on
+subsequent calls. Caching is automatically managed by the analyzer's tag and can
+be cleared with the `recalc()` method.
 
 Not available
 -------------
 
-TODO
+The `NotAvailable` pattern handles missing or invalid data gracefully. When data
+cannot be loaded or computed, objects are transformed to `NotAvailable` instances
+that propagate through operations without raising errors. This allows analyzers
+to handle partial datasets without special error handling code.
 
-Submodules
-----------
+API Reference
+-------------
 
-arte.dataelab.base_analyzer module
------------------------------------
+For detailed API documentation of all classes and methods, see:
 
-.. automodule:: arte.dataelab.base_analyzer
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 1
 
-arte.dataelab.base_timeseries module
------------------------------------------
-
-.. automodule:: arte.dataelab.base_timeseries
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.dataelab.base_file_walker module
--------------------------------
-
-.. automodule:: arte.dataelab.base_file_walker
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-arte.dataelab.data_loader module
--------------------------------
-
-.. automodule:: arte.dataelab.data_loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   dataelab_submodules
 
