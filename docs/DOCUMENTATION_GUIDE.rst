@@ -17,7 +17,8 @@ Docstring Style
 
 Arte uses the NumPy docstring format. This is enforced by numpydoc and checked during documentation builds.
 
-### Section Names
+Section Names
+^^^^^^^^^^^^^
 
 Use **exactly** these section names (case-sensitive):
 
@@ -31,7 +32,8 @@ Use **exactly** these section names (case-sensitive):
 * ``References`` - citations and external links
 * ``Warnings`` - important warnings for users
 
-### Common Mistakes to Avoid
+Common Mistakes to Avoid
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Wrong:**
 
