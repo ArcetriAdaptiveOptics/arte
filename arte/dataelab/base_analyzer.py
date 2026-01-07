@@ -18,11 +18,55 @@ class PostInitCaller(type):
 
 @add_help
 class BaseAnalyzer(metaclass=PostInitCaller):
-    '''Main analyzer object
+    """Main analyzer object for adaptive optics data analysis.
     
-    Note that an analyzer is not CanBeIncomplete, because all attributes
-    should be initialized (if they are missing, their value will be NA)
-    '''
+    The Analyzer is the primary interface for loading and analyzing data
+    identified by a unique tag (typically a timestamp). It coordinates:
+    
+    - Data file discovery via FileWalker
+    - Lazy loading of time series data
+    - Caching of computed results to disk
+    - Access to raw and processed data streams
+    
+    Analyzers are typically accessed via the get() classmethod which maintains
+    an internal cache, ensuring that multiple requests for the same tag return
+    the same instance.
+    
+    Parameters
+    ----------
+    snapshot_tag : str
+        Unique identifier for this dataset (e.g., '20240101_120000')
+    recalc : bool, optional
+        If True, clear all cached data and recompute on access (default: False)
+    
+    Attributes
+    ----------
+    _snapshot_tag : str
+        The tag identifying this dataset
+    
+    Examples
+    --------
+    >>> analyzer = MyAnalyzer.get('20240101_120000')
+    >>> modes = analyzer.residual_modes.get_data()
+    >>> std_per_mode = analyzer.residual_modes.time_std()
+    
+    >>> # Force recalculation of cached data
+    >>> analyzer = MyAnalyzer.get('20240101_120000', recalc=True)
+    
+    Notes
+    -----
+    When creating a derived class:
+    
+    1. Define data streams as attributes (e.g., self.residual_modes)
+    2. Use DataLoaders for lazy file loading
+    3. Methods returning expensive computations can use @cache_on_disk
+    4. The _post_init() method is called automatically after __init__
+    
+    See Also
+    --------
+    BaseAnalyzerSet : For analyzing multiple tags together
+    cache_on_disk : Decorator for persistent caching
+    """
 
     def __init__(self, snapshot_tag, recalc=False):
         self._snapshot_tag = snapshot_tag

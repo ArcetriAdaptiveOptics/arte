@@ -1,6 +1,11 @@
+sphinx>=4.0
+pydata-sphinx-theme
+numpydoc
+sphinx-autoapi
 ipykernel
 nbsphinx
 numpy
 astropy
 synphot
 scipy
+matplotlib

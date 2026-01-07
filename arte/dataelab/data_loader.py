@@ -12,9 +12,54 @@ from arte.utils.not_available import NotAvailable
 
 @add_help
 class DataLoader():
-    '''
-    Abstract base class for data loaders
-    '''
+    """Abstract base class for lazy data loading.
+    
+    DataLoaders enable lazy loading where data is read from disk only
+    when accessed, not when the loader is created. This allows:
+    
+    - Fast analyzer initialization
+    - Reduced memory usage
+    - Early file existence checks
+    - Preprocessing and transformation pipelines
+    
+    Built-in loaders are provided for common formats:
+    
+    - NumpyDataLoader: .npy and .npz files
+    - FitsDataLoader: FITS files
+    
+    Custom loaders can be created by implementing the three abstract methods:
+    assert_exists(), filename(), and load().
+    
+    Examples
+    --------
+    >>> # Using built-in loaders
+    >>> loader = NumpyDataLoader('data.npy')
+    >>> loader.assert_exists()  # Check file exists
+    >>> data = loader.load()     # Load data
+    
+    >>> # For .npz files with multiple arrays
+    >>> loader = NumpyDataLoader('data.npz', key='slopes')
+    
+    >>> # FITS files with specific extension
+    >>> loader = FitsDataLoader('data.fits', ext=1)
+    
+    >>> # Custom loader with preprocessing
+    >>> class MyLoader(DataLoader):
+    ...     def __init__(self, filename):
+    ...         self._filename = filename
+    ...     def assert_exists(self):
+    ...         assert os.path.exists(self._filename)
+    ...     def filename(self):
+    ...         return self._filename
+    ...     def load(self):
+    ...         data = np.load(self._filename)
+    ...         return data - data.mean()  # Remove mean
+    
+    See Also
+    --------
+    BaseTimeSeries : Uses DataLoaders for lazy data access
+    data_loader_factory : Factory function to create appropriate loaders
+    """
     def __init__(self):
         pass
 

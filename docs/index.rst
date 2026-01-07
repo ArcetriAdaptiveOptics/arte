@@ -31,9 +31,9 @@ Developer Documentation
 If you're interested in contributing to arte, start here:
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   development
+   developer_documentation
 
 
 .. module:: arte
@@ -48,11 +48,14 @@ parameters available for the algorithms.
 .. toctree::
    :maxdepth: 1
 
-   atmo
    astro
+   atmo
+   contrib
+   control
    dataelab
    math
    misc
+   optical_propagation
    photometry
    time_series
    types
