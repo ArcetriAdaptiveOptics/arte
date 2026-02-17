@@ -248,7 +248,7 @@ class CircularMask(BaseMask):
             y0, x0 = bubble.centroid
             y0+=0.5
             x0+=0.5
-            r = bubble.major_axis_length / 2.
+            r = bubble.axis_major_length / 2.
             circularMask = CircularMask(img.shape, r, [y0,x0])
             
         elif method == CircularMask.FITTING_METHOD_CORRELATION:
