@@ -128,6 +128,40 @@ class TimeSeriesTest(unittest.TestCase):
         assert len(power) == 0
         assert len(freq) == 0
 
+    def test_power_normalization_parseval(self):
+        """Verify Parseval's theorem: integral of PSD equals temporal variance"""
+        # Use TimeSeries1D for simpler test case
+        np.random.seed(42)
+        n_samples = 1000
+        dt = 0.01  # seconds
+        data = np.random.randn(n_samples)
+        
+        # Create TimeSeries
+        t1d = TimeSeries1D()
+        t1d._get_time_vector = lambda: np.arange(n_samples) * dt
+        t1d._get_not_indexed_data = lambda: data.reshape(-1, 1)
+        t1d.get_index_of = lambda: None
+        
+        # Compute PSD (now in [unit²/Hz] after fix)
+        psd = t1d.power(segment_factor=4.0)
+        freq = t1d.frequency()
+        df = freq[1] - freq[0]
+        
+        # Temporal variance (remove mean for consistency with PSD which removes DC)
+        data_centered = data - np.mean(data)
+        temporal_var = np.var(data_centered, ddof=0)
+        
+        # Spectral variance: integrate PSD over all frequencies
+        # PSD is in [unit²/Hz], so sum(PSD * df) gives total variance
+        spectral_var = np.sum(psd) * df
+        
+        # Verify Parseval's theorem: should match within ~10%
+        rel_error = abs(temporal_var - spectral_var) / temporal_var
+        self.assertLess(rel_error, 0.10, 
+                       f"Parseval error {rel_error:.2%} exceeds 10%. "
+                       f"Temporal variance: {temporal_var:.4e}, "
+                       f"Spectral variance: {spectral_var:.4e}")
+
     def test_timeAverage(self):
         ta = self._ts.time_average()
         self.assertAlmostEqual(ta[1], 1.)

@@ -347,12 +347,12 @@ class TimeSeries(metaclass=abc.ABCMeta):
         -------
         ndarray
             Power spectral density with shape `(n_frequencies, ...ensemble_shape...)`.
-            Units are data_unit^2 * Hz if applicable.
+            Units are data_unit^2 / Hz (standard PSD units) if applicable.
         
         Notes
         -----
-        The PSD is computed using scipy.signal.welch and normalized by frequency
-        bin width. Results are cached unless segment_factor or window changes.
+        The PSD is computed using scipy.signal.welch in standard units [data_unit^2/Hz].
+        Results are cached unless segment_factor or window changes.
         
         For MaskedArrays, masked values are filled with zeros before FFT computation.
         
@@ -416,8 +416,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
         self._frequency, x = welch(data.T, value_hz,
                                    window=self._window,
                                    nperseg=data.shape[0] / self._segment_factor)
-        df = np.diff(self._frequency)[0]
-        return x.T * df
+        # Return PSD in standard units [data_unit^2/Hz] as computed by scipy.signal.welch
+        return x.T
 
 
 # ___oOo___
