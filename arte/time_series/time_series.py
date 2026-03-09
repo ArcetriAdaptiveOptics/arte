@@ -325,10 +325,10 @@ class TimeSeries(metaclass=abc.ABCMeta):
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_rms(self, *args, times=None, **kwargs):
         '''Root-Mean-Square across series at each sampling time'''
-        x = self.get_data(*args, times=times, **kwargs)
-        if isinstance(x, np.ma.MaskedArray):
-            return np.sqrt(np.ma.mean(np.abs(x)**2, axis=1))
-        return np.sqrt(np.mean(np.abs(x)**2, axis=1))
+        data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.sqrt(np.ma.mean(np.abs(data)**2, axis=self._data_sample_axes(data)))
+        return np.sqrt(np.mean(np.abs(data)**2, axis=self._data_sample_axes(data)))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_ptp(self, *args, times=None, **kwargs):
