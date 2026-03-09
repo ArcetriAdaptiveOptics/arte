@@ -327,6 +327,54 @@ class TimeSeriesTest(unittest.TestCase):
         t1d = TimeSeries1D()
         t1d.get_index_of = lambda: None
         assert t1d.get_data(times=[2, 4]).shape == (2, 4)
+
+    def test_time_ptp(self):
+        """Test peak-to-peak over time dimension"""
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda: None
+        # Data is [[0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], [16,17,18,19]]
+        # time_ptp should give ptp along axis 0: [16,16,16,16]
+        ptp = t1d.time_ptp()
+        np.testing.assert_array_equal(ptp, [16, 16, 16, 16])
+
+    def test_ensemble_ptp(self):
+        """Test peak-to-peak over ensemble (spatial) dimensions"""
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda: None
+        # Data is [[0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], [16,17,18,19]]
+        # ensemble_ptp should give ptp along axis 1: [3, 3, 3, 3, 3]
+        ptp = t1d.ensemble_ptp()
+        np.testing.assert_array_equal(ptp, [3, 3, 3, 3, 3])
+
+    def test_time_ptp_with_masked_array(self):
+        """Test time_ptp with masked arrays"""
+        t1d = TimeSeries1D()
+        t1d._get_not_indexed_data = lambda: np.ma.array(
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            mask=[[0, 0, 1], [0, 0, 0], [0, 0, 0]]
+        )
+        t1d.get_index_of = lambda: None
+        ptp = t1d.time_ptp()
+        # Column 0: ptp([1, 4, 7]) = 6
+        # Column 1: ptp([2, 5, 8]) = 6
+        # Column 2: ptp([6, 9]) = 3 (masked value ignored)
+        expected = np.ma.array([6, 6, 3])
+        np.testing.assert_array_equal(ptp, expected)
+
+    def test_ensemble_ptp_with_masked_array(self):
+        """Test ensemble_ptp with masked arrays"""
+        t1d = TimeSeries1D()
+        t1d._get_not_indexed_data = lambda: np.ma.array(
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            mask=[[0, 0, 1], [0, 0, 0], [0, 0, 0]]
+        )
+        t1d.get_index_of = lambda: None
+        ptp = t1d.ensemble_ptp()
+        # Row 0: ptp([1, 2]) = 1 (masked value ignored)
+        # Row 1: ptp([4, 5, 6]) = 2
+        # Row 2: ptp([7, 8, 9]) = 2
+        expected = np.ma.array([1, 2, 2])
+        np.testing.assert_array_equal(ptp, expected)
         
         
 if __name__ == "__main__":

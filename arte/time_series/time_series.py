@@ -289,6 +289,14 @@ class TimeSeries(metaclass=abc.ABCMeta):
             return np.sqrt(np.ma.mean(np.abs(x)**2, axis=0))
         return np.sqrt(np.mean(np.abs(x)**2, axis=0))
 
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def time_ptp(self, *args, times=None, **kwargs):
+        '''Peak-to-peak (max - min) over time for each series'''
+        data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.ma.ptp(data, axis=0)
+        return np.ptp(data, axis=0)
+
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_average(self, *args, times=None, **kwargs):
@@ -321,6 +329,14 @@ class TimeSeries(metaclass=abc.ABCMeta):
         if isinstance(x, np.ma.MaskedArray):
             return np.sqrt(np.ma.mean(np.abs(x)**2, axis=1))
         return np.sqrt(np.mean(np.abs(x)**2, axis=1))
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def ensemble_ptp(self, *args, times=None, **kwargs):
+        '''Peak-to-peak (max - min) across series at each sampling time'''
+        data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.ma.ptp(data, axis=self._data_sample_axes(data))
+        return np.ptp(data, axis=self._data_sample_axes(data))
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, *args, from_freq=None, to_freq=None,
