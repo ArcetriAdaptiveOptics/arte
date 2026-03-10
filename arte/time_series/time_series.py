@@ -39,12 +39,17 @@ class TimeSeries(metaclass=abc.ABCMeta):
     - :meth:`_get_not_indexed_data`: Return raw data as numpy array with time as first axis
     - :meth:`get_index_of`: Define ensemble indexing logic (select specific elements)
     
-    The class supports:
+    The class provides a **chainable fluent API** for data analysis:
     
-    - Time-domain statistics (mean, std, rms over time for each ensemble element)
-    - Ensemble statistics (mean, std, rms across ensemble at each time step)
+    - Ensemble reductions: `ensemble_rms`, `ensemble_mean`, `ensemble_std`, `ensemble_median`, `ensemble_ptp`
+    - Time reductions: `time_mean`, `time_std`, `time_rms`, `time_median`, `time_ptp`
+    - Filtering: `filter(modes=..., times=...)` or `with_times(...)`
+    - Value extraction: `.value` property (like pandas)
+    - Chain operations: `ts.filter(modes=[2,3]).ensemble_rms.time_mean.value`
+    
+    Additional features:
+    
     - Power spectral density analysis with Welch method
-    - Time-based filtering (analyze specific time intervals)
     - Physical units support via astropy.units
     - Masked arrays for missing/invalid data (e.g., points outside circular pupil)
     
@@ -85,8 +90,11 @@ class TimeSeries(metaclass=abc.ABCMeta):
     >>> # Analyze DM commands for 1000 time steps, 100 actuators
     >>> dm_commands = np.random.randn(1000, 100)
     >>> ts = MyTimeSeries(dm_commands)
-    >>> rms_per_actuator = ts.time_rms()  # RMS over time for each actuator
-    >>> avg_command = ts.ensemble_average()  # Average across actuators at each time
+    >>> 
+    >>> # Fluent API (chainable)
+    >>> mean_rms = ts.ensemble_rms.time_mean.value  # Scalar
+    >>> rms_time_series = ts.filter(elements=[0,1,2]).ensemble_rms.value  # Array
+    >>> long_exposure_ptp = ts.time_mean.ensemble_ptp.value  # Peak-to-valley
     '''
 
     def __init__(self, axes=None):
@@ -325,8 +333,18 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return math.prod(data.shape[1:])
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
-    def time_median(self, *args, times=None, **kwargs):
-        '''Median over time for each series'''
+    def get_time_median(self, *args, times=None, **kwargs):
+        '''Median over time for each series
+        
+        .. deprecated::
+           Use the `time_median` property instead. This method will be removed in a future version.
+        '''
+        import warnings
+        warnings.warn(
+            "get_time_median() is deprecated. Use the 'time_median' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         data = self.get_data(*args, times=times, **kwargs)
         if isinstance(data, np.ma.MaskedArray):
             return np.ma.median(data, axis=0)
@@ -369,16 +387,36 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return np.mean(data, axis=0)
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
-    def time_rms(self, *args, times=None, **kwargs):
-        '''Root-Mean-Square value over time for each series'''
+    def get_time_rms(self, *args, times=None, **kwargs):
+        '''Root-Mean-Square value over time for each series
+        
+        .. deprecated::
+           Use the `time_rms` property instead. This method will be removed in a future version.
+        '''
+        import warnings
+        warnings.warn(
+            "get_time_rms() is deprecated. Use the 'time_rms' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         x = self.get_data(*args, times=times, **kwargs)
         if isinstance(x, np.ma.MaskedArray):
             return np.sqrt(np.ma.mean(np.abs(x)**2, axis=0))
         return np.sqrt(np.mean(np.abs(x)**2, axis=0))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
-    def time_ptp(self, *args, times=None, **kwargs):
-        '''Peak-to-peak (max - min) over time for each series'''
+    def get_time_ptp(self, *args, times=None, **kwargs):
+        '''Peak-to-peak (max - min) over time for each series
+        
+        .. deprecated::
+           Use the `time_ptp` property instead. This method will be removed in a future version.
+        '''
+        import warnings
+        warnings.warn(
+            "get_time_ptp() is deprecated. Use the 'time_ptp' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         data = self.get_data(*args, times=times, **kwargs)
         if isinstance(data, np.ma.MaskedArray):
             return np.ma.ptp(data, axis=0)
@@ -386,24 +424,54 @@ class TimeSeries(metaclass=abc.ABCMeta):
 
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
-    def ensemble_average(self, *args, times=None, **kwargs):
-        '''Average across series at each sampling time'''
+    def get_ensemble_average(self, *args, times=None, **kwargs):
+        '''Average across series at each sampling time
+        
+        .. deprecated::
+           Use the `ensemble_mean` property instead. This method will be removed in a future version.
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_average() is deprecated. Use the 'ensemble_mean' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         data = self.get_data(*args, times=times, **kwargs)
         if isinstance(data, np.ma.MaskedArray):
             return np.ma.mean(data, axis=self._data_sample_axes(data))
         return np.mean(data, axis=self._data_sample_axes(data))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
-    def ensemble_std(self, *args, times=None, **kwargs):
-        '''Standard deviation across series at each sampling time'''
+    def get_ensemble_std(self, *args, times=None, **kwargs):
+        '''Standard deviation across series at each sampling time
+        
+        .. deprecated::
+           Use the `ensemble_std` property instead. This method will be removed in a future version.
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_std() is deprecated. Use the 'ensemble_std' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         data = self.get_data(*args, times=times, **kwargs)
         if isinstance(data, np.ma.MaskedArray):
             return np.ma.std(data, axis=self._data_sample_axes(data))
         return np.std(data, axis=self._data_sample_axes(data))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
-    def ensemble_median(self, *args, times=None, **kwargs):
-        '''Median across series at each sampling time'''
+    def get_ensemble_median(self, *args, times=None, **kwargs):
+        '''Median across series at each sampling time
+        
+        .. deprecated::
+           Use the `ensemble_median` property instead. This method will be removed in a future version.
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_median() is deprecated. Use the 'ensemble_median' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         data = self.get_data(*args, times=times, **kwargs)
         if isinstance(data, np.ma.MaskedArray):
             return np.ma.median(data, axis=self._data_sample_axes(data))
@@ -437,8 +505,18 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return np.sqrt(np.mean(np.abs(data)**2, axis=self._data_sample_axes(data)))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
-    def ensemble_ptp(self, *args, times=None, **kwargs):
-        '''Peak-to-peak (max - min) across series at each sampling time'''
+    def get_ensemble_ptp(self, *args, times=None, **kwargs):
+        '''Peak-to-peak (max - min) across series at each sampling time
+        
+        .. deprecated::
+           Use the `ensemble_ptp` property instead. This method will be removed in a future version.
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_ptp() is deprecated. Use the 'ensemble_ptp' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         data = self.get_data(*args, times=times, **kwargs)
         if isinstance(data, np.ma.MaskedArray):
             return np.ma.ptp(data, axis=self._data_sample_axes(data))
@@ -920,6 +998,164 @@ class TimeSeries(metaclass=abc.ABCMeta):
             std_data = np.std(data, axis=0)
         
         return self._create_temporal_reduced_series(std_data, operation_name='time_std')
+    
+    @property
+    def ensemble_mean(self):
+        """
+        Mean over ensemble dimensions (chainable property).
+        
+        Returns
+        -------
+        TimeSeries
+            Mean across ensemble at each time step (chainable)
+        
+        Examples
+        --------
+        >>> mean_series = ts.ensemble_mean.value  # Shape: (n_times,)
+        >>> overall_mean = ts.ensemble_mean.time_mean.value  # Scalar
+        """
+        data = self._get_not_indexed_data()
+        axis = self._data_sample_axes(data)
+        if isinstance(data, np.ma.MaskedArray):
+            mean_data = np.ma.mean(data, axis=axis)
+        else:
+            mean_data = np.mean(data, axis=axis)
+        return self._create_reduced_series(mean_data, operation_name='ensemble_mean')
+    
+    @property
+    def ensemble_std(self):
+        """
+        Standard deviation over ensemble dimensions (chainable property).
+        
+        Returns
+        -------
+        TimeSeries
+            Std across ensemble at each time step (chainable)
+        
+        Examples
+        --------
+        >>> std_series = ts.ensemble_std.value
+        >>> mean_std = ts.ensemble_std.time_mean.value
+        """
+        data = self._get_not_indexed_data()
+        axis = self._data_sample_axes(data)
+        if isinstance(data, np.ma.MaskedArray):
+            std_data = np.ma.std(data, axis=axis)
+        else:
+            std_data = np.std(data, axis=axis)
+        return self._create_reduced_series(std_data, operation_name='ensemble_std')
+    
+    @property
+    def ensemble_median(self):
+        """
+        Median over ensemble dimensions (chainable property).
+        
+        Returns
+        -------
+        TimeSeries
+            Median across ensemble at each time step (chainable)
+        
+        Examples
+        --------
+        >>> median_series = ts.ensemble_median.value
+        >>> time_avg_median = ts.ensemble_median.time_mean.value
+        """
+        data = self._get_not_indexed_data()
+        axis = self._data_sample_axes(data)
+        if isinstance(data, np.ma.MaskedArray):
+            median_data = np.ma.median(data, axis=axis)
+        else:
+            median_data = np.median(data, axis=axis)
+        return self._create_reduced_series(median_data, operation_name='ensemble_median')
+    
+    @property
+    def ensemble_ptp(self):
+        """
+        Peak-to-peak over ensemble dimensions (chainable property).
+        
+        Returns
+        -------
+        TimeSeries
+            Peak-to-peak across ensemble at each time step (chainable)
+        
+        Examples
+        --------
+        >>> ptp_series = ts.ensemble_ptp.value
+        >>> mean_ptp = ts.ensemble_ptp.time_mean.value
+        """
+        data = self._get_not_indexed_data()
+        axis = self._data_sample_axes(data)
+        if isinstance(data, np.ma.MaskedArray):
+            ptp_data = np.ma.ptp(data, axis=axis)
+        else:
+            ptp_data = np.ptp(data, axis=axis)
+        return self._create_reduced_series(ptp_data, operation_name='ensemble_ptp')
+    
+    @property
+    def time_median(self):
+        """
+        Median over time dimension (chainable property).
+        
+        Returns
+        -------
+        TimeSeries
+            TimeSeries with time_size=1 containing temporal median (chainable)
+        
+        Examples
+        --------
+        >>> median_wf = ts.time_median.value
+        >>> rms_of_median = ts.time_median.ensemble_rms.value
+        """
+        data = self._get_not_indexed_data()
+        if isinstance(data, np.ma.MaskedArray):
+            median_data = np.ma.median(data, axis=0)
+        else:
+            median_data = np.median(data, axis=0)
+        return self._create_temporal_reduced_series(median_data, operation_name='time_median')
+    
+    @property
+    def time_rms(self):
+        """
+        RMS over time dimension (chainable property).
+        
+        Returns
+        -------
+        TimeSeries
+            TimeSeries with time_size=1 containing temporal RMS (chainable)
+        
+        Examples
+        --------
+        >>> rms_wf = ts.time_rms.value
+        >>> max_rms = ts.time_rms.ensemble_ptp.value
+        """
+        data = self._get_not_indexed_data()
+        if isinstance(data, np.ma.MaskedArray):
+            rms_data = np.sqrt(np.ma.mean(np.abs(data)**2, axis=0))
+        else:
+            rms_data = np.sqrt(np.mean(np.abs(data)**2, axis=0))
+        return self._create_temporal_reduced_series(rms_data, operation_name='time_rms')
+    
+    @property
+    def time_ptp(self):
+        """
+        Peak-to-peak over time dimension (chainable property).
+        
+        Returns
+        -------
+        TimeSeries
+            TimeSeries with time_size=1 containing temporal peak-to-peak (chainable)
+        
+        Examples
+        --------
+        >>> ptp_wf = ts.time_ptp.value
+        >>> mean_ptp = ts.time_ptp.ensemble_mean.value
+        """
+        data = self._get_not_indexed_data()
+        if isinstance(data, np.ma.MaskedArray):
+            ptp_data = np.ma.ptp(data, axis=0)
+        else:
+            ptp_data = np.ptp(data, axis=0)
+        return self._create_temporal_reduced_series(ptp_data, operation_name='time_ptp')
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, *args, from_freq=None, to_freq=None,

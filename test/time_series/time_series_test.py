@@ -171,7 +171,7 @@ class TimeSeriesTest(unittest.TestCase):
         self.assertAlmostEqual(ta[1], 1.)
 
     def test_ensemble_median(self):
-        np.testing.assert_almost_equal(self._ts.time_median(mode=0), 0)
+        np.testing.assert_almost_equal(self._ts.get_time_median(mode=0), 0)
 
     def test_times_kwonly(self):
         with self.assertRaises(IndexError):
@@ -247,7 +247,7 @@ class TimeSeriesTest(unittest.TestCase):
     def test_2d_mean(self):
         t2d = TimeSeries2D()
         t2d.get_index_of = lambda *args, **kwargs: None
-        np.testing.assert_array_almost_equal(t2d.ensemble_average(), (5.5, 17.5))
+        np.testing.assert_array_almost_equal(t2d.get_ensemble_average(), (5.5, 17.5))
 
     def test_2d_index(self):
         t2d = TimeSeries2D()
@@ -334,7 +334,7 @@ class TimeSeriesTest(unittest.TestCase):
         t1d.get_index_of = lambda: None
         # Data is [[0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], [16,17,18,19]]
         # time_ptp should give ptp along axis 0: [16,16,16,16]
-        ptp = t1d.time_ptp()
+        ptp = t1d.get_time_ptp()
         np.testing.assert_array_equal(ptp, [16, 16, 16, 16])
 
     def test_ensemble_ptp(self):
@@ -343,7 +343,7 @@ class TimeSeriesTest(unittest.TestCase):
         t1d.get_index_of = lambda: None
         # Data is [[0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], [16,17,18,19]]
         # ensemble_ptp should give ptp along axis 1: [3, 3, 3, 3, 3]
-        ptp = t1d.ensemble_ptp()
+        ptp = t1d.get_ensemble_ptp()
         np.testing.assert_array_equal(ptp, [3, 3, 3, 3, 3])
 
     def test_time_ptp_with_masked_array(self):
@@ -354,7 +354,7 @@ class TimeSeriesTest(unittest.TestCase):
             mask=[[0, 0, 1], [0, 0, 0], [0, 0, 0]]
         )
         t1d.get_index_of = lambda: None
-        ptp = t1d.time_ptp()
+        ptp = t1d.get_time_ptp()
         # Column 0: ptp([1, 4, 7]) = 6
         # Column 1: ptp([2, 5, 8]) = 6
         # Column 2: ptp([6, 9]) = 3 (masked value ignored)
@@ -369,7 +369,7 @@ class TimeSeriesTest(unittest.TestCase):
             mask=[[0, 0, 1], [0, 0, 0], [0, 0, 0]]
         )
         t1d.get_index_of = lambda: None
-        ptp = t1d.ensemble_ptp()
+        ptp = t1d.get_ensemble_ptp()
         # Row 0: ptp([1, 2]) = 1 (masked value ignored)
         # Row 1: ptp([4, 5, 6]) = 2
         # Row 2: ptp([7, 8, 9]) = 2
@@ -589,6 +589,68 @@ class TimeSeriesTest(unittest.TestCase):
         # Full chain should give scalar
         scalar_value = ts.time_mean.ensemble_rms.value
         self.assertTrue(np.isscalar(scalar_value))
+    
+    def test_all_ensemble_properties_chainable(self):
+        """Test that all ensemble properties are chainable"""
+        ts = ATimeSeries(1 * u.s)
+        
+        # All should return TimeSeries
+        self.assertIsInstance(ts.ensemble_mean, TimeSeries)
+        self.assertIsInstance(ts.ensemble_std, TimeSeries)
+        self.assertIsInstance(ts.ensemble_median, TimeSeries)
+        self.assertIsInstance(ts.ensemble_ptp, TimeSeries)
+        
+        # All should be chainable with time operations
+        self.assertTrue(np.isscalar(ts.ensemble_mean.time_mean.value))
+        self.assertTrue(np.isscalar(ts.ensemble_std.time_std.value))
+        self.assertTrue(np.isscalar(ts.ensemble_median.time_median.value))
+        self.assertTrue(np.isscalar(ts.ensemble_ptp.time_ptp.value))
+    
+    def test_all_time_properties_chainable(self):
+        """Test that all time properties are chainable"""
+        ts = ATimeSeries(1 * u.s)
+        
+        # All should return TimeSeries
+        self.assertIsInstance(ts.time_median, TimeSeries)
+        self.assertIsInstance(ts.time_rms, TimeSeries)
+        self.assertIsInstance(ts.time_ptp, TimeSeries)
+        
+        # All should be chainable with ensemble operations
+        self.assertTrue(np.isscalar(ts.time_median.ensemble_mean.value))
+        self.assertTrue(np.isscalar(ts.time_rms.ensemble_rms.value))
+        self.assertTrue(np.isscalar(ts.time_ptp.ensemble_ptp.value))
+    
+    def test_ensemble_mean_vs_legacy(self):
+        """Test ensemble_mean property matches get_ensemble_average"""
+        ts = ATimeSeries(1 * u.s)
+        
+        # New property API
+        mean_new = ts.ensemble_mean.value
+        
+        # Legacy API (with warning suppression test)
+        with self.assertWarns(DeprecationWarning):
+            mean_old = ts.get_ensemble_average()
+        
+        np.testing.assert_array_almost_equal(mean_new, mean_old)
+    
+    def test_deprecated_methods_all_warn(self):
+        """Test that all legacy get_* methods raise DeprecationWarning"""
+        ts = ATimeSeries(1 * u.s)
+        
+        with self.assertWarns(DeprecationWarning):
+            ts.get_time_median()
+        with self.assertWarns(DeprecationWarning):
+            ts.get_time_rms()
+        with self.assertWarns(DeprecationWarning):
+            ts.get_time_ptp()
+        with self.assertWarns(DeprecationWarning):
+            ts.get_ensemble_average()
+        with self.assertWarns(DeprecationWarning):
+            ts.get_ensemble_std()
+        with self.assertWarns(DeprecationWarning):
+            ts.get_ensemble_median()
+        with self.assertWarns(DeprecationWarning):
+            ts.get_ensemble_ptp()
     
     def test_numpy_compatibility_on_chained_result(self):
         """Test that chained TimeSeries works with matplotlib/numpy"""
