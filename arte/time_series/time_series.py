@@ -289,6 +289,14 @@ class TimeSeries(metaclass=abc.ABCMeta):
             return np.sqrt(np.ma.mean(np.abs(x)**2, axis=0))
         return np.sqrt(np.mean(np.abs(x)**2, axis=0))
 
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def time_ptp(self, *args, times=None, **kwargs):
+        '''Peak-to-peak (max - min) over time for each series'''
+        data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.ma.ptp(data, axis=0)
+        return np.ptp(data, axis=0)
+
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_average(self, *args, times=None, **kwargs):
@@ -317,10 +325,18 @@ class TimeSeries(metaclass=abc.ABCMeta):
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
     def ensemble_rms(self, *args, times=None, **kwargs):
         '''Root-Mean-Square across series at each sampling time'''
-        x = self.get_data(*args, times=times, **kwargs)
-        if isinstance(x, np.ma.MaskedArray):
-            return np.sqrt(np.ma.mean(np.abs(x)**2, axis=1))
-        return np.sqrt(np.mean(np.abs(x)**2, axis=1))
+        data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.sqrt(np.ma.mean(np.abs(data)**2, axis=self._data_sample_axes(data)))
+        return np.sqrt(np.mean(np.abs(data)**2, axis=self._data_sample_axes(data)))
+
+    @modify_help(arg_str='[series_idx], [times=[from,to]]')
+    def ensemble_ptp(self, *args, times=None, **kwargs):
+        '''Peak-to-peak (max - min) across series at each sampling time'''
+        data = self.get_data(*args, times=times, **kwargs)
+        if isinstance(data, np.ma.MaskedArray):
+            return np.ma.ptp(data, axis=self._data_sample_axes(data))
+        return np.ptp(data, axis=self._data_sample_axes(data))
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, *args, from_freq=None, to_freq=None,
@@ -347,12 +363,12 @@ class TimeSeries(metaclass=abc.ABCMeta):
         -------
         ndarray
             Power spectral density with shape `(n_frequencies, ...ensemble_shape...)`.
-            Units are data_unit^2 * Hz if applicable.
+            Units are data_unit^2 / Hz (standard PSD units) if applicable.
         
         Notes
         -----
-        The PSD is computed using scipy.signal.welch and normalized by frequency
-        bin width. Results are cached unless segment_factor or window changes.
+        The PSD is computed using scipy.signal.welch in standard units [data_unit^2/Hz].
+        Results are cached unless segment_factor or window changes.
         
         For MaskedArrays, masked values are filled with zeros before FFT computation.
         
@@ -416,8 +432,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
         self._frequency, x = welch(data.T, value_hz,
                                    window=self._window,
                                    nperseg=data.shape[0] / self._segment_factor)
-        df = np.diff(self._frequency)[0]
-        return x.T * df
+        # Return PSD in standard units [data_unit^2/Hz] as computed by scipy.signal.welch
+        return x.T
 
 
 # ___oOo___

@@ -128,6 +128,40 @@ class TimeSeriesTest(unittest.TestCase):
         assert len(power) == 0
         assert len(freq) == 0
 
+    def test_power_normalization_parseval(self):
+        """Verify Parseval's theorem: integral of PSD equals temporal variance"""
+        # Use TimeSeries1D for simpler test case
+        np.random.seed(42)
+        n_samples = 1000
+        dt = 0.01  # seconds
+        data = np.random.randn(n_samples)
+        
+        # Create TimeSeries
+        t1d = TimeSeries1D()
+        t1d._get_time_vector = lambda: np.arange(n_samples) * dt
+        t1d._get_not_indexed_data = lambda: data.reshape(-1, 1)
+        t1d.get_index_of = lambda: None
+        
+        # Compute PSD (now in [unit²/Hz] after fix)
+        psd = t1d.power(segment_factor=4.0)
+        freq = t1d.frequency()
+        df = freq[1] - freq[0]
+        
+        # Temporal variance (remove mean for consistency with PSD which removes DC)
+        data_centered = data - np.mean(data)
+        temporal_var = np.var(data_centered, ddof=0)
+        
+        # Spectral variance: integrate PSD over all frequencies
+        # PSD is in [unit²/Hz], so sum(PSD * df) gives total variance
+        spectral_var = np.sum(psd) * df
+        
+        # Verify Parseval's theorem: should match within ~10%
+        rel_error = abs(temporal_var - spectral_var) / temporal_var
+        self.assertLess(rel_error, 0.10, 
+                       f"Parseval error {rel_error:.2%} exceeds 10%. "
+                       f"Temporal variance: {temporal_var:.4e}, "
+                       f"Spectral variance: {spectral_var:.4e}")
+
     def test_timeAverage(self):
         ta = self._ts.time_average()
         self.assertAlmostEqual(ta[1], 1.)
@@ -293,6 +327,85 @@ class TimeSeriesTest(unittest.TestCase):
         t1d = TimeSeries1D()
         t1d.get_index_of = lambda: None
         assert t1d.get_data(times=[2, 4]).shape == (2, 4)
+
+    def test_time_ptp(self):
+        """Test peak-to-peak over time dimension"""
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda: None
+        # Data is [[0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], [16,17,18,19]]
+        # time_ptp should give ptp along axis 0: [16,16,16,16]
+        ptp = t1d.time_ptp()
+        np.testing.assert_array_equal(ptp, [16, 16, 16, 16])
+
+    def test_ensemble_ptp(self):
+        """Test peak-to-peak over ensemble (spatial) dimensions"""
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda: None
+        # Data is [[0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], [16,17,18,19]]
+        # ensemble_ptp should give ptp along axis 1: [3, 3, 3, 3, 3]
+        ptp = t1d.ensemble_ptp()
+        np.testing.assert_array_equal(ptp, [3, 3, 3, 3, 3])
+
+    def test_time_ptp_with_masked_array(self):
+        """Test time_ptp with masked arrays"""
+        t1d = TimeSeries1D()
+        t1d._get_not_indexed_data = lambda: np.ma.array(
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            mask=[[0, 0, 1], [0, 0, 0], [0, 0, 0]]
+        )
+        t1d.get_index_of = lambda: None
+        ptp = t1d.time_ptp()
+        # Column 0: ptp([1, 4, 7]) = 6
+        # Column 1: ptp([2, 5, 8]) = 6
+        # Column 2: ptp([6, 9]) = 3 (masked value ignored)
+        expected = np.ma.array([6, 6, 3])
+        np.testing.assert_array_equal(ptp, expected)
+
+    def test_ensemble_ptp_with_masked_array(self):
+        """Test ensemble_ptp with masked arrays"""
+        t1d = TimeSeries1D()
+        t1d._get_not_indexed_data = lambda: np.ma.array(
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            mask=[[0, 0, 1], [0, 0, 0], [0, 0, 0]]
+        )
+        t1d.get_index_of = lambda: None
+        ptp = t1d.ensemble_ptp()
+        # Row 0: ptp([1, 2]) = 1 (masked value ignored)
+        # Row 1: ptp([4, 5, 6]) = 2
+        # Row 2: ptp([7, 8, 9]) = 2
+        expected = np.ma.array([1, 2, 2])
+        np.testing.assert_array_equal(ptp, expected)
+
+    def test_ensemble_rms(self):
+        """Test RMS over ensemble (spatial) dimensions"""
+        t1d = TimeSeries1D()
+        t1d.get_index_of = lambda: None
+        # Data is [[0,1,2,3], [4,5,6,7], [8,9,10,11], [12,13,14,15], [16,17,18,19]]
+        # ensemble_rms should give RMS along axis 1
+        # Row 0: RMS([0,1,2,3]) = sqrt(mean([0,1,4,9])) = sqrt(3.5)
+        # Row 1: RMS([4,5,6,7]) = sqrt(mean([16,25,36,49])) = sqrt(31.5)
+        # Row 2: RMS([8,9,10,11]) = sqrt(mean([64,81,100,121])) = sqrt(91.5)
+        # Row 3: RMS([12,13,14,15]) = sqrt(mean([144,169,196,225])) = sqrt(183.5)
+        # Row 4: RMS([16,17,18,19]) = sqrt(mean([256,289,324,361])) = sqrt(307.5)
+        rms = t1d.ensemble_rms()
+        expected = np.array([np.sqrt(3.5), np.sqrt(31.5), np.sqrt(91.5), 
+                            np.sqrt(183.5), np.sqrt(307.5)])
+        np.testing.assert_array_almost_equal(rms, expected)
+
+    def test_ensemble_rms_with_masked_array(self):
+        """Test ensemble_rms with masked arrays"""
+        t1d = TimeSeries1D()
+        t1d._get_not_indexed_data = lambda: np.ma.array(
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            mask=[[0, 0, 1], [0, 0, 0], [0, 0, 0]]
+        )
+        t1d.get_index_of = lambda: None
+        rms = t1d.ensemble_rms()
+        # Row 0: RMS([1, 2]) = sqrt(mean([1, 4])) = sqrt(2.5) (masked value ignored)
+        # Row 1: RMS([4, 5, 6]) = sqrt(mean([16, 25, 36])) = sqrt(77/3)
+        # Row 2: RMS([7, 8, 9]) = sqrt(mean([49, 64, 81])) = sqrt(194/3)
+        expected = np.ma.array([np.sqrt(2.5), np.sqrt(77/3), np.sqrt(194/3)])
+        np.testing.assert_array_almost_equal(rms, expected)
         
         
 if __name__ == "__main__":
