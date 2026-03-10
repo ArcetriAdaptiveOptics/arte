@@ -526,6 +526,70 @@ class TimeSeriesTest(unittest.TestCase):
         rms_std_manual = np.sqrt(np.mean(time_std**2))
         self.assertAlmostEqual(rms_std_fluent, rms_std_manual)
     
+    def test_chainable_api_with_2d_ensemble(self):
+        """Test chainable API works with 2D ensemble (like wavefront maps)"""
+        ts = TimeSeries2D()
+        
+        # ts shape: (2, 3, 4) → 2 timesteps, 3×4 ensemble
+        
+        # ENSEMBLE → TIME: ensemble_rms collapses (3,4) → scalar per time
+        rms_series = ts.ensemble_rms
+        self.assertIsInstance(rms_series, TimeSeries)
+        rms_array = np.array(rms_series)
+        self.assertEqual(rms_array.ndim, 1)  # (2,) - time only
+        self.assertEqual(len(rms_array), 2)  # 2 timesteps
+        
+        # Then time_mean collapses time dimension
+        mean_rms = ts.ensemble_rms.time_mean.value
+        self.assertTrue(np.isscalar(mean_rms))
+        
+        # Manual verification
+        data = ts._get_not_indexed_data()
+        rms_manual = np.sqrt(np.mean(data**2, axis=(1, 2)))  # RMS over (3,4)
+        mean_manual = np.mean(rms_manual)  # Mean over time
+        self.assertAlmostEqual(mean_rms, mean_manual)
+    
+    def test_time_then_ensemble_with_2d_ensemble(self):
+        """Test TIME → ENSEMBLE direction with 2D ensemble"""
+        ts = TimeSeries2D()
+        
+        # TIME → ENSEMBLE: time_mean collapses time, preserves (3,4) ensemble
+        time_mean_series = ts.time_mean
+        self.assertIsInstance(time_mean_series, TimeSeries)
+        
+        time_mean_data = time_mean_series._get_not_indexed_data()
+        self.assertEqual(time_mean_data.shape, (1, 3, 4))  # time_size=1, ensemble preserved
+        
+        # Then ensemble_rms collapses (3,4) → scalar
+        rms_of_mean = ts.time_mean.ensemble_rms.value
+        self.assertTrue(np.isscalar(rms_of_mean))
+        
+        # Manual verification
+        data = ts._get_not_indexed_data()
+        time_avg = np.mean(data, axis=0)  # Shape: (3, 4)
+        rms_manual = np.sqrt(np.mean(time_avg**2))
+        self.assertAlmostEqual(rms_of_mean, rms_manual)
+    
+    def test_value_property_with_2d_ensemble(self):
+        """Test .value property returns correct shape for 2D ensemble"""
+        ts = TimeSeries2D()
+        
+        # time_mean should preserve 2D ensemble shape
+        time_mean_value = ts.time_mean.value
+        self.assertEqual(time_mean_value.shape, (3, 4))  # Squeezed (1,3,4) → (3,4)
+        
+        # time_std should also preserve 2D ensemble
+        time_std_value = ts.time_std.value
+        self.assertEqual(time_std_value.shape, (3, 4))
+        
+        # ensemble_rms should give 1D time array
+        rms_value = ts.ensemble_rms.value
+        self.assertEqual(rms_value.shape, (2,))  # 2 timesteps
+        
+        # Full chain should give scalar
+        scalar_value = ts.time_mean.ensemble_rms.value
+        self.assertTrue(np.isscalar(scalar_value))
+    
     def test_numpy_compatibility_on_chained_result(self):
         """Test that chained TimeSeries works with matplotlib/numpy"""
         ts = ATimeSeries(1 * u.s)
