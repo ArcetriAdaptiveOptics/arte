@@ -97,6 +97,73 @@ class TimeSeries(metaclass=abc.ABCMeta):
         self._window = None
         self._axis_handler = AxisHandler(axes)
 
+    def __array__(self, dtype=None, copy=None):
+        """
+        Numpy compatibility protocol (numpy 2.0+ compatible).
+        
+        Enables using TimeSeries directly in numpy operations and matplotlib:
+        - plt.plot(time, ts) - automatic conversion
+        - np.mean(ts) - works directly
+        
+        Parameters
+        ----------
+        dtype : numpy dtype, optional
+            Desired dtype for the array (numpy 2.0+)
+        copy : bool, optional
+            Whether to copy the data (numpy 2.0+)
+        
+        Returns
+        -------
+        ndarray
+            Underlying data array
+        
+        Examples
+        --------
+        >>> ts = MyTimeSeries(data)
+        >>> rms = ts.ensemble_rms_property  # Returns TimeSeries
+        >>> plt.plot(rms)  # Works! __array__() called automatically
+        >>> mean_rms = np.mean(rms)  # Works!
+        """
+        arr = self._get_not_indexed_data()
+        if dtype is not None:
+            arr = arr.astype(dtype)
+        if copy:
+            arr = arr.copy()
+        return arr
+    
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        """
+        Support numpy universal functions on TimeSeries.
+        
+        Enables operations like: np.sin(ts), np.sqrt(ts), ts * 2
+        
+        Parameters
+        ----------
+        ufunc : numpy ufunc
+            The universal function being applied
+        method : str
+            The ufunc method ('__call__', 'reduce', etc.)
+        *inputs : tuple
+            Input arrays/objects
+        **kwargs : dict
+            Additional ufunc arguments
+        
+        Returns
+        -------
+        ndarray or scalar
+            Result of the ufunc operation
+        """
+        # Convert TimeSeries inputs to arrays
+        arrays = []
+        for inp in inputs:
+            if isinstance(inp, TimeSeries):
+                arrays.append(inp.__array__())
+            else:
+                arrays.append(inp)
+        
+        # Apply ufunc and return result (not wrapped in TimeSeries)
+        return getattr(ufunc, method)(*arrays, **kwargs)
+
     @abc.abstractmethod
     def _get_not_indexed_data(self):
         pass
@@ -266,16 +333,36 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return np.median(data, axis=0)
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
-    def time_std(self, *args, times=None, **kwargs):
-        '''Standard deviation over time for each series'''
+    def get_time_std(self, *args, times=None, **kwargs):
+        '''Standard deviation over time for each series
+        
+        .. deprecated:: 
+           Use the `time_std` property instead. This method will be removed in a future version.
+        '''
+        import warnings
+        warnings.warn(
+            "get_time_std() is deprecated. Use the 'time_std' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         data = self.get_data(*args, times=times, **kwargs)
         if isinstance(data, np.ma.MaskedArray):
             return np.ma.std(data, axis=0)
         return np.std(data, axis=0)
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
-    def time_average(self, *args, times=None, **kwargs):
-        '''Average value over time for each series'''
+    def get_time_average(self, *args, times=None, **kwargs):
+        '''Average value over time for each series
+        
+        .. deprecated:: 
+           Use the `time_mean` property instead. This method will be removed in a future version.
+        '''
+        import warnings
+        warnings.warn(
+            "get_time_average() is deprecated. Use the 'time_mean' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         data = self.get_data(*args, times=times, **kwargs)
         if isinstance(data, np.ma.MaskedArray):
             return np.ma.mean(data, axis=0)
@@ -323,8 +410,27 @@ class TimeSeries(metaclass=abc.ABCMeta):
         return np.median(data, axis=self._data_sample_axes(data))
 
     @modify_help(arg_str='[series_idx], [times=[from,to]]')
-    def ensemble_rms(self, *args, times=None, **kwargs):
-        '''Root-Mean-Square across series at each sampling time'''
+    def get_ensemble_rms(self, *args, times=None, **kwargs):
+        '''
+        Root-Mean-Square across series at each sampling time (legacy method).
+        
+        .. deprecated:: 
+            Use the chainable property :attr:`ensemble_rms` for fluent API:
+            ``ts.ensemble_rms`` or ``ts.filter(modes=[2,3,4]).ensemble_rms``
+            This method will be removed in a future version.
+        
+        Returns
+        -------
+        ndarray
+            RMS values (not chainable)
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_rms() is deprecated. Use the chainable property 'ensemble_rms' instead: "
+            "ts.ensemble_rms or ts.filter(modes=[2,3,4]).ensemble_rms",
+            DeprecationWarning,
+            stacklevel=2
+        )
         data = self.get_data(*args, times=times, **kwargs)
         if isinstance(data, np.ma.MaskedArray):
             return np.sqrt(np.ma.mean(np.abs(data)**2, axis=self._data_sample_axes(data)))
@@ -337,6 +443,483 @@ class TimeSeries(metaclass=abc.ABCMeta):
         if isinstance(data, np.ma.MaskedArray):
             return np.ma.ptp(data, axis=self._data_sample_axes(data))
         return np.ptp(data, axis=self._data_sample_axes(data))
+
+    # --- Chainable (Fluent) API ---
+    # Upstream filtering methods for fluent API
+    
+    def filter(self, *args, **kwargs):
+        """
+        Create filtered TimeSeries by applying ensemble and/or time selection.
+        
+        Accepts same arguments as get_data(), creating a new TimeSeries
+        with pre-filtered data for fluent chaining. Works with any Indexer
+        implementation (ModeIndexer, RowColIndexer, DefaultIndexer, custom).
+        
+        Parameters
+        ----------
+        *args, **kwargs
+            Passed to get_index_of() for ensemble filtering.
+            Common kwargs depend on the Indexer:
+            - modes= : for ModeIndexer (mode numbers)
+            - elements= : for DefaultIndexer (element indices)
+            - rows=, cols= : for RowColIndexer (spatial coordinates)
+            - coord=, axis= : for interleaved/sequential xy layouts
+        times : sequence of 2 elements, optional
+            Time range [start, stop] for temporal filtering.
+            Can contain None for one-sided filtering.
+        
+        Returns
+        -------
+        TimeSeries
+            New TimeSeries with filtered data (chainable)
+        
+        Examples
+        --------
+        >>> # Modal selection (uses ModeIndexer in derived classes)
+        >>> ts.filter(modes=[2, 3, 4]).ensemble_rms.time_mean
+        >>> 
+        >>> # Time + modal selection
+        >>> ts.filter(modes=[2, 3, 4], times=[0.5, 1.0]).ensemble_rms.time_mean
+        >>> 
+        >>> # Element selection (DefaultIndexer)
+        >>> ts.filter(elements=[0, 2, 4, 6]).time_std
+        >>> 
+        >>> # Row/col selection (RowColIndexer for 2D data)
+        >>> ts.filter(rows=slice(0, 10), cols=[5, 10]).ensemble_rms
+        >>> 
+        >>> # Chainable (filters are accumulated)
+        >>> ts.filter(modes=[2, 3, 4]).filter(times=[0.5, 1.0]).ensemble_rms.time_mean
+        >>> 
+        >>> # Custom indexer kwargs work automatically
+        >>> ts.filter(coord='x').time_mean  # for interleaved xy data
+        """
+        return self._create_filtered_series(*args, **kwargs)
+    
+    def with_times(self, times):
+        """
+        Filter to specific time interval (convenience alias for filter(times=...)).
+        
+        Returns a new chainable TimeSeries containing only data within
+        the specified time range [start, stop].
+        
+        Note: This is an alias for filter(times=...). For filtering by both
+        time and ensemble elements, use filter() directly.
+        
+        Parameters
+        ----------
+        times : sequence of 2 elements
+            Time range [start, stop] (can contain None for one-sided filtering)
+        
+        Returns
+        -------
+        TimeSeries
+            Time-filtered TimeSeries (chainable)
+        
+        Examples
+        --------
+        >>> # Filter time range and compute statistics
+        >>> ts.with_times([1, 2]).ensemble_rms.time_mean
+        >>> 
+        >>> # Chain with filter() for ensemble selection
+        >>> ts.filter(modes=[2, 3, 4]).with_times([1, 2]).ensemble_rms
+        >>> 
+        >>> # Equivalent using filter() directly (preferred)
+        >>> ts.filter(modes=[2, 3, 4], times=[1, 2]).ensemble_rms
+        """
+        return self.filter(times=times)
+    
+    def _create_filtered_series(self, *args, **kwargs):
+        """
+        Create filtered view of this TimeSeries.
+        
+        Returns a new TimeSeries that lazily applies filtering when data
+        is accessed. The filtered series supports further chaining.
+        
+        Parameters
+        ----------
+        *args
+            Positional arguments passed to get_index_of()
+        **kwargs
+            Keyword arguments for filtering:
+            - times : time range [start, stop]
+            - Other kwargs passed to get_index_of() (modes=, elements=, rows=, cols=, etc.)
+        
+        Returns
+        -------
+        TimeSeries
+            Filtered TimeSeries (chainable)
+        """
+        parent_ts = self
+        
+        # Extract times separately (handled specially by get_data)
+        filter_times = kwargs.pop('times', None)
+        filter_args = args
+        filter_kwargs = kwargs
+        
+        class FilteredTimeSeries(TimeSeries):
+            def __init__(self):
+                super().__init__()
+                self._parent = parent_ts
+                self._filter_args = filter_args
+                self._filter_kwargs = filter_kwargs
+                self._filter_times = filter_times
+            
+            def _get_not_indexed_data(self):
+                # Apply parent's filtering: delegate all to get_data()
+                return self._parent.get_data(
+                    *self._filter_args,
+                    times=self._filter_times,
+                    **self._filter_kwargs
+                )
+            
+            def get_index_of(self, *args, **kwargs):
+                # Delegate to parent's indexing
+                return self._parent.get_index_of(*args, **kwargs)
+            
+            def _create_filtered_series(self, *args, **kwargs):
+                # Support chaining: accumulate filters
+                # Merge new filters with existing ones
+                new_times = kwargs.pop('times', None)
+                if new_times is None:
+                    new_times = self._filter_times
+                
+                # Merge kwargs (new ones override existing)
+                merged_kwargs = {**self._filter_kwargs, **kwargs}
+                
+                # For args, we can't easily merge, so new args override
+                merged_args = args if args else self._filter_args
+                
+                return self._parent._create_filtered_series(
+                    *merged_args,
+                    times=new_times,
+                    **merged_kwargs
+                )
+            
+            @cache
+            def _get_time_vector(self):
+                # Time vector reflects filtering
+                if self._filter_times is not None:
+                    parent_time = self._parent.get_time_vector()
+                    parent_data = self._parent._get_not_indexed_data()
+                    
+                    # Apply time filtering logic
+                    start, stop = self._filter_times
+                    idxs = np.ones(len(parent_time), dtype=bool)
+                    if start is not None:
+                        idxs = np.logical_and(idxs, parent_time >= start)
+                    if stop is not None:
+                        idxs = np.logical_and(idxs, parent_time < stop)
+                    
+                    return parent_time[idxs]
+                else:
+                    return self._parent.get_time_vector()
+            
+            @cached_property
+            def delta_time(self):
+                return self._parent.delta_time
+        
+        return FilteredTimeSeries()
+    
+    # Chainable operations (properties return TimeSeries)
+    
+    def _create_reduced_series(self, data, operation_name='reduced'):
+        """
+        Create new TimeSeries after reduction operation.
+        
+        Helper for chainable operations that reduce dimensions.
+        Preserves time-related metadata in the new series.
+        
+        Parameters
+        ----------
+        data : ndarray
+            Reduced data (e.g., 1D after ensemble aggregation)
+        operation_name : str, optional
+            Name of operation for tracking/debugging
+        
+        Returns
+        -------
+        TimeSeries
+            New TimeSeries instance wrapping the reduced data (chainable)
+        
+        Notes
+        -----
+        This creates a minimal TimeSeries subclass that wraps the reduced array.
+        Time axis is preserved (axis 0), allowing further temporal operations.
+        """
+        # Create anonymous subclass with the reduced data
+        parent_ts = self
+        
+        class ReducedTimeSeries(TimeSeries):
+            def __init__(self):
+                super().__init__()
+                self._reduced_data = data
+                self._parent = parent_ts
+                self._operation = operation_name
+            
+            def _get_not_indexed_data(self):
+                return self._reduced_data
+            
+            def get_index_of(self, *args, **kwargs):
+                # Reduced series has no ensemble indexing
+                return None
+            
+            def __getitem__(self, key):
+                """Support numpy-style indexing"""
+                return self._reduced_data[key]
+            
+            @cache
+            def _get_time_vector(self):
+                # Inherit time vector from parent
+                return self._parent.get_time_vector()
+            
+            @cached_property
+            def delta_time(self):
+                # Inherit delta_time from parent
+                return self._parent.delta_time
+        
+        return ReducedTimeSeries()
+    
+    def _create_temporal_reduced_series(self, data, operation_name='time_reduced'):
+        """
+        Create TimeSeries after temporal reduction operation.
+        
+        Used for operations that collapse the time dimension (e.g., time_mean, time_std).
+        Returns a TimeSeries with time_size=1, using mean time as the single timestamp.
+        
+        Parameters
+        ----------
+        data : ndarray
+            Temporally reduced data (no time axis, or time_size=1)
+        operation_name : str, optional
+            Name of operation for tracking/debugging
+        
+        Returns
+        -------
+        TimeSeries
+            New TimeSeries with shape (1, ...ensemble_shape...) (chainable)
+        
+        Notes
+        -----
+        The time_vector for the reduced series contains a single element:
+        the mean time of the original series.
+        """
+        parent_ts = self
+        
+        # Ensure data has time axis with size 1
+        if data.ndim == 0:
+            # Scalar → (1,)
+            reduced_data = np.array([data])
+        elif data.shape[0] != 1:
+            # Add time axis: (ensemble,) → (1, ensemble...)
+            reduced_data = np.expand_dims(data, axis=0)
+        else:
+            reduced_data = data
+        
+        class TemporalReducedTimeSeries(TimeSeries):
+            def __init__(self):
+                super().__init__()
+                self._reduced_data = reduced_data
+                self._parent = parent_ts
+                self._operation = operation_name
+            
+            def _get_not_indexed_data(self):
+                return self._reduced_data
+            
+            def get_index_of(self, *args, **kwargs):
+                # Delegate to parent for ensemble indexing
+                return self._parent.get_index_of(*args, **kwargs)
+            
+            def __getitem__(self, key):
+                """Support numpy-style indexing"""
+                return self._reduced_data[key]
+            
+            @cache
+            def _get_time_vector(self):
+                # Single-element time vector: mean of parent times
+                parent_time = self._parent.get_time_vector()
+                if isinstance(parent_time, u.Quantity):
+                    return np.array([np.mean(parent_time.value)]) * parent_time.unit
+                else:
+                    return np.array([np.mean(parent_time)])
+            
+            @cached_property
+            def delta_time(self):
+                # Delta time not meaningful for single-timestamp series
+                return 0 if not isinstance(self._parent.delta_time, u.Quantity) else 0 * self._parent.delta_time.unit
+        
+        return TemporalReducedTimeSeries()
+    
+    @property
+    def value(self):
+        """
+        Extract final value(s) from TimeSeries (convenience accessor).
+        
+        Returns the underlying data as a numpy array or scalar,
+        similar to pandas .values. Useful for getting final results
+        from chained operations without explicit numpy conversion.
+        
+        Returns
+        -------
+        float, int, or ndarray
+            - If shape is (1,): returns scalar
+            - If shape is (1, n): returns 1D array of length n
+            - Otherwise: returns the full data array
+        
+        Examples
+        --------
+        >>> # Extract scalar from fully reduced series
+        >>> scalar = ts.ensemble_rms.time_mean.value  # → float
+        >>> 
+        >>> # Extract array from partially reduced series  
+        >>> array = ts.time_mean.value  # → ndarray(ensemble_shape)
+        >>> 
+        >>> # Works like pandas .values
+        >>> values = ts.value  # → full data array
+        """
+        data = self._get_not_indexed_data()
+        
+        # Remove trivial dimensions and extract scalar if possible
+        squeezed = np.squeeze(data)
+        
+        if squeezed.ndim == 0:
+            # Scalar (0D array) → Python scalar
+            return squeezed.item()
+        else:
+            return squeezed
+    
+    @property
+    def ensemble_rms(self):
+        """
+        RMS over ensemble dimensions (chainable property).
+        
+        Returns a TimeSeries containing the RMS computed across all
+        ensemble (non-time) dimensions at each time step.
+        The result can be chained with time aggregation operations.
+        
+        Returns
+        -------
+        TimeSeries
+            Time series of ensemble RMS values (numpy-compatible via __array__)
+        
+        Notes
+        -----
+        This property:
+        - Works on ALL data (no filtering)
+        - Returns TimeSeries (chainable with .time_mean, .time_std, etc.)
+        - Is numpy-compatible via __array__ protocol
+        
+        For filtered data, use upstream filtering:
+        ``ts.with_modes([2,3,4]).with_times([1,2]).ensemble_rms``
+        
+        For legacy array return, use: :meth:`get_ensemble_rms` (deprecated)
+        
+        Examples
+        --------
+        >>> # Chainable operations
+        >>> ts = WavefrontSeries(...)  # shape (n_frames, ny, nx)
+        >>> rms_series = ts.ensemble_rms  # shape (n_frames,) - chainable!
+        >>> mean_rms = rms_series.time_mean  # scalar - fluent API!
+        >>> 
+        >>> # Numpy/matplotlib compatible:
+        >>> plt.plot(time, rms_series)  # Works via __array__()
+        >>> np.mean(rms_series)  # Works!
+        >>> 
+        >>> # With filtering (upstream):
+        >>> mean_rms = ts.with_modes([2,3,4]).ensemble_rms.time_mean
+        """
+        data = self._get_not_indexed_data()
+        axis = self._data_sample_axes(data)
+        
+        if isinstance(data, np.ma.MaskedArray):
+            rms_data = np.sqrt(np.ma.mean(np.abs(data)**2, axis=axis))
+        else:
+            rms_data = np.sqrt(np.mean(np.abs(data)**2, axis=axis))
+        
+        return self._create_reduced_series(rms_data, operation_name='ensemble_rms')
+    
+    @property
+    def time_mean(self):
+        """
+        Mean over time dimension (chainable property).
+        
+        Computes the average across time (axis 0), returning a
+        TimeSeries with time_size=1 containing the temporal mean.
+        Further operations (like ensemble_rms, ensemble_ptp) can be chained.
+        
+        Returns
+        -------
+        TimeSeries
+            TimeSeries with shape (1, ...ensemble_shape...) (chainable)
+            Use .value to extract the final array/scalar.
+        
+        Notes
+        -----
+        Chainable operation: returns TimeSeries (not array).
+        For convenient array extraction, use .value:
+        ``ts.time_mean.value`` → ndarray or scalar
+        
+        Examples
+        --------
+        >>> ts = WavefrontSeries(...)  # shape (n_frames, ny, nx)
+        >>> mean_ts = ts.time_mean  # TimeSeries(1, ny, nx) - chainable!
+        >>> mean_wf = ts.time_mean.value  # ndarray(ny, nx) - extracted
+        >>> 
+        >>> # Chaining works both ways now:
+        >>> rms_series = ts.ensemble_rms  # (n_frames,)
+        >>> mean_rms = rms_series.time_mean.value  # scalar
+        >>> 
+        >>> # NEW: time-then-ensemble operations
+        >>> ptp_map = ts.time_mean.ensemble_ptp.value  # peak-to-valley of long-exposure
+        """
+        data = self._get_not_indexed_data()
+        if isinstance(data, np.ma.MaskedArray):
+            mean_data = np.ma.mean(data, axis=0)
+        else:
+            mean_data = np.mean(data, axis=0)
+        
+        return self._create_temporal_reduced_series(mean_data, operation_name='time_mean')
+    
+    @property
+    def time_std(self):
+        """
+        Standard deviation over time dimension (chainable property).
+        
+        Computes the std across time (axis 0), returning a
+        TimeSeries with time_size=1 containing the temporal std.
+        Further operations (like ensemble_rms, ensemble_max) can be chained.
+        
+        Returns
+        -------
+        TimeSeries
+            TimeSeries with shape (1, ...ensemble_shape...) (chainable)
+            Use .value to extract the final array/scalar.
+        
+        Notes
+        -----
+        Chainable operation: returns TimeSeries (not array).
+        For convenient array extraction, use .value:
+        ``ts.time_std.value`` → ndarray or scalar
+        
+        Examples
+        --------
+        >>> ts = WavefrontSeries(...)  # shape (n_frames, ny, nx)
+        >>> std_ts = ts.time_std  # TimeSeries(1, ny, nx) - chainable!
+        >>> std_wf = ts.time_std.value  # ndarray(ny, nx) - extracted
+        >>> 
+        >>> # Chaining:
+        >>> rms_series = ts.ensemble_rms  # (n_frames,)
+        >>> std_rms = rms_series.time_std.value  # scalar
+        >>> 
+        >>> # NEW: time-then-ensemble operations
+        >>> max_std = ts.time_std.ensemble_max.value  # maximum variability
+        """
+        data = self._get_not_indexed_data()
+        if isinstance(data, np.ma.MaskedArray):
+            std_data = np.ma.std(data, axis=0)
+        else:
+            std_data = np.std(data, axis=0)
+        
+        return self._create_temporal_reduced_series(std_data, operation_name='time_std')
 
     @modify_help(call='power(from_freq=xx, to_freq=xx, [series_idx])')
     def power(self, *args, from_freq=None, to_freq=None,
