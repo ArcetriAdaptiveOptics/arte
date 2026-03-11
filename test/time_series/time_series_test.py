@@ -824,6 +824,51 @@ class TimeSeriesTest(unittest.TestCase):
         # After both reductions (scalar or near-scalar)
         fully_reduced = ts.ensemble_rms.time_mean
         self.assertTrue(len(fully_reduced.shape) <= 1)
+    
+    def test_axes_preserved_in_temporal_reductions(self):
+        """Test that axes metadata is preserved in temporal reduction operations"""
+        
+        # Create TimeSeries with named axes
+        class TimeSeriesWithAxes(TimeSeries):
+            def __init__(self):
+                super().__init__(axes=('rows', 'cols'))
+                
+            def _get_not_indexed_data(self):
+                return np.arange(2*3*4).reshape(2, 3, 4)  # (time, rows, cols)
+            
+            def get_index_of(self, *args, **kwargs):
+                return None
+        
+        ts = TimeSeriesWithAxes()
+        
+        # Verify parent has axes
+        self.assertEqual(ts.axes, ('rows', 'cols'))
+        
+        # Test time_mean preserves axes
+        time_mean = ts.time_mean
+        self.assertEqual(time_mean.axes, ('rows', 'cols'))
+        
+        # Test time_std preserves axes
+        time_std = ts.time_std
+        self.assertEqual(time_std.axes, ('rows', 'cols'))
+        
+        # Test time_median preserves axes
+        time_median = ts.time_median
+        self.assertEqual(time_median.axes, ('rows', 'cols'))
+        
+        # Test time_rms preserves axes
+        time_rms = ts.time_rms
+        self.assertEqual(time_rms.axes, ('rows', 'cols'))
+        
+        # Test time_ptp preserves axes
+        time_ptp = ts.time_ptp
+        self.assertEqual(time_ptp.axes, ('rows', 'cols'))
+        
+        # Test chained operations preserve axes
+        chained = ts.ensemble_mean.time_mean
+        # After ensemble_mean, axes should be None or empty tuple (ensemble collapsed)
+        # So chained.axes should be None or ()
+        self.assertIn(chained.axes, (None, ()))
         
         
 if __name__ == "__main__":

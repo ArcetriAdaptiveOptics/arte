@@ -795,7 +795,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         
         class TemporalReducedTimeSeries(TimeSeries):
             def __init__(self):
-                super().__init__()
+                super().__init__(axes=parent_ts.axes)
                 self._reduced_data = reduced_data
                 self._parent = parent_ts
                 self._operation = operation_name
