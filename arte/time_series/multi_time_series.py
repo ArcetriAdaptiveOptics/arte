@@ -214,6 +214,66 @@ class MultiTimeSeries(TimeSeries):
             return super().get_ensemble_median(*args, times=times, **kwargs)
         else:
             raise Exception('Data series cannot be combined')
+
+    @modify_help(arg_str='[time_idx]')
+    def get_ensemble_rms(self, *args, times=None, **kwargs):
+        '''
+        Root-Mean-Square across series at each sampling time (legacy method).
+        
+        .. deprecated::
+           Use the `ensemble_rms` property instead. This method will be removed in a future version.
+        
+        Returns
+        -------
+        ndarray
+            RMS values (not chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates (not homogeneous)
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_rms() is deprecated. Use the 'ensemble_rms' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        if self.is_homogeneous(*args, **kwargs):
+            self._impersonateDeltaTime(*args, **kwargs) 
+            return super().get_ensemble_rms(*args, times=times, **kwargs)
+        else:
+            raise Exception('Data series cannot be combined')
+
+    @modify_help(arg_str='[time_idx]')
+    def get_ensemble_ptp(self, *args, times=None, **kwargs):
+        '''
+        Peak-to-peak (max - min) across series at each sampling time (legacy method).
+        
+        .. deprecated::
+           Use the `ensemble_ptp` property instead. This method will be removed in a future version.
+        
+        Returns
+        -------
+        ndarray
+            Peak-to-peak values (not chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates (not homogeneous)
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_ptp() is deprecated. Use the 'ensemble_ptp' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        if self.is_homogeneous(*args, **kwargs):
+            self._impersonateDeltaTime(*args, **kwargs) 
+            return super().get_ensemble_ptp(*args, times=times, **kwargs)
+        else:
+            raise Exception('Data series cannot be combined')
     
     # Chainable properties (override base class to add homogeneity check)
     

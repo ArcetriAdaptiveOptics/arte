@@ -130,5 +130,48 @@ class MultiTimeSeriesTest(unittest.TestCase):
         
         with self.assertWarns(DeprecationWarning):
             _ = multi.get_ensemble_median()
-
+        
+        with self.assertWarns(DeprecationWarning):
+            _ = multi.get_ensemble_rms()
+        
+        with self.assertWarns(DeprecationWarning):
+            _ = multi.get_ensemble_ptp()
+    
+    def test_deprecated_methods_check_homogeneity(self):
+        """Test that all deprecated ensemble methods check homogeneity"""
+        multi_hetero = AMultiTimeSeries(self.series1, self.series2)
+        multi_homo = AMultiTimeSeries(self.series1, self.series1b)
+        
+        # Heterogeneous series should raise for all deprecated methods
+        with self.assertRaises(Exception):
+            with self.assertWarns(DeprecationWarning):
+                _ = multi_hetero.get_ensemble_average()
+        
+        with self.assertRaises(Exception):
+            with self.assertWarns(DeprecationWarning):
+                _ = multi_hetero.get_ensemble_std()
+        
+        with self.assertRaises(Exception):
+            with self.assertWarns(DeprecationWarning):
+                _ = multi_hetero.get_ensemble_median()
+        
+        with self.assertRaises(Exception):
+            with self.assertWarns(DeprecationWarning):
+                _ = multi_hetero.get_ensemble_rms()
+        
+        with self.assertRaises(Exception):
+            with self.assertWarns(DeprecationWarning):
+                _ = multi_hetero.get_ensemble_ptp()
+        
+        # Homogeneous series should work for all (with warnings)
+        with self.assertWarns(DeprecationWarning):
+            _ = multi_homo.get_ensemble_average()
+        with self.assertWarns(DeprecationWarning):
+            _ = multi_homo.get_ensemble_std()
+        with self.assertWarns(DeprecationWarning):
+            _ = multi_homo.get_ensemble_median()
+        with self.assertWarns(DeprecationWarning):
+            _ = multi_homo.get_ensemble_rms()
+        with self.assertWarns(DeprecationWarning):
+            _ = multi_homo.get_ensemble_ptp()
 
