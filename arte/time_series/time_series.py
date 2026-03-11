@@ -636,7 +636,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         
         class FilteredTimeSeries(TimeSeries):
             def __init__(self):
-                super().__init__()
+                super().__init__(axes=parent_ts.axes)
                 self._parent = parent_ts
                 self._filter_args = filter_args
                 self._filter_kwargs = filter_kwargs
