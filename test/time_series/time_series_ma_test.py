@@ -47,17 +47,17 @@ class TimeSeriesMATest(unittest.TestCase):
         self.assertEqual(self._ts2d.time_size(), len(data2d))
 
     def test_timeAverage(self):
-        ta = self._ts2d.time_average()
+        ta = self._ts2d.time_mean.value
         np.testing.assert_almost_equal(ta, data2d.mean(axis=0))
         np.testing.assert_array_equal(ta.mask, m2d)
 
     def test_timeAverage_withTimes(self):
-        ta = self._ts2d.time_average(times=[1, 3])
+        ta = self._ts2d.filter(times=[1, 3]).time_mean.value
         np.testing.assert_almost_equal(ta, (data2d[1] + data2d[2])/2)
         np.testing.assert_array_equal(ta.mask, m2d)
 
     def test_ensemble_median(self):
-        np.testing.assert_almost_equal(self._ts2d.time_median(mode=0), np.median(data2d, axis=0))
+        np.testing.assert_almost_equal(self._ts2d.time_median.value, np.median(data2d, axis=0))
 
     def test_1d_correct_indexing(self):
         self._ts1d.get_index_of = lambda *args, **kwargs: 1
@@ -116,7 +116,7 @@ class TimeSeriesMATest(unittest.TestCase):
 
     def test_2d_mean(self):
         self._ts2d.get_index_of = lambda *args, **kwargs: None
-        np.testing.assert_array_almost_equal(self._ts2d.ensemble_average(), data2d.mean(axis=(1,2)))
+        np.testing.assert_array_almost_equal(self._ts2d.ensemble_mean.value, data2d.mean(axis=(1,2)))
 
     def test_2d_index(self):
         self._ts2d.get_index_of = lambda *args, **kwargs: RowColIndexer().rowcol(*args, **kwargs)
