@@ -803,6 +803,27 @@ class TimeSeriesTest(unittest.TestCase):
         # Should be equivalent to chained calls
         chained = ts.filter(modes=[2, 3, 4]).with_times([0.2 * u.s, 0.5 * u.s])
         np.testing.assert_array_equal(filtered_data, chained._get_not_indexed_data())
+    
+    def test_shape_property(self):
+        """Test that .shape property works like numpy arrays"""
+        ts = ATimeSeries(1 * u.s)
+        
+        # Full data shape
+        expected_shape = ts._get_not_indexed_data().shape
+        self.assertEqual(ts.shape, expected_shape)
+        
+        # After ensemble reduction (should collapse to 1D)
+        ens_rms = ts.ensemble_rms
+        self.assertEqual(len(ens_rms.shape), 1)
+        self.assertEqual(ens_rms.shape[0], ts.time_size())
+        
+        # After time reduction (should keep ensemble dimension)
+        time_mean = ts.time_mean
+        self.assertIn(ts.ensemble_size(), time_mean.shape)
+        
+        # After both reductions (scalar or near-scalar)
+        fully_reduced = ts.ensemble_rms.time_mean
+        self.assertTrue(len(fully_reduced.shape) <= 1)
         
         
 if __name__ == "__main__":

@@ -785,8 +785,8 @@ class TimeSeries(metaclass=abc.ABCMeta):
         
         # Ensure data has time axis with size 1
         if data.ndim == 0:
-            # Scalar → (1,)
-            reduced_data = np.array([data])
+            # Scalar → (1,) - use atleast_1d to preserve Quantity
+            reduced_data = np.atleast_1d(data)
         elif data.shape[0] != 1:
             # Add time axis: (ensemble,) → (1, ensemble...)
             reduced_data = np.expand_dims(data, axis=0)
@@ -826,6 +826,28 @@ class TimeSeries(metaclass=abc.ABCMeta):
                 return 0 if not isinstance(self._parent.delta_time, u.Quantity) else 0 * self._parent.delta_time.unit
         
         return TemporalReducedTimeSeries()
+    
+    @property
+    def shape(self):
+        """
+        Shape of the underlying data array.
+        
+        Returns the shape tuple of the TimeSeries data, similar to numpy arrays.
+        This provides convenient access without requiring explicit conversion.
+        
+        Returns
+        -------
+        tuple of int
+            Shape of the data array (time, ensemble...)
+        
+        Examples
+        --------
+        >>> ts.shape
+        (1000, 10)  # 1000 time steps, 10 modes
+        >>> ts.ensemble_rms.shape
+        (1000,)  # Collapsed to time dimension only
+        """
+        return self._get_not_indexed_data().shape
     
     @property
     def value(self):

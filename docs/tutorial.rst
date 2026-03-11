@@ -28,3 +28,11 @@ Utils
     :maxdepth: 4
 
     notebook/utils/discrete_fourier_transform
+
+Time Series
+-----------
+
+.. toctree::
+    :maxdepth: 4
+
+    notebook/time_series/time_series_examples
