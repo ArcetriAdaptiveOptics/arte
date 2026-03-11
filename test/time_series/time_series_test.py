@@ -804,6 +804,40 @@ class TimeSeriesTest(unittest.TestCase):
         chained = ts.filter(modes=[2, 3, 4]).with_times([0.2 * u.s, 0.5 * u.s])
         np.testing.assert_array_equal(filtered_data, chained._get_not_indexed_data())
     
+    def test_filter_times_validation_in_time_vector(self):
+        """Test that FilteredTimeSeries._get_time_vector validates times parameter"""
+        ts = ATimeSeries(1 * u.s)
+        
+        # Invalid times: not a sequence
+        with self.assertRaises(TimeSeriesException):
+            filtered = ts.filter(times=1.0)
+            _ = filtered.get_time_vector()  # Should raise when accessing time vector
+        
+        # Invalid times: wrong length
+        with self.assertRaises(TimeSeriesException):
+            filtered = ts.filter(times=[1.0, 2.0, 3.0])
+            _ = filtered.get_time_vector()  # Should raise when accessing time vector
+    
+    def test_filter_times_unit_conversion_in_time_vector(self):
+        """Test that FilteredTimeSeries._get_time_vector converts time units correctly"""
+        ts = ATimeSeries(1 * u.s)
+        
+        # Filter with float times (no units) - should work and convert to parent's units
+        filtered = ts.with_times([0.2, 0.5])
+        filtered_time = filtered.get_time_vector()
+        
+        # Time vector should still be a Quantity with parent's units
+        self.assertIsInstance(filtered_time, u.Quantity)
+        self.assertEqual(filtered_time.unit, u.s)
+        
+        # Values should be correctly filtered
+        self.assertTrue(np.all(filtered_time >= 0.2 * u.s))
+        self.assertTrue(np.all(filtered_time < 0.5 * u.s))
+        
+        # Should match get_data() behavior
+        filtered_data = filtered._get_not_indexed_data()
+        self.assertEqual(len(filtered_time), len(filtered_data))
+    
     def test_shape_property(self):
         """Test that .shape property works like numpy arrays"""
         ts = ATimeSeries(1 * u.s)

@@ -677,11 +677,20 @@ class TimeSeries(metaclass=abc.ABCMeta):
             def _get_time_vector(self):
                 # Time vector reflects filtering
                 if self._filter_times is not None:
-                    parent_time = self._parent.get_time_vector()
-                    parent_data = self._parent._get_not_indexed_data()
+                    # Validate times parameter (same as get_data)
+                    if not isinstance(self._filter_times, collections.abc.Sequence) or len(self._filter_times) != 2:
+                        raise TimeSeriesException('Times keywords must be a sequence of two elements: [start, stop]')
                     
-                    # Apply time filtering logic
+                    parent_time = self._parent.get_time_vector()
+                    
+                    # Apply time filtering logic with unit conversion (same as get_data)
                     start, stop = self._filter_times
+                    if isinstance(parent_time, u.Quantity):
+                        if start is not None:
+                            start = make_sure_its_a(parent_time.unit, start)
+                        if stop is not None:
+                            stop = make_sure_its_a(parent_time.unit, stop)
+                    
                     idxs = np.ones(len(parent_time), dtype=bool)
                     if start is not None:
                         idxs = np.logical_and(idxs, parent_time >= start)
