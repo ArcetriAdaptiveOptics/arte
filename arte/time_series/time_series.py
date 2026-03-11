@@ -986,7 +986,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         
         Computes the std across time (axis 0), returning a
         TimeSeries with time_size=1 containing the temporal std.
-        Further operations (like ensemble_rms, ensemble_max) can be chained.
+        Further operations (like ensemble_rms, ensemble_ptp) can be chained.
         
         Returns
         -------
@@ -1011,7 +1011,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         >>> std_rms = rms_series.time_std.value  # scalar
         >>> 
         >>> # NEW: time-then-ensemble operations
-        >>> max_std = ts.time_std.ensemble_max.value  # maximum variability
+        >>> ptp_std = ts.time_std.ensemble_ptp.value  # peak-to-peak temporal variability
         """
         data = self._get_not_indexed_data()
         if isinstance(data, np.ma.MaskedArray):
