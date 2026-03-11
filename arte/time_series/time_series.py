@@ -909,7 +909,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         - Is numpy-compatible via __array__ protocol
         
         For filtered data, use upstream filtering:
-        ``ts.with_modes([2,3,4]).with_times([1,2]).ensemble_rms``
+        ``ts.filter(modes=[2,3,4]).with_times([1,2]).ensemble_rms``
         
         For legacy array return, use: :meth:`get_ensemble_rms` (deprecated)
         
@@ -925,7 +925,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         >>> np.mean(rms_series)  # Works!
         >>> 
         >>> # With filtering (upstream):
-        >>> mean_rms = ts.with_modes([2,3,4]).ensemble_rms.time_mean
+        >>> mean_rms = ts.filter(modes=[2,3,4]).ensemble_rms.time_mean
         """
         data = self._get_not_indexed_data()
         axis = self._data_sample_axes(data)
