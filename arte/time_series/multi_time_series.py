@@ -12,13 +12,34 @@ class MultiTimeSeries(TimeSeries):
     After being initialized with a list of
     :class:`~arte.time_series.time_series.TimeSeries` objects, which can
     have different ensemble sizes and length, it behaves as if all the data
-    was part of a single ensemble. Operations that make calculations
-    time-wise (like 
-    :meth:`~arte.time_series.time_series.TimeSeries.time_std()`) work in any
-    case. The ensemble-wise ones
-    (like :meth:`~arte.time_series.time_series.TimeSeries.ensemble_std()`)
-    only work if deltaTime is the same
-    across all series, and raise an Exception otherwise.
+    was part of a single ensemble. 
+    
+    **Time operations** (like :attr:`time_mean`, :attr:`time_std`) work in any case.
+    
+    **Ensemble operations** (like :attr:`ensemble_mean`, :attr:`ensemble_std`) 
+    only work if all series have the same sampling rate (``delta_time``), 
+    and raise an Exception otherwise. Use :meth:`is_homogeneous` to check 
+    compatibility before calling ensemble operations.
+    
+    Examples
+    --------
+    >>> # Create multi-series with compatible sampling
+    >>> multi = MultiTimeSeries(series1_1khz, series2_1khz)
+    >>> multi.is_homogeneous()  # True - same sampling rates
+    True
+    >>> mean = multi.ensemble_mean.value  # Works!
+    >>> 
+    >>> # Incompatible sampling raises exception
+    >>> multi2 = MultiTimeSeries(series_1khz, series_500hz)
+    >>> multi2.ensemble_mean  # Raises Exception - incompatible rates
+    >>> 
+    >>> # Time operations always work
+    >>> time_avg = multi2.time_mean.value  # Always works
+    
+    Notes
+    -----
+    Chainable API: ensemble operations return TimeSeries objects that can
+    be chained with time operations and vice versa.
     '''
     def __init__(self, *args):
         super().__init__()
@@ -60,7 +81,7 @@ class MultiTimeSeries(TimeSeries):
         Notes
         -----
         This check is necessary before calling ensemble-wise operations
-        like :meth:`ensemble_average` or :meth:`ensemble_std`, which
+        like :attr:`ensemble_mean` or :attr:`ensemble_std`, which
         require uniform time sampling across all series.
         
         Examples
@@ -102,31 +123,349 @@ class MultiTimeSeries(TimeSeries):
 
         return dt
 
+    # Legacy methods (deprecated - use properties instead)
+    
     @modify_help(arg_str='[time_idx]')
-    def ensemble_average(self, *args, times=None, **kwargs):
-        ''' Average across series at each sampling time '''
+    def get_ensemble_average(self, *args, times=None, **kwargs):
+        '''
+        Average across series at each sampling time (legacy method).
+        
+        .. deprecated::
+           Use the `ensemble_mean` property instead. This method will be removed in a future version.
+        
+        Returns
+        -------
+        ndarray
+            Mean values (not chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates (not homogeneous)
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_average() is deprecated. Use the 'ensemble_mean' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         if self.is_homogeneous(*args, **kwargs):
             self._impersonateDeltaTime(*args, **kwargs) 
-            return super().ensemble_average(*args, times=times, **kwargs)
+            return super().get_ensemble_average(*args, times=times, **kwargs)
         else:
             raise Exception('Data series cannot be combined')
 
     @modify_help(arg_str='[time_idx]')
-    def ensemble_std(self, *args, times=None, **kwargs):
-        ''' Standard deviation across series at each sampling time '''
+    def get_ensemble_std(self, *args, times=None, **kwargs):
+        '''
+        Standard deviation across series at each sampling time (legacy method).
+        
+        .. deprecated::
+           Use the `ensemble_std` property instead. This method will be removed in a future version.
+        
+        Returns
+        -------
+        ndarray
+            Std values (not chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates (not homogeneous)
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_std() is deprecated. Use the 'ensemble_std' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         if self.is_homogeneous(*args, **kwargs):
             self._impersonateDeltaTime(*args, **kwargs) 
-            return super().ensemble_std(*args, times=times, **kwargs)
+            return super().get_ensemble_std(*args, times=times, **kwargs)
         else:
             raise Exception('Data series cannot be combined')
 
     @modify_help(arg_str='[time_idx]')
-    def ensemble_median(self, *args, times=None, **kwargs):
-        ''' Standard deviation across series at each sampling time '''
+    def get_ensemble_median(self, *args, times=None, **kwargs):
+        '''
+        Median across series at each sampling time (legacy method).
+        
+        .. deprecated::
+           Use the `ensemble_median` property instead. This method will be removed in a future version.
+        
+        Returns
+        -------
+        ndarray
+            Median values (not chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates (not homogeneous)
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_median() is deprecated. Use the 'ensemble_median' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         if self.is_homogeneous(*args, **kwargs):
             self._impersonateDeltaTime(*args, **kwargs) 
-            return super().ensemble_median(*args, times=times, **kwargs)
+            return super().get_ensemble_median(*args, times=times, **kwargs)
         else:
             raise Exception('Data series cannot be combined')
+
+    @modify_help(arg_str='[time_idx]')
+    def get_ensemble_rms(self, *args, times=None, **kwargs):
+        '''
+        Root-Mean-Square across series at each sampling time (legacy method).
+        
+        .. deprecated::
+           Use the `ensemble_rms` property instead. This method will be removed in a future version.
+        
+        Returns
+        -------
+        ndarray
+            RMS values (not chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates (not homogeneous)
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_rms() is deprecated. Use the 'ensemble_rms' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        if self.is_homogeneous(*args, **kwargs):
+            self._impersonateDeltaTime(*args, **kwargs) 
+            return super().get_ensemble_rms(*args, times=times, **kwargs)
+        else:
+            raise Exception('Data series cannot be combined')
+
+    @modify_help(arg_str='[time_idx]')
+    def get_ensemble_ptp(self, *args, times=None, **kwargs):
+        '''
+        Peak-to-peak (max - min) across series at each sampling time (legacy method).
+        
+        .. deprecated::
+           Use the `ensemble_ptp` property instead. This method will be removed in a future version.
+        
+        Returns
+        -------
+        ndarray
+            Peak-to-peak values (not chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates (not homogeneous)
+        '''
+        import warnings
+        warnings.warn(
+            "get_ensemble_ptp() is deprecated. Use the 'ensemble_ptp' property instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        if self.is_homogeneous(*args, **kwargs):
+            self._impersonateDeltaTime(*args, **kwargs) 
+            return super().get_ensemble_ptp(*args, times=times, **kwargs)
+        else:
+            raise Exception('Data series cannot be combined')
+    
+    # Chainable properties (override base class to add homogeneity check)
+    
+    @property
+    def ensemble_mean(self):
+        """
+        Mean over ensemble dimensions (chainable property).
+        
+        Computes the mean across all series at each time step.
+        Requires all series to have compatible sampling rates.
+        
+        Returns
+        -------
+        TimeSeries
+            Mean across ensemble at each time step (chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates.
+            Use :meth:`is_homogeneous` to check compatibility first.
+        
+        Examples
+        --------
+        >>> # Check compatibility before using
+        >>> if multi.is_homogeneous():
+        ...     mean = multi.ensemble_mean.value
+        >>> 
+        >>> # Chain with time operations
+        >>> overall_mean = multi.ensemble_mean.time_mean.value
+        
+        See Also
+        --------
+        is_homogeneous : Check if series have compatible sampling rates
+        ensemble_std : Standard deviation across ensemble
+        ensemble_median : Median across ensemble
+        """
+        if not self.is_homogeneous():
+            raise Exception('Data series cannot be combined - incompatible sampling rates. '
+                          'Use is_homogeneous() to check compatibility.')
+        self._impersonateDeltaTime()
+        return super().ensemble_mean
+    
+    @property
+    def ensemble_std(self):
+        """
+        Standard deviation over ensemble dimensions (chainable property).
+        
+        Computes the std across all series at each time step.
+        Requires all series to have compatible sampling rates.
+        
+        Returns
+        -------
+        TimeSeries
+            Std across ensemble at each time step (chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates.
+            Use :meth:`is_homogeneous` to check compatibility first.
+        
+        Examples
+        --------
+        >>> if multi.is_homogeneous():
+        ...     std = multi.ensemble_std.value
+        >>> 
+        >>> # Chain with time operations
+        >>> mean_std = multi.ensemble_std.time_mean.value
+        
+        See Also
+        --------
+        is_homogeneous : Check if series have compatible sampling rates
+        ensemble_mean : Mean across ensemble
+        """
+        if not self.is_homogeneous():
+            raise Exception('Data series cannot be combined - incompatible sampling rates. '
+                          'Use is_homogeneous() to check compatibility.')
+        self._impersonateDeltaTime()
+        return super().ensemble_std
+    
+    @property
+    def ensemble_median(self):
+        """
+        Median over ensemble dimensions (chainable property).
+        
+        Computes the median across all series at each time step.
+        Requires all series to have compatible sampling rates.
+        
+        Returns
+        -------
+        TimeSeries
+            Median across ensemble at each time step (chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates.
+            Use :meth:`is_homogeneous` to check compatibility first.
+        
+        Examples
+        --------
+        >>> if multi.is_homogeneous():
+        ...     median = multi.ensemble_median.value
+        >>> 
+        >>> # Chain with time operations
+        >>> median_avg = multi.ensemble_median.time_mean.value
+        
+        See Also
+        --------
+        is_homogeneous : Check if series have compatible sampling rates
+        ensemble_mean : Mean across ensemble
+        """
+        if not self.is_homogeneous():
+            raise Exception('Data series cannot be combined - incompatible sampling rates. '
+                          'Use is_homogeneous() to check compatibility.')
+        self._impersonateDeltaTime()
+        return super().ensemble_median
+    
+    @property
+    def ensemble_rms(self):
+        """
+        RMS over ensemble dimensions (chainable property).
+        
+        Computes the RMS across all series at each time step.
+        Requires all series to have compatible sampling rates.
+        
+        Returns
+        -------
+        TimeSeries
+            RMS across ensemble at each time step (chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates.
+            Use :meth:`is_homogeneous` to check compatibility first.
+        
+        Examples
+        --------
+        >>> if multi.is_homogeneous():
+        ...     rms = multi.ensemble_rms.value
+        >>> 
+        >>> # Chain with time operations
+        >>> mean_rms = multi.ensemble_rms.time_mean.value
+        
+        See Also
+        --------
+        is_homogeneous : Check if series have compatible sampling rates
+        ensemble_mean : Mean across ensemble
+        """
+        if not self.is_homogeneous():
+            raise Exception('Data series cannot be combined - incompatible sampling rates. '
+                          'Use is_homogeneous() to check compatibility.')
+        self._impersonateDeltaTime()
+        return super().ensemble_rms
+    
+    @property
+    def ensemble_ptp(self):
+        """
+        Peak-to-peak over ensemble dimensions (chainable property).
+        
+        Computes the peak-to-peak range across all series at each time step.
+        Requires all series to have compatible sampling rates.
+        
+        Returns
+        -------
+        TimeSeries
+            Peak-to-peak across ensemble at each time step (chainable)
+        
+        Raises
+        ------
+        Exception
+            If series have incompatible sampling rates.
+            Use :meth:`is_homogeneous` to check compatibility first.
+        
+        Examples
+        --------
+        >>> if multi.is_homogeneous():
+        ...     ptp = multi.ensemble_ptp.value
+        >>> 
+        >>> # Chain with time operations
+        >>> mean_ptp = multi.ensemble_ptp.time_mean.value
+        
+        See Also
+        --------
+        is_homogeneous : Check if series have compatible sampling rates
+        """
+        if not self.is_homogeneous():
+            raise Exception('Data series cannot be combined - incompatible sampling rates. '
+                          'Use is_homogeneous() to check compatibility.')
+        self._impersonateDeltaTime()
+        return super().ensemble_ptp
 
 # ___oOo___
