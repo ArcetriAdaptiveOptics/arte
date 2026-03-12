@@ -128,7 +128,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         Examples
         --------
         >>> ts = MyTimeSeries(data)
-        >>> rms = ts.ensemble_rms_property  # Returns TimeSeries
+        >>> rms = ts.ensemble_rms  # Returns TimeSeries
         >>> plt.plot(rms)  # Works! __array__() called automatically
         >>> mean_rms = np.mean(rms)  # Works!
         """

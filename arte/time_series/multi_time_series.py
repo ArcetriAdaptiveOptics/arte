@@ -81,7 +81,7 @@ class MultiTimeSeries(TimeSeries):
         Notes
         -----
         This check is necessary before calling ensemble-wise operations
-        like :meth:`ensemble_average` or :meth:`ensemble_std`, which
+        like :attr:`ensemble_mean` or :attr:`ensemble_std`, which
         require uniform time sampling across all series.
         
         Examples
