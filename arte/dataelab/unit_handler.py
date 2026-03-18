@@ -29,7 +29,7 @@ class UnitHandler():
         exception is conversion if impossible.
         If the force flag is set, the old unit is stripped and the new one set.
 
-        If not wanted unit has been set, data is unchanged, including its unit, if any.
+        If no wanted unit has been set, data is unchanged, including its unit, if any.
         '''
         if self._wanted_unit is not None:
             if self._force:
