@@ -992,44 +992,69 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def time_std(self):
         """
         Standard deviation over time dimension (chainable property).
-        
-        Computes the std across time (axis 0), returning a
-        TimeSeries with time_size=1 containing the temporal std.
-        Further operations (like ensemble_rms, ensemble_ptp) can be chained.
-        
-        Returns
-        -------
-        TimeSeries
-            TimeSeries with shape (1, ...ensemble_shape...) (chainable)
-            Use .value to extract the final array/scalar.
-        
-        Notes
-        -----
-        Chainable operation: returns TimeSeries (not array).
-        For convenient array extraction, use .value:
-        ``ts.time_std.value`` → ndarray or scalar
-        
-        Examples
-        --------
-        >>> ts = WavefrontSeries(...)  # shape (n_frames, ny, nx)
-        >>> std_ts = ts.time_std  # TimeSeries(1, ny, nx) - chainable!
-        >>> std_wf = ts.time_std.value  # ndarray(ny, nx) - extracted
-        >>> 
-        >>> # Chaining:
-        >>> rms_series = ts.ensemble_rms  # (n_frames,)
-        >>> std_rms = rms_series.time_std.value  # scalar
-        >>> 
-        >>> # NEW: time-then-ensemble operations
-        >>> ptp_std = ts.time_std.ensemble_ptp.value  # peak-to-peak temporal variability
         """
         data = self._get_not_indexed_data()
         if isinstance(data, np.ma.MaskedArray):
             std_data = np.ma.std(data, axis=0)
         else:
             std_data = np.std(data, axis=0)
-        
+
         return self._create_temporal_reduced_series(std_data, operation_name='time_std')
-    
+
+    def _circular_moments(self, data, period, axis=0):
+        """Compute circular mean and dispersion for data with given period."""
+        # Convert to angle
+        theta = 2.0 * np.pi * data / period
+
+        if isinstance(data, np.ma.MaskedArray):
+            cos_mean = np.ma.mean(np.ma.cos(theta), axis=axis)
+            sin_mean = np.ma.mean(np.ma.sin(theta), axis=axis)
+        else:
+            cos_mean = np.nanmean(np.cos(theta), axis=axis)
+            sin_mean = np.nanmean(np.sin(theta), axis=axis)
+
+        R = np.hypot(cos_mean, sin_mean)
+
+        # Circular mean in [-pi, pi]
+        circ_mean_angle = np.arctan2(sin_mean, cos_mean)
+        circ_mean = (circ_mean_angle % (2 * np.pi)) * period / (2 * np.pi)
+
+        # Circular std (see Fisher 1995) - enforce lower bound for stability
+        # R can be 0; where R is close to zero, std approximates period/sqrt(12)
+        eps = np.finfo(float).eps
+        R_clip = np.clip(R, eps, 1.0)
+        circ_std = np.sqrt(-2.0 * np.log(R_clip)) * period / (2 * np.pi)
+
+        if isinstance(data, np.ma.MaskedArray):
+            circ_std = np.ma.array(circ_std)
+            circ_mean = np.ma.array(circ_mean)
+
+        return circ_mean, circ_std
+
+    def time_circular_mean(self, period, *args, times=None, **kwargs):
+        """Circular mean over time for periodic data with given period."""
+        data = self.get_data(*args, times=times, **kwargs)
+        circ_mean, _ = self._circular_moments(data, period, axis=0)
+        return self._create_temporal_reduced_series(circ_mean, operation_name='time_circular_mean')
+
+    def time_circular_std(self, period, *args, times=None, **kwargs):
+        """Circular standard deviation over time for periodic data with given period."""
+        data = self.get_data(*args, times=times, **kwargs)
+        _, circ_std = self._circular_moments(data, period, axis=0)
+        return self._create_temporal_reduced_series(circ_std, operation_name='time_circular_std')
+
+    def ensemble_circular_mean(self, period, *args, times=None, **kwargs):
+        """Circular mean over ensemble at each time sample."""
+        data = self.get_data(*args, times=times, **kwargs)
+        circ_mean, _ = self._circular_moments(data, period, axis=self._data_sample_axes(data))
+        return self._create_reduced_series(circ_mean, operation_name='ensemble_circular_mean')
+
+    def ensemble_circular_std(self, period, *args, times=None, **kwargs):
+        """Circular standard deviation over ensemble at each time sample."""
+        data = self.get_data(*args, times=times, **kwargs)
+        _, circ_std = self._circular_moments(data, period, axis=self._data_sample_axes(data))
+        return self._create_reduced_series(circ_std, operation_name='ensemble_circular_std')
+
     @property
     def ensemble_mean(self):
         """
