@@ -223,7 +223,7 @@ class DiskCacher():
     def _save_to_disk(self):
         self._log('Saving ' + self.fullpath())
         try:
-            os.mkdir(os.path.join(os.path.dirname(self.fullpath())))
+            os.makedirs(os.path.join(os.path.dirname(self.fullpath())))
         except FileExistsError:
             pass
 
