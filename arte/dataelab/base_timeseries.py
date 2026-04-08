@@ -249,6 +249,8 @@ class BaseTimeSeries(TimeSeries):
         import matplotlib.pyplot as plt
 
         data = self.get_data(*args, **kwargs)
+        if len(data.shape) == 1:
+            data = data[:, np.newaxis]
         for index in range(data.shape[1]):
             plt.plot(data[:,index])
         return plt
@@ -311,8 +313,8 @@ class BaseTimeSeries(TimeSeries):
                      lineary=False, linearx=False,
                      **kwargs):
         '''Plot PSD'''
-        power = self.power(from_freq, to_freq,
-                           segment_factor,
+        power = self.power(from_freq=from_freq, to_freq=to_freq,
+                           segment_factor=segment_factor,
                            *args, **kwargs)
         freq = self.last_cut_frequency()
 
