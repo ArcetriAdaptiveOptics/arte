@@ -451,16 +451,23 @@ class ZernikeGenerator(object):
 
     @classmethod
     @cache
-    def name_to_index_dict(cls):
+    def name_to_index_dict(cls, piston_index=None):
         '''
         Zernike name to zernike index mapping
+
+        Optionally shifts the naming vector so that piston
+        corresponds to a specified index. For example if
+        tip and tilt are the first modes, then piston_index should be set to -1
 
         Returns
         -------
         names: dict
             dictionary of Zernike indexes: str -> int
         '''
-        return {v: k for k, v in cls.index_to_name_dict().items()}
+        if piston_index is None:
+            piston_index = 1
+        diff = 1 - piston_index
+        return {v: k - diff for k, v in cls.index_to_name_dict().items()}
 
 
 def _isOdd(num):
