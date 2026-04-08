@@ -19,7 +19,7 @@ class Tag(object):
     Parameters
     ----------
     tag_string : str
-        Tag identifier string. Must contain at least one underscore.
+        Tag identifier string. Must contain exactly one underscore or one slash.
     
     Examples
     --------
@@ -43,11 +43,25 @@ class Tag(object):
     """
 
     def __init__(self, tag_string):
-        assert tag_string.count("_") > 0
+        assert (tag_string.count("_") == 1) != (tag_string.count("/") == 1), "Tag string must contain exactly one underscore or one slash"
         self._tag_string = tag_string
 
     def get_day_as_string(self):
-        return self._tag_string.split("_")[0]
+        if '/' in self._tag_string:
+            # Handle day/hour format (e.g., '20240101/120000')
+            return self._tag_string.split("/")[0]
+        else:
+            # Handle day_hour format (e.g., '20240101_120000')
+            return self._tag_string.split("_")[0]
+
+    def get_remainder_as_string(self):
+        if '/' in self._tag_string:
+            # Handle day/hour format (e.g., '20240101/120000')
+            return self._tag_string.split("/")[1]
+        else:
+            # Handle day_hour format (e.g., '20240101_120000')
+            # In this case we also repeat the day portion
+            return self._tag_string
 
     def __str__(self):
         return self._tag_string
