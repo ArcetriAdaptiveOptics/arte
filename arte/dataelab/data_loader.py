@@ -162,11 +162,15 @@ class NumpyDataLoader(DataLoader):
     def filename(self):
         return self._filename
 
-    def load(self):
+    def load(self, allow_pickle=True):
         if self._key:
-            data = np.load(self._filename)[self._key]
+            data = np.load(self._filename, allow_pickle=allow_pickle)[self._key]
         else:
-            data = np.load(self._filename)
+            data = np.load(self._filename, allow_pickle=allow_pickle)
+
+        # If this is an object array, try to convert to a raw array
+        if data.dtype == np.dtype('O'):
+            data = np.stack(data)
         if self._transpose_axes is not None:
             data = data.transpose(*self._transpose_axes)
         if self._postprocess:
