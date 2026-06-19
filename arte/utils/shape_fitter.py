@@ -95,10 +95,10 @@ class ShapeFitter(object):
                                method='Nelder-Mead',
                                display=False,
                                **keywords):
-        '''Perform a circle fitting on the current mask using minimization 
+        '''Perform a circle fitting on the current mask using minimization
         algorithm  with correlation merit functions.
 
-        Tested with following minimizations methods: 'Nelder-Mead'. Relative 
+        Tested with following minimizations methods: 'Nelder-Mead'. Relative
         precision of 1% reached on synthetic images without noise.
 
         Parameters
@@ -138,17 +138,19 @@ class ShapeFitter(object):
                                 method=method, **keywords)
         self._params = res.x
         self._success = res.success
-        if res.success is False or (method != 'COBYLA' and res.nit == 0):
+        if res.success is True:
+            return
+        elif (method != 'COBYLA' and res.nit == 0):
             raise Exception("Fit circle didn't converge %s" % res)
 
     def fit_annular_correlation(self,
                                 method='Nelder-Mead',
                                 display=False,
                                 **keywords):
-        '''Perform a annular circle fitting on the current mask using 
+        '''Perform a annular circle fitting on the current mask using
         minimization algorithm  with correlation merit functions.
 
-        Tested with following minimizations methods: 'Nelder-Mead'. Relative 
+        Tested with following minimizations methods: 'Nelder-Mead'. Relative
         precision of 1% reached on synthetic images without noise.
 
         Parameters
