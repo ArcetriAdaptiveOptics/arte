@@ -372,13 +372,14 @@ class BaseTimeSeries(TimeSeries):
                     plt.legend(label)
         return plt
 
-    @modify_help(call='plot_cumulative_spectra([series_idx], from_freq=xx, to_freq=xx)')
+    @modify_help(call='plot_cumulative_spectra([series_idx], from_freq=xx, to_freq=xx, from_high_frequency=False)')
     def plot_cumulative_spectra(self, *args, from_freq=None, to_freq=None,
                                 segment_factor=None,
                                 label=None, plot_to=None,
                                 overplot=False, plot_rms=False, lineary=False,
+                                from_high_frequency=False,
                                 **kwargs):
-        '''Plot cumulative PSD'''
+        '''Plot cumulative PSD from low or high frequencies.'''
         power = self.power(*args, from_freq=from_freq, to_freq=to_freq,
                            segment_factor=segment_factor,
                            **kwargs)
@@ -396,8 +397,10 @@ class BaseTimeSeries(TimeSeries):
             plt.cla()
             plt.clf()
 
-        # cumulated PSD
-        cumpsd = np.cumsum(power, 0) * freq_bin
+        if from_high_frequency:
+            cumpsd = np.cumsum(power[::-1], axis=0)[::-1] * freq_bin
+        else:
+            cumpsd = np.cumsum(power, axis=0) * freq_bin
         if plot_rms:
             # cumulated RMS
             cumpsd = np.sqrt(cumpsd)
@@ -420,10 +423,14 @@ class BaseTimeSeries(TimeSeries):
             units = self.data_unit()
 
         title = "Cumulated " + label_str
+        if from_high_frequency:
+            title = "High-frequency " + title
         if self.data_unit() is not None:
             title = title + " of " + self.data_label()
         xlabel = 'frequency [Hz]'
         ylabel = 'Cumulated '+label_str+' ['+units+label_pow+']'
+        if from_high_frequency:
+            ylabel = label_str+' above frequency ['+units+label_pow+']'
         if isinstance(plt, Axes):
             plt.set(title=title, xlabel=xlabel, ylabel=ylabel)
         else:
