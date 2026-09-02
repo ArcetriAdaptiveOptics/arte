@@ -134,7 +134,7 @@ def _discover_cachers(obj, objname='root', seen=None):
         if not name in properties:
             try:
                 valid_attrs[name] = getattr(obj, name)
-            except AttributeError:
+            except (AttributeError, ValueError):
                 pass
 
     methods = {k: v for k, v in valid_attrs.items() if callable(v)}
