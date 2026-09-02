@@ -39,7 +39,10 @@ class BaseModalDecomposer(abc.ABC):
         im = np.zeros((len(modesIdx), nslopes), dtype=dtype)
         for i, idx in enumerate(modesIdx):
             wf_masked = np.ma.masked_array(wf[idx].data, mask=user_mask.mask())
-            im[i, :] = wf_masked.compressed()
+            mode_compressed = wf_masked.compressed()
+            # Remove piston from each mode to match piston removal in measurement
+            mode_no_piston = mode_compressed - mode_compressed.mean()
+            im[i, :] = mode_no_piston
         return im
     
     def _slopes_interaction_matrix(self, modes_generator, modesIdx, user_mask, dtype):
