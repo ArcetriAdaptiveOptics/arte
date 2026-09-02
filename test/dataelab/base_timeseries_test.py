@@ -65,6 +65,7 @@ class BaseTimeSeriesTest(unittest.TestCase):
     def test_plot_cumulative_spectra(self):
         series = BaseTimeSeries(self.testdata, astropy_unit=None)
         _ = series.plot_cumulative_spectra()
+        _ = series.plot_cumulative_spectra(from_high_frequency=True)
 
     def test_loader_filename(self):
         series = BaseTimeSeries(FitsDataLoader(self.fitsfile))
