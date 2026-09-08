@@ -82,6 +82,8 @@ setup(name=NAME,
                 'arte.time_series',
                 'arte.types',
                 'arte.utils',
+                'arte.wfs',
+                'arte.wfs.pyramid',
                 ],
       package_data={
             'arte': [
