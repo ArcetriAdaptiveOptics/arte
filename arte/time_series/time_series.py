@@ -972,11 +972,11 @@ class TimeSeries(metaclass=abc.ABCMeta):
         >>> ts = WavefrontSeries(...)  # shape (n_frames, ny, nx)
         >>> mean_ts = ts.time_mean  # TimeSeries(1, ny, nx) - chainable!
         >>> mean_wf = ts.time_mean.value  # ndarray(ny, nx) - extracted
-        >>> 
+        >>>
         >>> # Chaining works both ways now:
         >>> rms_series = ts.ensemble_rms  # (n_frames,)
         >>> mean_rms = rms_series.time_mean.value  # scalar
-        >>> 
+        >>>
         >>> # NEW: time-then-ensemble operations
         >>> ptp_map = ts.time_mean.ensemble_ptp.value  # peak-to-valley of long-exposure
         """
@@ -992,6 +992,35 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def time_std(self):
         """
         Standard deviation over time dimension (chainable property).
+
+        Computes the std across time (axis 0), returning a
+        TimeSeries with time_size=1 containing the temporal std.
+        Further operations (like ensemble_rms, ensemble_ptp) can be chained.
+
+        Returns
+        -------
+        TimeSeries
+            TimeSeries with shape (1, ...ensemble_shape...) (chainable)
+            Use .value to extract the final array/scalar.
+
+        Notes
+        -----
+        Chainable operation: returns TimeSeries (not array).
+        For convenient array extraction, use .value:
+        ``ts.time_std.value`` → ndarray or scalar
+
+        Examples
+        --------
+        >>> ts = WavefrontSeries(...)  # shape (n_frames, ny, nx)
+        >>> std_ts = ts.time_std  # TimeSeries(1, ny, nx) - chainable!
+        >>> std_wf = ts.time_std.value  # ndarray(ny, nx) - extracted
+        >>>
+        >>> # Chaining:
+        >>> rms_series = ts.ensemble_rms  # (n_frames,)
+        >>> std_rms = rms_series.time_std.value  # scalar
+        >>>
+        >>> # NEW: time-then-ensemble operations
+        >>> ptp_std = ts.time_std.ensemble_ptp.value  # peak-to-peak temporal variability
         """
         data = self._get_not_indexed_data()
         if isinstance(data, np.ma.MaskedArray):
