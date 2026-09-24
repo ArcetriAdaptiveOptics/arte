@@ -13,6 +13,13 @@ class ZernikeCoefficients(ModalCoefficients):
         return self.modeIndexes()
 
     def getZ(self, zernikeIndexes):
+        '''
+        Return the coefficient(s) of the given Zernike index(es) (Noll).
+
+        The first stored coefficient is Z2 (tip): piston is not part of
+        the decomposition, and getZ(1) raises IndexError.
+        See ModalCoefficients.getM.
+        '''
         return self.getM(zernikeIndexes)
 
     @staticmethod

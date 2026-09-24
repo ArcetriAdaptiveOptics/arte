@@ -17,7 +17,38 @@ class ModalCoefficients():
         return len(self._coefficients)
 
     def getM(self, modeIndexes):
-        return self.toNumpyArray()[np.array(modeIndexes) - self.FIRST_MODE]
+        '''
+        Return the coefficient(s) of the given mode index(es).
+
+        Mode indexes are counted from FIRST_MODE: getM(FIRST_MODE) is the
+        first element of toNumpyArray().
+
+        Parameters
+        ----------
+        modeIndexes: int or sequence of int
+            Mode index(es) in the range
+            [FIRST_MODE, FIRST_MODE + numberOfModes() - 1].
+
+        Raises
+        ------
+        IndexError
+            If any index is outside that range, or if boolean indexes
+            are given.
+        '''
+        idx = np.array(modeIndexes)
+        if idx.dtype.kind == 'b':
+            raise IndexError(
+                '%s: boolean mode indexes are not supported' %
+                self.__class__.__name__)
+        idx = idx - self.FIRST_MODE
+        if idx.dtype.kind in 'iu' and idx.size > 0 and (
+                idx < 0 if idx.ndim == 0 else idx.min() < 0):
+            raise IndexError(
+                '%s: mode index(es) %s smaller than FIRST_MODE=%d' % (
+                    self.__class__.__name__,
+                    np.atleast_1d(modeIndexes)[np.atleast_1d(idx) < 0],
+                    self.FIRST_MODE))
+        return self.toNumpyArray()[idx]
 
     def toDictionary(self):
         keys = self.modeIndexes()
