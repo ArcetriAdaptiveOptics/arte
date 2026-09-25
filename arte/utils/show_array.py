@@ -8,6 +8,11 @@ def show_array(array, cut_wings=0, title=None, xlabel='column', ylabel='row', un
     cut_wings=x means that colorbar is saturated for array values below x percentile
     and above 100-x percentile. Default is 0, i.e. all data are displayed; values below
     0 are forced to 0, values above 50 are set to 50.
+
+    See Also
+    --------
+    arte.utils.show_detector.ShowDetector : image display with independent
+        top/bottom saturation, log scale, axis extents and row/column profiles.
     '''
     import matplotlib.pyplot as plt
 
