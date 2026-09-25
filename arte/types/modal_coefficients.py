@@ -68,8 +68,44 @@ class ModalCoefficients():
     def setCounter(self, counter):
         self._counter = counter
 
+    def _new(self, coefficients):
+        '''
+        Return a new instance holding `coefficients`, with the same mode
+        labels (FIRST_MODE) as self. Used by the arithmetic operators.
+        '''
+        return ModalCoefficients(coefficients, first_mode=self.FIRST_MODE)
+
+    def _alignedSum(self, other):
+        '''
+        Sum coefficients mode by mode. Returns (coefficients, first_mode).
+
+        When both operands have the same FIRST_MODE the result is the
+        historical one (shorter array added to the head of the longer).
+        Otherwise the arrays are aligned on the mode index and the
+        result spans the union of the two mode ranges, missing modes
+        counting as zero.
+        '''
+        a = self._coefficients
+        b = other._coefficients
+        if self.FIRST_MODE == other.FIRST_MODE:
+            if len(a) < len(b):
+                c = b.copy()
+                c[:len(a)] += a
+            else:
+                c = a.copy()
+                c[:len(b)] += b
+            return c, self.FIRST_MODE
+        first = min(self.FIRST_MODE, other.FIRST_MODE)
+        last = max(self.FIRST_MODE + len(a), other.FIRST_MODE + len(b))
+        c = np.zeros(last - first, dtype=np.result_type(a, b))
+        c[self.FIRST_MODE - first:self.FIRST_MODE - first + len(a)] += a
+        c[other.FIRST_MODE - first:other.FIRST_MODE - first + len(b)] += b
+        return c, first
+
     def __eq__(self, o):
         if self._counter != o._counter:
+            return False
+        if self.FIRST_MODE != o.FIRST_MODE:
             return False
         if not np.array_equal(self._coefficients, o._coefficients):
             return False
@@ -83,15 +119,10 @@ class ModalCoefficients():
 
     def __add__(self, other):
         if isinstance(other, ModalCoefficients):
-            if len(self._coefficients) < len(other._coefficients):
-                c = other._coefficients.copy()
-                c[:len(self._coefficients)] += self._coefficients
-            else:
-                c = self._coefficients.copy()
-                c[:len(other._coefficients)] += other._coefficients
-            return ModalCoefficients(c)
+            c, first = self._alignedSum(other)
+            return ModalCoefficients(c, first_mode=first)
         if isinstance(other, Number):
-            return ModalCoefficients(self._coefficients + other)
+            return self._new(self._coefficients + other)
         return NotImplemented
 
     def __radd__(self, other):
@@ -99,13 +130,7 @@ class ModalCoefficients():
 
     def __iadd__(self, other):
         if isinstance(other, ModalCoefficients):
-            if len(self._coefficients) < len(other._coefficients):
-                c = other._coefficients.copy()
-                c[:len(self._coefficients)] += self._coefficients
-            else:
-                c = self._coefficients.copy()
-                c[:len(other._coefficients)] += other._coefficients
-            self._coefficients = c
+            self._coefficients, self.FIRST_MODE = self._alignedSum(other)
             return self
         elif isinstance(other, Number):
             self._coefficients += other
@@ -113,10 +138,10 @@ class ModalCoefficients():
         return NotImplemented
 
     def __neg__(self):
-        return ModalCoefficients(-self._coefficients)
+        return self._new(-self._coefficients)
 
     def __pos__(self):
-        return ModalCoefficients(self._coefficients)
+        return self._new(self._coefficients)
 
     def __abs__(self):
         return pow(sum(coo**2 for coo in self._coefficients), 0.5)
@@ -133,7 +158,7 @@ class ModalCoefficients():
 
     def __mul__(self, other):
         if isinstance(other, Number):
-            return ModalCoefficients(self._coefficients * other)
+            return self._new(self._coefficients * other)
         return NotImplemented
 
     def __rmul__(self, other):
@@ -147,12 +172,12 @@ class ModalCoefficients():
 
     def __truediv__(self, other):
         if isinstance(other, Number):
-            return ModalCoefficients(self._coefficients / other)
+            return self._new(self._coefficients / other)
         return NotImplemented
 
     def __rtruediv__(self, other):
         if isinstance(other, Number):
-            return ModalCoefficients(other / self._coefficients)
+            return self._new(other / self._coefficients)
         return NotImplemented
 
     def __itruediv__(self, other):

@@ -3,11 +3,41 @@ from arte.types.modal_coefficients import ModalCoefficients
 from numbers import Number
 
 
-class ZernikeCoefficients(ModalCoefficients):
-    FIRST_ZERNIKE_MODE = 2
+class _FirstModeAlias():
+    '''
+    FIRST_ZERNIKE_MODE descriptor.
 
-    def __init__(self, coefficients, counter=0):
-        super().__init__(coefficients, counter, first_mode=self.FIRST_ZERNIKE_MODE)
+    On the class it returns the default first Zernike index (2, i.e. tip:
+    piston is not part of the default decomposition). On an instance it is
+    an alias of FIRST_MODE, so that reading or setting it at runtime
+    changes the labels used by getZ, zernikeIndexes and toDictionary.
+    '''
+
+    def __init__(self, default):
+        self.default = default
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self.default
+        return obj.FIRST_MODE
+
+    def __set__(self, obj, value):
+        obj.FIRST_MODE = value
+
+
+class ZernikeCoefficients(ModalCoefficients):
+    FIRST_ZERNIKE_MODE = _FirstModeAlias(2)
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        value = cls.__dict__.get('FIRST_ZERNIKE_MODE')
+        if value is not None and not isinstance(value, _FirstModeAlias):
+            cls.FIRST_ZERNIKE_MODE = _FirstModeAlias(value)
+
+    def __init__(self, coefficients, counter=0, first_mode=None):
+        if first_mode is None:
+            first_mode = type(self).FIRST_ZERNIKE_MODE
+        super().__init__(coefficients, counter, first_mode=first_mode)
 
     def zernikeIndexes(self):
         return self.modeIndexes()
@@ -16,105 +46,33 @@ class ZernikeCoefficients(ModalCoefficients):
         '''
         Return the coefficient(s) of the given Zernike index(es) (Noll).
 
-        The first stored coefficient is Z2 (tip): piston is not part of
-        the decomposition, and getZ(1) raises IndexError.
-        See ModalCoefficients.getM.
+        The first stored coefficient is Z_FIRST_ZERNIKE_MODE: by default
+        Z2 (tip), since piston is not part of the default decomposition,
+        and getZ(1) raises IndexError. See ModalCoefficients.getM.
         '''
         return self.getM(zernikeIndexes)
 
     @staticmethod
-    def fromNumpyArray(coefficientsAsNumpyArray, counter=0):
-        return ZernikeCoefficients(np.array(coefficientsAsNumpyArray), counter)
+    def fromNumpyArray(coefficientsAsNumpyArray, counter=0, first_mode=None):
+        return ZernikeCoefficients(np.array(coefficientsAsNumpyArray), counter,
+                                   first_mode=first_mode)
 
-    def __eq__(self, o):
-        if self._counter != o._counter:
-            return False
-        if not np.array_equal(self._coefficients, o._coefficients):
-            return False
-        return True
-
-    def __ne__(self, o):
-        return not self.__eq__(o)
-
-    def __str__(self):
-        return str(self._coefficients)
+    def _new(self, coefficients):
+        return ZernikeCoefficients(coefficients, first_mode=self.FIRST_MODE)
 
     def __add__(self, other):
         if isinstance(other, ZernikeCoefficients):
-            if len(self._coefficients) < len(other._coefficients):
-                c = other._coefficients.copy()
-                c[:len(self._coefficients)] += self._coefficients
-            else:
-                c = self._coefficients.copy()
-                c[:len(other._coefficients)] += other._coefficients
-            return ZernikeCoefficients(c)
+            c, first = self._alignedSum(other)
+            return ZernikeCoefficients(c, first_mode=first)
         if isinstance(other, Number):
-            return ZernikeCoefficients(self._coefficients + other)
+            return self._new(self._coefficients + other)
         return NotImplemented
-
-    def __radd__(self, other):
-      return self.__add__(other)
 
     def __iadd__(self, other):
         if isinstance(other, ZernikeCoefficients):
-            if len(self._coefficients) < len(other._coefficients):
-                c = other._coefficients.copy()
-                c[:len(self._coefficients)] += self._coefficients
-            else:
-                c = self._coefficients.copy()
-                c[:len(other._coefficients)] += other._coefficients
-            self._coefficients = c
+            self._coefficients, self.FIRST_MODE = self._alignedSum(other)
             return self
         elif isinstance(other, Number):
             self._coefficients += other
-            return self
-        return NotImplemented
-
-    def __neg__(self):
-        return ZernikeCoefficients(-self._coefficients)
-
-    def __pos__(self):
-        return ZernikeCoefficients(self._coefficients)
-
-    def __abs__(self):
-        return pow(sum(coo**2 for coo in self._coefficients), 0.5)
-
-    def __sub__(self, other):
-        return self + (-other)
-
-    def __rsub__(self, other):
-        return other + (-self)
-
-    def __isub__(self, other):
-        self += -other
-        return self
-
-    def __mul__(self, other):
-        if isinstance(other, Number):
-            return ZernikeCoefficients(self._coefficients * other)
-        return NotImplemented
-
-    def __rmul__(self, other):
-        return self * other
-
-    def __imul__(self, other):
-        if isinstance(other, Number):
-            self._coefficients *= other
-            return self
-        return NotImplemented
-
-    def __truediv__(self, other):
-        if isinstance(other, Number):
-            return ZernikeCoefficients(self._coefficients / other)
-        return NotImplemented
-
-    def __rtruediv__(self, other):
-        if isinstance(other, Number):
-            return ZernikeCoefficients(other / self._coefficients)
-        return NotImplemented
-
-    def __itruediv__(self, other):
-        if isinstance(other, Number):
-            self._coefficients /= other
             return self
         return NotImplemented

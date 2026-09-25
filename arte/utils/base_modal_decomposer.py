@@ -33,16 +33,44 @@ class BaseModalDecomposer(abc.ABC):
     def getLastRank(self):
         return self._lastRank
 
+    def _pistonModeIndex(self):
+        '''
+        Override to return the index of the piston (constant) mode of the
+        modal basis, if it has one. When that mode is among the fitted
+        modes the piston is measured; otherwise it is removed both from
+        the wavefront and from the modes (default: no piston mode).
+        '''
+        return None
+
+    def _removesPiston(self, modesIdx):
+        return self._pistonModeIndex() not in modesIdx
+
+    def _firstMode(self, start_mode):
+        '''First mode index actually used for a given start_mode'''
+        if start_mode is not None:
+            return start_mode
+        return self._lastModesGenerator.first_mode()
+
+    def _startModeFromCoefficients(self, modal_coefficients):
+        '''
+        start_mode to be used to recompose a wavefront from
+        modal_coefficients: the index of its first mode
+        '''
+        return modal_coefficients.FIRST_MODE
+
     def _wavefront_interaction_matrix(self, modes_generator, modesIdx, user_mask, dtype):
         wf = modes_generator.getModesDict(modesIdx)
         nslopes = user_mask.as_masked_array().compressed().size
         im = np.zeros((len(modesIdx), nslopes), dtype=dtype)
+        remove_piston = self._removesPiston(modesIdx)
         for i, idx in enumerate(modesIdx):
             wf_masked = np.ma.masked_array(wf[idx].data, mask=user_mask.mask())
             mode_compressed = wf_masked.compressed()
-            # Remove piston from each mode to match piston removal in measurement
-            mode_no_piston = mode_compressed - mode_compressed.mean()
-            im[i, :] = mode_no_piston
+            if remove_piston:
+                # Remove piston from each mode to match piston removal
+                # in measurement
+                mode_compressed = mode_compressed - mode_compressed.mean()
+            im[i, :] = mode_compressed
         return im
     
     def _slopes_interaction_matrix(self, modes_generator, modesIdx, user_mask, dtype):
@@ -144,9 +172,20 @@ class BaseModalDecomposer(abc.ABC):
 
     def recomposeWavefrontFromModalCoefficients(
             self, modal_coefficients, circular_mask, dtype=float, **kwargs):
+        '''
+        The modes used are those labelled by modal_coefficients, i.e.
+        modal_coefficients.modeIndexes().
+        '''
         self._assert_types(
             circular_mask, modal_coefficients=modal_coefficients)
         nModes = modal_coefficients.numberOfModes()
+        start_mode = self._startModeFromCoefficients(modal_coefficients)
+        if kwargs.get('start_mode') is not None and \
+                kwargs['start_mode'] != start_mode:
+            raise ValueError(
+                'start_mode=%s inconsistent with the first mode index (%s) '
+                'of modal_coefficients' % (kwargs['start_mode'], start_mode))
+        kwargs['start_mode'] = start_mode
         interaction_matrix = self.cachedSyntheticInteractionMatrixFromWavefront(
             nModes, circular_mask, circular_mask, dtype=dtype, return_rank=True, **kwargs
         )
@@ -167,15 +206,19 @@ class BaseModalDecomposer(abc.ABC):
             nModes, circular_mask, user_mask, dtype=dtype, return_rank=True, **kwargs
         )
 
+        first_mode = self._firstMode(kwargs.get('start_mode'))
+        modesIdx = list(range(first_mode, first_mode + nModes))
         wavefrontInMaskVector = np.ma.masked_array(
             wavefront.toNumpyArray(), user_mask.mask()
         ).compressed()
-        wavefrontInMaskVectorNoPiston = (
-            wavefrontInMaskVector - wavefrontInMaskVector.mean()
-        )
+        if self._removesPiston(modesIdx):
+            wavefrontInMaskVector = (
+                wavefrontInMaskVector - wavefrontInMaskVector.mean()
+            )
         result = self._numpy2coefficients(
-            np.dot(wavefrontInMaskVectorNoPiston, reconstructor)
+            np.dot(wavefrontInMaskVector, reconstructor)
         )
+        result.FIRST_MODE = first_mode
         # Remember last used values
         self._lastRank = rank
         self._lastMask = user_mask
@@ -200,6 +243,7 @@ class BaseModalDecomposer(abc.ABC):
         )
 
         result = self._numpy2coefficients(np.dot(slopesInMaskVector, reconstructor))
+        result.FIRST_MODE = self._firstMode(None)
         # Remember last used values
         self._lastRank = rank
         self._lastMask = user_mask

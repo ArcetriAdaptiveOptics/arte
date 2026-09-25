@@ -27,6 +27,16 @@ class ZernikeModalDecomposer(BaseModalDecomposer):
     def _numpy2coefficients(self, coeff_array):
         return ZernikeCoefficients(coeff_array)
 
+    def _pistonModeIndex(self):
+        return 1
+
+    def _startModeFromCoefficients(self, modal_coefficients):
+        # Generic ModalCoefficients have no Zernike labels: keep using the
+        # default first Zernike mode, as before
+        if isinstance(modal_coefficients, ZernikeCoefficients):
+            return modal_coefficients.FIRST_MODE
+        return None
+
 
     @returns(ZernikeCoefficients)
     def measureZernikeCoefficientsFromWavefront(self, wavefront, circular_mask,
