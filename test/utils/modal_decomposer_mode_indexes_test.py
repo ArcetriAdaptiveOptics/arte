@@ -197,6 +197,15 @@ class OtherDecomposersTest(unittest.TestCase):
             self.wf, self.mask, self.mask, mode_indexes=[3, 1], rbfFunction='TPS_RBF')
         np.testing.assert_array_equal(mc.modeIndexes(), [3, 1])
 
+    def test_rbf_negative_labels_raise(self):
+        coords = [(10, 10), (16, 16), (20, 12), (12, 20)]
+        md = RadialBasisModalDecomposer(coords)
+        self.assertRaises(
+            ValueError,
+            md.measureModalCoefficientsFromWavefront,
+            self.wf, self.mask, self.mask,
+            mode_indexes=[-1, 1], rbfFunction='TPS_RBF')
+
 
 if __name__ == "__main__":
     unittest.main()

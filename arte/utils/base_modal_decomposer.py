@@ -63,6 +63,9 @@ class BaseModalDecomposer(abc.ABC):
                     'start_mode and mode_indexes cannot be both specified')
             idx = ModalCoefficients._checkModeIndexes(
                 mode_indexes, len(np.atleast_1d(mode_indexes)))
+            if np.any(idx < 0):
+                raise ValueError(
+                    'mode_indexes must be non-negative: %s' % idx)
             if nModes is not None and nModes != len(idx):
                 raise ValueError(
                     'nModes=%d inconsistent with %d mode_indexes' % (
