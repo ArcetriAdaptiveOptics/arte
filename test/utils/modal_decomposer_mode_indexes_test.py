@@ -93,6 +93,18 @@ class ZernikeDecomposerModeIndexesTest(unittest.TestCase):
                           mode_indexes=[2, 3], nModes=3)
         self.assertRaises(ValueError, self._measure, md, mode_indexes=[2, 2])
 
+    def test_invalid_zernike_indexes_raise(self):
+        md = ZernikeModalDecomposer(3)
+        self.assertRaises(ValueError, self._measure, md, mode_indexes=[0, 2])
+        self.assertRaises(ValueError, self._measure, md, start_mode=0)
+
+    def test_user_mask_defaults_to_circular_mask(self):
+        md = ZernikeModalDecomposer(4)
+        wf = Wavefront(self.wf)
+        np.testing.assert_array_equal(
+            md.measureModalCoefficientsFromWavefront(wf, self.mask).toNumpyArray(),
+            md.measureModalCoefficientsFromWavefront(wf, self.mask, self.mask).toNumpyArray())
+
     def test_equivalent_selections_share_the_cache(self):
         md = ZernikeModalDecomposer(4)
         # functools.cache is shared by all the instances: count the misses
@@ -196,6 +208,16 @@ class OtherDecomposersTest(unittest.TestCase):
         mc = md.measureModalCoefficientsFromWavefront(
             self.wf, self.mask, self.mask, mode_indexes=[3, 1], rbfFunction='TPS_RBF')
         np.testing.assert_array_equal(mc.modeIndexes(), [3, 1])
+
+    def test_negative_mode_indexes_raise(self):
+        # a negative index would silently select the last basis function
+        coords = [(10, 10), (16, 16), (20, 12), (12, 20)]
+        for md, kwargs in [(RadialBasisModalDecomposer(coords), dict(rbfFunction='TPS_RBF')),
+                           (KarhunenLoeveModalDecomposer(5), {})]:
+            with self.subTest(md=type(md).__name__):
+                self.assertRaises(ValueError, md.measureModalCoefficientsFromWavefront,
+                                  self.wf, self.mask, self.mask, mode_indexes=[-1, 0],
+                                  **kwargs)
 
 
 if __name__ == "__main__":

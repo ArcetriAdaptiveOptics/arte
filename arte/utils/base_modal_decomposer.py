@@ -30,6 +30,9 @@ class BaseModalDecomposer(abc.ABC):
     PISTON_MODE_INDEX = None
     '''Index of the piston (constant) mode of the modal basis, if any'''
 
+    MIN_MODE_INDEX = 0
+    '''Smallest valid mode index of the modal basis'''
+
     def __init__(self, n_modes=None):
         self.nModes = n_modes
         self._lastModesGenerator = None
@@ -67,12 +70,18 @@ class BaseModalDecomposer(abc.ABC):
                 raise ValueError(
                     'nModes=%d inconsistent with %d mode_indexes' % (
                         nModes, len(idx)))
-            return tuple(int(i) for i in idx)
-        if nModes is None:
-            raise ValueError('either nModes or mode_indexes must be specified')
-        if start_mode is None:
-            start_mode = self.DEFAULT_FIRST_MODE
-        return tuple(range(start_mode, start_mode + nModes))
+        else:
+            if nModes is None:
+                raise ValueError(
+                    'either nModes or mode_indexes must be specified')
+            if start_mode is None:
+                start_mode = self.DEFAULT_FIRST_MODE
+            idx = np.arange(start_mode, start_mode + nModes)
+        if len(idx) > 0 and idx.min() < self.MIN_MODE_INDEX:
+            raise ValueError(
+                'mode indexes must be >= %d for %s, got %s' % (
+                    self.MIN_MODE_INDEX, self.__class__.__name__, idx))
+        return tuple(int(i) for i in idx)
 
     def _removesPiston(self, modesIdx):
         return self.PISTON_MODE_INDEX not in modesIdx
@@ -225,7 +234,7 @@ class BaseModalDecomposer(abc.ABC):
         return Wavefront.fromNumpyArray(wfm)
 
     def measureModalCoefficientsFromWavefront(
-        self, wavefront, circular_mask, user_mask, nModes=None, dtype=float,
+        self, wavefront, circular_mask, user_mask=None, nModes=None, dtype=float,
         mode_indexes=None, **kwargs
     ):
         '''

@@ -173,6 +173,15 @@ class ArithmeticTest(unittest.TestCase):
                     np.testing.assert_array_equal(res.modeIndexes(), z.modeIndexes())
                     self.assertIs(type(res), type(z))
 
+    def test_empty_keeps_first_mode(self):
+        m = ModalCoefficients(np.array([]), first_mode=5)
+        for res in [m * 2, m + 1, -m, m / 2, m + m]:
+            with self.subTest(res=res):
+                self.assertEqual(res.FIRST_MODE, 5)
+                self.assertEqual(res.numberOfModes(), 0)
+        m += m
+        self.assertEqual(m.FIRST_MODE, 5)
+
     def test_sum_of_list(self):
         zs = [ZernikeCoefficients(np.ones(3)), ZernikeCoefficients(np.ones(2))]
         np.testing.assert_array_equal(sum(zs).toNumpyArray(), [2., 2., 1.])

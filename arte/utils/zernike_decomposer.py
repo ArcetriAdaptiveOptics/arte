@@ -23,6 +23,7 @@ class ZernikeModalDecomposer(BaseModalDecomposer):
 
     DEFAULT_FIRST_MODE = 2
     PISTON_MODE_INDEX = 1
+    MIN_MODE_INDEX = 1
 
     def __init__(self, n_modes=None, n_zernike_modes=None):
         if n_modes is None and n_zernike_modes is None:
