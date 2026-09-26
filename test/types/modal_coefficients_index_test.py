@@ -45,8 +45,11 @@ class GetModeIndexTest(unittest.TestCase):
         self.assertEqual(m.getM(0), 10)
         self.assertRaises(IndexError, m.getM, -1)
 
-    def test_first_mode_changed_at_runtime_is_honoured(self):
-        self.z.FIRST_MODE = 1
+    def test_first_mode_is_set_at_construction(self):
+        with self.assertRaises(AttributeError):
+            self.z.FIRST_MODE = 1
+        self.z = ZernikeCoefficients(np.array([10., 20., 30.]),
+                                     mode_indexes=[1, 2, 3])
         self.assertEqual(self.z.getZ(1), 10.)
         np.testing.assert_array_equal(self.z.getZ([1, 3]), [10, 30])
         self.assertRaises(IndexError, self.z.getZ, 0)
