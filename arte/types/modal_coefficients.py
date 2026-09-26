@@ -154,8 +154,8 @@ class ModalCoefficients():
         '''
         if mode_indexes is None:
             mode_indexes = self._mode_indexes
-        new = self.__class__.__new__(self.__class__)
         ModalCoefficients.__init__(new, coefficients,
+                                   first_mode=self._first_mode,
                                    mode_indexes=mode_indexes)
         return new
 
