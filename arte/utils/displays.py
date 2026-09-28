@@ -14,6 +14,11 @@ def movie(frames, interval=0.1, *args, **kwargs):
         3d array [time, rows, cols] with the data to display
     interval: float. optional
         delay between frames in seconds, default=0.1 seconds
+
+    See Also
+    --------
+    arte.utils.show_movie.show_movie : non-blocking matplotlib animation,
+        suitable for notebooks, with mp4 export and frame offset subtraction.
     '''
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots(1, 1)
