@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arte"
+description = "Arcetri Random sTuff collEction"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Lorenzo Busoni", email = "lorenzo.busoni@inaf.it"},
+    {name = "Alfio Puglisi"},
+    {name = "INAF Arcetri Adaptive Optics group"},
+]
+keywords = ["Adaptive Optics", "Astrophysics", "INAF", "Arcetri"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+]
+dynamic = ["version", "dependencies"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/ArcetriAdaptiveOptics/arte"
+
+[tool.setuptools.dynamic]
+version = {attr = "arte.__version__.__version__"}
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.packages.find]
+# Namespace discovery is on by default: it is needed for arte.optical_propagation,
+# which has no __init__.py.
+include = ["arte*"]
+
+[tool.setuptools.package-data]
+arte = ["data/**/*"]
