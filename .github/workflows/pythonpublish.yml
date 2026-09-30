@@ -23,6 +23,16 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
+    - name: Check release tag matches package version
+      env:
+        TAG_NAME: ${{ github.event.release.tag_name }}
+      run: |
+        PKG_VERSION=$(python -c "exec(open('arte/__version__.py').read()); print(__version__)")
+        # Accept both "v0.27.0" and "0.27.0" as tag names
+        if [ "${TAG_NAME#v}" != "$PKG_VERSION" ]; then
+          echo "Release tag '$TAG_NAME' does not match arte/__version__.py ('$PKG_VERSION')"
+          exit 1
+        fi
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
