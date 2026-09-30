@@ -18,7 +18,7 @@ make html
 See `docs/README.md` for more details.
 
 ## Installation
-__arte__ is tested on python 3.6+ only
+__arte__ is tested on python 3.10+ (declared minimum: 3.9)
 
 * From pip (typically old version):
 
@@ -29,7 +29,14 @@ __arte__ is tested on python 3.6+ only
 ```
 git clone https://github.com/ArcetriAdaptiveOptics/arte.git
 cd arte
-pip install -e .
+pip install -e .          # add [test] to also install pytest: pip install -e ".[test]"
+```
+
+Packaging metadata lives in `pyproject.toml` (PEP 621). To build and publish a release:
+
+```
+python -m build
+twine upload dist/*
 ```
 
 
