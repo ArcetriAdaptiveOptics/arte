@@ -205,10 +205,13 @@ class DiskCacher():
                 return self._data
             except FileNotFoundError as e:
                 self._log('Exception reading from disk: '+str(e))
-                self._log('Calling function to cache')
-                self._data = self._original_function(*args, **kwargs)
-                self._save_to_disk()
-                return self._data
+
+            # Called outside the except block, so that any exception
+            # raised by the function is not chained to the cache miss
+            self._log('Calling function to cache')
+            self._data = self._original_function(*args, **kwargs)
+            self._save_to_disk()
+            return self._data
         else:
             return self._original_function(*args, **kwargs)
 
