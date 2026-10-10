@@ -12,6 +12,7 @@ Submodules
    utils/constants
    utils/discrete_fourier_transform
    utils/displays
+   utils/gcfa
    utils/help
    utils/image_moments
    utils/karhunen_loeve_decomposer
@@ -24,6 +25,11 @@ Submodules
    utils/radial_profile
    utils/rebin
    utils/show_array
+   utils/show_detector
+   utils/show_dm
+   utils/show_mode_page
+   utils/show_movie
+   utils/subplots
    utils/tabular_report
    utils/timestamp
    utils/unit_checker
