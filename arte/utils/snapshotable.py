@@ -1,9 +1,8 @@
 import abc
 from astropy.io import fits as pyfits
-from six import with_metaclass
 
 
-class Snapshotable(with_metaclass(abc.ABCMeta, object)):
+class Snapshotable(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def get_snapshot(self, prefix):
         assert False
