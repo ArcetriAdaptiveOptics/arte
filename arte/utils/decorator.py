@@ -120,55 +120,28 @@ def logTime(f):
 
 
 def cacheResult(f):
+    '''Cache the method results in the instance.
+
+    Unlike functools.cache, the cache is freed together with the instance.
+    Arguments must be hashable or numpy arrays.
+    '''
+    cacheName = f.__name__ + "_cached_result"
 
     @wraps(f)
-    def wrapper(self, *args):
-        cacheName = f.__name__ + "_cached_result"
-        if cacheName not in self.__dict__:
-            self.__dict__[cacheName] = {}
-
-        key = ()
-        for aa in args:
-            if isinstance(aa, ndarray):
-                key += (hash(aa.tostring()),)
-            else:
-                try:
-                    key += (hash(aa),)
-                except Exception:
-                    key += (aa,)
-        if key not in self.__dict__[cacheName]:
-            result = f(self, *args)
-            self.__dict__[cacheName][key] = result
-        return self.__dict__[cacheName][key]
+    def wrapper(self, *args, **kwargs):
+        cache = self.__dict__.setdefault(cacheName, {})
+        key = tuple((aa.shape, aa.dtype.str, aa.tobytes())
+                    if isinstance(aa, ndarray) else aa for aa in args)
+        if kwargs:
+            key += (_KWARGS_MARK,) + tuple(sorted(kwargs.items()))
+        if key not in cache:
+            cache[key] = f(self, *args, **kwargs)
+        return cache[key]
 
     return wrapper
 
 
 _KWARGS_MARK = object()
-
-
-def cache_per_instance(f):
-    '''Like functools.cache, but stores the results in the instance.
-
-    functools.cache on a method keeps every instance alive forever, because
-    the cache belongs to the function and uses *self* as part of the key.
-    Here each instance has its own cache, freed together with the instance.
-    Arguments must be hashable.
-    '''
-    cache_name = '_cache_per_instance_' + f.__name__
-
-    @wraps(f)
-    def wrapper(self, *args, **kwargs):
-        cache = self.__dict__.setdefault(cache_name, {})
-        key = args
-        if kwargs:
-            key += (_KWARGS_MARK,) + tuple(sorted(kwargs.items()))
-        result = cache.get(key, _KWARGS_MARK)
-        if result is _KWARGS_MARK:
-            result = cache[key] = f(self, *args, **kwargs)
-        return result
-
-    return wrapper
 
 
 def override(f):

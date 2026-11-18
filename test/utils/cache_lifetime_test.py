@@ -7,7 +7,7 @@ import unittest
 
 import numpy as np
 
-from arte.utils.decorator import cache_per_instance
+from arte.utils.decorator import cacheResult
 from arte.dataelab.cache_on_disk import cache_on_disk, set_tag, set_tmpdir
 from arte.dataelab.base_analyzer import BaseAnalyzer
 from arte.dataelab.base_timeseries import BaseTimeSeries
@@ -20,7 +20,7 @@ class Counter():
     def __init__(self):
         self.calls = 0
 
-    @cache_per_instance
+    @cacheResult
     def add(self, a, b=0):
         self.calls += 1
         return a + b
@@ -45,7 +45,7 @@ def _is_freed(ref):
     return ref() is None
 
 
-class CachePerInstanceTest(unittest.TestCase):
+class CacheResultTest(unittest.TestCase):
 
     def test_results_are_cached(self):
         c = Counter()
@@ -54,6 +54,15 @@ class CachePerInstanceTest(unittest.TestCase):
         assert c.calls == 1
         assert c.add(1) == 1
         assert c.add(1, 2) == 3
+        assert c.calls == 3
+
+    def test_array_arguments(self):
+        c = Counter()
+        c.add(np.zeros(4))
+        c.add(np.zeros(4))
+        assert c.calls == 1
+        assert c.add(np.zeros((2, 2))).shape == (2, 2)
+        assert c.add(np.zeros(4, dtype=np.float32)).dtype == np.float32
         assert c.calls == 3
 
     def test_caches_are_separate(self):
@@ -68,7 +77,7 @@ class CachePerInstanceTest(unittest.TestCase):
 class CacheLifetimeTest(unittest.TestCase):
     '''Caches must not keep alive the objects that used them'''
 
-    def test_cache_per_instance(self):
+    def test_cacheResult(self):
         c = Counter()
         c.add(1)
         ref = weakref.ref(c)

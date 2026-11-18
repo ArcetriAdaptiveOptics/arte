@@ -10,7 +10,7 @@ from astropy import units as u
 from arte.time_series.axis_handler import AxisHandler
 from arte.utils.not_available import NotAvailable
 from arte.utils.help import add_help, modify_help
-from arte.utils.decorator import cache_per_instance
+from arte.utils.decorator import cacheResult
 from arte.utils.unit_checker import make_sure_its_a
 
 
@@ -182,7 +182,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
         '''Data series shape'''
         return self._axis_handler.axes()
 
-    @cache_per_instance
+    @cacheResult
     def _get_time_vector(self):
         '''Override to provide a custom time vector'''
         return np.arange(len(self._get_not_indexed_data()))
@@ -308,13 +308,13 @@ class TimeSeries(metaclass=abc.ABCMeta):
     def last_cut_frequency(self):
         return self._last_cut_frequency
 
-    @cache_per_instance
+    @cacheResult
     def ensemble_size(self):
         '''Number of distinct series in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
         return math.prod(not_indexed_data.shape[1:])
 
-    @cache_per_instance
+    @cacheResult
     def time_size(self):
         '''Number of time samples in this time ensemble'''
         not_indexed_data = self._get_not_indexed_data()
@@ -674,7 +674,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
                     **merged_kwargs
                 )
             
-            @cache_per_instance
+            @cacheResult
             def _get_time_vector(self):
                 # Time vector reflects filtering
                 if self._filter_times is not None:
@@ -755,7 +755,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
                 """Support numpy-style indexing"""
                 return self._reduced_data[key]
             
-            @cache_per_instance
+            @cacheResult
             def _get_time_vector(self):
                 # Inherit time vector from parent
                 return self._parent.get_time_vector()
@@ -821,7 +821,7 @@ class TimeSeries(metaclass=abc.ABCMeta):
                 """Support numpy-style indexing"""
                 return self._reduced_data[key]
             
-            @cache_per_instance
+            @cacheResult
             def _get_time_vector(self):
                 # Single-element time vector: mean of parent times
                 parent_time = self._parent.get_time_vector()
