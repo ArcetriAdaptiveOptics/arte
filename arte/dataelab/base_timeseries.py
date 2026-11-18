@@ -1,10 +1,11 @@
 import numbers
-from functools import cached_property, cache
+from functools import cached_property
 import numpy as np
 from astropy import units as u
 
 from arte.time_series.time_series import TimeSeries
 from arte.utils.help import modify_help
+from arte.utils.decorator import cache_per_instance
 from arte.utils.not_available import NotAvailable
 from arte.dataelab.data_loader import data_loader_factory, data_axes
 from arte.dataelab.unit_handler import UnitHandler
@@ -81,7 +82,7 @@ class BaseTimeSeries(TimeSeries):
         '''
         return self.get_data().shape
 
-    @cache
+    @cache_per_instance
     def _get_not_indexed_data(self):
         '''Lazy loading of raw data and astropy unit application'''
         return self._unit_handler.apply_unit(self._data_loader.load())

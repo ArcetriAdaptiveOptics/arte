@@ -144,6 +144,33 @@ def cacheResult(f):
     return wrapper
 
 
+_KWARGS_MARK = object()
+
+
+def cache_per_instance(f):
+    '''Like functools.cache, but stores the results in the instance.
+
+    functools.cache on a method keeps every instance alive forever, because
+    the cache belongs to the function and uses *self* as part of the key.
+    Here each instance has its own cache, freed together with the instance.
+    Arguments must be hashable.
+    '''
+    cache_name = '_cache_per_instance_' + f.__name__
+
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        cache = self.__dict__.setdefault(cache_name, {})
+        key = args
+        if kwargs:
+            key += (_KWARGS_MARK,) + tuple(sorted(kwargs.items()))
+        result = cache.get(key, _KWARGS_MARK)
+        if result is _KWARGS_MARK:
+            result = cache[key] = f(self, *args, **kwargs)
+        return result
+
+    return wrapper
+
+
 def override(f):
     return f
 

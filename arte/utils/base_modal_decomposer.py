@@ -1,11 +1,11 @@
 import abc
-import functools
 import numpy as np
 from scipy.linalg import pinv
 from arte.types.modal_coefficients import ModalCoefficients
 from arte.types.mask import CircularMask, BaseMask
 from arte.types.wavefront import Wavefront
 from arte.types.slopes import Slopes
+from arte.utils.decorator import cache_per_instance
 
 
 class BaseModalDecomposer(abc.ABC):
@@ -163,7 +163,7 @@ class BaseModalDecomposer(abc.ABC):
                                               mode_indexes=mode_indexes, **kwargs)
         return pinv(im, return_rank=return_rank, atol=atol, rtol=rtol, check_finite=check_finite)
 
-    @functools.cache
+    @cache_per_instance
     def cachedSyntheticInteractionMatrixFromWavefront(self, nModes,
                                                       circular_mask, user_mask=None,
                                                       dtype=float, start_mode=None,
@@ -177,7 +177,7 @@ class BaseModalDecomposer(abc.ABC):
                                                 mode_indexes=mode_indexes, **kwargs)
 
 
-    @functools.cache
+    @cache_per_instance
     def cachedSyntheticReconstructorFromWavefront(self, nModes,
                                                   circular_mask, user_mask=None,
                                                   dtype=float, start_mode=None,
@@ -191,7 +191,7 @@ class BaseModalDecomposer(abc.ABC):
                                             dtype, start_mode, return_rank,
                                             mode_indexes=mode_indexes, **kwargs)
 
-    @functools.cache
+    @cache_per_instance
     def cachedSyntheticReconstructorFromSlopes(self, nModes,
                                                   circular_mask, user_mask=None,
                                                   dtype=float, start_mode=None,

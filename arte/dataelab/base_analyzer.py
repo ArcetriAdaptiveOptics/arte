@@ -117,6 +117,17 @@ class BaseAnalyzer(metaclass=PostInitCaller):
         '''
         return cls(tag, *args, recalc=recalc, **kwargs)
 
+    @classmethod
+    def clear_get_cache(cls):
+        '''Forget the instances returned by get()
+
+        get() keeps every Analyzer it returns, so that the same tag
+        gives the same instance. Call this method to free them, for example
+        when analyzing many tags in the same process.
+        The cache is shared by all Analyzer classes.
+        '''
+        cls._get.cache_clear()
+
     def recalc(self):
         '''Force recalculation of this analyzer data'''
         clear_cache(self)
