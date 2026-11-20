@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import unittest
+from unittest import mock
 import numpy as np
 from arte.utils.zernike_decomposer import ZernikeModalDecomposer
 from arte.utils.karhunen_loeve_decomposer import KarhunenLoeveModalDecomposer
@@ -107,15 +108,15 @@ class ZernikeDecomposerModeIndexesTest(unittest.TestCase):
 
     def test_equivalent_selections_share_the_cache(self):
         md = ZernikeModalDecomposer(4)
-        # functools.cache is shared by all the instances: count the misses
-        cache_info = md.cachedSyntheticReconstructorFromWavefront.cache_info
-        misses = cache_info().misses
-        results = [self._measure(md), self._measure(md, start_mode=2),
-                   self._measure(md, mode_indexes=[2, 3, 4, 5]),
-                   self._measure(md, nModes=4, mode_indexes=range(2, 6))]
+        # Count the cache misses
+        with mock.patch.object(md, '_syntheticReconstructor',
+                               wraps=md._syntheticReconstructor) as misses:
+            results = [self._measure(md), self._measure(md, start_mode=2),
+                       self._measure(md, mode_indexes=[2, 3, 4, 5]),
+                       self._measure(md, nModes=4, mode_indexes=range(2, 6))]
         for zc in results[1:]:
             self.assertEqual(zc, results[0])
-        self.assertEqual(cache_info().misses - misses, 1)
+        self.assertEqual(misses.call_count, 1)
 
     def test_slopes_mode_indexes(self):
         idx = [2, 3, 7]

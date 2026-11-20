@@ -7,8 +7,8 @@ import os
 import pickle
 import logging
 import tempfile
+import weakref
 from functools import wraps, cached_property
-from collections import defaultdict
 from types import ModuleType
 
 import numpy as np
@@ -57,18 +57,33 @@ def cache_on_disk(f):
      - the new value for tmpdir or prefix
     '''
 
-    # Bind this function to a DiskCacher constructor
-    def new_cacher():
-        return DiskCacher(f)
-
     # Access a DiskCacher based on the instance
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         return wrapper.cacher_list[self].execute(self, *args, **kwargs)
 
     # Build a new DiskCacher whenever a new instance accesses this method
-    wrapper.cacher_list = defaultdict(new_cacher)
+    wrapper.cacher_list = _CacherList(f)
     return wrapper
+
+
+class _CacherList(weakref.WeakKeyDictionary):
+    '''DiskCacher for each instance, built on first access.
+
+    Uses weak references, so that the DiskCacher and its in-memory data
+    are freed together with the instance.
+    '''
+
+    def __init__(self, f):
+        super().__init__()
+        self._f = f
+
+    def __getitem__(self, instance):
+        try:
+            return super().__getitem__(instance)
+        except KeyError:
+            cacher = self[instance] = DiskCacher(self._f)
+            return cacher
 
 
 def get_disk_cacher(instance, method):
